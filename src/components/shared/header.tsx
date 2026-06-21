@@ -5,8 +5,8 @@ import { cn } from "@/lib/utils";
 import { Logo } from "./logo";
 
 const navLinks = [
+  { href: "/dentists", label: "מאגר הרופאים" },
   { href: "/#how", label: "איך זה עובד" },
-  { href: "/#benefits", label: "יתרונות" },
   { href: "/#testimonials", label: "מטופלים" },
   { href: "/#faq", label: "שאלות נפוצות" },
 ];

@@ -3,6 +3,7 @@ import { Frank_Ruhl_Libre, Heebo } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { heIL } from "@clerk/localizations";
 import { shadcn } from "@clerk/ui/themes";
+import { Toaster } from "@/components/ui/sonner";
 import "@clerk/ui/themes/shadcn.css";
 import "./globals.css";
 
@@ -42,6 +43,7 @@ export default function RootLayout({
       <body className="bg-background text-foreground flex min-h-full flex-col">
         <ClerkProvider localization={heIL} appearance={{ theme: shadcn }}>
           {children}
+          <Toaster position="top-center" richColors closeButton />
         </ClerkProvider>
       </body>
     </html>
