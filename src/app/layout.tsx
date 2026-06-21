@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Heebo } from "next/font/google";
+import { Frank_Ruhl_Libre, Heebo } from "next/font/google";
 import "./globals.css";
 
 const heebo = Heebo({
@@ -8,13 +8,20 @@ const heebo = Heebo({
   display: "swap",
 });
 
+const frankRuhl = Frank_Ruhl_Libre({
+  variable: "--font-serif",
+  subsets: ["hebrew", "latin"],
+  weight: ["400", "500", "700", "900"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: {
-    default: "DentalCompare – השוואת מחירים בין רופאי שיניים",
+    default: "DentalCompare – השוו מחירים. חסכו אלפי שקלים.",
     template: "%s | DentalCompare",
   },
   description:
-    "פלטפורמה לקבלת הצעות מחיר מעד 10 רופאי שיניים בישראל באמצעות העלאה חד-פעמית של תוכנית טיפול וצילומי שיניים.",
+    "פלטפורמה ישראלית לקבלת הצעות מחיר מעד 10 רופאי שיניים בבקשה אחת. העלאה חד-פעמית של תוכנית טיפול, ללא שיחות טלפון, ללא לחץ.",
 };
 
 export default function RootLayout({
@@ -23,7 +30,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="he" dir="rtl" className={`${heebo.variable} h-full antialiased`}>
+    <html
+      lang="he"
+      dir="rtl"
+      className={`${heebo.variable} ${frankRuhl.variable} h-full antialiased`}
+    >
       <body className="bg-background text-foreground flex min-h-full flex-col">{children}</body>
     </html>
   );
