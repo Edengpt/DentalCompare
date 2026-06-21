@@ -1,0 +1,103 @@
+// DentalCompare - Database Schema (PRD Section 9)
+// https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum RequestStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+model User {
+  id          String   @id @default(uuid())
+  clerkUserId String   @unique
+  fullName    String
+  email       String   @unique
+  phone       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  requests Request[]
+  payments Payment[]
+
+  @@index([clerkUserId])
+}
+
+model Dentist {
+  id              String   @id @default(uuid())
+  clinicName      String
+  dentistName     String
+  email           String   @unique
+  phone           String
+  city            String
+  address         String
+  experienceYears Int
+  specialties     String[]
+  treatments      String[]
+  hmoAffiliations String[]
+  profileImageUrl String?
+  rating          Float    @default(5.0)
+  reviewCount     Int      @default(0)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  requestDentists RequestDentist[]
+
+  @@index([city])
+  @@index([isActive])
+}
+
+model Request {
+  id               String        @id @default(uuid())
+  userId           String
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  treatmentFileUrl String
+  xrayFileUrl      String
+  patientNotes     String?       @db.Text
+  status           RequestStatus @default(PENDING)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  requestDentists RequestDentist[]
+  payments        Payment[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model RequestDentist {
+  id        String    @id @default(uuid())
+  requestId String
+  request   Request   @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  dentistId String
+  dentist   Dentist   @relation(fields: [dentistId], references: [id], onDelete: Cascade)
+  emailSent Boolean   @default(false)
+  sentAt    DateTime?
+
+  @@unique([requestId, dentistId])
+  @@index([dentistId])
+}
+
+model Payment {
+  id              String        @id @default(uuid())
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  requestId       String
+  request         Request       @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  amount          Float
+  stripeSessionId String        @unique
+  status          RequestStatus @default(PENDING)
+  createdAt       DateTime      @default(now())
+
+  @@index([userId])
+  @@index([requestId])
+}
