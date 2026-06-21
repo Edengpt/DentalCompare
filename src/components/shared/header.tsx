@@ -1,13 +1,14 @@
 import Link from "next/link";
+import { Show, UserButton } from "@clerk/nextjs";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Logo } from "./logo";
 
 const navLinks = [
-  { href: "#how", label: "איך זה עובד" },
-  { href: "#benefits", label: "יתרונות" },
-  { href: "#testimonials", label: "מטופלים" },
-  { href: "#faq", label: "שאלות נפוצות" },
+  { href: "/#how", label: "איך זה עובד" },
+  { href: "/#benefits", label: "יתרונות" },
+  { href: "/#testimonials", label: "מטופלים" },
+  { href: "/#faq", label: "שאלות נפוצות" },
 ];
 
 export function Header() {
@@ -28,19 +29,37 @@ export function Header() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2">
-          <Link
-            href="/sign-in"
-            className="text-muted-foreground hover:text-foreground hidden text-sm font-medium transition-colors md:inline-block"
-          >
-            כניסה
-          </Link>
-          <Link
-            href="/sign-up"
-            className={cn(buttonVariants({ size: "sm" }), "h-9 rounded-full px-5 text-sm")}
-          >
-            התחילו עכשיו
-          </Link>
+        <div className="flex items-center gap-3">
+          <Show when="signed-out">
+            <Link
+              href="/sign-in"
+              className="text-muted-foreground hover:text-foreground hidden text-sm font-medium transition-colors md:inline-block"
+            >
+              כניסה
+            </Link>
+            <Link
+              href="/sign-up"
+              className={cn(buttonVariants({ size: "sm" }), "h-9 rounded-full px-5 text-sm")}
+            >
+              התחילו עכשיו
+            </Link>
+          </Show>
+
+          <Show when="signed-in">
+            <Link
+              href="/dashboard"
+              className="text-muted-foreground hover:text-foreground hidden text-sm font-medium transition-colors md:inline-block"
+            >
+              אזור אישי
+            </Link>
+            <UserButton
+              appearance={{
+                elements: {
+                  avatarBox: "h-9 w-9",
+                },
+              }}
+            />
+          </Show>
         </div>
       </div>
     </header>
