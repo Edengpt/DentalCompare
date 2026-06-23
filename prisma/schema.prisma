@@ -50,10 +50,17 @@ model Dentist {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  // Self-registration + commission contract (PRD: clinic onboarding)
+  contactName     String? // person who completed the registration
+  submittedBySelf Boolean   @default(false) // true for self-served clinic sign-ups awaiting approval
+  agreedToTermsAt DateTime? // when the commission contract was accepted
+  termsVersion    String? // version of the contract that was accepted
+
   requestDentists RequestDentist[]
 
   @@index([city])
   @@index([isActive])
+  @@index([submittedBySelf])
 }
 
 model Request {

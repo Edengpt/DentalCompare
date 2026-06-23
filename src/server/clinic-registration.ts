@@ -1,0 +1,74 @@
+"use server";
+
+import { db } from "@/lib/db";
+import { COMMISSION } from "@/lib/constants";
+
+export type RegisterClinicResult = { ok: true } | { ok: false; error: string };
+
+function splitCsv(value: FormDataEntryValue | null): string[] {
+  if (typeof value !== "string") return [];
+  return value
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+/**
+ * Public, unauthenticated clinic self-registration. Creates a Dentist row that
+ * is INACTIVE and flagged `submittedBySelf` — it stays out of the patient-facing
+ * directory until an admin approves it (toggles it active). Records acceptance
+ * of the commission contract (timestamp + version) for audit.
+ */
+export async function registerClinic(formData: FormData): Promise<RegisterClinicResult> {
+  const contactName = String(formData.get("contactName") ?? "").trim();
+  const dentistName = String(formData.get("dentistName") ?? "").trim();
+  const clinicName = String(formData.get("clinicName") ?? "").trim();
+  const email = String(formData.get("email") ?? "")
+    .trim()
+    .toLowerCase();
+  const phone = String(formData.get("phone") ?? "").trim();
+  const city = String(formData.get("city") ?? "").trim();
+  const address = String(formData.get("address") ?? "").trim();
+  const experienceYears = Number(formData.get("experienceYears") ?? 0);
+  const agreed = formData.get("agreeToTerms");
+
+  if (!contactName || !dentistName || !clinicName || !email || !phone || !city || !address) {
+    return { ok: false, error: "יש למלא את כל שדות החובה" };
+  }
+  if (!email.includes("@")) {
+    return { ok: false, error: "כתובת אימייל לא תקינה" };
+  }
+  if (!Number.isFinite(experienceYears) || experienceYears < 0) {
+    return { ok: false, error: "שנות ניסיון לא תקינות" };
+  }
+  if (agreed !== "on" && agreed !== "true") {
+    return { ok: false, error: "יש לאשר את תנאי החוזה כדי להירשם" };
+  }
+
+  const existing = await db.dentist.findUnique({ where: { email }, select: { id: true } });
+  if (existing) {
+    return { ok: false, error: "כבר קיימת מרפאה רשומה עם אימייל זה" };
+  }
+
+  await db.dentist.create({
+    data: {
+      clinicName,
+      dentistName,
+      contactName,
+      email,
+      phone,
+      city,
+      address,
+      experienceYears: Math.floor(experienceYears),
+      specialties: splitCsv(formData.get("specialties")),
+      treatments: splitCsv(formData.get("treatments")),
+      hmoAffiliations: splitCsv(formData.get("hmoAffiliations")),
+      isActive: false,
+      submittedBySelf: true,
+      agreedToTermsAt: new Date(),
+      termsVersion: COMMISSION.version,
+    },
+  });
+
+  return { ok: true };
+}
