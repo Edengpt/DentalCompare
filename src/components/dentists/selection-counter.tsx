@@ -1,17 +1,18 @@
 "use client";
 
-import { ArrowLeft, Users } from "lucide-react";
+import { ArrowLeft, Loader2, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { REQUEST_LIMITS } from "@/lib/constants";
 
 type SelectionCounterProps = {
   selected: number;
   onContinue: () => void;
+  isSaving?: boolean;
 };
 
-export function SelectionCounter({ selected, onContinue }: SelectionCounterProps) {
+export function SelectionCounter({ selected, onContinue, isSaving }: SelectionCounterProps) {
   const { minDentists, maxDentists } = REQUEST_LIMITS;
-  const canContinue = selected >= minDentists;
+  const canContinue = selected >= minDentists && !isSaving;
 
   return (
     <div
@@ -49,8 +50,17 @@ export function SelectionCounter({ selected, onContinue }: SelectionCounterProps
               : "bg-cream/20 text-cream/60 cursor-not-allowed",
           )}
         >
-          המשך
-          <ArrowLeft className="h-4 w-4" />
+          {isSaving ? (
+            <>
+              שומר…
+              <Loader2 className="h-4 w-4 animate-spin" />
+            </>
+          ) : (
+            <>
+              המשך
+              <ArrowLeft className="h-4 w-4" />
+            </>
+          )}
         </button>
       </div>
     </div>

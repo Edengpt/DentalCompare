@@ -1,20 +1,34 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import type { DentistModel } from "@/generated/prisma/models";
 import { REQUEST_LIMITS } from "@/lib/constants";
+import { saveRequestDentists } from "@/server/requests";
 import { DentistCard } from "./dentist-card";
 import { FilterBar, type DentistFilters, EMPTY_FILTERS } from "./filter-bar";
 import { SelectionCounter } from "./selection-counter";
 
 type DentistDirectoryProps = {
   dentists: DentistModel[];
+  /** When set, the picker is bound to a request: continuing persists the
+   * selection and advances to the confirmation step. When omitted, the
+   * directory is in standalone browse mode. */
+  requestId?: string;
+  /** Dentist ids already attached to the request, to prefill the selection. */
+  initialSelectedIds?: string[];
 };
 
-export function DentistDirectory({ dentists }: DentistDirectoryProps) {
+export function DentistDirectory({
+  dentists,
+  requestId,
+  initialSelectedIds,
+}: DentistDirectoryProps) {
+  const router = useRouter();
+  const [isSaving, startSaving] = useTransition();
   const [filters, setFilters] = useState<DentistFilters>(EMPTY_FILTERS);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [selected, setSelected] = useState<Set<string>>(() => new Set(initialSelectedIds ?? []));
 
   const cities = useMemo(() => [...new Set(dentists.map((d) => d.city))].sort(), [dentists]);
 
@@ -49,8 +63,23 @@ export function DentistDirectory({ dentists }: DentistDirectoryProps) {
   };
 
   const handleContinue = () => {
-    toast.info("המשך הזרימה (סיכום + שליחה) ייפתח בחלק 7 של הפיתוח", {
-      description: `כרגע נבחרו ${selected.size} רופאים`,
+    // Standalone browse mode (no request bound yet): nudge the user to start a
+    // real request so the selection has somewhere to be saved.
+    if (!requestId) {
+      toast.info("התחילו בקשה חדשה כדי לשמור את הבחירה ולהמשיך לתשלום", {
+        description: `כרגע נבחרו ${selected.size} רופאים`,
+      });
+      router.push("/request/new");
+      return;
+    }
+
+    startSaving(async () => {
+      const result = await saveRequestDentists(requestId, [...selected]);
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
+      router.push(`/request/${requestId}/confirm`);
     });
   };
 
@@ -94,7 +123,7 @@ export function DentistDirectory({ dentists }: DentistDirectoryProps) {
         )}
       </div>
 
-      <SelectionCounter selected={selected.size} onContinue={handleContinue} />
+      <SelectionCounter selected={selected.size} onContinue={handleContinue} isSaving={isSaving} />
     </>
   );
 }

@@ -7,6 +7,7 @@ import { Footer } from "@/components/shared/footer";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getOrCreateUser } from "@/server/users";
+import { isAdminEmail } from "@/server/admin";
 import { db } from "@/lib/db";
 
 export const metadata = {
@@ -19,9 +20,10 @@ export default async function DashboardPage() {
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 
-  await getOrCreateUser();
+  const profile = await getOrCreateUser();
   const clerkUser = await currentUser();
   const greetingName = clerkUser?.firstName ?? clerkUser?.username ?? "ברוך הבא";
+  const showAdminLink = !!profile && isAdminEmail(profile.email);
 
   const user = await db.user.findUnique({
     where: { clerkUserId: userId },
@@ -49,7 +51,17 @@ export default async function DashboardPage() {
       <Header />
       <main className="flex-1">
         <div className="mx-auto max-w-7xl px-6 py-16 lg:px-10 lg:py-24">
-          <p className="eyebrow">אזור אישי</p>
+          <div className="flex items-center justify-between gap-4">
+            <p className="eyebrow">אזור אישי</p>
+            {showAdminLink && (
+              <Link
+                href="/admin"
+                className="text-muted-foreground hover:text-teal-deep text-sm font-medium underline-offset-4 hover:underline"
+              >
+                פאנל ניהול ←
+              </Link>
+            )}
+          </div>
 
           <div className="mt-5 flex flex-col items-start gap-6 sm:flex-row sm:items-end sm:justify-between">
             <h1 className="font-display text-foreground text-4xl font-bold tracking-tight sm:text-5xl">

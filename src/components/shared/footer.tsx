@@ -16,7 +16,7 @@ const linkGroups = [
     links: [
       { href: "/about", label: "אודות" },
       { href: "/contact", label: "צרו קשר" },
-      { href: "/for-dentists", label: "לרופאים" },
+      { href: "/clinics/join", label: "הצטרפות מרפאות" },
     ],
   },
   {

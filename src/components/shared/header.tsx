@@ -7,8 +7,8 @@ import { Logo } from "./logo";
 const navLinks = [
   { href: "/dentists", label: "מאגר הרופאים" },
   { href: "/#how", label: "איך זה עובד" },
-  { href: "/#testimonials", label: "מטופלים" },
   { href: "/#faq", label: "שאלות נפוצות" },
+  { href: "/clinics/join", label: "הצטרפות מרפאות" },
 ];
 
 export function Header() {

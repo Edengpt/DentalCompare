@@ -1,0 +1,73 @@
+import { notFound, redirect } from "next/navigation";
+import { auth } from "@clerk/nextjs/server";
+import { db } from "@/lib/db";
+import { Header } from "@/components/shared/header";
+import { Footer } from "@/components/shared/footer";
+import { DentistDirectory } from "@/components/dentists/dentist-directory";
+
+export const metadata = {
+  title: "בחירת רופאים",
+};
+
+export const dynamic = "force-dynamic";
+
+export default async function RequestDentistsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const { userId: clerkUserId } = await auth();
+  if (!clerkUserId) redirect("/sign-in");
+
+  const user = await db.user.findUnique({ where: { clerkUserId }, select: { id: true } });
+  if (!user) redirect("/sign-in");
+
+  const request = await db.request.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      userId: true,
+      treatmentFileUrl: true,
+      xrayFileUrl: true,
+      requestDentists: { select: { dentistId: true } },
+    },
+  });
+
+  if (!request || request.userId !== user.id) notFound();
+
+  // Files are a prerequisite for this step — send the user back if they skipped it.
+  if (!request.treatmentFileUrl || !request.xrayFileUrl) {
+    redirect(`/request/${id}/upload`);
+  }
+
+  const dentists = await db.dentist.findMany({
+    where: { isActive: true },
+    orderBy: [{ rating: "desc" }, { reviewCount: "desc" }],
+  });
+
+  const initialSelectedIds = request.requestDentists.map((rd) => rd.dentistId);
+
+  return (
+    <>
+      <Header />
+      <main className="flex-1">
+        <section className="border-border/60 bg-muted/30 border-b py-12 lg:py-16">
+          <div className="mx-auto max-w-7xl px-6 lg:px-10">
+            <p className="eyebrow">שלב 2 מתוך 3</p>
+            <h1 className="font-display text-foreground mt-4 text-4xl font-bold tracking-tight text-balance sm:text-5xl">
+              בחרו את הרופאים שיתחרו על הטיפול שלכם.
+            </h1>
+            <p className="text-muted-foreground mt-4 max-w-2xl text-lg text-pretty">
+              סננו לפי מיקום, התמחות וקופת חולים. סמנו עד 10 רופאים — והבקשה שלכם תישלח לכולם בו
+              זמנית.
+            </p>
+          </div>
+        </section>
+
+        <DentistDirectory
+          dentists={dentists}
+          requestId={request.id}
+          initialSelectedIds={initialSelectedIds}
+        />
+      </main>
+      <Footer />
+    </>
+  );
+}
