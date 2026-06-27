@@ -6,6 +6,7 @@ import {
   Users,
   FileText,
   CreditCard,
+  Repeat,
   ArrowLeft,
 } from "lucide-react";
 import { requireAdmin } from "@/server/admin";
@@ -20,6 +21,7 @@ const NAV = [
   { href: "/admin/users", label: "משתמשים", icon: Users },
   { href: "/admin/requests", label: "בקשות", icon: FileText },
   { href: "/admin/payments", label: "תשלומים", icon: CreditCard },
+  { href: "/admin/subscriptions", label: "מנויים", icon: Repeat },
 ] as const;
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
