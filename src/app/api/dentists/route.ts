@@ -18,7 +18,7 @@ export async function GET(request: Request) {
       ...(hmos.length ? { hmoAffiliations: { hasSome: hmos } } : {}),
       ...(minExperience ? { experienceYears: { gte: minExperience } } : {}),
     },
-    orderBy: [{ rating: "desc" }, { reviewCount: "desc" }],
+    orderBy: [{ reviewCount: "desc" }, { rating: "desc" }, { experienceYears: "desc" }],
   });
 
   return NextResponse.json({ dentists });

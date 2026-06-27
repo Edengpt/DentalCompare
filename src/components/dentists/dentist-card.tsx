@@ -56,11 +56,21 @@ export function DentistCard({ dentist, isSelected, onToggle, disabled }: Dentist
         </div>
 
         <div className="shrink-0 text-end">
-          <div className="text-foreground inline-flex items-center gap-1 text-sm font-semibold">
-            <Star className="fill-coral text-coral h-3.5 w-3.5" />
-            {dentist.rating.toFixed(1)}
-          </div>
-          <p className="text-muted-foreground mt-0.5 text-[10px]">{dentist.reviewCount} ביקורות</p>
+          {dentist.reviewCount > 0 ? (
+            <>
+              <div className="text-foreground inline-flex items-center gap-1 text-sm font-semibold">
+                <Star className="fill-coral text-coral h-3.5 w-3.5" />
+                {dentist.rating.toFixed(1)}
+              </div>
+              <p className="text-muted-foreground mt-0.5 text-[10px]">
+                {dentist.reviewCount} ביקורות
+              </p>
+            </>
+          ) : (
+            <span className="bg-teal-deep/8 text-teal-deep rounded-full px-2.5 py-1 text-[10px] font-semibold">
+              חדש
+            </span>
+          )}
         </div>
       </header>
 
