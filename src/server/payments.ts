@@ -1,8 +1,9 @@
 "use server";
 
+import { randomUUID } from "crypto";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
-import { getStripe } from "@/lib/stripe";
+import { getStripe, isPaymentsTestMode } from "@/lib/stripe";
 import { PRICING } from "@/lib/constants";
 
 export type CheckoutResult = { ok: true; url: string } | { ok: false; error: string };
@@ -57,6 +58,26 @@ export async function createCheckoutSession(requestId: string): Promise<Checkout
   }
 
   const base = appUrl();
+
+  // Test mode: skip the real provider, record a PENDING payment with a synthetic
+  // session id, and send the user straight to the success page (which fulfills).
+  if (isPaymentsTestMode()) {
+    const sessionId = `test_${randomUUID()}`;
+    await db.payment.create({
+      data: {
+        userId: user.id,
+        requestId: request.id,
+        amount: PRICING.flatFeeILS,
+        stripeSessionId: sessionId,
+        status: "PENDING",
+      },
+    });
+    return {
+      ok: true,
+      url: `${base}/request/${request.id}/success?session_id=${sessionId}`,
+    };
+  }
+
   const stripe = getStripe();
 
   const session = await stripe.checkout.sessions.create({

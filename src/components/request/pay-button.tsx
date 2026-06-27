@@ -10,9 +10,10 @@ import { buttonVariants } from "@/components/ui/button";
 type PayButtonProps = {
   requestId: string;
   amount: number;
+  testMode?: boolean;
 };
 
-export function PayButton({ requestId, amount }: PayButtonProps) {
+export function PayButton({ requestId, amount, testMode = false }: PayButtonProps) {
   const [isPending, startTransition] = useTransition();
 
   const handleClick = () => {
@@ -44,7 +45,7 @@ export function PayButton({ requestId, amount }: PayButtonProps) {
         </>
       ) : (
         <>
-          לתשלום ושליחה ({amount} ₪)
+          {testMode ? `שליחה (מצב בדיקה — ללא חיוב)` : `לתשלום ושליחה (${amount} ₪)`}
           <ArrowLeft className="h-4 w-4" />
         </>
       )}

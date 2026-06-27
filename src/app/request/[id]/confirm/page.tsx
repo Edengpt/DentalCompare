@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
 import { PayButton } from "@/components/request/pay-button";
+import { isPaymentsTestMode } from "@/lib/stripe";
 import { PRICING } from "@/lib/constants";
 
 export const metadata = {
@@ -143,7 +144,11 @@ export default async function ConfirmRequestPage({ params }: { params: Promise<{
               >
                 חזרה לאזור האישי
               </Link>
-              <PayButton requestId={request.id} amount={PRICING.flatFeeILS} />
+              <PayButton
+                requestId={request.id}
+                amount={PRICING.flatFeeILS}
+                testMode={isPaymentsTestMode()}
+              />
             </div>
           </div>
         </div>
