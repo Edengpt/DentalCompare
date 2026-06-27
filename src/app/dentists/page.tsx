@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 export default async function DentistsPage() {
   const dentists = await db.dentist.findMany({
-    where: { isActive: true },
+    where: { isActive: true, subscription: { status: "ACTIVE" } },
     // Reviewed clinics surface first; unreviewed ones fall back to experience
     // (the default 5.0 rating is hidden in the card, so we don't sort by it).
     orderBy: [{ reviewCount: "desc" }, { rating: "desc" }, { experienceYears: "desc" }],
