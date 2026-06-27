@@ -61,7 +61,7 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
     return { ok: false, error: "שנות ניסיון לא תקינות" };
   }
   if (agreed !== "on" && agreed !== "true") {
-    return { ok: false, error: "יש לאשר את תנאי החוזה כדי להירשם" };
+    return { ok: false, error: "יש לאשר את תנאי המנוי כדי להירשם" };
   }
   if (!plan) {
     return { ok: false, error: "יש לבחור מסלול מנוי" };
@@ -73,29 +73,34 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
   }
 
   const setupToken = randomUUID();
-  const dentist = await db.dentist.create({
-    data: {
-      clinicName,
-      dentistName,
-      contactName,
-      email,
-      phone,
-      city,
-      address,
-      experienceYears: Math.floor(experienceYears),
-      specialties: pickAllowed(formData, "specialties", SPECIALTIES),
-      treatments: pickAllowed(formData, "treatments", TREATMENTS),
-      hmoAffiliations: pickAllowed(formData, "hmoAffiliations", HMO_OPTIONS),
-      profileImageUrl,
-      isActive: false,
-      submittedBySelf: true,
-      agreedToTermsAt: new Date(),
-      termsVersion: SUBSCRIPTION_CONTRACT_VERSION,
-    },
-    select: { id: true },
-  });
 
-  await createPendingSubscription({ dentistId: dentist.id, plan, setupToken });
+  // Both writes must succeed or fail together: an orphaned Dentist with no
+  // subscription would prevent the clinic from ever re-registering.
+  await db.$transaction(async (tx) => {
+    const dentist = await tx.dentist.create({
+      data: {
+        clinicName,
+        dentistName,
+        contactName,
+        email,
+        phone,
+        city,
+        address,
+        experienceYears: Math.floor(experienceYears),
+        specialties: pickAllowed(formData, "specialties", SPECIALTIES),
+        treatments: pickAllowed(formData, "treatments", TREATMENTS),
+        hmoAffiliations: pickAllowed(formData, "hmoAffiliations", HMO_OPTIONS),
+        profileImageUrl,
+        isActive: false,
+        submittedBySelf: true,
+        agreedToTermsAt: new Date(),
+        termsVersion: SUBSCRIPTION_CONTRACT_VERSION,
+      },
+      select: { id: true },
+    });
+
+    await createPendingSubscription({ dentistId: dentist.id, plan, setupToken }, tx);
+  });
 
   return { ok: true };
 }

@@ -1,14 +1,18 @@
 import "server-only";
 import { db } from "@/lib/db";
+import { Prisma } from "@/generated/prisma/client";
 import { SUBSCRIPTION_PLANS, type SubscriptionPlanType } from "@/lib/constants";
 import { nextPeriodEnd } from "@/lib/subscription";
 
-export async function createPendingSubscription(args: {
-  dentistId: string;
-  plan: SubscriptionPlanType;
-  setupToken: string;
-}): Promise<void> {
-  await db.clinicSubscription.create({
+export async function createPendingSubscription(
+  args: {
+    dentistId: string;
+    plan: SubscriptionPlanType;
+    setupToken: string;
+  },
+  client: Prisma.TransactionClient | typeof db = db,
+): Promise<void> {
+  await client.clinicSubscription.create({
     data: {
       dentistId: args.dentistId,
       plan: args.plan,
