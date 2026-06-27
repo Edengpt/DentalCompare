@@ -50,3 +50,30 @@ export async function sendPaymentSetupEmail(args: {
     return false;
   }
 }
+
+export async function sendPaymentFailedEmail(args: {
+  email: string;
+  clinicName: string;
+}): Promise<boolean> {
+  try {
+    const { error } = await getResend().emails.send({
+      from: fromAddress(),
+      to: args.email,
+      subject: "חיוב המנוי נכשל — DentalCompare",
+      html: `
+      <div dir="rtl" style="font-family: Arial, sans-serif; color:#1a1a1a; max-width:560px; margin:0 auto;">
+        <h2 style="color:#0f4c4c;">לא הצלחנו לחייב את המנוי</h2>
+        <p>החיוב התקופתי עבור <strong>${args.clinicName}</strong> נכשל. כדי שהמרפאה תמשיך להופיע במאגר, יש לעדכן את אמצעי התשלום.</p>
+        <p style="font-size:12px;color:#777;">פנו לתמיכה: <a href="mailto:${SITE_CONFIG.supportEmail}">${SITE_CONFIG.supportEmail}</a></p>
+      </div>`,
+    });
+    if (error) {
+      console.error(`Resend error for payment-failed ${args.email}:`, error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error(`Failed to send payment-failed email to ${args.email}:`, err);
+    return false;
+  }
+}
