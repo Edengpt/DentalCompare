@@ -34,15 +34,24 @@ export function DentistCard({ dentist, isSelected, onToggle, disabled }: Dentist
       )}
     >
       <header className="flex items-start gap-4">
-        <div
-          className={cn(
-            "font-display flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-lg font-bold transition-colors",
-            isSelected ? "bg-teal-deep text-cream" : "bg-sand text-teal-deep",
-          )}
-          aria-hidden="true"
-        >
-          {initials(dentist.dentistName)}
-        </div>
+        {dentist.profileImageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={dentist.profileImageUrl}
+            alt={dentist.clinicName}
+            className="h-14 w-14 shrink-0 rounded-2xl object-cover"
+          />
+        ) : (
+          <div
+            className={cn(
+              "font-display flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-lg font-bold transition-colors",
+              isSelected ? "bg-teal-deep text-cream" : "bg-sand text-teal-deep",
+            )}
+            aria-hidden="true"
+          >
+            {initials(dentist.dentistName)}
+          </div>
+        )}
 
         <div className="min-w-0 flex-1">
           <h3 className="font-display text-foreground truncate text-lg leading-tight font-bold">
