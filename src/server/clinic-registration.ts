@@ -27,7 +27,7 @@ function pickAllowed(formData: FormData, field: string, allowed: readonly string
  * Public, unauthenticated clinic self-registration. Creates a Dentist row that
  * is INACTIVE and flagged `submittedBySelf` — it stays out of the patient-facing
  * directory until an admin approves it (toggles it active). Records acceptance
- * of the commission contract (timestamp + version) for audit.
+ * of the subscription contract (timestamp + version) for audit.
  */
 export async function registerClinic(formData: FormData): Promise<RegisterClinicResult> {
   const contactName = String(formData.get("contactName") ?? "").trim();
