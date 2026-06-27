@@ -6,8 +6,7 @@ import { toast } from "sonner";
 import { registerClinic } from "@/server/clinic-registration";
 import { LOGO_ACCEPT_ATTRIBUTE, LOGO_MAX_FILE_SIZE_MB } from "@/lib/storage";
 import {
-  COMMISSION,
-  COMMISSION_TERMS_HE,
+  SUBSCRIPTION_TERMS_HE,
   HMO_OPTIONS,
   SPECIALTIES,
   TREATMENTS,
@@ -15,6 +14,7 @@ import {
 import { HMO_LABELS_HE, SPECIALTY_LABELS_HE, translateTreatment } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
+import { PlanPicker } from "@/components/clinics/plan-picker";
 
 const inputClass =
   "border-border/60 bg-background focus:border-teal-deep focus:ring-teal-deep/20 w-full rounded-xl border px-3.5 py-2.5 text-sm outline-none focus:ring-2";
@@ -241,21 +241,22 @@ export function RegistrationForm() {
         </div>
       </div>
 
-      {/* Contract */}
+      {/* Plan + contract */}
       <div className="border-teal-deep/30 bg-teal-deep/5 rounded-3xl border p-6 sm:p-8">
         <div className="flex items-center gap-2.5">
           <FileSignature className="text-teal-deep h-5 w-5" />
-          <h2 className="font-display text-foreground text-lg font-bold">חוזה עמלת תיווך</h2>
+          <h2 className="font-display text-foreground text-lg font-bold">מסלול ותנאי מנוי</h2>
         </div>
         <p className="text-muted-foreground mt-2 text-sm">
-          עמלה בגובה הגבוה מבין{" "}
-          <strong className="text-foreground">{COMMISSION.minFeeILS} ₪</strong> או{" "}
-          <strong className="text-foreground">{COMMISSION.percent}%</strong> משווי הטיפול, על כל
-          מטופל שהופנה דרך הפלטפורמה.
+          בחרו מסלול. החיוב יתבצע רק לאחר אישור המרפאה על ידי הצוות — נשלח אליכם קישור להשלמת התשלום.
         </p>
 
-        <ol className="text-foreground/90 mt-5 space-y-3 text-sm">
-          {COMMISSION_TERMS_HE.map((clause, i) => (
+        <div className="mt-5">
+          <PlanPicker />
+        </div>
+
+        <ol className="text-foreground/90 mt-6 space-y-3 text-sm">
+          {SUBSCRIPTION_TERMS_HE.map((clause, i) => (
             <li key={i} className="flex gap-2.5">
               <span className="bg-teal-deep/10 text-teal-deep mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold">
                 {i + 1}
@@ -274,7 +275,7 @@ export function RegistrationForm() {
             className="accent-teal-deep mt-0.5 h-4 w-4 shrink-0"
           />
           <span className="text-foreground">
-            קראתי, הבנתי ואני מאשר/ת בשם המרפאה את תנאי חוזה עמלת התיווך המפורטים לעיל.
+            קראתי, הבנתי ואני מאשר/ת בשם המרפאה את תנאי המנוי המפורטים לעיל.
           </span>
         </label>
       </div>

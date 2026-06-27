@@ -1,7 +1,14 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { db } from "@/lib/db";
-import { COMMISSION, HMO_OPTIONS, SPECIALTIES, TREATMENTS } from "@/lib/constants";
+import {
+  HMO_OPTIONS,
+  SPECIALTIES,
+  TREATMENTS,
+  SUBSCRIPTION_CONTRACT_VERSION,
+} from "@/lib/constants";
+import { createPendingSubscription } from "@/server/subscriptions";
 
 export type RegisterClinicResult = { ok: true } | { ok: false; error: string };
 
@@ -34,6 +41,8 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
   const address = String(formData.get("address") ?? "").trim();
   const experienceYears = Number(formData.get("experienceYears") ?? 0);
   const agreed = formData.get("agreeToTerms");
+  const planRaw = String(formData.get("plan") ?? "");
+  const plan = planRaw === "MONTHLY" || planRaw === "YEARLY" ? planRaw : null;
 
   // Optional logo: only accept a URL produced by our own blob upload endpoint.
   const logoRaw = String(formData.get("profileImageUrl") ?? "").trim();
@@ -54,13 +63,17 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
   if (agreed !== "on" && agreed !== "true") {
     return { ok: false, error: "יש לאשר את תנאי החוזה כדי להירשם" };
   }
+  if (!plan) {
+    return { ok: false, error: "יש לבחור מסלול מנוי" };
+  }
 
   const existing = await db.dentist.findUnique({ where: { email }, select: { id: true } });
   if (existing) {
     return { ok: false, error: "כבר קיימת מרפאה רשומה עם אימייל זה" };
   }
 
-  await db.dentist.create({
+  const setupToken = randomUUID();
+  const dentist = await db.dentist.create({
     data: {
       clinicName,
       dentistName,
@@ -77,9 +90,12 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
       isActive: false,
       submittedBySelf: true,
       agreedToTermsAt: new Date(),
-      termsVersion: COMMISSION.version,
+      termsVersion: SUBSCRIPTION_CONTRACT_VERSION,
     },
+    select: { id: true },
   });
+
+  await createPendingSubscription({ dentistId: dentist.id, plan, setupToken });
 
   return { ok: true };
 }
