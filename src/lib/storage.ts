@@ -46,3 +46,39 @@ export function blobPath(requestId: string, kind: UploadKind, file: File): strin
   const ext = fileExtension(file);
   return `requests/${requestId}/${kind}.${ext}`;
 }
+
+// --- Clinic logo upload (public, image-only) ---
+
+export const LOGO_ACCEPTED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
+export const LOGO_MAX_FILE_SIZE_MB = 5;
+export const LOGO_MAX_FILE_SIZE_BYTES = LOGO_MAX_FILE_SIZE_MB * 1024 * 1024;
+export const LOGO_ACCEPT_ATTRIBUTE = ".jpg,.jpeg,.png,.webp";
+
+export function validateLogo(file: File): FileValidationError | null {
+  if (!LOGO_ACCEPTED_MIME_TYPES.includes(file.type as (typeof LOGO_ACCEPTED_MIME_TYPES)[number])) {
+    return "TYPE";
+  }
+  if (file.size > LOGO_MAX_FILE_SIZE_BYTES) {
+    return "SIZE";
+  }
+  return null;
+}
+
+export function logoValidationMessage(err: FileValidationError): string {
+  switch (err) {
+    case "TYPE":
+      return "סוג קובץ לא נתמך. אנא העלו תמונה בפורמט JPG, PNG או WEBP.";
+    case "SIZE":
+      return `התמונה גדולה מדי. המגבלה היא ${LOGO_MAX_FILE_SIZE_MB}MB.`;
+  }
+}
+
+function logoExtension(file: File): string {
+  if (file.type === "image/png") return "png";
+  if (file.type === "image/webp") return "webp";
+  return "jpg";
+}
+
+export function logoBlobPath(file: File): string {
+  return `clinics/logos/logo.${logoExtension(file)}`;
+}

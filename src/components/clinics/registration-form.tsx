@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { CheckCircle2, FileSignature } from "lucide-react";
+import { useRef, useState, useTransition } from "react";
+import { CheckCircle2, FileSignature, ImagePlus, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { registerClinic } from "@/server/clinic-registration";
+import { LOGO_ACCEPT_ATTRIBUTE, LOGO_MAX_FILE_SIZE_MB } from "@/lib/storage";
 import {
   COMMISSION,
   COMMISSION_TERMS_HE,
@@ -92,9 +93,39 @@ export function RegistrationForm() {
   const [isPending, startTransition] = useTransition();
   const [done, setDone] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+
+  const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setLogoUploading(true);
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      const res = await fetch("/api/clinics/logo", { method: "POST", body });
+      const data = (await res.json()) as { url?: string; error?: string };
+      if (!res.ok || !data.url) {
+        toast.error(data.error ?? "העלאת הלוגו נכשלה");
+        return;
+      }
+      setLogoUrl(data.url);
+    } catch {
+      toast.error("העלאת הלוגו נכשלה — נסו שוב");
+    } finally {
+      setLogoUploading(false);
+      if (logoInputRef.current) logoInputRef.current.value = "";
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (logoUploading) {
+      toast.error("המתינו לסיום העלאת הלוגו");
+      return;
+    }
     const formData = new FormData(e.currentTarget);
     startTransition(async () => {
       const result = await registerClinic(formData);
@@ -156,6 +187,57 @@ export function RegistrationForm() {
           {chipGroups.map((g) => (
             <ChipGroup key={g.name} name={g.name} label={g.label} options={g.options} />
           ))}
+
+          {/* Logo (optional) */}
+          <div>
+            <p className="text-foreground text-sm font-medium">
+              לוגו / תמונת מרפאה
+              <span className="text-muted-foreground font-normal"> (אופציונלי)</span>
+            </p>
+            <input type="hidden" name="profileImageUrl" value={logoUrl ?? ""} />
+            <div className="mt-2 flex items-center gap-4">
+              {logoUrl ? (
+                <span className="border-border/60 relative inline-block h-20 w-20 overflow-hidden rounded-2xl border">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={logoUrl} alt="תצוגת לוגו" className="h-full w-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => setLogoUrl(null)}
+                    aria-label="הסרת הלוגו"
+                    className="bg-foreground/70 text-cream absolute end-1 top-1 inline-flex h-5 w-5 items-center justify-center rounded-full"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => logoInputRef.current?.click()}
+                  disabled={logoUploading}
+                  className="border-border/60 text-muted-foreground hover:border-teal-deep/40 hover:text-teal-deep inline-flex h-20 w-20 flex-col items-center justify-center gap-1 rounded-2xl border border-dashed text-xs transition-colors disabled:opacity-60"
+                >
+                  {logoUploading ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <>
+                      <ImagePlus className="h-5 w-5" />
+                      העלאה
+                    </>
+                  )}
+                </button>
+              )}
+              <p className="text-muted-foreground text-xs">
+                JPG, PNG או WEBP ✦ עד {LOGO_MAX_FILE_SIZE_MB}MB
+              </p>
+            </div>
+            <input
+              ref={logoInputRef}
+              type="file"
+              accept={LOGO_ACCEPT_ATTRIBUTE}
+              onChange={handleLogoChange}
+              className="hidden"
+            />
+          </div>
         </div>
       </div>
 

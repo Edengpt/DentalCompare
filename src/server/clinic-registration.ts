@@ -35,6 +35,13 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
   const experienceYears = Number(formData.get("experienceYears") ?? 0);
   const agreed = formData.get("agreeToTerms");
 
+  // Optional logo: only accept a URL produced by our own blob upload endpoint.
+  const logoRaw = String(formData.get("profileImageUrl") ?? "").trim();
+  const profileImageUrl =
+    logoRaw && /^https:\/\/[a-z0-9.-]*\.blob\.vercel-storage\.com\//i.test(logoRaw)
+      ? logoRaw
+      : null;
+
   if (!contactName || !dentistName || !clinicName || !email || !phone || !city || !address) {
     return { ok: false, error: "יש למלא את כל שדות החובה" };
   }
@@ -66,6 +73,7 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
       specialties: pickAllowed(formData, "specialties", SPECIALTIES),
       treatments: pickAllowed(formData, "treatments", TREATMENTS),
       hmoAffiliations: pickAllowed(formData, "hmoAffiliations", HMO_OPTIONS),
+      profileImageUrl,
       isActive: false,
       submittedBySelf: true,
       agreedToTermsAt: new Date(),
