@@ -1,16 +1,19 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { COMMISSION } from "@/lib/constants";
+import { COMMISSION, HMO_OPTIONS, SPECIALTIES, TREATMENTS } from "@/lib/constants";
 
 export type RegisterClinicResult = { ok: true } | { ok: false; error: string };
 
-function splitCsv(value: FormDataEntryValue | null): string[] {
-  if (typeof value !== "string") return [];
-  return value
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
+/**
+ * Reads a multi-select field (checkboxes that share a name) and keeps only the
+ * values that belong to the allowed canonical set — so the form can never store
+ * a free-typed value the rest of the app can't translate or filter on.
+ */
+function pickAllowed(formData: FormData, field: string, allowed: readonly string[]): string[] {
+  const set = new Set(allowed);
+  const chosen = formData.getAll(field).filter((v): v is string => typeof v === "string");
+  return [...new Set(chosen)].filter((v) => set.has(v));
 }
 
 /**
@@ -60,9 +63,9 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
       city,
       address,
       experienceYears: Math.floor(experienceYears),
-      specialties: splitCsv(formData.get("specialties")),
-      treatments: splitCsv(formData.get("treatments")),
-      hmoAffiliations: splitCsv(formData.get("hmoAffiliations")),
+      specialties: pickAllowed(formData, "specialties", SPECIALTIES),
+      treatments: pickAllowed(formData, "treatments", TREATMENTS),
+      hmoAffiliations: pickAllowed(formData, "hmoAffiliations", HMO_OPTIONS),
       isActive: false,
       submittedBySelf: true,
       agreedToTermsAt: new Date(),

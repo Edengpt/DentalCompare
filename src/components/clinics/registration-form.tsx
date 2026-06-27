@@ -4,7 +4,14 @@ import { useState, useTransition } from "react";
 import { CheckCircle2, FileSignature } from "lucide-react";
 import { toast } from "sonner";
 import { registerClinic } from "@/server/clinic-registration";
-import { COMMISSION, COMMISSION_TERMS_HE } from "@/lib/constants";
+import {
+  COMMISSION,
+  COMMISSION_TERMS_HE,
+  HMO_OPTIONS,
+  SPECIALTIES,
+  TREATMENTS,
+} from "@/lib/constants";
+import { HMO_LABELS_HE, SPECIALTY_LABELS_HE, translateTreatment } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
@@ -33,25 +40,53 @@ const fields: {
     type: "number",
     placeholder: "10",
   },
+];
+
+// Multi-select chip groups — clinics pick from the canonical lists so stored
+// values are always valid (no free-typed strings the app can't translate).
+const chipGroups: { name: string; label: string; options: { value: string; label: string }[] }[] = [
   {
     name: "specialties",
     label: "התמחויות",
-    placeholder: "Implantology, Aesthetics",
-    hint: "מופרד בפסיקים",
+    options: SPECIALTIES.map((s) => ({ value: s, label: SPECIALTY_LABELS_HE[s] })),
   },
   {
     name: "treatments",
     label: "טיפולים",
-    placeholder: "Implants, Crowns",
-    hint: "מופרד בפסיקים",
+    options: TREATMENTS.map((t) => ({ value: t, label: translateTreatment(t) })),
   },
   {
     name: "hmoAffiliations",
     label: "קופות חולים",
-    placeholder: "Clalit, Maccabi",
-    hint: "מופרד בפסיקים",
+    options: HMO_OPTIONS.map((h) => ({ value: h, label: HMO_LABELS_HE[h] })),
   },
 ];
+
+function ChipGroup({
+  name,
+  label,
+  options,
+}: {
+  name: string;
+  label: string;
+  options: { value: string; label: string }[];
+}) {
+  return (
+    <fieldset className="sm:col-span-2">
+      <legend className="text-foreground text-sm font-medium">{label}</legend>
+      <div className="mt-2 flex flex-wrap gap-2">
+        {options.map((o) => (
+          <label key={o.value} className="cursor-pointer">
+            <input type="checkbox" name={name} value={o.value} className="peer sr-only" />
+            <span className="border-border/60 text-foreground peer-checked:border-teal-deep peer-checked:bg-teal-deep peer-checked:text-cream peer-focus-visible:ring-teal-deep/30 inline-block rounded-full border px-3.5 py-1.5 text-sm transition-colors peer-focus-visible:ring-2">
+              {o.label}
+            </span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
 
 export function RegistrationForm() {
   const [isPending, startTransition] = useTransition();
@@ -114,6 +149,12 @@ export function RegistrationForm() {
                 className={inputClass}
               />
             </label>
+          ))}
+        </div>
+
+        <div className="mt-6 space-y-6">
+          {chipGroups.map((g) => (
+            <ChipGroup key={g.name} name={g.name} label={g.label} options={g.options} />
           ))}
         </div>
       </div>

@@ -47,5 +47,23 @@ export const SPECIALTIES = [
   "Periodontics",
 ] as const;
 
+// Canonical treatment list — keep in sync with TREATMENT_LABELS_HE in labels.ts.
+// Clinics pick from these so stored values always have a Hebrew label.
+export const TREATMENTS = [
+  "Implants",
+  "Crowns",
+  "Bridges",
+  "Veneers",
+  "Whitening",
+  "Root Canal",
+  "Braces",
+  "Invisalign",
+  "Gum Surgery",
+  "Bone Grafting",
+  "Pediatric Care",
+  "Full Mouth Reconstruction",
+] as const;
+
 export type HMO = (typeof HMO_OPTIONS)[number];
 export type Specialty = (typeof SPECIALTIES)[number];
+export type Treatment = (typeof TREATMENTS)[number];
