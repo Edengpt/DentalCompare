@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/server/admin";
+import { sendClinicApprovalEmail } from "@/server/clinic-notifications";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -21,6 +22,59 @@ export async function toggleDentistActive(dentistId: string): Promise<ActionResu
   });
 
   revalidatePath("/admin/dentists");
+  return { ok: true };
+}
+
+/**
+ * Approve a self-registered clinic: flip it active so it appears in the
+ * patient-facing directory and clear the pending flag.
+ */
+export async function approveClinic(dentistId: string): Promise<ActionResult> {
+  await requireAdmin();
+
+  const dentist = await db.dentist.findUnique({
+    where: { id: dentistId },
+    select: { id: true, email: true, contactName: true, clinicName: true },
+  });
+  if (!dentist) return { ok: false, error: "המרפאה לא נמצאה" };
+
+  await db.dentist.update({
+    where: { id: dentistId },
+    data: { isActive: true, submittedBySelf: false },
+  });
+
+  // Best-effort welcome email — never blocks approval if delivery fails.
+  await sendClinicApprovalEmail({
+    email: dentist.email,
+    contactName: dentist.contactName,
+    clinicName: dentist.clinicName,
+  });
+
+  revalidatePath("/admin/clinics");
+  revalidatePath("/admin/dentists");
+  revalidatePath("/admin");
+  return { ok: true };
+}
+
+/** Reject (delete) a self-registered clinic that has not yet been approved. */
+export async function rejectClinic(dentistId: string): Promise<ActionResult> {
+  await requireAdmin();
+
+  const dentist = await db.dentist.findUnique({
+    where: { id: dentistId },
+    select: { isActive: true, submittedBySelf: true },
+  });
+  if (!dentist) return { ok: false, error: "המרפאה לא נמצאה" };
+  // Guard: only delete still-pending self-registrations, never a live dentist.
+  if (dentist.isActive || !dentist.submittedBySelf) {
+    return { ok: false, error: "ניתן לדחות רק הרשמות שטרם אושרו" };
+  }
+
+  await db.dentist.delete({ where: { id: dentistId } });
+
+  revalidatePath("/admin/clinics");
+  revalidatePath("/admin/dentists");
+  revalidatePath("/admin");
   return { ok: true };
 }
 

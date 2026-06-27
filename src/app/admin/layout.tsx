@@ -1,19 +1,34 @@
 import Link from "next/link";
-import { LayoutGrid, Stethoscope, Users, FileText, CreditCard, ArrowLeft } from "lucide-react";
+import {
+  LayoutGrid,
+  Stethoscope,
+  Building2,
+  Users,
+  FileText,
+  CreditCard,
+  ArrowLeft,
+} from "lucide-react";
 import { requireAdmin } from "@/server/admin";
+import { db } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
 const NAV = [
   { href: "/admin", label: "סקירה", icon: LayoutGrid },
+  { href: "/admin/clinics", label: "הרשמות מרפאות", icon: Building2, badgeKey: "pendingClinics" },
   { href: "/admin/dentists", label: "רופאים", icon: Stethoscope },
   { href: "/admin/users", label: "משתמשים", icon: Users },
   { href: "/admin/requests", label: "בקשות", icon: FileText },
   { href: "/admin/payments", label: "תשלומים", icon: CreditCard },
-];
+] as const;
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   await requireAdmin();
+
+  const pendingClinics = await db.dentist.count({
+    where: { submittedBySelf: true, isActive: false },
+  });
+  const badges: Record<string, number> = { pendingClinics };
 
   return (
     <div className="bg-muted/20 flex min-h-screen flex-col lg:flex-row">
@@ -25,16 +40,24 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <p className="text-muted-foreground mt-1 text-xs">פאנל ניהול</p>
 
           <nav className="mt-6 flex flex-row gap-1 overflow-x-auto lg:mt-8 lg:flex-col">
-            {NAV.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="text-foreground hover:bg-teal-deep/8 hover:text-teal-deep inline-flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium whitespace-nowrap transition-colors"
-              >
-                <item.icon className="h-4 w-4" />
-                {item.label}
-              </Link>
-            ))}
+            {NAV.map((item) => {
+              const badge = "badgeKey" in item ? badges[item.badgeKey] : 0;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="text-foreground hover:bg-teal-deep/8 hover:text-teal-deep inline-flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium whitespace-nowrap transition-colors"
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                  {badge > 0 && (
+                    <span className="bg-coral text-cream ms-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-bold">
+                      {badge}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
           </nav>
 
           <Link

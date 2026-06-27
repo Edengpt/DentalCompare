@@ -16,6 +16,12 @@ export const metadata = {
 
 export const dynamic = "force-dynamic";
 
+const STATUS_LABELS: Record<string, string> = {
+  PENDING: "ממתין לתשלום",
+  PAID: "שולם ונשלח",
+  FAILED: "התשלום נכשל",
+};
+
 export default async function DashboardPage() {
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
@@ -105,10 +111,15 @@ export default async function DashboardPage() {
               <h2 className="font-display text-foreground text-xl font-bold">הבקשות שלי</h2>
               <ul className="divide-border/60 bg-card border-border/60 divide-y rounded-3xl border">
                 {requests.map((r) => {
+                  const isPaid = r.status === "PAID";
                   const filesReady = !!r.treatmentFileUrl && !!r.xrayFileUrl;
-                  const nextHref = filesReady
-                    ? `/request/${r.id}/dentists`
-                    : `/request/${r.id}/upload`;
+                  // Paid requests are locked & sent → read-only detail. Unfinished
+                  // requests link back into the flow so the user can complete them.
+                  const href = isPaid
+                    ? `/request/${r.id}`
+                    : filesReady
+                      ? `/request/${r.id}/dentists`
+                      : `/request/${r.id}/upload`;
                   const date = new Intl.DateTimeFormat("he-IL", {
                     day: "numeric",
                     month: "short",
@@ -122,14 +133,15 @@ export default async function DashboardPage() {
                       <div>
                         <p className="text-foreground font-semibold">בקשה #{r.id.slice(0, 8)}</p>
                         <p className="text-muted-foreground mt-0.5 text-xs">
-                          {date} ✦ סטטוס: {r.status} ✦ {r._count.requestDentists} רופאים
+                          {date} ✦ סטטוס: {STATUS_LABELS[r.status]} ✦ {r._count.requestDentists}{" "}
+                          רופאים
                         </p>
                       </div>
                       <Link
-                        href={nextHref}
+                        href={href}
                         className="text-teal-deep text-sm font-semibold underline-offset-4 hover:underline"
                       >
-                        המשך
+                        {isPaid ? "צפייה בפרטים" : "המשך"}
                       </Link>
                     </li>
                   );

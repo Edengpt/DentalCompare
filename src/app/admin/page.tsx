@@ -1,4 +1,5 @@
-import { Users, Stethoscope, FileText, Banknote } from "lucide-react";
+import Link from "next/link";
+import { Users, Stethoscope, FileText, Banknote, Building2, ArrowLeft } from "lucide-react";
 import { db } from "@/lib/db";
 
 export const metadata = { title: "ניהול — סקירה" };
@@ -11,8 +12,15 @@ const statusLabels: Record<string, string> = {
 };
 
 export default async function AdminOverviewPage() {
-  const [totalUsers, totalDentists, totalRequests, paidAgg, requestsByStatus, recentRequests] =
-    await Promise.all([
+  const [
+    totalUsers,
+    totalDentists,
+    totalRequests,
+    paidAgg,
+    requestsByStatus,
+    recentRequests,
+    pendingClinics,
+  ] = await Promise.all([
       db.user.count(),
       db.dentist.count(),
       db.request.count(),
@@ -29,6 +37,7 @@ export default async function AdminOverviewPage() {
           _count: { select: { requestDentists: true } },
         },
       }),
+      db.dentist.count({ where: { submittedBySelf: true, isActive: false } }),
     ]);
 
   const totalRevenue = paidAgg._sum.amount ?? 0;
@@ -53,6 +62,26 @@ export default async function AdminOverviewPage() {
         <h1 className="font-display text-foreground text-3xl font-bold tracking-tight">סקירה</h1>
         <p className="text-muted-foreground mt-1.5 text-sm">תמונת מצב כללית של הפלטפורמה.</p>
       </header>
+
+      {pendingClinics > 0 && (
+        <Link
+          href="/admin/clinics"
+          className="border-coral/40 bg-coral/5 hover:bg-coral/10 group flex items-center justify-between gap-4 rounded-2xl border px-5 py-4 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <span className="bg-coral/15 text-coral inline-flex h-10 w-10 items-center justify-center rounded-xl">
+              <Building2 className="h-5 w-5" />
+            </span>
+            <div>
+              <p className="text-foreground text-sm font-semibold">
+                {pendingClinics} הרשמות מרפאות ממתינות לאישור
+              </p>
+              <p className="text-muted-foreground text-xs">לחצו לבדיקה ואישור הרשמות חדשות.</p>
+            </div>
+          </div>
+          <ArrowLeft className="text-coral h-4 w-4 transition-transform group-hover:-translate-x-1" />
+        </Link>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((s) => (
