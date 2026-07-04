@@ -14,7 +14,6 @@ export default async function QuotePage({ params }: { params: Promise<{ token: s
     where: { quoteToken: token },
     select: {
       quote: { select: { amountILS: true, note: true } },
-      dentist: { select: { dentistName: true } },
       request: {
         select: {
           treatmentFileUrl: true,
