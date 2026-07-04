@@ -1,6 +1,12 @@
 import "server-only";
+import { randomUUID } from "node:crypto";
 import { db } from "@/lib/db";
 import { getResend, fromAddress } from "@/lib/email";
+import { quotePath } from "@/lib/quotes";
+
+function appUrl(): string {
+  return process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ?? "http://localhost:3000";
+}
 
 export type FulfillResult =
   | { ok: true; paid: boolean; emailsSent: number; alreadySent: number }
@@ -26,29 +32,29 @@ function buildEmailHtml(opts: {
   patientPhone: string;
   requestId: string;
   date: string;
+  quoteUrl: string;
 }): string {
-  const { dentistName, patientName, patientEmail, patientPhone, requestId, date } = opts;
+  const { dentistName, patientName, patientPhone, requestId, date, quoteUrl } = opts;
   return `
   <div dir="rtl" style="font-family: Arial, sans-serif; color: #1a1a1a; max-width: 560px; margin: 0 auto;">
-    <h2 style="color: #0f4c4c;">בקשה חדשה להצעת מחיר</h2>
+    <h2 style="color: #0f4c4c;">${patientName} ביקש/ה ממך הצעת מחיר</h2>
     <p>שלום ${dentistName},</p>
-    <p>התקבלה דרך DentalCompare בקשה להצעת מחיר לטיפול שיניים. פרטי המטופל ותוכנית הטיפול מצורפים למייל זה.</p>
+    <p>${patientName} מבקש/ת הצעת מחיר לטיפול שיניים דרך DentalCompare. תוכנית הטיפול והצילום מצורפים למייל זה.</p>
 
-    <h3 style="color: #0f4c4c; margin-bottom: 4px;">פרטי המטופל</h3>
-    <ul style="padding-inline-start: 18px; margin-top: 4px;">
-      <li>שם: ${patientName}</li>
-      <li>אימייל: <a href="mailto:${patientEmail}">${patientEmail}</a></li>
-      <li>טלפון: ${patientPhone || "לא צוין"}</li>
-    </ul>
+    <div style="text-align: center; margin: 28px 0;">
+      <a href="${quoteUrl}"
+         style="display: inline-block; background: #ff6b4a; color: #fff; text-decoration: none;
+                font-size: 17px; font-weight: bold; padding: 16px 32px; border-radius: 999px;">
+        💰 להזנת מחיר מהירה — לוקח 5 שניות
+      </a>
+    </div>
 
-    <h3 style="color: #0f4c4c; margin-bottom: 4px;">פרטי הבקשה</h3>
-    <ul style="padding-inline-start: 18px; margin-top: 4px;">
+    <ul style="padding-inline-start: 18px; color: #555; font-size: 13px;">
       <li>מספר בקשה: ${requestId.slice(0, 8)}</li>
       <li>תאריך: ${date}</li>
-      <li>קבצים מצורפים: תוכנית טיפול + צילום שיניים</li>
+      <li>ליצירת קשר ישיר: ${patientPhone || "ראו כפתור למעלה"}</li>
     </ul>
 
-    <p style="margin-top: 20px;">להגשת הצעת מחיר, השיבו ישירות למטופל באימייל או בטלפון שלמעלה.</p>
     <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 24px 0;" />
     <p style="font-size: 12px; color: #777;">מייל זה נשלח אוטומטית על ידי DentalCompare.</p>
   </div>`;
@@ -118,6 +124,9 @@ export async function fulfillPaidSession(sessionId: string): Promise<FulfillResu
 
   for (const rd of pending) {
     try {
+      const quoteToken = randomUUID();
+      const quoteUrl = `${appUrl()}${quotePath(quoteToken)}`;
+
       const { error } = await resend.emails.send({
         from,
         to: rd.dentist.email,
@@ -130,6 +139,7 @@ export async function fulfillPaidSession(sessionId: string): Promise<FulfillResu
           patientPhone: request.user.phone,
           requestId: request.id,
           date,
+          quoteUrl,
         }),
         attachments,
       });
@@ -141,7 +151,7 @@ export async function fulfillPaidSession(sessionId: string): Promise<FulfillResu
 
       await db.requestDentist.update({
         where: { id: rd.id },
-        data: { emailSent: true, sentAt: new Date() },
+        data: { emailSent: true, sentAt: new Date(), quoteToken },
       });
       sent += 1;
     } catch (err) {
