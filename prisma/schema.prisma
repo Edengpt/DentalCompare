@@ -103,8 +103,23 @@ model RequestDentist {
   emailSent Boolean   @default(false)
   sentAt    DateTime?
 
+  quoteToken String? @unique // per-recipient magic-link token for the quote form
+  quote      Quote?
+
   @@unique([requestId, dentistId])
   @@index([dentistId])
+}
+
+model Quote {
+  id               String         @id @default(uuid())
+  requestDentistId String         @unique
+  requestDentist   RequestDentist @relation(fields: [requestDentistId], references: [id], onDelete: Cascade)
+  amountILS        Int // total quoted price in ILS
+  note             String?        @db.Text // free-text, e.g. "כולל צילום, לא כולל שתל"
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([requestDentistId])
 }
 
 model Payment {
