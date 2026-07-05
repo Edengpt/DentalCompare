@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
+import { sortByPrice, cheapestDentistId, responseCounts, type QuoteRow } from "@/lib/quotes";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
 import { cn } from "@/lib/utils";
@@ -50,6 +51,7 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
         select: {
           emailSent: true,
           sentAt: true,
+          quote: { select: { amountILS: true, note: true } },
           dentist: {
             select: { id: true, dentistName: true, clinicName: true, city: true },
           },
@@ -62,6 +64,20 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
   if (!request || request.userId !== user.id) notFound();
 
   const dentists = request.requestDentists;
+
+  const quoteRows: QuoteRow[] = dentists.map((rd) => ({
+    dentistId: rd.dentist.id,
+    dentistName: rd.dentist.dentistName,
+    clinicName: rd.dentist.clinicName,
+    city: rd.dentist.city,
+    amountILS: rd.quote?.amountILS ?? null,
+    note: rd.quote?.note ?? null,
+  }));
+  const sortedQuotes = sortByPrice(quoteRows);
+  const cheapestId = cheapestDentistId(quoteRows);
+  const { responded, total } = responseCounts(quoteRows);
+  const ils = new Intl.NumberFormat("he-IL");
+
   const date = new Intl.DateTimeFormat("he-IL", {
     day: "numeric",
     month: "long",
@@ -120,10 +136,53 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
 
         <div className="mx-auto max-w-3xl space-y-8 px-6 py-10 lg:px-10 lg:py-14">
           {isPaid && (
-            <div className="border-teal-deep/30 bg-teal-deep/5 text-foreground flex items-center gap-2.5 rounded-2xl border px-5 py-4 text-sm">
-              <Mail className="text-teal-deep h-4 w-4 shrink-0" />
-              הבקשה נשלחה ל-{dentists.length} רופאים. הצעות המחיר מגיעות ישירות לאימייל שלכם.
-            </div>
+            <section>
+              <div className="border-teal-deep/30 bg-teal-deep/5 text-foreground mb-4 flex items-center gap-2.5 rounded-2xl border px-5 py-4 text-sm">
+                <Mail className="text-teal-deep h-4 w-4 shrink-0" />
+                {responded > 0
+                  ? `${responded} מתוך ${total} רופאים הגיבו. השוו את ההצעות למטה.`
+                  : `הבקשה נשלחה ל-${total} רופאים. ההצעות יופיעו כאן ברגע שיגיבו.`}
+              </div>
+
+              {responded > 0 && (
+                <ul className="border-border/60 bg-card divide-border/60 divide-y rounded-2xl border">
+                  {sortedQuotes.map((q) => {
+                    const isCheapest = q.dentistId === cheapestId;
+                    return (
+                      <li key={q.dentistId} className="flex items-start justify-between gap-4 p-4">
+                        <div>
+                          <p className="text-foreground font-semibold">
+                            {q.dentistName}
+                            {isCheapest && (
+                              <span className="bg-teal-deep/10 text-teal-deep mr-2 rounded-full px-2 py-0.5 text-xs font-semibold">
+                                המחיר הזול ביותר
+                              </span>
+                            )}
+                          </p>
+                          <p className="text-muted-foreground text-xs">
+                            {q.clinicName} ✦ {q.city}
+                          </p>
+                          {q.note && (
+                            <p className="text-muted-foreground mt-1 text-sm whitespace-pre-wrap">
+                              {q.note}
+                            </p>
+                          )}
+                        </div>
+                        <div className="shrink-0 text-left">
+                          {q.amountILS !== null ? (
+                            <span className="text-foreground text-lg font-bold">
+                              ₪{ils.format(q.amountILS)}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">ממתין להצעה</span>
+                          )}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </section>
           )}
 
           {!isPaid && (

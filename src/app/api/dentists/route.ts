@@ -13,6 +13,7 @@ export async function GET(request: Request) {
   const dentists = await db.dentist.findMany({
     where: {
       isActive: true,
+      subscription: { status: "ACTIVE" },
       ...(city ? { city } : {}),
       ...(specialties.length ? { specialties: { hasSome: specialties } } : {}),
       ...(hmos.length ? { hmoAffiliations: { hasSome: hmos } } : {}),

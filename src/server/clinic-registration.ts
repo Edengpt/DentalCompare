@@ -1,7 +1,14 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { db } from "@/lib/db";
-import { COMMISSION, HMO_OPTIONS, SPECIALTIES, TREATMENTS } from "@/lib/constants";
+import {
+  HMO_OPTIONS,
+  SPECIALTIES,
+  TREATMENTS,
+  SUBSCRIPTION_CONTRACT_VERSION,
+} from "@/lib/constants";
+import { createPendingSubscription } from "@/server/subscriptions";
 
 export type RegisterClinicResult = { ok: true } | { ok: false; error: string };
 
@@ -20,7 +27,7 @@ function pickAllowed(formData: FormData, field: string, allowed: readonly string
  * Public, unauthenticated clinic self-registration. Creates a Dentist row that
  * is INACTIVE and flagged `submittedBySelf` — it stays out of the patient-facing
  * directory until an admin approves it (toggles it active). Records acceptance
- * of the commission contract (timestamp + version) for audit.
+ * of the subscription contract (timestamp + version) for audit.
  */
 export async function registerClinic(formData: FormData): Promise<RegisterClinicResult> {
   const contactName = String(formData.get("contactName") ?? "").trim();
@@ -34,6 +41,8 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
   const address = String(formData.get("address") ?? "").trim();
   const experienceYears = Number(formData.get("experienceYears") ?? 0);
   const agreed = formData.get("agreeToTerms");
+  const planRaw = String(formData.get("plan") ?? "");
+  const plan = planRaw === "MONTHLY" || planRaw === "YEARLY" ? planRaw : null;
 
   // Optional logo: only accept a URL produced by our own blob upload endpoint.
   const logoRaw = String(formData.get("profileImageUrl") ?? "").trim();
@@ -52,7 +61,10 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
     return { ok: false, error: "שנות ניסיון לא תקינות" };
   }
   if (agreed !== "on" && agreed !== "true") {
-    return { ok: false, error: "יש לאשר את תנאי החוזה כדי להירשם" };
+    return { ok: false, error: "יש לאשר את תנאי המנוי כדי להירשם" };
+  }
+  if (!plan) {
+    return { ok: false, error: "יש לבחור מסלול מנוי" };
   }
 
   const existing = await db.dentist.findUnique({ where: { email }, select: { id: true } });
@@ -60,25 +72,34 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
     return { ok: false, error: "כבר קיימת מרפאה רשומה עם אימייל זה" };
   }
 
-  await db.dentist.create({
-    data: {
-      clinicName,
-      dentistName,
-      contactName,
-      email,
-      phone,
-      city,
-      address,
-      experienceYears: Math.floor(experienceYears),
-      specialties: pickAllowed(formData, "specialties", SPECIALTIES),
-      treatments: pickAllowed(formData, "treatments", TREATMENTS),
-      hmoAffiliations: pickAllowed(formData, "hmoAffiliations", HMO_OPTIONS),
-      profileImageUrl,
-      isActive: false,
-      submittedBySelf: true,
-      agreedToTermsAt: new Date(),
-      termsVersion: COMMISSION.version,
-    },
+  const setupToken = randomUUID();
+
+  // Both writes must succeed or fail together: an orphaned Dentist with no
+  // subscription would prevent the clinic from ever re-registering.
+  await db.$transaction(async (tx) => {
+    const dentist = await tx.dentist.create({
+      data: {
+        clinicName,
+        dentistName,
+        contactName,
+        email,
+        phone,
+        city,
+        address,
+        experienceYears: Math.floor(experienceYears),
+        specialties: pickAllowed(formData, "specialties", SPECIALTIES),
+        treatments: pickAllowed(formData, "treatments", TREATMENTS),
+        hmoAffiliations: pickAllowed(formData, "hmoAffiliations", HMO_OPTIONS),
+        profileImageUrl,
+        isActive: false,
+        submittedBySelf: true,
+        agreedToTermsAt: new Date(),
+        termsVersion: SUBSCRIPTION_CONTRACT_VERSION,
+      },
+      select: { id: true },
+    });
+
+    await createPendingSubscription({ dentistId: dentist.id, plan, setupToken }, tx);
   });
 
   return { ok: true };

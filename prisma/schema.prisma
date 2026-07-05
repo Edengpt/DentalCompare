@@ -16,6 +16,18 @@ enum RequestStatus {
   FAILED
 }
 
+enum SubscriptionPlan {
+  MONTHLY
+  YEARLY
+}
+
+enum SubscriptionStatus {
+  PENDING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+}
+
 model User {
   id          String   @id @default(uuid())
   clerkUserId String   @unique
@@ -50,13 +62,14 @@ model Dentist {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  // Self-registration + commission contract (PRD: clinic onboarding)
+  // Self-registration + subscription contract (PRD: clinic onboarding)
   contactName     String? // person who completed the registration
   submittedBySelf Boolean   @default(false) // true for self-served clinic sign-ups awaiting approval
-  agreedToTermsAt DateTime? // when the commission contract was accepted
+  agreedToTermsAt DateTime? // when the subscription contract was accepted
   termsVersion    String? // version of the contract that was accepted
 
   requestDentists RequestDentist[]
+  subscription    ClinicSubscription?
 
   @@index([city])
   @@index([isActive])
@@ -90,8 +103,23 @@ model RequestDentist {
   emailSent Boolean   @default(false)
   sentAt    DateTime?
 
+  quoteToken String? @unique // per-recipient magic-link token for the quote form
+  quote      Quote?
+
   @@unique([requestId, dentistId])
   @@index([dentistId])
+}
+
+model Quote {
+  id               String         @id @default(uuid())
+  requestDentistId String         @unique
+  requestDentist   RequestDentist @relation(fields: [requestDentistId], references: [id], onDelete: Cascade)
+  amountILS        Int // total quoted price in ILS
+  note             String?        @db.Text // free-text, e.g. "כולל צילום, לא כולל שתל"
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([requestDentistId])
 }
 
 model Payment {
@@ -107,4 +135,41 @@ model Payment {
 
   @@index([userId])
   @@index([requestId])
+}
+
+model ClinicSubscription {
+  id                 String             @id @default(uuid())
+  dentistId          String             @unique
+  dentist            Dentist            @relation(fields: [dentistId], references: [id], onDelete: Cascade)
+  plan               SubscriptionPlan
+  status             SubscriptionStatus @default(PENDING)
+  priceILS           Int
+  setupToken         String             @unique
+  recurringToken     String? // PayPlus stored-card token uid (set after first paid charge)
+  payplusCustomerUid String?
+  currentPeriodEnd   DateTime?
+  lastChargeAt       DateTime?
+  canceledAt         DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  charges SubscriptionCharge[]
+
+  @@index([status])
+  @@index([currentPeriodEnd])
+}
+
+model SubscriptionCharge {
+  id                    String             @id @default(uuid())
+  subscriptionId        String
+  subscription          ClinicSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  amountILS             Int
+  status                RequestStatus      @default(PENDING)
+  payplusTransactionUid String?            @unique
+  periodStart           DateTime
+  periodEnd             DateTime
+  paidAt                DateTime?
+  createdAt             DateTime           @default(now())
+
+  @@index([subscriptionId])
 }
