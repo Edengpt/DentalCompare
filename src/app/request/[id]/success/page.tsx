@@ -46,7 +46,7 @@ export default async function RequestSuccessPage({
       // Test session: no provider to verify against — just confirm the synthetic
       // payment belongs to this request before fulfilling.
       const payment = await db.payment.findUnique({
-        where: { stripeSessionId: sessionId },
+        where: { providerRef: sessionId },
         select: { requestId: true },
       });
       if (payment?.requestId === id) {

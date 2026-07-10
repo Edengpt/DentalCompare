@@ -34,7 +34,9 @@ export async function submitQuote(input: {
     update: { amountILS: amount, note },
   });
 
-  if (isNew) {
+  // Notify the patient — unless their account was deleted (user set to null),
+  // in which case there is no address to notify.
+  if (isNew && rd.request.user) {
     try {
       await sendNewQuoteEmail({
         to: rd.request.user.email,

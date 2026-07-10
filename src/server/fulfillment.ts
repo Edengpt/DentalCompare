@@ -70,7 +70,7 @@ function buildEmailHtml(opts: {
  */
 export async function fulfillPaidSession(sessionId: string): Promise<FulfillResult> {
   const payment = await db.payment.findUnique({
-    where: { stripeSessionId: sessionId },
+    where: { providerRef: sessionId },
     select: { id: true, requestId: true, status: true },
   });
   if (!payment) return { ok: false, error: "תשלום לא נמצא" };
@@ -98,6 +98,9 @@ export async function fulfillPaidSession(sessionId: string): Promise<FulfillResu
     },
   });
   if (!request) return { ok: false, error: "הבקשה לא נמצאה" };
+  // The patient (User) is required to email dentists on their behalf. A null
+  // user means the account was deleted (userId set to null) — nothing to fulfill.
+  if (!request.user) return { ok: false, error: "המטופל לא נמצא" };
 
   const pending = request.requestDentists;
   if (pending.length === 0) {

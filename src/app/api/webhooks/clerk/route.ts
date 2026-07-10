@@ -74,6 +74,10 @@ export async function POST(req: Request) {
       case "user.deleted": {
         const id = event.data.id;
         if (!id) break;
+        // Deleting the User row sets Payment.userId / Request.userId to null
+        // (onDelete: SetNull) instead of cascading — financial and request
+        // records are retained for accounting/audit, just detached from the
+        // now-deleted patient.
         await db.user.deleteMany({ where: { clerkUserId: id } });
         console.log(`✓ Deleted user ${id}`);
         break;

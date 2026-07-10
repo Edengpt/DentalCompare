@@ -15,17 +15,18 @@ export default async function AdminPaymentsPage() {
       orderBy: { createdAt: "desc" },
       select: {
         id: true,
-        amount: true,
+        amountAgorot: true,
         status: true,
-        stripeSessionId: true,
+        providerRef: true,
         createdAt: true,
         user: { select: { fullName: true, email: true } },
       },
     }),
-    db.payment.aggregate({ where: { status: "PAID" }, _sum: { amount: true } }),
+    db.payment.aggregate({ where: { status: "PAID" }, _sum: { amountAgorot: true } }),
   ]);
 
-  const totalRevenue = paidAgg._sum.amount ?? 0;
+  // Amounts are stored in agorot (int); convert back to shekels for display.
+  const totalRevenue = (paidAgg._sum.amountAgorot ?? 0) / 100;
 
   return (
     <div className="space-y-6">
@@ -66,15 +67,17 @@ export default async function AdminPaymentsPage() {
               payments.map((p) => (
                 <tr key={p.id}>
                   <td className="px-4 py-3">
-                    <p className="text-foreground font-medium">{p.user.fullName}</p>
-                    <p className="text-muted-foreground text-xs">{p.user.email}</p>
+                    <p className="text-foreground font-medium">
+                      {p.user?.fullName ?? "משתמש שנמחק"}
+                    </p>
+                    <p className="text-muted-foreground text-xs">{p.user?.email ?? "—"}</p>
                   </td>
                   <td className="text-foreground px-4 py-3 font-semibold">
-                    {p.amount.toLocaleString("he-IL")} ₪
+                    {(p.amountAgorot / 100).toLocaleString("he-IL")} ₪
                   </td>
                   <td className="px-4 py-3">{statusLabels[p.status]}</td>
                   <td className="text-muted-foreground px-4 py-3 font-mono text-xs">
-                    {p.stripeSessionId.slice(0, 18)}…
+                    {p.providerRef.slice(0, 18)}…
                   </td>
                   <td className="text-muted-foreground px-4 py-3">
                     {new Intl.DateTimeFormat("he-IL", {

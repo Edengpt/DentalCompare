@@ -60,8 +60,10 @@ export default async function AdminRequestsPage() {
                       {r.id.slice(0, 8)}
                     </td>
                     <td className="px-4 py-3">
-                      <p className="text-foreground font-medium">{r.user.fullName}</p>
-                      <p className="text-muted-foreground text-xs">{r.user.email}</p>
+                      <p className="text-foreground font-medium">
+                        {r.user?.fullName ?? "משתמש שנמחק"}
+                      </p>
+                      <p className="text-muted-foreground text-xs">{r.user?.email ?? "—"}</p>
                     </td>
                     <td className="text-foreground px-4 py-3">{r._count.requestDentists}</td>
                     <td className="text-foreground px-4 py-3">{r.requestDentists.length}</td>

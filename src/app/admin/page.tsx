@@ -24,7 +24,7 @@ export default async function AdminOverviewPage() {
       db.user.count(),
       db.dentist.count(),
       db.request.count(),
-      db.payment.aggregate({ where: { status: "PAID" }, _sum: { amount: true } }),
+      db.payment.aggregate({ where: { status: "PAID" }, _sum: { amountAgorot: true } }),
       db.request.groupBy({ by: ["status"], _count: { _all: true } }),
       db.request.findMany({
         orderBy: { createdAt: "desc" },
@@ -40,7 +40,8 @@ export default async function AdminOverviewPage() {
       db.dentist.count({ where: { submittedBySelf: true, isActive: false } }),
     ]);
 
-  const totalRevenue = paidAgg._sum.amount ?? 0;
+  // Amounts are stored in agorot (int); convert back to shekels for display.
+  const totalRevenue = (paidAgg._sum.amountAgorot ?? 0) / 100;
 
   const stats = [
     { label: "סה״כ משתמשים", value: totalUsers.toLocaleString("he-IL"), icon: Users },
@@ -130,8 +131,10 @@ export default async function AdminOverviewPage() {
                 recentRequests.map((r) => (
                   <tr key={r.id}>
                     <td className="px-4 py-3">
-                      <p className="text-foreground font-medium">{r.user.fullName}</p>
-                      <p className="text-muted-foreground text-xs">{r.user.email}</p>
+                      <p className="text-foreground font-medium">
+                        {r.user?.fullName ?? "משתמש שנמחק"}
+                      </p>
+                      <p className="text-muted-foreground text-xs">{r.user?.email ?? "—"}</p>
                     </td>
                     <td className="text-foreground px-4 py-3">{r._count.requestDentists}</td>
                     <td className="px-4 py-3">{statusLabels[r.status]}</td>

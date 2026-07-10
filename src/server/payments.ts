@@ -67,8 +67,8 @@ export async function createCheckoutSession(requestId: string): Promise<Checkout
       data: {
         userId: user.id,
         requestId: request.id,
-        amount: PRICING.flatFeeILS,
-        stripeSessionId: sessionId,
+        amountAgorot: PRICING.flatFeeILS * 100,
+        providerRef: sessionId,
         status: "PENDING",
       },
     });
@@ -109,8 +109,8 @@ export async function createCheckoutSession(requestId: string): Promise<Checkout
     data: {
       userId: user.id,
       requestId: request.id,
-      amount: PRICING.flatFeeILS,
-      stripeSessionId: session.id,
+      amountAgorot: PRICING.flatFeeILS * 100,
+      providerRef: session.id,
       status: "PENDING",
     },
   });

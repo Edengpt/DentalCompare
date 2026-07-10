@@ -16,6 +16,16 @@ enum RequestStatus {
   FAILED
 }
 
+// Provider-neutral payment/charge state. Deliberately separate from
+// RequestStatus so the payment domain can evolve independently of the request
+// lifecycle (PRD: תשלומים). Same three members today, but the decoupling is the
+// point — a Payment is not a Request.
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
 enum SubscriptionPlan {
   MONTHLY
   YEARLY
@@ -78,8 +88,11 @@ model Dentist {
 
 model Request {
   id               String        @id @default(uuid())
-  userId           String
-  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Nullable so deleting a user (Clerk user.deleted) preserves the request as a
+  // financial/audit record instead of cascading it away. Readers must treat a
+  // null user as "deleted patient".
+  userId           String?
+  user             User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
   treatmentFileUrl String
   xrayFileUrl      String
   patientNotes     String?       @db.Text
@@ -123,15 +136,20 @@ model Quote {
 }
 
 model Payment {
-  id              String        @id @default(uuid())
-  userId          String
-  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  requestId       String
-  request         Request       @relation(fields: [requestId], references: [id], onDelete: Cascade)
-  amount          Float
-  stripeSessionId String        @unique
-  status          RequestStatus @default(PENDING)
-  createdAt       DateTime      @default(now())
+  id           String        @id @default(uuid())
+  // Nullable + SetNull: a Payment is a financial record and must outlive the
+  // user that created it (see Clerk user.deleted). Readers handle a null user.
+  userId       String?
+  user         User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  requestId    String
+  request      Request       @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  // Amount in agorot (integer) — money is never stored as a float.
+  amountAgorot Int
+  // Provider-neutral payment reference (PayPlus page_request_uid, or a synthetic
+  // test_* id in test mode). Replaces the old Stripe session id.
+  providerRef  String        @unique
+  status       PaymentStatus @default(PENDING)
+  createdAt    DateTime      @default(now())
 
   @@index([userId])
   @@index([requestId])
@@ -164,7 +182,7 @@ model SubscriptionCharge {
   subscriptionId        String
   subscription          ClinicSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
   amountILS             Int
-  status                RequestStatus      @default(PENDING)
+  status                PaymentStatus      @default(PENDING)
   payplusTransactionUid String?            @unique
   periodStart           DateTime
   periodEnd             DateTime

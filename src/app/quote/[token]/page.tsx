@@ -25,7 +25,7 @@ export default async function QuotePage({ params }: { params: Promise<{ token: s
   });
   if (!rd) notFound();
 
-  const firstName = rd.request.user.fullName.split(" ")[0];
+  const firstName = rd.request.user?.fullName.split(" ")[0] ?? "המטופל";
   const files = [
     { icon: FileText, label: "תוכנית הטיפול", url: rd.request.treatmentFileUrl },
     { icon: ImageIcon, label: "צילום שיניים", url: rd.request.xrayFileUrl },
