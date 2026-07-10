@@ -5,12 +5,13 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/server/admin";
 import { sendPaymentSetupEmail } from "@/server/subscription-notifications";
+import { audit } from "@/lib/audit";
 import { SUBSCRIPTION_PLANS } from "@/lib/constants";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
 export async function toggleDentistActive(dentistId: string): Promise<ActionResult> {
-  await requireAdmin();
+  const admin = await requireAdmin();
 
   const dentist = await db.dentist.findUnique({
     where: { id: dentistId },
@@ -18,9 +19,18 @@ export async function toggleDentistActive(dentistId: string): Promise<ActionResu
   });
   if (!dentist) return { ok: false, error: "הרופא לא נמצא" };
 
+  const nextActive = !dentist.isActive;
   await db.dentist.update({
     where: { id: dentistId },
-    data: { isActive: !dentist.isActive },
+    data: { isActive: nextActive },
+  });
+
+  await audit({
+    actor: admin.email,
+    action: "dentist.toggle_active",
+    entity: "Dentist",
+    entityId: dentistId,
+    metadata: { isActive: nextActive },
   });
 
   revalidatePath("/admin/dentists");
@@ -28,7 +38,7 @@ export async function toggleDentistActive(dentistId: string): Promise<ActionResu
 }
 
 export async function approveClinic(dentistId: string): Promise<ActionResult> {
-  await requireAdmin();
+  const admin = await requireAdmin();
 
   const dentist = await db.dentist.findUnique({
     where: { id: dentistId },
@@ -57,6 +67,14 @@ export async function approveClinic(dentistId: string): Promise<ActionResult> {
     setupToken: dentist.subscription.setupToken,
   });
 
+  await audit({
+    actor: admin.email,
+    action: "clinic.approve",
+    entity: "Dentist",
+    entityId: dentistId,
+    metadata: { clinicName: dentist.clinicName },
+  });
+
   revalidatePath("/admin/clinics");
   revalidatePath("/admin/dentists");
   revalidatePath("/admin");
@@ -65,7 +83,7 @@ export async function approveClinic(dentistId: string): Promise<ActionResult> {
 
 /** Reject (delete) a self-registered clinic that has not yet been approved. */
 export async function rejectClinic(dentistId: string): Promise<ActionResult> {
-  await requireAdmin();
+  const admin = await requireAdmin();
 
   const dentist = await db.dentist.findUnique({
     where: { id: dentistId },
@@ -78,6 +96,13 @@ export async function rejectClinic(dentistId: string): Promise<ActionResult> {
   }
 
   await db.dentist.delete({ where: { id: dentistId } });
+
+  await audit({
+    actor: admin.email,
+    action: "clinic.reject",
+    entity: "Dentist",
+    entityId: dentistId,
+  });
 
   revalidatePath("/admin/clinics");
   revalidatePath("/admin/dentists");
@@ -94,7 +119,7 @@ function splitCsv(value: FormDataEntryValue | null): string[] {
 }
 
 export async function createDentist(formData: FormData): Promise<ActionResult> {
-  await requireAdmin();
+  const admin = await requireAdmin();
 
   const clinicName = String(formData.get("clinicName") ?? "").trim();
   const dentistName = String(formData.get("dentistName") ?? "").trim();
@@ -119,7 +144,7 @@ export async function createDentist(formData: FormData): Promise<ActionResult> {
   const existing = await db.dentist.findUnique({ where: { email }, select: { id: true } });
   if (existing) return { ok: false, error: "רופא עם אימייל זה כבר קיים" };
 
-  await db.$transaction(async (tx) => {
+  const dentistId = await db.$transaction(async (tx) => {
     const dentist = await tx.dentist.create({
       data: {
         clinicName,
@@ -150,6 +175,16 @@ export async function createDentist(formData: FormData): Promise<ActionResult> {
         recurringToken: null,
       },
     });
+
+    return dentist.id;
+  });
+
+  await audit({
+    actor: admin.email,
+    action: "dentist.create",
+    entity: "Dentist",
+    entityId: dentistId,
+    metadata: { clinicName, email },
   });
 
   revalidatePath("/admin/dentists");

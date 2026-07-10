@@ -181,6 +181,19 @@ model ClinicSubscription {
   @@index([currentPeriodEnd])
 }
 
+model AuditLog {
+  id        String   @id @default(uuid())
+  actor     String // admin email, or "system" / "webhook" for automated actors
+  action    String // e.g. "clinic.approve", "request.fulfilled", "subscription.canceled"
+  entity    String // model name, e.g. "Dentist", "Request", "ClinicSubscription"
+  entityId  String
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([createdAt])
+}
+
 model SubscriptionCharge {
   id                    String             @id @default(uuid())
   subscriptionId        String

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSignatureHeader, verifyWebhookSignature, parseWebhook } from "@/lib/payplus";
 import { activateSubscriptionBySetupToken } from "@/server/subscriptions";
 import { fulfillPaidSession } from "@/server/fulfillment";
+import { audit } from "@/lib/audit";
 import { db } from "@/lib/db";
 
 export const runtime = "nodejs";
@@ -43,6 +44,14 @@ export async function POST(req: Request) {
       const result = await fulfillPaidSession(payment.providerRef);
       if (!result.ok) {
         console.error(`PayPlus patient fulfillment failed for ${parsed.paymentId}:`, result.error);
+      } else {
+        await audit({
+          actor: "webhook",
+          action: "request.paid",
+          entity: "Payment",
+          entityId: parsed.paymentId,
+          metadata: { transactionUid: parsed.transactionUid, emailsSent: result.emailsSent },
+        });
       }
     }
   } else if (parsed.setupToken) {
@@ -54,6 +63,14 @@ export async function POST(req: Request) {
     });
     if (!result.ok) {
       console.error(`PayPlus activation failed for ${parsed.setupToken}:`, result.error);
+    } else {
+      await audit({
+        actor: "webhook",
+        action: "subscription.activated",
+        entity: "ClinicSubscription",
+        entityId: parsed.setupToken,
+        metadata: { transactionUid: parsed.transactionUid },
+      });
     }
   }
 

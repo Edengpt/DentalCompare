@@ -4,6 +4,7 @@ import { get } from "@vercel/blob";
 import { db } from "@/lib/db";
 import { getResend, fromAddress } from "@/lib/email";
 import { quotePath } from "@/lib/quotes";
+import { audit } from "@/lib/audit";
 
 /**
  * Downloads a private blob and returns it as a Resend attachment (Buffer content)
@@ -203,6 +204,16 @@ export async function fulfillPaidSession(providerRef: string): Promise<FulfillRe
         data: { emailSent: false, sentAt: null, quoteToken: null },
       });
     }
+  }
+
+  if (sent > 0) {
+    await audit({
+      actor: "system",
+      action: "request.fulfilled",
+      entity: "Request",
+      entityId: request.id,
+      metadata: { emailsSent: sent, alreadySent },
+    });
   }
 
   return { ok: true, paid: true, emailsSent: sent, alreadySent };

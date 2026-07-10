@@ -4,6 +4,7 @@ import { isDueForRenewal, isWithinGrace, nextPeriodEnd } from "@/lib/subscriptio
 import { chargeByToken, isPayPlusConfigured } from "@/lib/payplus";
 import { recordRenewalCharge, markPastDue, cancelSubscription } from "@/server/subscriptions";
 import { sendPaymentFailedEmail } from "@/server/subscription-notifications";
+import { audit } from "@/lib/audit";
 import { type SubscriptionPlanType } from "@/lib/constants";
 
 export const runtime = "nodejs";
@@ -50,6 +51,13 @@ export async function GET(req: Request) {
     // A PAST_DUE clinic past its grace window has lapsed → cancel and drop it.
     if (sub.status === "PAST_DUE" && !isWithinGrace(sub.currentPeriodEnd, now)) {
       await cancelSubscription(sub.id);
+      await audit({
+        actor: "system",
+        action: "subscription.canceled",
+        entity: "ClinicSubscription",
+        entityId: sub.id,
+        metadata: { reason: "grace_expired" },
+      });
       canceled += 1;
       continue;
     }
@@ -75,6 +83,13 @@ export async function GET(req: Request) {
           amountILS: sub.priceILS,
           periodStart,
           periodEnd,
+        });
+        await audit({
+          actor: "system",
+          action: "subscription.renewed",
+          entity: "ClinicSubscription",
+          entityId: sub.id,
+          metadata: { transactionUid: result.transactionUid, amountILS: sub.priceILS },
         });
         renewed += 1;
       } else {

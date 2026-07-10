@@ -114,6 +114,11 @@ describe.skipIf(!hasDb)("fulfillPaidSession (integration, real DB)", () => {
   });
 
   afterEach(async () => {
+    // Audit rows (request.fulfilled) have no FK to the request — remove explicitly.
+    if (created.requestIds.length)
+      await db.auditLog
+        .deleteMany({ where: { entityId: { in: created.requestIds } } })
+        .catch(() => {});
     // Requests cascade to their payments + requestDentists.
     for (const id of created.requestIds)
       await db.request.delete({ where: { id } }).catch(() => {});

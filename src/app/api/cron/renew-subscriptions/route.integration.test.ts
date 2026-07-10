@@ -23,7 +23,7 @@ let db: typeof Db;
 let visibleSubscriptionFilter: typeof VisFilterFn;
 let GET: (req: Request) => Promise<Response>;
 
-const created = { dentistIds: [] as string[] };
+const created = { dentistIds: [] as string[], subIds: [] as string[] };
 
 async function seedSub(opts: {
   status: "ACTIVE" | "PAST_DUE";
@@ -58,6 +58,7 @@ async function seedSub(opts: {
       paymentFailedNotifiedAt: opts.notified ? new Date() : null,
     },
   });
+  created.subIds.push(sub.id);
   return { dentistId: dentist.id, subId: sub.id };
 }
 
@@ -79,9 +80,13 @@ describe.skipIf(!hasDb)("renew-subscriptions cron (integration, real DB)", () =>
   });
 
   afterEach(async () => {
+    // Audit rows have no FK to the subscription, so remove them explicitly.
+    if (created.subIds.length)
+      await db.auditLog.deleteMany({ where: { entityId: { in: created.subIds } } }).catch(() => {});
     for (const id of created.dentistIds)
       await db.dentist.delete({ where: { id } }).catch(() => {});
     created.dentistIds = [];
+    created.subIds = [];
   }, DB_TIMEOUT);
 
   it(
