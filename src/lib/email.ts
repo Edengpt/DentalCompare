@@ -4,7 +4,10 @@ import { SITE_CONFIG } from "./constants";
 
 let client: Resend | null = null;
 
-/** Lazily-instantiated Resend client (see `@/lib/stripe` for the rationale). */
+/**
+ * Lazily-instantiated Resend client — instantiated on first use rather than at
+ * import time so the app stays bootable when email isn't configured yet.
+ */
 export function getResend(): Resend {
   if (client) return client;
   const key = process.env.RESEND_API_KEY;
