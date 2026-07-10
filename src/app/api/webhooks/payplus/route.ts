@@ -1,13 +1,19 @@
 import { NextResponse } from "next/server";
-import { verifyWebhookSignature, parseWebhook } from "@/lib/payplus";
+import { getSignatureHeader, verifyWebhookSignature, parseWebhook } from "@/lib/payplus";
 import { activateSubscriptionBySetupToken } from "@/server/subscriptions";
+import { fulfillPaidSession } from "@/server/fulfillment";
+import { db } from "@/lib/db";
 
 export const runtime = "nodejs";
 
+/**
+ * Single PayPlus IPN endpoint for both payment types. parseWebhook derives the
+ * kind from the more_info prefix; we dispatch patient one-time payments to
+ * fulfillment and clinic subscriptions to activation.
+ */
 export async function POST(req: Request) {
   const raw = await req.text();
-  // PayPlus signs the IPN; confirm the exact header name against the dashboard.
-  const signature = req.headers.get("hash") ?? req.headers.get("x-payplus-signature");
+  const signature = getSignatureHeader(req.headers);
 
   if (!verifyWebhookSignature(raw, signature)) {
     return new NextResponse("Invalid signature", { status: 401 });
@@ -20,7 +26,26 @@ export async function POST(req: Request) {
     return new NextResponse("Bad payload", { status: 400 });
   }
 
-  if (parsed.approved && parsed.setupToken) {
+  // Only approved transactions have side effects; anything else is acknowledged.
+  if (!parsed.approved) {
+    return NextResponse.json({ received: true });
+  }
+
+  if (parsed.kind === "patient") {
+    // more_info carries the Payment id; resolve its provider ref for fulfillment.
+    const payment = await db.payment.findUnique({
+      where: { id: parsed.paymentId },
+      select: { providerRef: true },
+    });
+    if (!payment) {
+      console.error(`PayPlus IPN: no Payment found for id ${parsed.paymentId}`);
+    } else {
+      const result = await fulfillPaidSession(payment.providerRef);
+      if (!result.ok) {
+        console.error(`PayPlus patient fulfillment failed for ${parsed.paymentId}:`, result.error);
+      }
+    }
+  } else if (parsed.setupToken) {
     const result = await activateSubscriptionBySetupToken({
       setupToken: parsed.setupToken,
       transactionUid: parsed.transactionUid,

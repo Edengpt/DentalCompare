@@ -61,16 +61,17 @@ function buildEmailHtml(opts: {
 }
 
 /**
- * Idempotently finalizes a paid Checkout session: marks the Payment and Request
- * as PAID (if not already), then emails every selected dentist that hasn't been
- * emailed yet — attaching the treatment plan and x-ray. Safe to call multiple
- * times (from both the Stripe webhook and the success page), which is how the
- * PRD rule "לא ניתן לשלוח פעמיים את אותה בקשה" is enforced: `emailSent` gates
- * each recipient.
+ * Idempotently finalizes a paid request, identified by its provider-neutral
+ * Payment.providerRef: marks the Payment and Request as PAID (if not already),
+ * then emails every selected dentist that hasn't been emailed yet — attaching
+ * the treatment plan and x-ray. Safe to call multiple times (from both the
+ * PayPlus webhook and the success page), which is how the PRD rule
+ * "לא ניתן לשלוח פעמיים את אותה בקשה" is enforced: `emailSent` gates each
+ * recipient.
  */
-export async function fulfillPaidSession(sessionId: string): Promise<FulfillResult> {
+export async function fulfillPaidSession(providerRef: string): Promise<FulfillResult> {
   const payment = await db.payment.findUnique({
-    where: { providerRef: sessionId },
+    where: { providerRef },
     select: { id: true, requestId: true, status: true },
   });
   if (!payment) return { ok: false, error: "תשלום לא נמצא" };
