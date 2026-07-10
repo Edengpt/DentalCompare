@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { isDueForRenewal, nextPeriodEnd } from "@/lib/subscription";
+import { isDueForRenewal, isWithinGrace, nextPeriodEnd } from "@/lib/subscription";
 import { chargeByToken, isPayPlusConfigured } from "@/lib/payplus";
-import { recordRenewalCharge, markPastDue } from "@/server/subscriptions";
+import { recordRenewalCharge, markPastDue, cancelSubscription } from "@/server/subscriptions";
 import { sendPaymentFailedEmail } from "@/server/subscription-notifications";
-import { SUBSCRIPTION_PLANS, type SubscriptionPlanType } from "@/lib/constants";
+import { type SubscriptionPlanType } from "@/lib/constants";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,16 +17,22 @@ export async function GET(req: Request) {
 
   // Defensive gate: no-op if PayPlus credentials aren't configured.
   if (!isPayPlusConfigured()) {
-    return NextResponse.json({ checked: 0, renewed: 0, failed: 0 });
+    return NextResponse.json({ checked: 0, renewed: 0, failed: 0, canceled: 0 });
   }
 
   const now = new Date();
+  // Both ACTIVE (due for renewal) and PAST_DUE (being retried within grace).
   const candidates = await db.clinicSubscription.findMany({
-    where: { status: "ACTIVE", recurringToken: { not: null }, currentPeriodEnd: { not: null } },
+    where: {
+      status: { in: ["ACTIVE", "PAST_DUE"] },
+      recurringToken: { not: null },
+      currentPeriodEnd: { not: null },
+    },
     select: {
       id: true,
       plan: true,
       priceILS: true,
+      status: true,
       recurringToken: true,
       payplusCustomerUid: true,
       currentPeriodEnd: true,
@@ -36,10 +42,21 @@ export async function GET(req: Request) {
 
   let renewed = 0;
   let failed = 0;
+  let canceled = 0;
 
   for (const sub of candidates) {
     if (!sub.currentPeriodEnd || !sub.recurringToken) continue;
-    if (!isDueForRenewal(sub.currentPeriodEnd, now)) continue;
+
+    // A PAST_DUE clinic past its grace window has lapsed → cancel and drop it.
+    if (sub.status === "PAST_DUE" && !isWithinGrace(sub.currentPeriodEnd, now)) {
+      await cancelSubscription(sub.id);
+      canceled += 1;
+      continue;
+    }
+
+    // ACTIVE subs are charged only inside the lead window; PAST_DUE subs are
+    // already past their end, so they get retried on every run within grace.
+    if (sub.status === "ACTIVE" && !isDueForRenewal(sub.currentPeriodEnd, now)) continue;
 
     try {
       const result = await chargeByToken({
@@ -61,8 +78,14 @@ export async function GET(req: Request) {
         });
         renewed += 1;
       } else {
-        await markPastDue(sub.id);
-        await sendPaymentFailedEmail({ email: sub.dentist.email, clinicName: sub.dentist.clinicName });
+        // Move to PAST_DUE and notify the clinic exactly once (not every retry).
+        const firstFailure = await markPastDue(sub.id);
+        if (firstFailure) {
+          await sendPaymentFailedEmail({
+            email: sub.dentist.email,
+            clinicName: sub.dentist.clinicName,
+          });
+        }
         failed += 1;
       }
     } catch (err) {
@@ -71,7 +94,5 @@ export async function GET(req: Request) {
     }
   }
 
-  // SUBSCRIPTION_PLANS referenced to keep label parity available for future use.
-  void SUBSCRIPTION_PLANS;
-  return NextResponse.json({ checked: candidates.length, renewed, failed });
+  return NextResponse.json({ checked: candidates.length, renewed, failed, canceled });
 }

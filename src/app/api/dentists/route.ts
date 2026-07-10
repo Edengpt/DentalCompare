@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { visibleSubscriptionFilter } from "@/lib/subscription";
 
 export const runtime = "nodejs";
 
@@ -13,7 +14,7 @@ export async function GET(request: Request) {
   const dentists = await db.dentist.findMany({
     where: {
       isActive: true,
-      subscription: { status: "ACTIVE" },
+      subscription: visibleSubscriptionFilter(),
       ...(city ? { city } : {}),
       ...(specialties.length ? { specialties: { hasSome: specialties } } : {}),
       ...(hmos.length ? { hmoAffiliations: { hasSome: hmos } } : {}),

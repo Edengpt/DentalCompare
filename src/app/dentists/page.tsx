@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { visibleSubscriptionFilter } from "@/lib/subscription";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
 import { DentistDirectory } from "@/components/dentists/dentist-directory";
@@ -13,7 +14,7 @@ export const dynamic = "force-dynamic";
 
 export default async function DentistsPage() {
   const dentists = await db.dentist.findMany({
-    where: { isActive: true, subscription: { status: "ACTIVE" } },
+    where: { isActive: true, subscription: visibleSubscriptionFilter() },
     // Reviewed clinics surface first; unreviewed ones fall back to experience
     // (the default 5.0 rating is hidden in the card, so we don't sort by it).
     orderBy: [{ reviewCount: "desc" }, { rating: "desc" }, { experienceYears: "desc" }],

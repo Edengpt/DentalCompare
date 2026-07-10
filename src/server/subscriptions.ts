@@ -36,11 +36,25 @@ export async function activateSubscriptionBySetupToken(args: {
 }): Promise<{ ok: true } | { ok: false; error: string }> {
   const sub = await db.clinicSubscription.findUnique({
     where: { setupToken: args.setupToken },
-    select: { id: true, plan: true, priceILS: true, status: true },
+    select: { id: true, plan: true, priceILS: true, status: true, recurringToken: true },
   });
   if (!sub) return { ok: false, error: "מנוי לא נמצא" };
 
-  // Idempotency: if we've already recorded this transaction, do nothing.
+  // Backfill the stored-card token if a later caller carries it and we activated
+  // earlier without it — e.g. the return page (getPageRequestStatus) activates
+  // first with only a transactionUid, then the IPN arrives with the token. Without
+  // this, the renewal cron would never see a recurringToken and never renew.
+  if (args.recurringToken && !sub.recurringToken) {
+    await db.clinicSubscription.update({
+      where: { id: sub.id },
+      data: {
+        recurringToken: args.recurringToken,
+        payplusCustomerUid: args.customerUid ?? undefined,
+      },
+    });
+  }
+
+  // Idempotency: if we've already recorded this transaction, activation is done.
   const existing = await db.subscriptionCharge.findUnique({
     where: { payplusTransactionUid: args.transactionUid },
     select: { id: true },
@@ -87,7 +101,14 @@ export async function recordRenewalCharge(args: {
   await db.$transaction([
     db.clinicSubscription.update({
       where: { id: args.subscriptionId },
-      data: { status: "ACTIVE", currentPeriodEnd: args.periodEnd, lastChargeAt: now },
+      data: {
+        status: "ACTIVE",
+        currentPeriodEnd: args.periodEnd,
+        lastChargeAt: now,
+        // A successful charge resets the failure-notification gate so a future
+        // failure notifies again.
+        paymentFailedNotifiedAt: null,
+      },
     }),
     db.subscriptionCharge.create({
       data: {
@@ -103,11 +124,23 @@ export async function recordRenewalCharge(args: {
   ]);
 }
 
-export async function markPastDue(subscriptionId: string): Promise<void> {
+/**
+ * Marks a subscription PAST_DUE. Returns true only the FIRST time (stamping
+ * paymentFailedNotifiedAt) so the caller sends the "charge failed" email once,
+ * not on every daily retry within the grace window.
+ */
+export async function markPastDue(subscriptionId: string): Promise<boolean> {
+  const firstTime = await db.clinicSubscription.updateMany({
+    where: { id: subscriptionId, paymentFailedNotifiedAt: null },
+    data: { status: "PAST_DUE", paymentFailedNotifiedAt: new Date() },
+  });
+  if (firstTime.count === 1) return true;
+  // Already notified — just ensure the status is PAST_DUE.
   await db.clinicSubscription.update({
     where: { id: subscriptionId },
     data: { status: "PAST_DUE" },
   });
+  return false;
 }
 
 export async function cancelSubscription(subscriptionId: string): Promise<void> {

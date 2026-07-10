@@ -5,6 +5,8 @@ import {
   nextPeriodEnd,
   isDueForRenewal,
   isClinicVisible,
+  isWithinGrace,
+  graceCutoff,
 } from "./subscription";
 
 describe("subscription helpers", () => {
@@ -35,10 +37,30 @@ describe("subscription helpers", () => {
     expect(isDueForRenewal(end, new Date("2026-06-11T00:00:00Z"))).toBe(true); // already past
   });
 
-  it("only treats ACTIVE subscriptions as visible", () => {
-    expect(isClinicVisible({ status: "ACTIVE" })).toBe(true);
-    expect(isClinicVisible({ status: "PAST_DUE" })).toBe(false);
-    expect(isClinicVisible({ status: "PENDING" })).toBe(false);
-    expect(isClinicVisible(null)).toBe(false);
+  it("keeps a PAST_DUE clinic within grace (3 days) and cuts it off after", () => {
+    const end = new Date("2026-06-10T00:00:00Z");
+    // 2 days after period end → still in grace (3-day window).
+    expect(isWithinGrace(end, new Date("2026-06-12T00:00:00Z"))).toBe(true);
+    // 4 days after → outside grace.
+    expect(isWithinGrace(end, new Date("2026-06-14T00:00:01Z"))).toBe(false);
+    expect(isWithinGrace(null, new Date("2026-06-12T00:00:00Z"))).toBe(false);
+  });
+
+  it("treats ACTIVE, and PAST_DUE-in-grace, as visible; PENDING/lapsed/null as not", () => {
+    const end = new Date("2026-06-10T00:00:00Z");
+    const inGrace = new Date("2026-06-12T00:00:00Z");
+    const afterGrace = new Date("2026-06-20T00:00:00Z");
+
+    expect(isClinicVisible({ status: "ACTIVE" }, inGrace)).toBe(true);
+    expect(isClinicVisible({ status: "PAST_DUE", currentPeriodEnd: end }, inGrace)).toBe(true);
+    expect(isClinicVisible({ status: "PAST_DUE", currentPeriodEnd: end }, afterGrace)).toBe(false);
+    expect(isClinicVisible({ status: "PAST_DUE" }, inGrace)).toBe(false); // no period end
+    expect(isClinicVisible({ status: "PENDING" }, inGrace)).toBe(false);
+    expect(isClinicVisible(null, inGrace)).toBe(false);
+  });
+
+  it("graceCutoff is PAST_DUE_GRACE_DAYS before now", () => {
+    const now = new Date("2026-06-20T00:00:00Z");
+    expect(graceCutoff(now).toISOString()).toBe("2026-06-17T00:00:00.000Z");
   });
 });

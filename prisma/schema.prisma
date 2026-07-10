@@ -165,9 +165,13 @@ model ClinicSubscription {
   setupToken         String             @unique
   recurringToken     String? // PayPlus stored-card token uid (set after first paid charge)
   payplusCustomerUid String?
+  pageRequestUid     String? // PayPlus page_request_uid of the setup charge, for return-page verification
   currentPeriodEnd   DateTime?
   lastChargeAt       DateTime?
   canceledAt         DateTime?
+  // When the "your charge failed" email was last sent, so PAST_DUE clinics are
+  // notified once (not every day the retry cron runs). Cleared on a paid charge.
+  paymentFailedNotifiedAt DateTime?
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 

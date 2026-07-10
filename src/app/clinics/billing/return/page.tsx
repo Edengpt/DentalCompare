@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { db } from "@/lib/db";
+import { getPageRequestStatus } from "@/lib/payplus";
+import { activateSubscriptionBySetupToken } from "@/server/subscriptions";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
 
@@ -12,17 +14,37 @@ export default async function BillingReturnPage({
 }: {
   searchParams: Promise<{ token?: string; status?: string }>;
 }) {
-  const { token, status } = await searchParams;
+  const { token } = await searchParams;
 
   const sub = token
     ? await db.clinicSubscription.findUnique({
         where: { setupToken: token },
-        select: { status: true, dentist: { select: { clinicName: true } } },
+        select: { status: true, pageRequestUid: true },
       })
     : null;
 
-  const active = sub?.status === "ACTIVE";
-  const success = active || status === "success";
+  // Webhook-fallback activation: if PayPlus confirms the charge but we're still
+  // PENDING (the IPN hasn't landed), activate now. We NEVER show success from the
+  // URL status param — only from the DB state after a verified activation.
+  if (token && sub?.status === "PENDING" && sub.pageRequestUid) {
+    try {
+      const { approved, transactionUid } = await getPageRequestStatus(sub.pageRequestUid);
+      if (approved) {
+        await activateSubscriptionBySetupToken({ setupToken: token, transactionUid });
+      }
+    } catch (err) {
+      console.error("Billing return verification failed:", err);
+    }
+  }
+
+  const fresh = token
+    ? await db.clinicSubscription.findUnique({
+        where: { setupToken: token },
+        select: { status: true },
+      })
+    : null;
+
+  const success = fresh?.status === "ACTIVE";
 
   return (
     <>

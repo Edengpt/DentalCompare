@@ -25,13 +25,19 @@ export async function startPayment(
   if (sub.status === "ACTIVE") return { ok: false, error: "המנוי כבר פעיל" };
 
   try {
-    const { url } = await createSubscriptionPaymentPage({
+    const { url, pageRequestUid } = await createSubscriptionPaymentPage({
       subscriptionId: sub.id,
       setupToken,
       amountILS: sub.priceILS,
       clinicName: sub.dentist.clinicName,
       email: sub.dentist.email,
       planLabelHe: SUBSCRIPTION_PLANS[sub.plan as "MONTHLY" | "YEARLY"].labelHe,
+    });
+    // Persist the page_request_uid so the return page can actively verify the
+    // charge with PayPlus (getPageRequestStatus) instead of trusting the URL.
+    await db.clinicSubscription.update({
+      where: { id: sub.id },
+      data: { pageRequestUid },
     });
     return { ok: true, url };
   } catch (err) {
