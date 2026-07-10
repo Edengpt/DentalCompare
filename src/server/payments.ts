@@ -3,7 +3,8 @@
 import { randomUUID } from "crypto";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
-import { getStripe, isPaymentsTestMode } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
+import { isPaymentsTestMode } from "@/lib/payments-mode";
 import { PRICING } from "@/lib/constants";
 
 export type CheckoutResult = { ok: true; url: string } | { ok: false; error: string };

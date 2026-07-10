@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
 import { PayButton } from "@/components/request/pay-button";
-import { isPaymentsTestMode } from "@/lib/stripe";
+import { isPaymentsTestMode } from "@/lib/payments-mode";
 import { PRICING } from "@/lib/constants";
 
 export const metadata = {
