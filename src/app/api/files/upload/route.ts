@@ -3,6 +3,8 @@ import { put } from "@vercel/blob";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { blobPath, type UploadKind, validateFile, fileValidationMessage } from "@/lib/storage";
+import { rateLimit } from "@/lib/rate-limit";
+import { RATE_LIMITS } from "@/lib/constants";
 
 export const runtime = "nodejs";
 
@@ -45,6 +47,19 @@ export async function POST(request: Request) {
   });
   if (!existingRequest || existingRequest.userId !== user.id) {
     return NextResponse.json({ error: "Request not found" }, { status: 404 });
+  }
+
+  // Cap uploads per request to curb abuse of the endpoint.
+  const rl = await rateLimit(
+    `upload:${requestId}`,
+    RATE_LIMITS.fileUpload.limit,
+    RATE_LIMITS.fileUpload.windowMs,
+  );
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "יותר מדי העלאות לבקשה זו. נסו שוב מאוחר יותר." },
+      { status: 429 },
+    );
   }
 
   // Upload to Vercel Blob as PRIVATE — treatment plans and x-rays are medical

@@ -181,6 +181,14 @@ model ClinicSubscription {
   @@index([currentPeriodEnd])
 }
 
+model RateLimit {
+  id        String   @id @default(uuid())
+  bucket    String // e.g. "clinic-join:<ip>", "quote:<token>", "upload:<requestId>"
+  createdAt DateTime @default(now())
+
+  @@index([bucket, createdAt])
+}
+
 model AuditLog {
   id        String   @id @default(uuid())
   actor     String // admin email, or "system" / "webhook" for automated actors

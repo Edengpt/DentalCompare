@@ -66,6 +66,14 @@ export const PAST_DUE_GRACE_DAYS = 3;
 
 export const SUBSCRIPTION_CONTRACT_VERSION = "2026-06-sub-v1";
 
+// --- Rate limits (DB-backed, fixed window) ---
+const HOUR_MS = 60 * 60 * 1000;
+export const RATE_LIMITS = {
+  clinicRegister: { limit: 3, windowMs: HOUR_MS }, // per IP
+  submitQuote: { limit: 10, windowMs: HOUR_MS }, // per quote token
+  fileUpload: { limit: 20, windowMs: HOUR_MS }, // per request
+} as const;
+
 export const SUBSCRIPTION_TERMS_HE: string[] = [
   `המרפאה בוחרת מסלול מנוי: ${SUBSCRIPTION_PLANS.MONTHLY.priceILS} ₪ לחודש או ${SUBSCRIPTION_PLANS.YEARLY.priceILS} ₪ לשנה, עבור הופעה במאגר DentalCompare וקבלת פניות ממטופלים.`,
   "החיוב הראשון מתבצע לאחר אישור המרפאה על ידי צוות DentalCompare. כל עוד לא הושלם תשלום, המרפאה אינה מופיעה במאגר.",

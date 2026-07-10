@@ -1,14 +1,22 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
+import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import {
   HMO_OPTIONS,
   SPECIALTIES,
   TREATMENTS,
   SUBSCRIPTION_CONTRACT_VERSION,
+  RATE_LIMITS,
 } from "@/lib/constants";
+import { rateLimit } from "@/lib/rate-limit";
 import { createPendingSubscription } from "@/server/subscriptions";
+
+async function clientIp(): Promise<string> {
+  const fwd = (await headers()).get("x-forwarded-for");
+  return fwd?.split(",")[0]?.trim() || "unknown";
+}
 
 export type RegisterClinicResult = { ok: true } | { ok: false; error: string };
 
@@ -30,6 +38,16 @@ function pickAllowed(formData: FormData, field: string, allowed: readonly string
  * of the subscription contract (timestamp + version) for audit.
  */
 export async function registerClinic(formData: FormData): Promise<RegisterClinicResult> {
+  const ip = await clientIp();
+  const rl = await rateLimit(
+    `clinic-join:${ip}`,
+    RATE_LIMITS.clinicRegister.limit,
+    RATE_LIMITS.clinicRegister.windowMs,
+  );
+  if (!rl.allowed) {
+    return { ok: false, error: "יותר מדי ניסיונות הרשמה מכתובת זו. נסו שוב בעוד כשעה." };
+  }
+
   const contactName = String(formData.get("contactName") ?? "").trim();
   const dentistName = String(formData.get("dentistName") ?? "").trim();
   const clinicName = String(formData.get("clinicName") ?? "").trim();

@@ -1,6 +1,8 @@
 "use server";
 
 import { db } from "@/lib/db";
+import { rateLimit } from "@/lib/rate-limit";
+import { RATE_LIMITS } from "@/lib/constants";
 import { sendNewQuoteEmail } from "./quote-notifications";
 
 export async function submitQuote(input: {
@@ -8,6 +10,15 @@ export async function submitQuote(input: {
   amountILS: number;
   note?: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
+  const rl = await rateLimit(
+    `quote:${input.token}`,
+    RATE_LIMITS.submitQuote.limit,
+    RATE_LIMITS.submitQuote.windowMs,
+  );
+  if (!rl.allowed) {
+    return { ok: false, error: "יותר מדי ניסיונות. נסו שוב מאוחר יותר." };
+  }
+
   const amount = Math.round(input.amountILS);
   if (!Number.isFinite(amount) || amount <= 0 || amount > 1_000_000) {
     return { ok: false, error: "יש להזין מחיר תקין" };
