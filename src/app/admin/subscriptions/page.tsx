@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { requireAdmin } from "@/server/admin";
 import { SUBSCRIPTION_PLANS } from "@/lib/constants";
 
 export const metadata = { title: "ניהול — מנויים" };
@@ -14,6 +15,8 @@ const statusHe: Record<string, string> = {
 const dateFmt = new Intl.DateTimeFormat("he-IL", { day: "numeric", month: "short", year: "numeric" });
 
 export default async function AdminSubscriptionsPage() {
+  await requireAdmin();
+
   const subs = await db.clinicSubscription.findMany({
     orderBy: { createdAt: "desc" },
     select: {

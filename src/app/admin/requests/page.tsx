@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { requireAdmin } from "@/server/admin";
 
 export const metadata = { title: "ניהול — בקשות" };
 export const dynamic = "force-dynamic";
@@ -10,6 +11,8 @@ const statusLabels: Record<string, string> = {
 };
 
 export default async function AdminRequestsPage() {
+  await requireAdmin();
+
   const requests = await db.request.findMany({
     orderBy: { createdAt: "desc" },
     select: {

@@ -80,5 +80,7 @@ function logoExtension(file: File): string {
 }
 
 export function logoBlobPath(file: File): string {
-  return `clinics/logos/logo.${logoExtension(file)}`;
+  // Unique per upload so paths never collide (previously every logo shared
+  // "clinics/logos/logo.<ext>" and only survived via the blob's addRandomSuffix).
+  return `clinics/logos/${crypto.randomUUID()}.${logoExtension(file)}`;
 }

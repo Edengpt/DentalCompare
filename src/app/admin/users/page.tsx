@@ -1,9 +1,12 @@
 import { db } from "@/lib/db";
+import { requireAdmin } from "@/server/admin";
 
 export const metadata = { title: "ניהול — משתמשים" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminUsersPage() {
+  await requireAdmin();
+
   const users = await db.user.findMany({
     orderBy: { createdAt: "desc" },
     select: {

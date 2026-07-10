@@ -1,4 +1,5 @@
 import { Building2, Mail, Phone, MapPin, Clock, FileSignature, User } from "lucide-react";
+import { requireAdmin } from "@/server/admin";
 import { db } from "@/lib/db";
 import { translateSpecialty, translateHmo, translateTreatment } from "@/lib/labels";
 import { ClinicReviewActions } from "@/components/admin/clinic-review-actions";
@@ -15,6 +16,8 @@ const dateFmt = new Intl.DateTimeFormat("he-IL", {
 });
 
 export default async function AdminClinicsPage() {
+  await requireAdmin();
+
   const pending = await db.dentist.findMany({
     where: { submittedBySelf: true, isActive: false },
     orderBy: { createdAt: "desc" },

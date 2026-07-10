@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { requireAdmin } from "@/server/admin";
 import { Users, Stethoscope, FileText, Banknote, Building2, ArrowLeft } from "lucide-react";
 import { db } from "@/lib/db";
 
@@ -12,6 +13,8 @@ const statusLabels: Record<string, string> = {
 };
 
 export default async function AdminOverviewPage() {
+  await requireAdmin();
+
   const [
     totalUsers,
     totalDentists,

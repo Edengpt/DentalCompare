@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { requireAdmin } from "@/server/admin";
 
 export const metadata = { title: "ניהול — תשלומים" };
 export const dynamic = "force-dynamic";
@@ -10,6 +11,8 @@ const statusLabels: Record<string, string> = {
 };
 
 export default async function AdminPaymentsPage() {
+  await requireAdmin();
+
   const [payments, paidAgg] = await Promise.all([
     db.payment.findMany({
       orderBy: { createdAt: "desc" },

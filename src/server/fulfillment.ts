@@ -6,6 +6,7 @@ import { getResend, fromAddress } from "@/lib/email";
 import { quotePath } from "@/lib/quotes";
 import { audit } from "@/lib/audit";
 import { logEvent } from "@/lib/log";
+import { quoteRequestEmailHtml } from "@/server/emails/templates";
 
 /**
  * Downloads a private blob and returns it as a Resend attachment (Buffer content)
@@ -40,41 +41,6 @@ function attachmentName(url: string, fallback: string): string {
     // ignore malformed URLs — fall through to a generic name
   }
   return `${fallback}.pdf`;
-}
-
-function buildEmailHtml(opts: {
-  dentistName: string;
-  patientName: string;
-  patientEmail: string;
-  patientPhone: string;
-  requestId: string;
-  date: string;
-  quoteUrl: string;
-}): string {
-  const { dentistName, patientName, patientPhone, requestId, date, quoteUrl } = opts;
-  return `
-  <div dir="rtl" style="font-family: Arial, sans-serif; color: #1a1a1a; max-width: 560px; margin: 0 auto;">
-    <h2 style="color: #0f4c4c;">${patientName} ביקש/ה ממך הצעת מחיר</h2>
-    <p>שלום ${dentistName},</p>
-    <p>${patientName} מבקש/ת הצעת מחיר לטיפול שיניים דרך DentalCompare. תוכנית הטיפול והצילום מצורפים למייל זה.</p>
-
-    <div style="text-align: center; margin: 28px 0;">
-      <a href="${quoteUrl}"
-         style="display: inline-block; background: #ff6b4a; color: #fff; text-decoration: none;
-                font-size: 17px; font-weight: bold; padding: 16px 32px; border-radius: 999px;">
-        💰 להזנת מחיר מהירה — לוקח 5 שניות
-      </a>
-    </div>
-
-    <ul style="padding-inline-start: 18px; color: #555; font-size: 13px;">
-      <li>מספר בקשה: ${requestId.slice(0, 8)}</li>
-      <li>תאריך: ${date}</li>
-      <li>ליצירת קשר ישיר: ${patientPhone || "ראו כפתור למעלה"}</li>
-    </ul>
-
-    <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 24px 0;" />
-    <p style="font-size: 12px; color: #777;">מייל זה נשלח אוטומטית על ידי DentalCompare.</p>
-  </div>`;
 }
 
 /**
@@ -185,10 +151,9 @@ export async function fulfillPaidSession(providerRef: string): Promise<FulfillRe
         to: rd.dentist.email,
         replyTo: request.user.email,
         subject: SUBJECT,
-        html: buildEmailHtml({
+        html: quoteRequestEmailHtml({
           dentistName: rd.dentist.dentistName,
           patientName: request.user.fullName,
-          patientEmail: request.user.email,
           patientPhone: request.user.phone,
           requestId: request.id,
           date,

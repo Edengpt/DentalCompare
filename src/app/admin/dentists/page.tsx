@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { requireAdmin } from "@/server/admin";
 import { translateSpecialty, translateHmo } from "@/lib/labels";
 import { ToggleActive } from "@/components/admin/toggle-active";
 import { NewDentistForm } from "@/components/admin/new-dentist-form";
@@ -7,6 +8,8 @@ export const metadata = { title: "ניהול — רופאים" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminDentistsPage() {
+  await requireAdmin();
+
   const dentists = await db.dentist.findMany({
     // Pending self-registrations (inactive, self-submitted) bubble to the top.
     orderBy: [{ isActive: "asc" }, { submittedBySelf: "desc" }, { createdAt: "desc" }],
