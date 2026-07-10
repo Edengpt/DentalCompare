@@ -148,11 +148,32 @@ export async function fulfillPaidSession(providerRef: string): Promise<FulfillRe
   const resend = getResend();
   const from = fromAddress();
   let sent = 0;
+  let alreadySent = 0;
 
   for (const rd of pending) {
+    const quoteToken = randomUUID();
+
+    // Atomically claim this recipient: only the caller whose updateMany flips
+    // emailSent false->true wins (count === 1). Concurrent callers (the webhook
+    // and the success page can both run fulfillment at once) see count === 0 and
+    // skip — so each dentist is emailed exactly once, with one stable quoteToken.
+    const claim = await db.requestDentist.updateMany({
+      where: { id: rd.id, emailSent: false },
+      data: { emailSent: true, sentAt: new Date(), quoteToken },
+    });
+    if (claim.count === 0) {
+      alreadySent += 1;
+      continue;
+    }
+
     try {
-      const quoteToken = randomUUID();
-      const quoteUrl = `${appUrl()}${quotePath(quoteToken)}`;
+      // The persisted row is the source of truth for the token we send.
+      const row = await db.requestDentist.findUnique({
+        where: { id: rd.id },
+        select: { quoteToken: true },
+      });
+      const token = row?.quoteToken ?? quoteToken;
+      const quoteUrl = `${appUrl()}${quotePath(token)}`;
 
       const { error } = await resend.emails.send({
         from,
@@ -171,20 +192,18 @@ export async function fulfillPaidSession(providerRef: string): Promise<FulfillRe
         attachments,
       });
 
-      if (error) {
-        console.error(`Resend error for ${rd.dentist.email}:`, error);
-        continue;
-      }
-
-      await db.requestDentist.update({
-        where: { id: rd.id },
-        data: { emailSent: true, sentAt: new Date(), quoteToken },
-      });
+      if (error) throw new Error(error.message ?? "Resend error");
       sent += 1;
     } catch (err) {
       console.error(`Failed to send to ${rd.dentist.email}:`, err);
+      // Release the claim so a later retry — or the daily safety-net cron —
+      // can pick this recipient up again.
+      await db.requestDentist.updateMany({
+        where: { id: rd.id },
+        data: { emailSent: false, sentAt: null, quoteToken: null },
+      });
     }
   }
 
-  return { ok: true, paid: true, emailsSent: sent, alreadySent: 0 };
+  return { ok: true, paid: true, emailsSent: sent, alreadySent };
 }

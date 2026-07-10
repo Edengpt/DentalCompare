@@ -1,3 +1,6 @@
 {
-  "crons": [{ "path": "/api/cron/renew-subscriptions", "schedule": "0 6 * * *" }]
+  "crons": [
+    { "path": "/api/cron/renew-subscriptions", "schedule": "0 6 * * *" },
+    { "path": "/api/cron/retry-fulfillment", "schedule": "0 7 * * *" }
+  ]
 }
