@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { CheckCircle2, Mail } from "lucide-react";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
-import { getStripe } from "@/lib/stripe";
+import { getPageRequestStatus } from "@/lib/payplus";
 import { isPaymentsTestMode } from "@/lib/payments-mode";
 import { fulfillPaidSession } from "@/server/fulfillment";
 import { Header } from "@/components/shared/header";
@@ -22,10 +22,10 @@ export default async function RequestSuccessPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ session_id?: string }>;
+  searchParams: Promise<{ payment?: string }>;
 }) {
   const { id } = await params;
-  const { session_id: sessionId } = await searchParams;
+  const { payment: paymentId } = await searchParams;
   const { userId: clerkUserId } = await auth();
   if (!clerkUserId) redirect("/sign-in");
 
@@ -38,29 +38,30 @@ export default async function RequestSuccessPage({
   });
   if (!request || request.userId !== user.id) notFound();
 
-  // Verify the session with Stripe and fulfill (idempotent). This makes the flow
+  // Verify the payment with PayPlus and fulfill (idempotent). This makes the flow
   // work even without webhook forwarding in local dev; in production the webhook
   // will usually have fulfilled it already and this is a no-op.
   let dentistCount = 0;
-  if (sessionId) {
-    if (isPaymentsTestMode() || sessionId.startsWith("test_")) {
-      // Test session: no provider to verify against — just confirm the synthetic
-      // payment belongs to this request before fulfilling.
-      const payment = await db.payment.findUnique({
-        where: { providerRef: sessionId },
-        select: { requestId: true },
-      });
-      if (payment?.requestId === id) {
-        await fulfillPaidSession(sessionId);
-      }
-    } else {
-      try {
-        const session = await getStripe().checkout.sessions.retrieve(sessionId);
-        if (session.payment_status === "paid" && session.metadata?.requestId === id) {
-          await fulfillPaidSession(sessionId);
+  if (paymentId) {
+    const payment = await db.payment.findUnique({
+      where: { id: paymentId },
+      select: { requestId: true, providerRef: true },
+    });
+    // Only fulfill a payment that actually belongs to this request.
+    if (payment?.requestId === id) {
+      const isTest = isPaymentsTestMode() || payment.providerRef.startsWith("test_");
+      if (isTest) {
+        // Test payment: no provider to verify against — fulfill directly.
+        await fulfillPaidSession(payment.providerRef);
+      } else {
+        try {
+          const { approved } = await getPageRequestStatus(payment.providerRef);
+          if (approved) {
+            await fulfillPaidSession(payment.providerRef);
+          }
+        } catch (err) {
+          console.error("Failed to verify PayPlus payment on success page:", err);
         }
-      } catch (err) {
-        console.error("Failed to verify Stripe session on success page:", err);
       }
     }
   }

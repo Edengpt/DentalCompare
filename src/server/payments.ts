@@ -3,8 +3,8 @@
 import { randomUUID } from "crypto";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
-import { getStripe } from "@/lib/stripe";
 import { isPaymentsTestMode } from "@/lib/payments-mode";
+import { createOneTimePaymentPage, isPayPlusConfigured } from "@/lib/payplus";
 import { PRICING } from "@/lib/constants";
 
 export type CheckoutResult = { ok: true; url: string } | { ok: false; error: string };
@@ -14,9 +14,10 @@ function appUrl(): string {
 }
 
 /**
- * Creates a Stripe Checkout session for the flat request fee and records a
- * PENDING Payment row keyed by the session id. Returns the hosted checkout URL
- * for the client to redirect to.
+ * Starts payment for the flat request fee via PayPlus, recording a PENDING
+ * Payment row and returning the hosted PayPlus page URL to redirect the patient
+ * to. The Payment row is created BEFORE the PayPlus call so its id can be woven
+ * into more_info ("req_<paymentId>") and the success return URL.
  *
  * Enforces the PRD pre-payment gates: the request must belong to the caller, be
  * PENDING, have both files uploaded, and have at least one dentist selected.
@@ -27,7 +28,7 @@ export async function createCheckoutSession(requestId: string): Promise<Checkout
 
   const user = await db.user.findUnique({
     where: { clerkUserId },
-    select: { id: true, email: true },
+    select: { id: true, email: true, fullName: true },
   });
   if (!user) return { ok: false, error: "המשתמש לא סונכרן עדיין — רעננו ונסו שוב" };
 
@@ -61,60 +62,62 @@ export async function createCheckoutSession(requestId: string): Promise<Checkout
   const base = appUrl();
 
   // Test mode: skip the real provider, record a PENDING payment with a synthetic
-  // session id, and send the user straight to the success page (which fulfills).
+  // provider ref, and send the user straight to the success page (which fulfills).
   if (isPaymentsTestMode()) {
-    const sessionId = `test_${randomUUID()}`;
-    await db.payment.create({
+    const payment = await db.payment.create({
       data: {
         userId: user.id,
         requestId: request.id,
         amountAgorot: PRICING.flatFeeILS * 100,
-        providerRef: sessionId,
+        providerRef: `test_${randomUUID()}`,
         status: "PENDING",
       },
+      select: { id: true },
     });
     return {
       ok: true,
-      url: `${base}/request/${request.id}/success?session_id=${sessionId}`,
+      url: `${base}/request/${request.id}/success?payment=${payment.id}`,
     };
   }
 
-  const stripe = getStripe();
-
-  const session = await stripe.checkout.sessions.create({
-    mode: "payment",
-    customer_email: user.email,
-    line_items: [
-      {
-        quantity: 1,
-        price_data: {
-          currency: PRICING.currency,
-          unit_amount: PRICING.flatFeeILS * 100, // agorot
-          product_data: {
-            name: "DentalCompare — שליחת בקשת הצעת מחיר",
-            description: `שליחת הבקשה ל-${request._count.requestDentists} רופאים`,
-          },
-        },
-      },
-    ],
-    metadata: { requestId: request.id, userId: user.id },
-    success_url: `${base}/request/${request.id}/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${base}/request/${request.id}/confirm`,
-  });
-
-  if (!session.url) {
-    return { ok: false, error: "יצירת התשלום נכשלה — נסו שוב" };
+  // Real payments require PayPlus to be configured. Never silently fall through
+  // to a free path in production (that is what Step 2 hardened against).
+  if (!isPayPlusConfigured()) {
+    return { ok: false, error: "התשלומים אינם זמינים כרגע — נסו שוב מאוחר יותר" };
   }
 
-  await db.payment.create({
+  // Create the PENDING Payment first so we have a paymentId for more_info; the
+  // real provider ref (PayPlus page_request_uid) is filled in after the call.
+  const payment = await db.payment.create({
     data: {
       userId: user.id,
       requestId: request.id,
       amountAgorot: PRICING.flatFeeILS * 100,
-      providerRef: session.id,
+      providerRef: `pending_${randomUUID()}`,
       status: "PENDING",
     },
+    select: { id: true },
   });
 
-  return { ok: true, url: session.url };
+  try {
+    const { url, pageRequestUid } = await createOneTimePaymentPage({
+      paymentId: payment.id,
+      requestId: request.id,
+      amountILS: PRICING.flatFeeILS,
+      patientName: user.fullName,
+      email: user.email,
+    });
+
+    await db.payment.update({
+      where: { id: payment.id },
+      data: { providerRef: pageRequestUid },
+    });
+
+    return { ok: true, url };
+  } catch (err) {
+    console.error("PayPlus createOneTimePaymentPage failed:", err);
+    // Roll back the dangling PENDING payment so retries start clean.
+    await db.payment.delete({ where: { id: payment.id } }).catch(() => {});
+    return { ok: false, error: "יצירת התשלום נכשלה — נסו שוב" };
+  }
 }
