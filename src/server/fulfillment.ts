@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { getResend, fromAddress } from "@/lib/email";
 import { quotePath } from "@/lib/quotes";
 import { audit } from "@/lib/audit";
+import { logEvent } from "@/lib/log";
 
 /**
  * Downloads a private blob and returns it as a Resend attachment (Buffer content)
@@ -142,7 +143,10 @@ export async function fulfillPaidSession(providerRef: string): Promise<FulfillRe
       await toAttachment(request.xrayFileUrl, attachmentName(request.xrayFileUrl, "dental-xray")),
     ];
   } catch (err) {
-    console.error("Failed to download request files for attachment:", err);
+    logEvent("error", "fulfillment.attachment_download_failed", {
+      requestId: request.id,
+      error: err instanceof Error ? err.message : String(err),
+    });
     return { ok: false, error: "טעינת הקבצים לצירוף נכשלה" };
   }
 
@@ -196,7 +200,11 @@ export async function fulfillPaidSession(providerRef: string): Promise<FulfillRe
       if (error) throw new Error(error.message ?? "Resend error");
       sent += 1;
     } catch (err) {
-      console.error(`Failed to send to ${rd.dentist.email}:`, err);
+      logEvent("error", "fulfillment.email_send_failed", {
+        requestId: request.id,
+        dentistEmail: rd.dentist.email,
+        error: err instanceof Error ? err.message : String(err),
+      });
       // Release the claim so a later retry — or the daily safety-net cron —
       // can pick this recipient up again.
       await db.requestDentist.updateMany({

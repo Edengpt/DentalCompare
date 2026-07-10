@@ -5,6 +5,7 @@ import { chargeByToken, isPayPlusConfigured } from "@/lib/payplus";
 import { recordRenewalCharge, markPastDue, cancelSubscription } from "@/server/subscriptions";
 import { sendPaymentFailedEmail } from "@/server/subscription-notifications";
 import { audit } from "@/lib/audit";
+import { logEvent } from "@/lib/log";
 import { type SubscriptionPlanType } from "@/lib/constants";
 
 export const runtime = "nodejs";
@@ -93,6 +94,10 @@ export async function GET(req: Request) {
         });
         renewed += 1;
       } else {
+        logEvent("error", "subscription.charge_failed", {
+          subscriptionId: sub.id,
+          error: result.error,
+        });
         // Move to PAST_DUE and notify the clinic exactly once (not every retry).
         const firstFailure = await markPastDue(sub.id);
         if (firstFailure) {
@@ -104,7 +109,10 @@ export async function GET(req: Request) {
         failed += 1;
       }
     } catch (err) {
-      console.error(`[renew-subscriptions] Error processing sub ${sub.id}:`, err);
+      logEvent("error", "subscription.renew_error", {
+        subscriptionId: sub.id,
+        error: err instanceof Error ? err.message : String(err),
+      });
       failed += 1;
     }
   }

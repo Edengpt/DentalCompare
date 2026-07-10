@@ -3,6 +3,7 @@ import { getSignatureHeader, verifyWebhookSignature, parseWebhook } from "@/lib/
 import { activateSubscriptionBySetupToken } from "@/server/subscriptions";
 import { fulfillPaidSession } from "@/server/fulfillment";
 import { audit } from "@/lib/audit";
+import { logEvent } from "@/lib/log";
 import { db } from "@/lib/db";
 
 export const runtime = "nodejs";
@@ -17,6 +18,7 @@ export async function POST(req: Request) {
   const signature = getSignatureHeader(req.headers);
 
   if (!verifyWebhookSignature(raw, signature)) {
+    logEvent("warn", "payplus.webhook.bad_signature");
     return new NextResponse("Invalid signature", { status: 401 });
   }
 
@@ -24,6 +26,7 @@ export async function POST(req: Request) {
   try {
     parsed = parseWebhook(raw);
   } catch {
+    logEvent("warn", "payplus.webhook.bad_payload");
     return new NextResponse("Bad payload", { status: 400 });
   }
 
@@ -39,11 +42,14 @@ export async function POST(req: Request) {
       select: { providerRef: true },
     });
     if (!payment) {
-      console.error(`PayPlus IPN: no Payment found for id ${parsed.paymentId}`);
+      logEvent("error", "payplus.webhook.payment_not_found", { paymentId: parsed.paymentId });
     } else {
       const result = await fulfillPaidSession(payment.providerRef);
       if (!result.ok) {
-        console.error(`PayPlus patient fulfillment failed for ${parsed.paymentId}:`, result.error);
+        logEvent("error", "payplus.webhook.fulfillment_failed", {
+          paymentId: parsed.paymentId,
+          error: result.error,
+        });
       } else {
         await audit({
           actor: "webhook",
@@ -62,7 +68,10 @@ export async function POST(req: Request) {
       customerUid: parsed.customerUid,
     });
     if (!result.ok) {
-      console.error(`PayPlus activation failed for ${parsed.setupToken}:`, result.error);
+      logEvent("error", "payplus.webhook.activation_failed", {
+        setupToken: parsed.setupToken,
+        error: result.error,
+      });
     } else {
       await audit({
         actor: "webhook",
