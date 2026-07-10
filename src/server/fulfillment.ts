@@ -1,8 +1,23 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
+import { get } from "@vercel/blob";
 import { db } from "@/lib/db";
 import { getResend, fromAddress } from "@/lib/email";
 import { quotePath } from "@/lib/quotes";
+
+/**
+ * Downloads a private blob and returns it as a Resend attachment (Buffer content)
+ * — dentists receive the medical files as attachments rather than links to a
+ * now-private blob URL.
+ */
+async function toAttachment(url: string, filename: string) {
+  const result = await get(url, { access: "private" });
+  if (!result || result.statusCode !== 200 || !result.stream) {
+    throw new Error(`blob fetch failed for ${filename}`);
+  }
+  const content = Buffer.from(await new Response(result.stream).arrayBuffer());
+  return { filename, content };
+}
 
 function appUrl(): string {
   return process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ?? "http://localhost:3000";
@@ -114,13 +129,21 @@ export async function fulfillPaidSession(providerRef: string): Promise<FulfillRe
     year: "numeric",
   }).format(request.createdAt);
 
-  const attachments = [
-    {
-      filename: attachmentName(request.treatmentFileUrl, "treatment-plan"),
-      path: request.treatmentFileUrl,
-    },
-    { filename: attachmentName(request.xrayFileUrl, "dental-xray"), path: request.xrayFileUrl },
-  ];
+  // Download both private files once and attach them as content — the dentist
+  // gets real attachments, not a link to a private blob.
+  let attachments: Array<{ filename: string; content: Buffer }>;
+  try {
+    attachments = [
+      await toAttachment(
+        request.treatmentFileUrl,
+        attachmentName(request.treatmentFileUrl, "treatment-plan"),
+      ),
+      await toAttachment(request.xrayFileUrl, attachmentName(request.xrayFileUrl, "dental-xray")),
+    ];
+  } catch (err) {
+    console.error("Failed to download request files for attachment:", err);
+    return { ok: false, error: "טעינת הקבצים לצירוף נכשלה" };
+  }
 
   const resend = getResend();
   const from = fromAddress();

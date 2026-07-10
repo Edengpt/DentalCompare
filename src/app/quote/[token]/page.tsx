@@ -43,24 +43,22 @@ export default async function QuotePage({ params }: { params: Promise<{ token: s
         </p>
 
         {files.length > 0 && (
-          <ul className="border-border/60 bg-card divide-border/60 mt-6 divide-y rounded-2xl border">
-            {files.map((f) => (
-              <li key={f.label} className="flex items-center justify-between gap-3 p-4">
-                <span className="text-foreground inline-flex items-center gap-2.5 text-sm font-medium">
+          <div className="border-border/60 bg-card mt-6 rounded-2xl border p-4">
+            <p className="text-muted-foreground text-sm">
+              תוכנית הטיפול והצילום מצורפים למייל שקיבלת — פתחו את הצרופות לצפייה.
+            </p>
+            <ul className="divide-border/60 mt-3 divide-y">
+              {files.map((f) => (
+                <li
+                  key={f.label}
+                  className="text-foreground flex items-center gap-2.5 py-2 text-sm font-medium"
+                >
                   <f.icon className="text-teal-deep h-4 w-4" />
                   {f.label}
-                </span>
-                <a
-                  href={f.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-teal-deep text-sm font-semibold underline-offset-4 hover:underline"
-                >
-                  צפייה בקובץ
-                </a>
-              </li>
-            ))}
-          </ul>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
 
         <div className="mt-6">

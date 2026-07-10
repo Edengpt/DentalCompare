@@ -95,9 +95,9 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
       : `/request/${id}/confirm`;
 
   const fileLinks = [
-    { icon: FileText, label: "תוכנית הטיפול", url: request.treatmentFileUrl },
-    { icon: ImageIcon, label: "צילום שיניים", url: request.xrayFileUrl },
-  ].filter((f) => !!f.url);
+    { icon: FileText, label: "תוכנית הטיפול", kind: "treatment", present: !!request.treatmentFileUrl },
+    { icon: ImageIcon, label: "צילום שיניים", kind: "xray", present: !!request.xrayFileUrl },
+  ].filter((f) => f.present);
 
   return (
     <>
@@ -220,7 +220,7 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
                       {f.label}
                     </span>
                     <a
-                      href={f.url!}
+                      href={`/api/files/${id}/${f.kind}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-teal-deep text-sm font-semibold underline-offset-4 hover:underline"

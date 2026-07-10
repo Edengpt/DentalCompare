@@ -47,9 +47,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Request not found" }, { status: 404 });
   }
 
-  // Upload to Vercel Blob
+  // Upload to Vercel Blob as PRIVATE — treatment plans and x-rays are medical
+  // records and must not be reachable by URL. Access goes through the
+  // auth-checked /api/files/[requestId]/[kind] route (patient/admin) or as email
+  // attachments to dentists.
   const blob = await put(blobPath(requestId, kind as UploadKind, file), file, {
-    access: "public",
+    access: "private",
     addRandomSuffix: true,
     contentType: file.type,
   });
