@@ -31,10 +31,22 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: logoValidationMessage(validation) }, { status: 400 });
   }
 
+  // Logos are public images shown in the directory, so they live in the PUBLIC
+  // blob store (LOGO_BLOB_READ_WRITE_TOKEN) — separate from the default token,
+  // which points at the PRIVATE store used for medical files.
+  const logoToken = process.env.LOGO_BLOB_READ_WRITE_TOKEN;
+  if (!logoToken) {
+    return NextResponse.json(
+      { error: "העלאת הלוגו אינה זמינה כרגע" },
+      { status: 503 },
+    );
+  }
+
   const blob = await put(logoBlobPath(file), file, {
     access: "public",
     addRandomSuffix: true,
     contentType: file.type,
+    token: logoToken,
   });
 
   return NextResponse.json({ url: blob.url });
