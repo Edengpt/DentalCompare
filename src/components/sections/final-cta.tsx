@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Show } from "@clerk/nextjs";
 import { ArrowLeft } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -27,16 +28,32 @@ export function FinalCta() {
         </p>
 
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Link
-            href="/sign-up"
-            className={cn(
-              buttonVariants(),
-              "bg-accent hover:bg-accent/90 text-accent-foreground inline-flex h-14 items-center gap-2 rounded-full px-8 text-base font-semibold shadow-2xl shadow-black/20",
-            )}
-          >
-            קבלו הצעות מחיר עכשיו
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
+          {/* Auth-aware CTA — see hero.tsx: a signed-in user sent to /sign-up is
+              bounced back by Clerk, so route them into the app instead. */}
+          <Show when="signed-out">
+            <Link
+              href="/sign-up"
+              className={cn(
+                buttonVariants(),
+                "bg-accent hover:bg-accent/90 text-accent-foreground inline-flex h-14 items-center gap-2 rounded-full px-8 text-base font-semibold shadow-2xl shadow-black/20",
+              )}
+            >
+              קבלו הצעות מחיר עכשיו
+              <ArrowLeft className="h-5 w-5" />
+            </Link>
+          </Show>
+          <Show when="signed-in">
+            <Link
+              href="/dashboard"
+              className={cn(
+                buttonVariants(),
+                "bg-accent hover:bg-accent/90 text-accent-foreground inline-flex h-14 items-center gap-2 rounded-full px-8 text-base font-semibold shadow-2xl shadow-black/20",
+              )}
+            >
+              קבלו הצעות מחיר עכשיו
+              <ArrowLeft className="h-5 w-5" />
+            </Link>
+          </Show>
 
           <Link
             href="#faq"

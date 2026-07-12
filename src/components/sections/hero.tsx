@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Show } from "@clerk/nextjs";
 import { ArrowLeft, Star } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -66,16 +67,34 @@ export function Hero() {
             </p>
 
             <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Link
-                href="/sign-up"
-                className={cn(
-                  buttonVariants(),
-                  "bg-accent hover:bg-accent/90 text-accent-foreground shadow-coral/20 hover:shadow-coral/30 group inline-flex h-14 items-center gap-2 rounded-full px-8 text-base font-semibold shadow-lg transition-all hover:shadow-xl",
-                )}
-              >
-                קבלו הצעות מחיר עכשיו
-                <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
-              </Link>
+              {/* Auth-aware primary CTA: signed-out users go to sign-up, but a
+                  signed-in user must NOT be sent to /sign-up (Clerk bounces an
+                  authenticated visitor straight back to home — the button looks
+                  broken). Send them into the app instead. */}
+              <Show when="signed-out">
+                <Link
+                  href="/sign-up"
+                  className={cn(
+                    buttonVariants(),
+                    "bg-accent hover:bg-accent/90 text-accent-foreground shadow-coral/20 hover:shadow-coral/30 group inline-flex h-14 items-center gap-2 rounded-full px-8 text-base font-semibold shadow-lg transition-all hover:shadow-xl",
+                  )}
+                >
+                  קבלו הצעות מחיר עכשיו
+                  <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
+                </Link>
+              </Show>
+              <Show when="signed-in">
+                <Link
+                  href="/dashboard"
+                  className={cn(
+                    buttonVariants(),
+                    "bg-accent hover:bg-accent/90 text-accent-foreground shadow-coral/20 hover:shadow-coral/30 group inline-flex h-14 items-center gap-2 rounded-full px-8 text-base font-semibold shadow-lg transition-all hover:shadow-xl",
+                  )}
+                >
+                  קבלו הצעות מחיר עכשיו
+                  <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
+                </Link>
+              </Show>
 
               <Link
                 href="#how"
