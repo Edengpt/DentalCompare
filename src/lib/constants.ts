@@ -72,6 +72,7 @@ export const RATE_LIMITS = {
   clinicRegister: { limit: 3, windowMs: HOUR_MS }, // per IP
   submitQuote: { limit: 10, windowMs: HOUR_MS }, // per quote token
   fileUpload: { limit: 20, windowMs: HOUR_MS }, // per request
+  createRequest: { limit: 10, windowMs: HOUR_MS }, // per user — caps request spam
 } as const;
 
 export const SUBSCRIPTION_TERMS_HE: string[] = [
