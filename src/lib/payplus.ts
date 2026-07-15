@@ -1,5 +1,6 @@
 import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { appUrl } from "@/lib/app-url";
 
 const BASE = () => process.env.PAYPLUS_API_BASE ?? "";
 
@@ -18,10 +19,6 @@ function authHeader(): string {
     api_key: process.env.PAYPLUS_API_KEY,
     secret_key: process.env.PAYPLUS_SECRET_KEY,
   });
-}
-
-function appUrl(): string {
-  return process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ?? "http://localhost:3000";
 }
 
 /**

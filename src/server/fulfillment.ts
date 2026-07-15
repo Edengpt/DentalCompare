@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { getResend, fromAddress } from "@/lib/email";
 import { quotePath } from "@/lib/quotes";
 import { audit } from "@/lib/audit";
+import { appUrl } from "@/lib/app-url";
 import { logEvent } from "@/lib/log";
 import { quoteRequestEmailHtml } from "@/server/emails/templates";
 
@@ -20,10 +21,6 @@ async function toAttachment(url: string, filename: string) {
   }
   const content = Buffer.from(await new Response(result.stream).arrayBuffer());
   return { filename, content };
-}
-
-function appUrl(): string {
-  return process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ?? "http://localhost:3000";
 }
 
 export type FulfillResult =

@@ -6,12 +6,9 @@ import { db } from "@/lib/db";
 import { isPaymentsTestMode } from "@/lib/payments-mode";
 import { createOneTimePaymentPage, isPayPlusConfigured } from "@/lib/payplus";
 import { PRICING } from "@/lib/constants";
+import { appUrl } from "@/lib/app-url";
 
 export type CheckoutResult = { ok: true; url: string } | { ok: false; error: string };
-
-function appUrl(): string {
-  return process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ?? "http://localhost:3000";
-}
 
 /**
  * Starts payment for the flat request fee via PayPlus, recording a PENDING

@@ -1,10 +1,7 @@
 import "server-only";
 import { getResend, fromAddress } from "@/lib/email";
 import { paymentSetupEmailHtml, paymentFailedEmailHtml } from "@/server/emails/templates";
-
-function appUrl(): string {
-  return process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ?? "http://localhost:3000";
-}
+import { appUrl } from "@/lib/app-url";
 
 export async function sendPaymentSetupEmail(args: {
   email: string;
