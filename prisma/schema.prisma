@@ -129,6 +129,9 @@ model Quote {
   requestDentist   RequestDentist @relation(fields: [requestDentistId], references: [id], onDelete: Cascade)
   amountILS        Int // total quoted price in ILS
   note             String?        @db.Text // free-text, e.g. "כולל צילום, לא כולל שתל"
+  // When the patient "you got a new quote" email was successfully sent. Null =
+  // not yet notified (first send failed) — the retry cron picks these up.
+  patientNotifiedAt DateTime?
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 

@@ -39,23 +39,27 @@ export async function submitQuote(input: {
   const isNew = !rd.quote;
   const note = input.note?.trim() || null;
 
-  await db.quote.upsert({
+  const quote = await db.quote.upsert({
     where: { requestDentistId: rd.id },
     create: { requestDentistId: rd.id, amountILS: amount, note },
     update: { amountILS: amount, note },
+    select: { id: true },
   });
 
   // Notify the patient — unless their account was deleted (user set to null),
-  // in which case there is no address to notify.
+  // in which case there is no address to notify. On a send failure we leave
+  // patientNotifiedAt null so the daily retry cron picks it up later.
   if (isNew && rd.request.user) {
-    try {
-      await sendNewQuoteEmail({
-        to: rd.request.user.email,
-        patientName: rd.request.user.fullName,
-        requestId: rd.request.id,
+    const sent = await sendNewQuoteEmail({
+      to: rd.request.user.email,
+      patientName: rd.request.user.fullName,
+      requestId: rd.request.id,
+    });
+    if (sent) {
+      await db.quote.update({
+        where: { id: quote.id },
+        data: { patientNotifiedAt: new Date() },
       });
-    } catch (err) {
-      console.error("sendNewQuoteEmail failed:", err);
     }
   }
 
