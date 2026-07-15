@@ -33,6 +33,28 @@ export function fileValidationMessage(err: FileValidationError): string {
   }
 }
 
+/**
+ * Verifies the file's leading "magic" bytes match its declared MIME type. The
+ * browser-supplied `file.type`/extension can be spoofed by simply renaming a
+ * file, so validateFile() alone isn't enough for uploads that come straight from
+ * the public. Returns true only when the real content matches one of the allowed
+ * types. Async because it reads the first bytes of the blob.
+ */
+export async function fileSignatureMatches(file: File): Promise<boolean> {
+  const header = new Uint8Array(await file.slice(0, 8).arrayBuffer());
+  const startsWith = (sig: number[]) => sig.every((b, i) => header[i] === b);
+  switch (file.type) {
+    case "application/pdf":
+      return startsWith([0x25, 0x50, 0x44, 0x46]); // "%PDF"
+    case "image/png":
+      return startsWith([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+    case "image/jpeg":
+      return startsWith([0xff, 0xd8, 0xff]);
+    default:
+      return false;
+  }
+}
+
 export function fileExtension(file: File): string {
   const fromName = file.name.split(".").pop()?.toLowerCase();
   if (fromName && ["pdf", "jpg", "jpeg", "png"].includes(fromName)) return fromName;

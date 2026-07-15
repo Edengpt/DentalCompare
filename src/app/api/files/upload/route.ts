@@ -2,7 +2,13 @@ import { NextResponse } from "next/server";
 import { put } from "@vercel/blob";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
-import { blobPath, type UploadKind, validateFile, fileValidationMessage } from "@/lib/storage";
+import {
+  blobPath,
+  type UploadKind,
+  validateFile,
+  fileValidationMessage,
+  fileSignatureMatches,
+} from "@/lib/storage";
 import { rateLimit } from "@/lib/rate-limit";
 import { RATE_LIMITS } from "@/lib/constants";
 
@@ -30,6 +36,15 @@ export async function POST(request: Request) {
   const validation = validateFile(file);
   if (validation) {
     return NextResponse.json({ error: fileValidationMessage(validation) }, { status: 400 });
+  }
+
+  // Defense-in-depth: confirm the actual bytes match the declared type — a
+  // renamed executable with a spoofed MIME/extension is rejected here.
+  if (!(await fileSignatureMatches(file))) {
+    return NextResponse.json(
+      { error: "תוכן הקובץ אינו תואם לסוג שהוצהר. אנא העלו PDF, JPG או PNG תקין." },
+      { status: 400 },
+    );
   }
 
   // Verify the request belongs to the current user
