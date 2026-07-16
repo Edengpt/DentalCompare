@@ -10,6 +10,10 @@
 export function appUrl(): string {
   const base = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
   if (base) return base;
+  // On Vercel (preview or production) without an explicit canonical URL, fall
+  // back to the deployment's own URL so links resolve instead of crashing.
+  const vercelUrl = process.env.VERCEL_URL?.replace(/\/$/, "");
+  if (vercelUrl) return `https://${vercelUrl}`;
   if (process.env.NODE_ENV === "production") {
     throw new Error(
       "NEXT_PUBLIC_APP_URL is not set in production — refusing to emit localhost links.",
