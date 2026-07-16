@@ -1,0 +1,7 @@
+# Never upload local env files — Vercel injects the real env vars itself.
+.env
+.env.local
+.env.*.local
+# Build output & local caches (Vercel builds fresh).
+.next
+.clerk
