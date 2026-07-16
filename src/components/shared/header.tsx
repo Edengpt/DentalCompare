@@ -4,8 +4,10 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Logo } from "./logo";
 
+// The dentist directory (/dentists) is intentionally NOT linked here — it's an
+// in-journey step (choosing clinics to compare), not a destination a visitor
+// should browse before starting a request.
 const navLinks = [
-  { href: "/dentists", label: "מאגר הרופאים" },
   { href: "/#how", label: "איך זה עובד" },
   { href: "/#faq", label: "שאלות נפוצות" },
   { href: "/clinics/join", label: "הצטרפות מרפאות" },
