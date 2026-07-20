@@ -1,9 +1,16 @@
 import Link from "next/link";
 import { Show } from "@clerk/nextjs";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Upload, Users, Wallet, PhoneOff } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { HeroVideo } from "./hero-video";
+
+const benefits = [
+  { icon: Upload, text: "מעלים פעם אחת: תוכנית טיפול וצילום שיניים." },
+  { icon: Users, text: "הבקשה נשלחת לעד 10 רופאים מובילים במקביל." },
+  { icon: Wallet, text: "הצעות המחיר חוזרות ישירות למייל — משווים וחוסכים." },
+  { icon: PhoneOff, text: "בלי שיחות טלפון, בלי התחייבות, בלי לחץ." },
+];
 
 const trustStats = [
   { value: "300+", label: "רופאי שיניים במאגר" },
@@ -32,15 +39,25 @@ export function Hero() {
           פלטפורמת השוואת מחירים ✦ ישראל
         </p>
 
-        <h1 className="font-display text-cream mt-6 text-5xl leading-[1.05] font-bold tracking-tight text-balance sm:text-6xl lg:text-7xl">
-          השוו מחירים. <span className="text-coral">חסכו אלפי שקלים.</span>
+        <h1 className="font-display text-cream mt-6 font-bold tracking-tight text-balance">
+          <span className="text-cream/80 block text-2xl font-semibold sm:text-3xl">
+            לא יודעים אם המחיר לטיפול השיניים הוגן?
+          </span>
+          <span className="mt-3 block text-5xl leading-[1.05] sm:text-6xl lg:text-7xl">
+            קבלו עד 10 הצעות. <span className="text-coral">חסכו אלפי שקלים.</span>
+          </span>
         </h1>
 
-        <p className="text-cream/85 mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-pretty sm:text-xl">
-          העלו פעם אחת תוכנית טיפול וצילום שיניים — אנחנו שולחים את הבקשה שלכם לעד{" "}
-          <strong className="text-cream">10 רופאי שיניים</strong> במקביל, והצעות המחיר חוזרות ישירות
-          למייל. ללא שיחות טלפון, ללא לחץ.
-        </p>
+        <ul className="mx-auto mt-8 flex max-w-xl flex-col gap-3.5 text-start">
+          {benefits.map((b) => (
+            <li key={b.text} className="flex items-center gap-3">
+              <span className="bg-cream/10 text-coral ring-cream/10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ring-1">
+                <b.icon className="h-[18px] w-[18px]" strokeWidth={2} />
+              </span>
+              <span className="text-cream/90 text-base leading-snug sm:text-lg">{b.text}</span>
+            </li>
+          ))}
+        </ul>
 
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
           {/* Auth-aware primary CTA: a signed-in visitor must NOT be sent to
