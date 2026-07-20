@@ -194,16 +194,3 @@
     mix-blend-mode: multiply;
   }
 }
-
-/* Hero background video — respect reduced-motion: hide the clip and show the
-   poster frame instead of an autoplaying loop. */
-@media (prefers-reduced-motion: reduce) {
-  .hero-video__media {
-    display: none;
-  }
-  .hero-video {
-    background-image: url("/media/hero-clinic-poster.jpg");
-    background-size: cover;
-    background-position: center;
-  }
-}

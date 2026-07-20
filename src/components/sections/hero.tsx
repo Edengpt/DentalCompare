@@ -3,6 +3,7 @@ import { Show } from "@clerk/nextjs";
 import { ArrowLeft } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { HeroVideo } from "./hero-video";
 
 const trustStats = [
   { value: "300+", label: "רופאי שיניים במאגר" },
@@ -13,20 +14,8 @@ const trustStats = [
 export function Hero() {
   return (
     <section className="hero-video relative isolate flex min-h-[88vh] items-center overflow-hidden">
-      {/* Looping background video. Muted + playsInline so it autoplays on mobile;
-          poster paints instantly and is also the reduced-motion fallback. */}
-      <video
-        className="hero-video__media absolute inset-0 -z-10 h-full w-full object-cover"
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="auto"
-        poster="/media/hero-clinic-poster.jpg"
-        aria-hidden="true"
-      >
-        <source src="/media/hero-clinic.mp4" type="video/mp4" />
-      </video>
+      {/* Looping background video (client component — handles iOS autoplay). */}
+      <HeroVideo />
 
       {/* Legibility scrim: a teal wash + a soft dark gradient so cream text pops. */}
       <div
