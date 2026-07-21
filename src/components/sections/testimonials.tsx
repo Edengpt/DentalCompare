@@ -35,7 +35,8 @@ export function Testimonials() {
             סיפורי חיסכון אמיתיים.
           </h2>
           <p className="text-muted-foreground mt-5 text-lg text-pretty">
-            שלושה מטופלים. שלושה טיפולים שונים. דבר אחד במשותף.
+            שלושה מטופלים, שלושה טיפולים שונים — ואותה מחשבה בסוף: &ldquo;למה לא עשיתי את זה
+            קודם?&rdquo;
           </p>
         </div>
 

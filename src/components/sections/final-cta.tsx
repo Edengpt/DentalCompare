@@ -23,8 +23,8 @@ export function FinalCta() {
           שיניים בריאות לא צריכות לעלות הון.
         </h2>
         <p className="text-cream/80 mx-auto mt-6 max-w-xl text-lg leading-relaxed text-pretty">
-          הצטרפו לאלפי מטופלים שכבר חוסכים אלפי שקלים על טיפולי שיניים — בדיסקרטיות, בלי לחץ, ובזמן
-          שלכם.
+          המחיר הראשון שאתם מקבלים כמעט אף פעם לא הזול ביותר. הצטרפו לאלפי מטופלים שכבר משווים —
+          וחוסכים אלפי שקלים, בדיסקרטיות ובזמן שלהם.
         </p>
 
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
