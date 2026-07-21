@@ -24,17 +24,18 @@ export function Hero() {
       {/* Looping background video (client component — handles iOS autoplay). */}
       <HeroVideo />
 
-      {/* Legibility scrim: a teal wash + a soft dark gradient so cream text pops. */}
+      {/* Light scrim — lets the (bright) video show through; text legibility is
+          carried mostly by the text-shadow on the content below. */}
       <div
         aria-hidden="true"
-        className="from-teal-deep/95 via-teal-deep/70 to-teal-deep/85 absolute inset-0 -z-10 bg-gradient-to-t"
+        className="from-teal-deep/60 via-teal-deep/25 to-teal-deep/45 absolute inset-0 -z-10 bg-gradient-to-t"
       />
       <div
         aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-[radial-gradient(120%_80%_at_50%_0%,transparent,rgba(0,0,0,0.35))]"
+        className="absolute inset-0 -z-10 bg-[radial-gradient(120%_80%_at_50%_0%,transparent,rgba(0,0,0,0.15))]"
       />
 
-      <div className="mx-auto w-full max-w-4xl px-6 py-24 text-center lg:px-10 lg:py-32">
+      <div className="mx-auto w-full max-w-4xl px-6 py-24 text-center [text-shadow:0_1px_10px_rgba(0,0,0,0.45)] lg:px-10 lg:py-32">
         <p className="eyebrow text-cream/70 before:bg-cream/40 justify-center">
           פלטפורמת השוואת מחירים ✦ ישראל
         </p>
