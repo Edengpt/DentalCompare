@@ -21,7 +21,7 @@ const frankRuhl = Frank_Ruhl_Libre({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://dentalcompare.vercel.app"),
+  metadataBase: new URL("https://dentalcompare.co.il"),
   title: {
     default: "DentalCompare – השוו מחירים. חסכו אלפי שקלים.",
     template: "%s | DentalCompare",
