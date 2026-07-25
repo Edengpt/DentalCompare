@@ -14,6 +14,7 @@ import { db } from "@/lib/db";
 import { sortByPrice, cheapestDentistId, responseCounts, type QuoteRow } from "@/lib/quotes";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
+import { ExplainTreatment } from "@/components/request/explain-treatment";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
@@ -232,6 +233,9 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
               </ul>
             )}
           </section>
+
+          {/* AI: explain the treatment plan (on-demand) */}
+          {request.treatmentFileUrl && <ExplainTreatment requestId={request.id} />}
 
           {/* Patient notes */}
           {request.patientNotes && (
