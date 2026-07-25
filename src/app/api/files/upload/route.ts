@@ -8,9 +8,10 @@ import {
   validateFile,
   fileValidationMessage,
   fileSignatureMatches,
+  MAX_FILE_SIZE_BYTES,
 } from "@/lib/storage";
 import { rateLimit } from "@/lib/rate-limit";
-import { RATE_LIMITS } from "@/lib/constants";
+import { RATE_LIMITS, REQUEST_LIMITS } from "@/lib/constants";
 
 export const runtime = "nodejs";
 
@@ -18,6 +19,19 @@ export async function POST(request: Request) {
   const { userId: clerkUserId } = await auth();
   if (!clerkUserId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Reject oversized uploads from the Content-Length header BEFORE buffering the
+  // whole body into memory via formData(). validateFile() still enforces the
+  // exact byte size later (Content-Length can be absent or spoofed) — this is a
+  // cheap early guard against memory-exhaustion from a huge multipart body.
+  // Allow ~1MB of multipart framing overhead on top of the file-size limit.
+  const declaredLength = Number(request.headers.get("content-length") ?? 0);
+  if (declaredLength > MAX_FILE_SIZE_BYTES + 1024 * 1024) {
+    return NextResponse.json(
+      { error: `הקובץ גדול מדי. המגבלה היא ${REQUEST_LIMITS.maxFileSizeMB}MB.` },
+      { status: 413 },
+    );
   }
 
   const formData = await request.formData();
