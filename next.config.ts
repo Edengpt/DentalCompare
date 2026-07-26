@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 /**
  * Baseline security headers applied to every response. These are the safe,
@@ -31,4 +32,14 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Only wrap with Sentry's build plugin when a DSN is configured, so an
+// unconfigured build (dev or prod without Sentry) is completely unaffected.
+// Once NEXT_PUBLIC_SENTRY_DSN (and optionally SENTRY_ORG/SENTRY_PROJECT +
+// SENTRY_AUTH_TOKEN for source maps) are set, error monitoring activates.
+export default process.env.NEXT_PUBLIC_SENTRY_DSN
+  ? withSentryConfig(nextConfig, {
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      silent: true,
+    })
+  : nextConfig;
