@@ -24,7 +24,9 @@ const linkGroups = [
     links: [
       { href: "/terms", label: "תנאי שימוש" },
       { href: "/privacy", label: "מדיניות פרטיות" },
-      { href: "/accessibility", label: "נגישות" },
+      { href: "/cookies", label: "מדיניות עוגיות" },
+      { href: "/refunds", label: "ביטולים והחזרים" },
+      { href: "/accessibility", label: "הצהרת נגישות" },
     ],
   },
 ];
