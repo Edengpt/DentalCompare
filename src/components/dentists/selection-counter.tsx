@@ -35,7 +35,7 @@ export function SelectionCounter({ selected, onContinue, isSaving }: SelectionCo
           <p className="text-cream/70 text-[11px]">
             {canContinue
               ? "מוכן להמשך — תקבלו הצעות מכל הרופאים הנבחרים"
-              : "ניתן לבחור עד 10 רופאים"}
+              : `ניתן לבחור עד ${maxDentists} רופאים`}
           </p>
         </div>
 

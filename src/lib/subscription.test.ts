@@ -7,6 +7,11 @@ import {
   isClinicVisible,
   isWithinGrace,
   graceCutoff,
+  trialEndFrom,
+  isTrialOver,
+  trialDaysRemaining,
+  dueTrialWarning,
+  visibleSubscriptionFilter,
 } from "./subscription";
 
 describe("subscription helpers", () => {
@@ -46,21 +51,75 @@ describe("subscription helpers", () => {
     expect(isWithinGrace(null, new Date("2026-06-12T00:00:00Z"))).toBe(false);
   });
 
-  it("treats ACTIVE, and PAST_DUE-in-grace, as visible; PENDING/lapsed/null as not", () => {
+  it("treats TRIALING/ACTIVE, and PAST_DUE-in-grace, as visible; PENDING/lapsed/null as not", () => {
     const end = new Date("2026-06-10T00:00:00Z");
     const inGrace = new Date("2026-06-12T00:00:00Z");
     const afterGrace = new Date("2026-06-20T00:00:00Z");
 
+    expect(isClinicVisible({ status: "TRIALING" }, inGrace)).toBe(true);
     expect(isClinicVisible({ status: "ACTIVE" }, inGrace)).toBe(true);
     expect(isClinicVisible({ status: "PAST_DUE", currentPeriodEnd: end }, inGrace)).toBe(true);
     expect(isClinicVisible({ status: "PAST_DUE", currentPeriodEnd: end }, afterGrace)).toBe(false);
     expect(isClinicVisible({ status: "PAST_DUE" }, inGrace)).toBe(false); // no period end
     expect(isClinicVisible({ status: "PENDING" }, inGrace)).toBe(false);
+    expect(isClinicVisible({ status: "CANCELED" }, inGrace)).toBe(false);
     expect(isClinicVisible(null, inGrace)).toBe(false);
+  });
+
+  // A trial clinic that isn't in this filter silently receives nothing, with no
+  // error anywhere — so pin the two in lockstep.
+  it("visibleSubscriptionFilter covers exactly the statuses isClinicVisible accepts", () => {
+    const now = new Date("2026-06-20T00:00:00Z");
+    const statuses = visibleSubscriptionFilter(now).OR.map((c) => c.status);
+    expect(statuses).toEqual(["TRIALING", "ACTIVE", "PAST_DUE"]);
+    for (const s of statuses) {
+      expect(isClinicVisible({ status: s, currentPeriodEnd: now }, now)).toBe(true);
+    }
   });
 
   it("graceCutoff is PAST_DUE_GRACE_DAYS before now", () => {
     const now = new Date("2026-06-20T00:00:00Z");
     expect(graceCutoff(now).toISOString()).toBe("2026-06-17T00:00:00.000Z");
+  });
+});
+
+describe("free trial helpers", () => {
+  const approved = new Date("2026-06-01T00:00:00Z");
+  const trialEnd = new Date("2026-07-31T00:00:00Z"); // approved + 60 days
+
+  it("ends the trial 60 days after approval, not after registration", () => {
+    expect(trialEndFrom(approved).toISOString()).toBe(trialEnd.toISOString());
+  });
+
+  it("is over only once the end has been reached", () => {
+    expect(isTrialOver(trialEnd, new Date("2026-07-30T23:59:00Z"))).toBe(false);
+    expect(isTrialOver(trialEnd, trialEnd)).toBe(true);
+    expect(isTrialOver(trialEnd, new Date("2026-08-05T00:00:00Z"))).toBe(true);
+    expect(isTrialOver(null, trialEnd)).toBe(false);
+  });
+
+  it("counts whole days remaining and floors at zero", () => {
+    expect(trialDaysRemaining(trialEnd, new Date("2026-07-16T00:00:00Z"))).toBe(15);
+    expect(trialDaysRemaining(trialEnd, new Date("2026-07-29T00:00:00Z"))).toBe(2);
+    expect(trialDaysRemaining(trialEnd, new Date("2026-08-10T00:00:00Z"))).toBe(0);
+  });
+
+  it("fires each warning once and never re-fires one already sent", () => {
+    const at15 = new Date("2026-07-16T00:00:00Z");
+    const at2 = new Date("2026-07-29T00:00:00Z");
+
+    // Nothing due while more than 15 days remain.
+    expect(dueTrialWarning(trialEnd, null, new Date("2026-07-01T00:00:00Z"))).toBeNull();
+    // The 15-day mark fires, then stays quiet on the next run.
+    expect(dueTrialWarning(trialEnd, null, at15)).toBe(15);
+    expect(dueTrialWarning(trialEnd, 15, at15)).toBeNull();
+    // Later the 2-day mark fires, then also stays quiet.
+    expect(dueTrialWarning(trialEnd, 15, at2)).toBe(2);
+    expect(dueTrialWarning(trialEnd, 2, at2)).toBeNull();
+  });
+
+  it("skips straight to the smaller mark when a clinic is approved late in the window", () => {
+    // Nothing was sent yet and only 2 days remain — send the 2-day warning, not 15.
+    expect(dueTrialWarning(trialEnd, null, new Date("2026-07-29T00:00:00Z"))).toBe(2);
   });
 });

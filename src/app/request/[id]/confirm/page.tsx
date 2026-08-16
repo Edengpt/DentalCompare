@@ -5,9 +5,7 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
-import { PayButton } from "@/components/request/pay-button";
-import { isPaymentsTestMode } from "@/lib/payments-mode";
-import { PRICING } from "@/lib/constants";
+import { SubmitButton } from "@/components/request/submit-button";
 
 export const metadata = {
   title: "סיכום הבקשה",
@@ -42,8 +40,10 @@ export default async function ConfirmRequestPage({ params }: { params: Promise<{
 
   if (!request || request.userId !== user.id) notFound();
 
-  // Already paid → the request is locked and sent; send the user to the receipt.
-  if (request.status === "PAID") redirect(`/request/${id}/success`);
+  // Already sent → the request is locked; send the user to the receipt.
+  if (request.status === "SENT" || request.status === "SUBMITTED") {
+    redirect(`/request/${id}/success`);
+  }
 
   const filesReady = !!request.treatmentFileUrl && !!request.xrayFileUrl;
   if (!filesReady) redirect(`/request/${id}/upload`);
@@ -57,14 +57,14 @@ export default async function ConfirmRequestPage({ params }: { params: Promise<{
     year: "numeric",
   }).format(request.createdAt);
 
-  // PAID requests are redirected above, so only PENDING/FAILED reach here.
-  const statusLabel = request.status === "FAILED" ? "התשלום נכשל" : "ממתין לתשלום";
+  // Sent requests are redirected above, so only DRAFT/FAILED reach here.
+  const statusLabel = request.status === "FAILED" ? "השליחה נכשלה — נסו שוב" : "מוכן לשליחה";
 
   const summaryRows = [
     { icon: Users, label: "רופאים נבחרים", value: `${dentists.length} רופאים` },
     { icon: FileText, label: "תוכנית טיפול", value: "הועלתה ✓" },
     { icon: ImageIcon, label: "צילום שיניים", value: "הועלה ✓" },
-    { icon: CheckCircle2, label: "סטטוס תשלום", value: statusLabel },
+    { icon: CheckCircle2, label: "סטטוס", value: statusLabel },
   ];
 
   return (
@@ -78,7 +78,8 @@ export default async function ConfirmRequestPage({ params }: { params: Promise<{
               סיכום הבקשה לפני שליחה
             </h1>
             <p className="text-muted-foreground mt-4 text-lg text-pretty">
-              בדקו שהפרטים נכונים. לאחר התשלום הבקשה תישלח לכל הרופאים הנבחרים במקביל.
+              בדקו שהפרטים נכונים. בלחיצה על השליחה הבקשה תישלח לכל הרופאים הנבחרים במקביל — ללא
+              עלות.
             </p>
           </div>
         </section>
@@ -131,11 +132,12 @@ export default async function ConfirmRequestPage({ params }: { params: Promise<{
             </Link>
           </div>
 
-          {/* Payment + send */}
+          {/* Send */}
           <div className="border-border/60 flex flex-col gap-4 border-t pt-8">
             <div className="bg-muted/40 text-muted-foreground rounded-2xl px-5 py-4 text-sm">
-              לאחר התשלום הבקשה תישלח אוטומטית לכל הרופאים הנבחרים, יחד עם הקבצים. סכום לתשלום:{" "}
-              <span className="text-foreground font-semibold">{PRICING.flatFeeILS} ₪</span>.
+              הבקשה תישלח אוטומטית לכל הרופאים הנבחרים, יחד עם הקבצים.{" "}
+              <span className="text-foreground font-semibold">השירות חינמי לחלוטין</span> — לא נבקש
+              מכם פרטי אשראי בשום שלב.
             </div>
             <div className="flex flex-col-reverse items-stretch justify-between gap-4 sm:flex-row sm:items-center">
               <Link
@@ -144,11 +146,7 @@ export default async function ConfirmRequestPage({ params }: { params: Promise<{
               >
                 חזרה לאזור האישי
               </Link>
-              <PayButton
-                requestId={request.id}
-                amount={PRICING.flatFeeILS}
-                testMode={isPaymentsTestMode()}
-              />
+              <SubmitButton requestId={request.id} />
             </div>
           </div>
         </div>

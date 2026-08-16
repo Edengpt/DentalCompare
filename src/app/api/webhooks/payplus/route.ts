@@ -1,17 +1,16 @@
 import { NextResponse } from "next/server";
 import { getSignatureHeader, verifyWebhookSignature, parseWebhook } from "@/lib/payplus";
 import { activateSubscriptionBySetupToken } from "@/server/subscriptions";
-import { fulfillPaidSession } from "@/server/fulfillment";
 import { audit } from "@/lib/audit";
 import { logEvent } from "@/lib/log";
-import { db } from "@/lib/db";
 
 export const runtime = "nodejs";
 
 /**
- * Single PayPlus IPN endpoint for both payment types. parseWebhook derives the
- * kind from the more_info prefix; we dispatch patient one-time payments to
- * fulfillment and clinic subscriptions to activation.
+ * PayPlus IPN endpoint. Clinic subscriptions are the only thing that reaches a
+ * payment provider now — the patient one-time payment was removed with the
+ * free-patient pivot (PRD 4.1), so this webhook never touches Request entities
+ * and never triggers patient email delivery. That trigger is submitRequest().
  */
 export async function POST(req: Request) {
   const raw = await req.text();
@@ -36,30 +35,12 @@ export async function POST(req: Request) {
   }
 
   if (parsed.kind === "patient") {
-    // more_info carries the Payment id; resolve its provider ref for fulfillment.
-    const payment = await db.payment.findUnique({
-      where: { id: parsed.paymentId },
-      select: { providerRef: true },
+    // Patients are never charged. A payload of this kind can only be a replay of
+    // a pre-pivot transaction or a misrouted call — acknowledge it so PayPlus
+    // stops retrying, but do nothing and make the anomaly visible.
+    logEvent("warn", "payplus.webhook.unexpected_patient_payment", {
+      transactionUid: parsed.transactionUid,
     });
-    if (!payment) {
-      logEvent("error", "payplus.webhook.payment_not_found", { paymentId: parsed.paymentId });
-    } else {
-      const result = await fulfillPaidSession(payment.providerRef);
-      if (!result.ok) {
-        logEvent("error", "payplus.webhook.fulfillment_failed", {
-          paymentId: parsed.paymentId,
-          error: result.error,
-        });
-      } else {
-        await audit({
-          actor: "webhook",
-          action: "request.paid",
-          entity: "Payment",
-          entityId: parsed.paymentId,
-          metadata: { transactionUid: parsed.transactionUid, emailsSent: result.emailsSent },
-        });
-      }
-    }
   } else if (parsed.setupToken) {
     const result = await activateSubscriptionBySetupToken({
       setupToken: parsed.setupToken,

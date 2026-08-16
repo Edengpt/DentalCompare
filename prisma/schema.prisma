@@ -10,16 +10,18 @@ datasource db {
   provider = "postgresql"
 }
 
+// The patient journey has no payment step (PRD 4.1), so there is no PAID state
+// here. DRAFT covers everything before the patient presses send; SENT means at
+// least one clinic was emailed.
 enum RequestStatus {
-  PENDING
-  PAID
+  DRAFT
+  SUBMITTED
+  SENT
   FAILED
 }
 
-// Provider-neutral payment/charge state. Deliberately separate from
-// RequestStatus so the payment domain can evolve independently of the request
-// lifecycle (PRD: תשלומים). Same three members today, but the decoupling is the
-// point — a Payment is not a Request.
+// Provider-neutral charge state. Used only by SubscriptionCharge — the patient
+// Payment model was removed with the flat fee.
 enum PaymentStatus {
   PENDING
   PAID
@@ -32,23 +34,27 @@ enum SubscriptionPlan {
 }
 
 enum SubscriptionStatus {
-  PENDING
+  PENDING // registered, awaiting admin approval
+  TRIALING // inside the free trial — visible and receiving leads, not charged
   ACTIVE
   PAST_DUE
   CANCELED
 }
 
 model User {
-  id          String   @id @default(uuid())
-  clerkUserId String   @unique
-  fullName    String
-  email       String   @unique
-  phone       String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String    @id @default(uuid())
+  clerkUserId     String    @unique
+  fullName        String
+  email           String    @unique
+  // E.164 normalised (+9725XXXXXXXX). Unique because phone verification is the
+  // qualification gate that replaced the removed patient fee (PRD 4.2) — one
+  // account per real phone, or the gate is decorative.
+  phone           String    @unique
+  phoneVerifiedAt DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   requests Request[]
-  payments Payment[]
 
   @@index([clerkUserId])
 }
@@ -77,6 +83,7 @@ model Dentist {
   submittedBySelf Boolean   @default(false) // true for self-served clinic sign-ups awaiting approval
   agreedToTermsAt DateTime? // when the subscription contract was accepted
   termsVersion    String? // version of the contract that was accepted
+  approvedAt      DateTime? // admin approval — starts the free trial clock (PRD 4.4)
 
   requestDentists RequestDentist[]
   subscription    ClinicSubscription?
@@ -96,12 +103,12 @@ model Request {
   treatmentFileUrl String
   xrayFileUrl      String
   patientNotes     String?       @db.Text
-  status           RequestStatus @default(PENDING)
+  status           RequestStatus @default(DRAFT)
+  sentAt           DateTime?
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 
   requestDentists RequestDentist[]
-  payments        Payment[]
 
   @@index([userId])
   @@index([status])
@@ -119,69 +126,67 @@ model RequestDentist {
   quoteToken String? @unique // per-recipient magic-link token for the quote form
   quote      Quote?
 
+  // Invalid-lead report (PRD 4.5). There are no credits to refund under a
+  // subscription, so compensation is subscription days; this pair exists to
+  // measure the disputed-lead rate, which is the leading churn indicator.
+  disputedAt    DateTime?
+  disputeReason String?   @db.Text
+
   @@unique([requestId, dentistId])
   @@index([dentistId])
+  @@index([dentistId, sentAt]) // duplicate-lead lookback for the same clinic
 }
 
 model Quote {
-  id               String         @id @default(uuid())
-  requestDentistId String         @unique
-  requestDentist   RequestDentist @relation(fields: [requestDentistId], references: [id], onDelete: Cascade)
-  amountILS        Int // total quoted price in ILS
-  note             String?        @db.Text // free-text, e.g. "כולל צילום, לא כולל שתל"
+  id                String         @id @default(uuid())
+  requestDentistId  String         @unique
+  requestDentist    RequestDentist @relation(fields: [requestDentistId], references: [id], onDelete: Cascade)
+  amountILS         Int // total quoted price in ILS
+  note              String?        @db.Text // free-text, e.g. "כולל צילום, לא כולל שתל"
   // When the patient "you got a new quote" email was successfully sent. Null =
   // not yet notified (first send failed) — the retry cron picks these up.
   patientNotifiedAt DateTime?
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
 
   @@index([requestDentistId])
 }
 
-model Payment {
-  id           String        @id @default(uuid())
-  // Nullable + SetNull: a Payment is a financial record and must outlive the
-  // user that created it (see Clerk user.deleted). Readers handle a null user.
-  userId       String?
-  user         User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
-  requestId    String
-  request      Request       @relation(fields: [requestId], references: [id], onDelete: Cascade)
-  // Amount in agorot (integer) — money is never stored as a float.
-  amountAgorot Int
-  // Provider-neutral payment reference (PayPlus page_request_uid, or a synthetic
-  // test_* id in test mode). Replaces the old Stripe session id.
-  providerRef  String        @unique
-  status       PaymentStatus @default(PENDING)
-  createdAt    DateTime      @default(now())
-
-  @@index([userId])
-  @@index([requestId])
-}
+// The Payment model (patient flat fee) was removed with the free-patient pivot.
+// Clinic money lives in ClinicSubscription + SubscriptionCharge only.
 
 model ClinicSubscription {
-  id                 String             @id @default(uuid())
-  dentistId          String             @unique
-  dentist            Dentist            @relation(fields: [dentistId], references: [id], onDelete: Cascade)
-  plan               SubscriptionPlan
-  status             SubscriptionStatus @default(PENDING)
-  priceILS           Int
-  setupToken         String             @unique
-  recurringToken     String? // PayPlus stored-card token uid (set after first paid charge)
-  payplusCustomerUid String?
-  pageRequestUid     String? // PayPlus page_request_uid of the setup charge, for return-page verification
-  currentPeriodEnd   DateTime?
-  lastChargeAt       DateTime?
-  canceledAt         DateTime?
+  id                      String             @id @default(uuid())
+  dentistId               String             @unique
+  dentist                 Dentist            @relation(fields: [dentistId], references: [id], onDelete: Cascade)
+  plan                    SubscriptionPlan
+  status                  SubscriptionStatus @default(PENDING)
+  priceILS                Int
+  setupToken              String             @unique
+  recurringToken          String? // PayPlus stored-card token uid (set after first paid charge)
+  payplusCustomerUid      String?
+  pageRequestUid          String? // PayPlus page_request_uid of the setup charge, for return-page verification
+  // End of the free trial (approvedAt + TRIAL_DAYS). While TRIALING the clinic is
+  // fully visible and receives leads; the renewal cron runs the first real charge
+  // once this passes.
+  trialEndsAt             DateTime?
+  currentPeriodEnd        DateTime?
+  lastChargeAt            DateTime?
+  canceledAt              DateTime?
   // When the "your charge failed" email was last sent, so PAST_DUE clinics are
   // notified once (not every day the retry cron runs). Cleared on a paid charge.
   paymentFailedNotifiedAt DateTime?
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
+  // Smallest "days remaining" warning already emailed for this trial (see
+  // TRIAL_WARNING_DAYS_BEFORE), so each warning goes out at most once.
+  trialWarningSentDays    Int?
+  createdAt               DateTime           @default(now())
+  updatedAt               DateTime           @updatedAt
 
   charges SubscriptionCharge[]
 
   @@index([status])
   @@index([currentPeriodEnd])
+  @@index([trialEndsAt])
 }
 
 model RateLimit {

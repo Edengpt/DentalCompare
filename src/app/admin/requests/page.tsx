@@ -1,14 +1,9 @@
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/server/admin";
+import { REQUEST_STATUS_LABELS_HE } from "@/lib/labels";
 
 export const metadata = { title: "ניהול — בקשות" };
 export const dynamic = "force-dynamic";
-
-const statusLabels: Record<string, string> = {
-  PENDING: "ממתין",
-  PAID: "שולם",
-  FAILED: "נכשל",
-};
 
 export default async function AdminRequestsPage() {
   await requireAdmin();
@@ -71,7 +66,7 @@ export default async function AdminRequestsPage() {
                     <td className="text-foreground px-4 py-3">{r._count.requestDentists}</td>
                     <td className="text-foreground px-4 py-3">{r.requestDentists.length}</td>
                     <td className="px-4 py-3">{filesReady ? "✓" : "—"}</td>
-                    <td className="px-4 py-3">{statusLabels[r.status]}</td>
+                    <td className="px-4 py-3">{REQUEST_STATUS_LABELS_HE[r.status]}</td>
                     <td className="text-muted-foreground px-4 py-3">
                       {new Intl.DateTimeFormat("he-IL", {
                         day: "numeric",

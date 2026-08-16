@@ -17,18 +17,13 @@ import { Footer } from "@/components/shared/footer";
 import { ExplainTreatment } from "@/components/request/explain-treatment";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
+import { REQUEST_STATUS_LABELS_HE } from "@/lib/labels";
 
 export const metadata = {
   title: "פרטי הבקשה",
 };
 
 export const dynamic = "force-dynamic";
-
-const statusLabels: Record<string, string> = {
-  PENDING: "ממתין לתשלום",
-  PAID: "שולם ונשלח",
-  FAILED: "התשלום נכשל",
-};
 
 export default async function RequestDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -85,10 +80,10 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
     year: "numeric",
   }).format(request.createdAt);
 
-  const isPaid = request.status === "PAID";
+  const isSent = request.status === "SENT" || request.status === "SUBMITTED";
   const filesReady = !!request.treatmentFileUrl && !!request.xrayFileUrl;
 
-  // Where to continue an unfinished request (only relevant when not yet paid).
+  // Where to continue an unfinished request (only relevant when not yet sent).
   const continueHref = !filesReady
     ? `/request/${id}/upload`
     : dentists.length === 0
@@ -96,7 +91,12 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
       : `/request/${id}/confirm`;
 
   const fileLinks = [
-    { icon: FileText, label: "תוכנית הטיפול", kind: "treatment", present: !!request.treatmentFileUrl },
+    {
+      icon: FileText,
+      label: "תוכנית הטיפול",
+      kind: "treatment",
+      present: !!request.treatmentFileUrl,
+    },
     { icon: ImageIcon, label: "צילום שיניים", kind: "xray", present: !!request.xrayFileUrl },
   ].filter((f) => f.present);
 
@@ -120,15 +120,15 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
               <span
                 className={cn(
                   "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold",
-                  isPaid
+                  isSent
                     ? "bg-teal-deep/10 text-teal-deep"
                     : request.status === "FAILED"
                       ? "bg-coral/15 text-coral"
                       : "bg-muted text-muted-foreground",
                 )}
               >
-                {isPaid ? <CheckCircle2 className="h-4 w-4" /> : <Clock className="h-4 w-4" />}
-                {statusLabels[request.status]}
+                {isSent ? <CheckCircle2 className="h-4 w-4" /> : <Clock className="h-4 w-4" />}
+                {REQUEST_STATUS_LABELS_HE[request.status]}
               </span>
             </div>
             <p className="text-muted-foreground mt-3 text-sm">נוצרה ב-{date}</p>
@@ -136,7 +136,7 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
         </section>
 
         <div className="mx-auto max-w-3xl space-y-8 px-6 py-10 lg:px-10 lg:py-14">
-          {isPaid && (
+          {isSent && (
             <section>
               <div className="border-teal-deep/30 bg-teal-deep/5 text-foreground mb-4 flex items-center gap-2.5 rounded-2xl border px-5 py-4 text-sm">
                 <Mail className="text-teal-deep h-4 w-4 shrink-0" />
@@ -186,7 +186,7 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
             </section>
           )}
 
-          {!isPaid && (
+          {!isSent && (
             <div className="border-border/60 bg-card flex flex-col gap-4 rounded-2xl border p-5 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-muted-foreground text-sm">
                 {request.status === "FAILED"
@@ -260,10 +260,7 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
             ) : (
               <ul className="border-border/60 bg-card divide-border/60 divide-y rounded-2xl border">
                 {dentists.map((rd) => (
-                  <li
-                    key={rd.dentist.id}
-                    className="flex items-center justify-between gap-3 p-4"
-                  >
+                  <li key={rd.dentist.id} className="flex items-center justify-between gap-3 p-4">
                     <div>
                       <p className="text-foreground font-semibold">{rd.dentist.dentistName}</p>
                       <p className="text-muted-foreground text-xs">

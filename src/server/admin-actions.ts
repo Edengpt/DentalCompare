@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { requireAdmin } from "@/server/admin";
 import { sendPaymentSetupEmail } from "@/server/subscription-notifications";
 import { audit } from "@/lib/audit";
+import { trialEndFrom } from "@/lib/subscription";
 import { SUBSCRIPTION_PLANS } from "@/lib/constants";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
@@ -47,7 +48,7 @@ export async function approveClinic(dentistId: string): Promise<ActionResult> {
       email: true,
       contactName: true,
       clinicName: true,
-      subscription: { select: { setupToken: true } },
+      subscription: { select: { id: true, setupToken: true, status: true } },
     },
   });
   if (!dentist) return { ok: false, error: "המרפאה לא נמצאה" };
@@ -55,10 +56,22 @@ export async function approveClinic(dentistId: string): Promise<ActionResult> {
     return { ok: false, error: "למרפאה אין מנוי משויך — לא ניתן לאשר" };
   }
 
-  await db.dentist.update({
-    where: { id: dentistId },
-    data: { isActive: true, submittedBySelf: false },
-  });
+  // Approval starts the free trial (PRD 4.4). The clock starts here, not at
+  // registration: the clinic can't evaluate lead quality until it's actually
+  // live in the directory, so trial days before approval would be worthless.
+  const approvedAt = new Date();
+  await db.$transaction([
+    db.dentist.update({
+      where: { id: dentistId },
+      data: { isActive: true, submittedBySelf: false, approvedAt },
+    }),
+    // Only a PENDING subscription enters the trial — re-approving a clinic must
+    // not hand an ACTIVE or CANCELED one a fresh 60 free days.
+    db.clinicSubscription.updateMany({
+      where: { id: dentist.subscription.id, status: "PENDING" },
+      data: { status: "TRIALING", trialEndsAt: trialEndFrom(approvedAt) },
+    }),
+  ]);
 
   await sendPaymentSetupEmail({
     email: dentist.email,
@@ -72,7 +85,10 @@ export async function approveClinic(dentistId: string): Promise<ActionResult> {
     action: "clinic.approve",
     entity: "Dentist",
     entityId: dentistId,
-    metadata: { clinicName: dentist.clinicName },
+    metadata: {
+      clinicName: dentist.clinicName,
+      trialEndsAt: trialEndFrom(approvedAt).toISOString(),
+    },
   });
 
   revalidatePath("/admin/clinics");

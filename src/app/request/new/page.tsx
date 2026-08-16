@@ -22,7 +22,7 @@ export default async function NewRequestPage() {
   const existing = await db.request.findFirst({
     where: {
       userId: user.id,
-      status: "PENDING",
+      status: "DRAFT",
       treatmentFileUrl: "",
       xrayFileUrl: "",
     },

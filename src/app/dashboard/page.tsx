@@ -92,7 +92,7 @@ export default async function DashboardPage() {
                 עוד אין בקשות פעילות
               </h2>
               <p className="text-muted-foreground mx-auto mt-3 max-w-md text-pretty">
-                התחילו את הבקשה הראשונה שלכם — בחרו עד 10 רופאים, העלו את תוכנית הטיפול והצילום,
+                התחילו את הבקשה הראשונה שלכם — בחרו עד 3 רופאים, העלו את תוכנית הטיפול והצילום,
                 וההצעות יגיעו אליכם למייל.
               </p>
               <Link
@@ -111,11 +111,11 @@ export default async function DashboardPage() {
               <h2 className="font-display text-foreground text-xl font-bold">הבקשות שלי</h2>
               <ul className="divide-border/60 bg-card border-border/60 divide-y rounded-3xl border">
                 {requests.map((r) => {
-                  const isPaid = r.status === "PAID";
+                  const isSent = r.status === "SENT" || r.status === "SUBMITTED";
                   const filesReady = !!r.treatmentFileUrl && !!r.xrayFileUrl;
-                  // Paid requests are locked & sent → read-only detail. Unfinished
+                  // Sent requests are locked → read-only detail. Unfinished
                   // requests link back into the flow so the user can complete them.
-                  const href = isPaid
+                  const href = isSent
                     ? `/request/${r.id}`
                     : filesReady
                       ? `/request/${r.id}/dentists`
@@ -141,7 +141,7 @@ export default async function DashboardPage() {
                         href={href}
                         className="text-teal-deep text-sm font-semibold underline-offset-4 hover:underline"
                       >
-                        {isPaid ? "צפייה בפרטים" : "המשך"}
+                        {isSent ? "צפייה בפרטים" : "המשך"}
                       </Link>
                     </li>
                   );
