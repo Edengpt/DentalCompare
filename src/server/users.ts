@@ -1,18 +1,27 @@
 import "server-only";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
+import { normalizeIsraeliMobile } from "@/lib/phone";
+
+/** The verified primary phone on a Clerk profile, E.164, or null. */
+function verifiedPhoneOf(clerkUser: NonNullable<Awaited<ReturnType<typeof currentUser>>>) {
+  const entry = clerkUser.phoneNumbers.find((p) => p.id === clerkUser.primaryPhoneNumberId);
+  if (entry?.verification?.status !== "verified") return null;
+  return normalizeIsraeliMobile(entry.phoneNumber) ?? entry.phoneNumber;
+}
 
 /**
  * Returns the Postgres User row for the currently signed-in Clerk user,
  * creating it on first call if the webhook hasn't fired yet (or in local
  * dev where the webhook isn't reachable). Safe to call repeatedly.
+ *
+ * Also reconciles phone verification on every call, so a user who verifies a
+ * number in the Clerk widget isn't stuck behind the submission gate waiting for
+ * a webhook that may never arrive in dev.
  */
 export async function getOrCreateUser() {
   const { userId: clerkUserId } = await auth();
   if (!clerkUserId) return null;
-
-  const existing = await db.user.findUnique({ where: { clerkUserId } });
-  if (existing) return existing;
 
   const clerkUser = await currentUser();
   if (!clerkUser) return null;
@@ -22,19 +31,37 @@ export async function getOrCreateUser() {
   )?.emailAddress;
   if (!primaryEmail) return null;
 
-  const primaryPhone = clerkUser.phoneNumbers.find(
-    (p) => p.id === clerkUser.primaryPhoneNumberId,
-  )?.phoneNumber;
+  const phone = verifiedPhoneOf(clerkUser);
 
   const fullName =
     [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ").trim() || primaryEmail;
 
-  return db.user.create({
+  const existing = await db.user.findUnique({ where: { clerkUserId } });
+  if (!existing) {
+    return db.user.create({
+      data: {
+        clerkUserId,
+        email: primaryEmail,
+        phone,
+        phoneVerifiedAt: phone ? new Date() : null,
+        fullName,
+      },
+    });
+  }
+
+  // Only write when something actually changed, so a page render doesn't issue a
+  // pointless UPDATE on every request.
+  const needsStamp = Boolean(phone) && !existing.phoneVerifiedAt;
+  const needsClear = !phone && Boolean(existing.phoneVerifiedAt);
+  const phoneChanged = (existing.phone ?? null) !== phone;
+  if (!needsStamp && !needsClear && !phoneChanged) return existing;
+
+  return db.user.update({
+    where: { clerkUserId },
     data: {
-      clerkUserId,
-      email: primaryEmail,
-      phone: primaryPhone ?? "",
-      fullName,
+      phone,
+      ...(needsStamp ? { phoneVerifiedAt: new Date() } : {}),
+      ...(needsClear ? { phoneVerifiedAt: null } : {}),
     },
   });
 }

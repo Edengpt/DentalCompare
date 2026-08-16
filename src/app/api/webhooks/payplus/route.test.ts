@@ -1,17 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createHmac } from "node:crypto";
 
-const { fulfillPaidSession, activateSubscriptionBySetupToken, paymentFindUnique } = vi.hoisted(
-  () => ({
-    fulfillPaidSession: vi.fn(),
-    activateSubscriptionBySetupToken: vi.fn(),
-    paymentFindUnique: vi.fn(),
-  }),
-);
+const { activateSubscriptionBySetupToken, logEvent } = vi.hoisted(() => ({
+  activateSubscriptionBySetupToken: vi.fn(),
+  logEvent: vi.fn(),
+}));
 
-vi.mock("@/server/fulfillment", () => ({ fulfillPaidSession }));
 vi.mock("@/server/subscriptions", () => ({ activateSubscriptionBySetupToken }));
-vi.mock("@/lib/db", () => ({ db: { payment: { findUnique: paymentFindUnique } } }));
+vi.mock("@/lib/log", () => ({ logEvent }));
+vi.mock("@/lib/audit", () => ({ audit: vi.fn() }));
 
 import { POST } from "./route";
 
@@ -27,28 +24,11 @@ const reqFor = (body: string, sig?: string) =>
 describe("payplus webhook route", () => {
   beforeEach(() => {
     vi.stubEnv("PAYPLUS_WEBHOOK_SECRET", SECRET);
-    fulfillPaidSession.mockResolvedValue({ ok: true, paid: true, emailsSent: 1, alreadySent: 0 });
     activateSubscriptionBySetupToken.mockResolvedValue({ ok: true });
-    paymentFindUnique.mockResolvedValue({ providerRef: "pru_1" });
   });
   afterEach(() => {
     vi.clearAllMocks();
     vi.unstubAllEnvs();
-  });
-
-  it("routes an approved patient IPN to fulfillment", async () => {
-    const body = JSON.stringify({
-      transaction: { uid: "t", status_code: "000" },
-      data: { more_info: "req_pay_1" },
-    });
-    const res = await POST(reqFor(body));
-    expect(res.status).toBe(200);
-    expect(paymentFindUnique).toHaveBeenCalledWith({
-      where: { id: "pay_1" },
-      select: { providerRef: true },
-    });
-    expect(fulfillPaidSession).toHaveBeenCalledWith("pru_1");
-    expect(activateSubscriptionBySetupToken).not.toHaveBeenCalled();
   });
 
   it("routes an approved subscription IPN to activation", async () => {
@@ -66,17 +46,34 @@ describe("payplus webhook route", () => {
         customerUid: "cus_1",
       }),
     );
-    expect(fulfillPaidSession).not.toHaveBeenCalled();
+  });
+
+  // Patients are never charged (PRD 4.1). A patient-shaped IPN can now only be a
+  // replay of a pre-pivot transaction, so it must be acknowledged (or PayPlus
+  // keeps retrying) while having no side effects — and it must be visible.
+  it("acknowledges a legacy patient IPN without side effects, and logs it", async () => {
+    const body = JSON.stringify({
+      transaction: { uid: "t", status_code: "000" },
+      data: { more_info: "req_pay_1" },
+    });
+    const res = await POST(reqFor(body));
+    expect(res.status).toBe(200);
+    expect(activateSubscriptionBySetupToken).not.toHaveBeenCalled();
+    expect(logEvent).toHaveBeenCalledWith(
+      "warn",
+      "payplus.webhook.unexpected_patient_payment",
+      expect.objectContaining({ transactionUid: "t" }),
+    );
   });
 
   it("rejects a bad signature with 401", async () => {
     const body = JSON.stringify({
       transaction: { uid: "t", status_code: "000" },
-      data: { more_info: "req_pay_1" },
+      data: { more_info: "sub_setup_9" },
     });
     const res = await POST(reqFor(body, "deadbeef"));
     expect(res.status).toBe(401);
-    expect(fulfillPaidSession).not.toHaveBeenCalled();
+    expect(activateSubscriptionBySetupToken).not.toHaveBeenCalled();
   });
 
   it("rejects a junk payload with 400", async () => {

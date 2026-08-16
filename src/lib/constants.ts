@@ -7,15 +7,17 @@ export const SITE_CONFIG = {
 
 export const REQUEST_LIMITS = {
   minDentists: 1,
-  maxDentists: 10,
+  // Deliberate lead-exclusivity cap (PRD 4.6), not a UI preference. A request
+  // fanned out to 10 clinics gives each a ~10% close rate, so the subscription
+  // reads as worthless and they churn. Three keeps each lead worth answering.
+  maxDentists: 3,
   maxFileSizeMB: 20,
   allowedFileTypes: ["application/pdf", "image/jpeg", "image/png"] as const,
 } as const;
 
-export const PRICING = {
-  flatFeeILS: 49,
-  currency: "ils",
-} as const;
+// NOTE: there is deliberately no patient PRICING constant. The patient side is
+// free end-to-end (PRD 4.1) — all revenue comes from clinic subscriptions below.
+// Never reintroduce a patient-facing fee, paywall, or card collection step.
 
 export const HMO_OPTIONS = ["Clalit", "Maccabi", "Meuhedet", "Leumit"] as const;
 
@@ -64,7 +66,16 @@ export type SubscriptionPlanType = keyof typeof SUBSCRIPTION_PLANS;
 export const RENEWAL_LEAD_DAYS = 1;
 export const PAST_DUE_GRACE_DAYS = 3;
 
-export const SUBSCRIPTION_CONTRACT_VERSION = "2026-06-sub-v1";
+// Free trial (PRD 4.4). Starts on admin approval, not on registration — the
+// clinic can't evaluate lead quality before it's live in the directory. The card
+// is collected up front, so the trial converts by non-cancellation.
+export const TRIAL_DAYS = 60;
+// Days-remaining marks at which the "your trial is ending" email goes out.
+export const TRIAL_WARNING_DAYS_BEFORE = [15, 2] as const;
+
+// Bumped when SUBSCRIPTION_TERMS_HE changes materially — v2 adds the 60-day free
+// trial, so clinics that signed v1 agreed to different terms.
+export const SUBSCRIPTION_CONTRACT_VERSION = "2026-08-sub-v2";
 
 // --- Rate limits (DB-backed, fixed window) ---
 const HOUR_MS = 60 * 60 * 1000;
@@ -77,7 +88,9 @@ export const RATE_LIMITS = {
 
 export const SUBSCRIPTION_TERMS_HE: string[] = [
   `המרפאה בוחרת מסלול מנוי: ${SUBSCRIPTION_PLANS.MONTHLY.priceILS} ₪ לחודש או ${SUBSCRIPTION_PLANS.YEARLY.priceILS} ₪ לשנה, עבור הופעה במאגר DentalCompare וקבלת פניות ממטופלים.`,
-  "החיוב הראשון מתבצע לאחר אישור המרפאה על ידי צוות DentalCompare. כל עוד לא הושלם תשלום, המרפאה אינה מופיעה במאגר.",
+  `המרפאה מקבלת תקופת התנסות חינם של ${TRIAL_DAYS} יום, המתחילה במועד אישור המרפאה על ידי צוות DentalCompare. במהלך תקופה זו המרפאה מופיעה במאגר ומקבלת פניות ללא כל חיוב.`,
+  `אמצעי התשלום נשמר כבר במעמד ההרשמה, והחיוב הראשון מתבצע אוטומטית בתום ${TRIAL_DAYS} ימי ההתנסות. תישלח התראה במייל לפני מועד החיוב הראשון.`,
+  "ניתן לבטל בכל עת במהלך תקופת ההתנסות, ובמקרה זה לא יבוצע כל חיוב.",
   "המנוי מתחדש אוטומטית בתום כל תקופה באמצעי התשלום שנשמר, עד לביטול על ידי המרפאה.",
   "ניתן לבטל את המנוי בכל עת; הביטול ייכנס לתוקף בתום התקופה ששולמה. לא יינתן החזר יחסי.",
   "המרפאה מצהירה כי הפרטים שמסרה נכונים וכי היא בעלת הרישוי הנדרש לעיסוק ברפואת שיניים בישראל. DentalCompare רשאית להסיר את המרפאה מהמאגר בכל עת.",

@@ -7,6 +7,7 @@ import { quotePath } from "@/lib/quotes";
 import { audit } from "@/lib/audit";
 import { appUrl } from "@/lib/app-url";
 import { logEvent } from "@/lib/log";
+import { formatIsraeliMobileForDisplay } from "@/lib/phone";
 import { quoteRequestEmailHtml } from "@/server/emails/templates";
 
 /**
@@ -24,8 +25,7 @@ async function toAttachment(url: string, filename: string) {
 }
 
 export type FulfillResult =
-  | { ok: true; paid: boolean; emailsSent: number; alreadySent: number }
-  | { ok: false; error: string };
+  { ok: true; emailsSent: number; alreadySent: number } | { ok: false; error: string };
 
 const SUBJECT = "בקשה להצעת מחיר לטיפול שיניים";
 
@@ -41,31 +41,20 @@ function attachmentName(url: string, fallback: string): string {
 }
 
 /**
- * Idempotently finalizes a paid request, identified by its provider-neutral
- * Payment.providerRef: marks the Payment and Request as PAID (if not already),
- * then emails every selected dentist that hasn't been emailed yet — attaching
- * the treatment plan and x-ray. Safe to call multiple times (from both the
- * PayPlus webhook and the success page), which is how the PRD rule
- * "לא ניתן לשלוח פעמיים את אותה בקשה" is enforced: `emailSent` gates each
- * recipient.
+ * Idempotently delivers a submitted request: emails every selected dentist that
+ * hasn't been emailed yet, attaching the treatment plan and x-ray.
+ *
+ * Keyed on the request itself — there is no payment gate, because the patient
+ * side is free (PRD 4.1) and the clinic already paid via its subscription.
+ * Delivery is the service the subscription bought, not a billable event.
+ *
+ * Safe to call multiple times (from the submit action and from the safety-net
+ * cron), which is how the PRD rule "לא ניתן לשלוח פעמיים את אותה בקשה" is
+ * enforced: `emailSent` gates each recipient.
  */
-export async function fulfillPaidSession(providerRef: string): Promise<FulfillResult> {
-  const payment = await db.payment.findUnique({
-    where: { providerRef },
-    select: { id: true, requestId: true, status: true },
-  });
-  if (!payment) return { ok: false, error: "תשלום לא נמצא" };
-
-  // Promote payment + request to PAID once.
-  if (payment.status !== "PAID") {
-    await db.$transaction([
-      db.payment.update({ where: { id: payment.id }, data: { status: "PAID" } }),
-      db.request.update({ where: { id: payment.requestId }, data: { status: "PAID" } }),
-    ]);
-  }
-
+export async function fulfillRequest(requestId: string): Promise<FulfillResult> {
   const request = await db.request.findUnique({
-    where: { id: payment.requestId },
+    where: { id: requestId },
     select: {
       id: true,
       createdAt: true,
@@ -85,7 +74,7 @@ export async function fulfillPaidSession(providerRef: string): Promise<FulfillRe
 
   const pending = request.requestDentists;
   if (pending.length === 0) {
-    return { ok: true, paid: true, emailsSent: 0, alreadySent: 0 };
+    return { ok: true, emailsSent: 0, alreadySent: 0 };
   }
 
   const date = new Intl.DateTimeFormat("he-IL", {
@@ -151,7 +140,10 @@ export async function fulfillPaidSession(providerRef: string): Promise<FulfillRe
         html: quoteRequestEmailHtml({
           dentistName: rd.dentist.dentistName,
           patientName: request.user.fullName,
-          patientPhone: request.user.phone,
+          // Always set in practice: submitRequest refuses to send without a
+          // verified phone. Kept defensive for the safety-net cron, which can
+          // pick up rows created before that gate existed.
+          patientPhone: formatIsraeliMobileForDisplay(request.user.phone) || "—",
           requestId: request.id,
           date,
           quoteUrl,
@@ -186,5 +178,13 @@ export async function fulfillPaidSession(providerRef: string): Promise<FulfillRe
     });
   }
 
-  return { ok: true, paid: true, emailsSent: sent, alreadySent };
+  // SENT once at least one clinic has the request; FAILED only when every
+  // recipient failed, so the safety-net cron can find it and retry.
+  const anyDelivered = sent > 0 || alreadySent > 0;
+  await db.request.update({
+    where: { id: request.id },
+    data: anyDelivered ? { status: "SENT", sentAt: new Date() } : { status: "FAILED" },
+  });
+
+  return { ok: true, emailsSent: sent, alreadySent };
 }

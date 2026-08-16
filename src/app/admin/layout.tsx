@@ -5,7 +5,6 @@ import {
   Building2,
   Users,
   FileText,
-  CreditCard,
   Repeat,
   ArrowLeft,
 } from "lucide-react";
@@ -20,7 +19,6 @@ const NAV = [
   { href: "/admin/dentists", label: "רופאים", icon: Stethoscope },
   { href: "/admin/users", label: "משתמשים", icon: Users },
   { href: "/admin/requests", label: "בקשות", icon: FileText },
-  { href: "/admin/payments", label: "תשלומים", icon: CreditCard },
   { href: "/admin/subscriptions", label: "מנויים", icon: Repeat },
 ] as const;
 

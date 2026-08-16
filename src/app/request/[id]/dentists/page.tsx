@@ -55,7 +55,7 @@ export default async function RequestDentistsPage({ params }: { params: Promise<
               בחרו את הרופאים שיתחרו על הטיפול שלכם.
             </h1>
             <p className="text-muted-foreground mt-4 max-w-2xl text-lg text-pretty">
-              סננו לפי מיקום, התמחות וקופת חולים. סמנו עד 10 רופאים — והבקשה שלכם תישלח לכולם בו
+              סננו לפי מיקום, התמחות וקופת חולים. סמנו עד 3 רופאים — והבקשה שלכם תישלח לכולם בו
               זמנית.
             </p>
           </div>

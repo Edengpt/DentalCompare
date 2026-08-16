@@ -7,7 +7,7 @@ import { HeroVideo } from "./hero-video";
 
 const benefits = [
   { icon: Upload, text: "מעלים פעם אחת: תוכנית טיפול וצילום שיניים." },
-  { icon: Users, text: "הבקשה נשלחת לעד 10 רופאים מובילים במקביל." },
+  { icon: Users, text: "הבקשה נשלחת ל-3 רופאים מובילים במקביל." },
   { icon: Wallet, text: "הצעות המחיר חוזרות ישירות למייל — משווים וחוסכים." },
   { icon: PhoneOff, text: "בלי שיחות טלפון, בלי התחייבות, בלי לחץ." },
 ];
@@ -45,7 +45,7 @@ export function Hero() {
             לא יודעים אם המחיר לטיפול השיניים הוגן?
           </span>
           <span className="mt-3 block text-5xl leading-[1.05] sm:text-6xl lg:text-7xl">
-            קבלו עד 10 הצעות. <span className="text-coral">חסכו אלפי שקלים.</span>
+            קבלו 3 הצעות מחיר. <span className="text-coral">חסכו אלפי שקלים.</span>
           </span>
         </h1>
 
@@ -96,9 +96,7 @@ export function Hero() {
           </Link>
         </div>
 
-        <p className="text-cream/60 mt-6 text-xs">
-          ₪49 חד-פעמי לבקשה ✦ ללא עמלות נסתרות ✦ ביטול בכל עת
-        </p>
+        <p className="text-cream/60 mt-6 text-xs">חינם לחלוטין ✦ ללא כרטיס אשראי ✦ ללא התחייבות</p>
 
         {/* Trust strip */}
         <div className="border-cream/15 mx-auto mt-16 grid max-w-3xl gap-8 border-t pt-10 sm:grid-cols-3 sm:gap-4">

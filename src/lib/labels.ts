@@ -1,4 +1,17 @@
+import type { RequestStatus } from "@/generated/prisma/enums";
 import type { HMO, Specialty } from "./constants";
+
+/**
+ * Request status labels. There is no payment state in the patient journey any
+ * more (PRD 4.1), so these describe delivery only. Was duplicated across three
+ * pages before the free-patient migration — keep it single-sourced.
+ */
+export const REQUEST_STATUS_LABELS_HE: Record<RequestStatus, string> = {
+  DRAFT: "טיוטה",
+  SUBMITTED: "בשליחה",
+  SENT: "נשלחה",
+  FAILED: "השליחה נכשלה",
+};
 
 export const HMO_LABELS_HE: Record<HMO, string> = {
   Clalit: "כללית",

@@ -1,29 +1,34 @@
 "use client";
 
 import { useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { createCheckoutSession } from "@/server/payments";
+import { submitRequest } from "@/server/requests";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
-type PayButtonProps = {
+type SubmitButtonProps = {
   requestId: string;
-  amount: number;
-  testMode?: boolean;
 };
 
-export function PayButton({ requestId, amount, testMode = false }: PayButtonProps) {
+/**
+ * Sends the request to the selected clinics. Replaces the old PayButton — the
+ * patient is never charged (PRD 4.1), so this goes straight to delivery instead
+ * of redirecting to a payment provider.
+ */
+export function SubmitButton({ requestId }: SubmitButtonProps) {
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const handleClick = () => {
     startTransition(async () => {
-      const result = await createCheckoutSession(requestId);
+      const result = await submitRequest(requestId);
       if (!result.ok) {
         toast.error(result.error);
         return;
       }
-      window.location.href = result.url;
+      router.push(`/request/${requestId}/success`);
     });
   };
 
@@ -40,12 +45,12 @@ export function PayButton({ requestId, amount, testMode = false }: PayButtonProp
     >
       {isPending ? (
         <>
-          מעבירים לתשלום…
+          שולחים את הבקשה…
           <Loader2 className="h-4 w-4 animate-spin" />
         </>
       ) : (
         <>
-          {testMode ? `שליחה (מצב בדיקה — ללא חיוב)` : `לתשלום ושליחה (${amount} ₪)`}
+          שליחת הבקשה — ללא עלות
           <ArrowLeft className="h-4 w-4" />
         </>
       )}

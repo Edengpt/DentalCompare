@@ -31,20 +31,40 @@ const HOUR = 60 * 60 * 1000;
 async function seedQuote(opts: { createdAt: Date; notifiedAt?: Date | null }) {
   const sfx = randomUUID().slice(0, 8);
   const user = await db.user.create({
-    data: { clerkUserId: `qn_${sfx}`, fullName: "דנה כהן", email: `qn_${sfx}@example.com`, phone: "0500000000" },
+    data: {
+      clerkUserId: `qn_${sfx}`,
+      fullName: "דנה כהן",
+      email: `qn_${sfx}@example.com`,
+      // User.phone is unique now — each seeded user needs its own number.
+      phone: `+9725${Math.floor(Math.random() * 1e8)
+        .toString()
+        .padStart(8, "0")}`,
+    },
   });
   const dentist = await db.dentist.create({
     data: {
-      clinicName: "מרפאה", dentistName: "ד״ר", email: `qd_${sfx}@example.com`, phone: "03",
-      city: "תל אביב", address: "רחוב 1", experienceYears: 3,
-      specialties: [], treatments: [], hmoAffiliations: [],
+      clinicName: "מרפאה",
+      dentistName: "ד״ר",
+      email: `qd_${sfx}@example.com`,
+      phone: "03",
+      city: "תל אביב",
+      address: "רחוב 1",
+      experienceYears: 3,
+      specialties: [],
+      treatments: [],
+      hmoAffiliations: [],
     },
   });
   const request = await db.request.create({
-    data: { userId: user.id, treatmentFileUrl: "t", xrayFileUrl: "x", status: "PAID" },
+    data: { userId: user.id, treatmentFileUrl: "t", xrayFileUrl: "x", status: "SENT" },
   });
   const rd = await db.requestDentist.create({
-    data: { requestId: request.id, dentistId: dentist.id, emailSent: true, quoteToken: randomUUID() },
+    data: {
+      requestId: request.id,
+      dentistId: dentist.id,
+      emailSent: true,
+      quoteToken: randomUUID(),
+    },
   });
   const quote = await db.quote.create({
     data: {
@@ -126,7 +146,10 @@ describe.skipIf(!hasDb)("retry-notifications cron (integration, real DB)", () =>
 
   it("skips fresh quotes (< 1h) and already-notified ones", async () => {
     const fresh = await seedQuote({ createdAt: new Date() });
-    const done = await seedQuote({ createdAt: new Date(Date.now() - 2 * HOUR), notifiedAt: new Date() });
+    const done = await seedQuote({
+      createdAt: new Date(Date.now() - 2 * HOUR),
+      notifiedAt: new Date(),
+    });
 
     await call();
 

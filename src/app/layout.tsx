@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     template: "%s | DentalCompare",
   },
   description:
-    "פלטפורמה ישראלית לקבלת הצעות מחיר מעד 10 רופאי שיניים בבקשה אחת. העלאה חד-פעמית של תוכנית טיפול, ללא שיחות טלפון, ללא לחץ.",
+    "פלטפורמה ישראלית לקבלת הצעות מחיר מ-3 רופאי שיניים מובילים בבקשה אחת — בחינם. העלאה חד-פעמית של תוכנית טיפול, ללא שיחות טלפון, ללא לחץ.",
   // opengraph-image.jpg / twitter-image.jpg in this folder are picked up
   // automatically; metadataBase makes their URLs absolute for social crawlers.
   openGraph: {
@@ -35,8 +35,7 @@ export const metadata: Metadata = {
     locale: "he_IL",
     siteName: "DentalCompare",
     title: "DentalCompare – השוו מחירים. חסכו אלפי שקלים.",
-    description:
-      "קבלו הצעות מחיר מעד 10 רופאי שיניים בבקשה אחת — ללא שיחות טלפון, ללא לחץ.",
+    description: "קבלו הצעות מחיר מ-3 רופאי שיניים בבקשה אחת, בחינם — ללא שיחות טלפון, ללא לחץ.",
   },
   twitter: {
     card: "summary_large_image",

@@ -64,7 +64,7 @@ export function FinalCta() {
         </div>
 
         <p className="text-cream/50 mt-8 text-xs">
-          ✦ ₪49 חד-פעמי לבקשה ✦ ביטול בכל עת ✦ ללא שמירת פרטי אשראי ✦
+          ✦ חינם לחלוטין ✦ ללא כרטיס אשראי ✦ ללא התחייבות ✦
         </p>
       </div>
     </section>

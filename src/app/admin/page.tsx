@@ -2,15 +2,10 @@ import Link from "next/link";
 import { requireAdmin } from "@/server/admin";
 import { Users, Stethoscope, FileText, Banknote, Building2, ArrowLeft } from "lucide-react";
 import { db } from "@/lib/db";
+import { REQUEST_STATUS_LABELS_HE } from "@/lib/labels";
 
 export const metadata = { title: "ניהול — סקירה" };
 export const dynamic = "force-dynamic";
-
-const statusLabels: Record<string, string> = {
-  PENDING: "ממתין",
-  PAID: "שולם",
-  FAILED: "נכשל",
-};
 
 export default async function AdminOverviewPage() {
   await requireAdmin();
@@ -24,34 +19,36 @@ export default async function AdminOverviewPage() {
     recentRequests,
     pendingClinics,
   ] = await Promise.all([
-      db.user.count(),
-      db.dentist.count(),
-      db.request.count(),
-      db.payment.aggregate({ where: { status: "PAID" }, _sum: { amountAgorot: true } }),
-      db.request.groupBy({ by: ["status"], _count: { _all: true } }),
-      db.request.findMany({
-        orderBy: { createdAt: "desc" },
-        take: 8,
-        select: {
-          id: true,
-          status: true,
-          createdAt: true,
-          user: { select: { fullName: true, email: true } },
-          _count: { select: { requestDentists: true } },
-        },
-      }),
-      db.dentist.count({ where: { submittedBySelf: true, isActive: false } }),
-    ]);
+    db.user.count(),
+    db.dentist.count(),
+    db.request.count(),
+    // All revenue is B2B now — patients are never charged (PRD 4.1), so this
+    // sums paid clinic subscription charges rather than patient payments.
+    db.subscriptionCharge.aggregate({ where: { status: "PAID" }, _sum: { amountILS: true } }),
+    db.request.groupBy({ by: ["status"], _count: { _all: true } }),
+    db.request.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 8,
+      select: {
+        id: true,
+        status: true,
+        createdAt: true,
+        user: { select: { fullName: true, email: true } },
+        _count: { select: { requestDentists: true } },
+      },
+    }),
+    db.dentist.count({ where: { submittedBySelf: true, isActive: false } }),
+  ]);
 
-  // Amounts are stored in agorot (int); convert back to shekels for display.
-  const totalRevenue = (paidAgg._sum.amountAgorot ?? 0) / 100;
+  // Subscription charges are stored in whole shekels.
+  const totalRevenue = paidAgg._sum.amountILS ?? 0;
 
   const stats = [
     { label: "סה״כ משתמשים", value: totalUsers.toLocaleString("he-IL"), icon: Users },
     { label: "סה״כ רופאים", value: totalDentists.toLocaleString("he-IL"), icon: Stethoscope },
     { label: "סה״כ בקשות", value: totalRequests.toLocaleString("he-IL"), icon: FileText },
     {
-      label: "סה״כ הכנסות",
+      label: "סה״כ הכנסות (מנויים)",
       value: `${totalRevenue.toLocaleString("he-IL")} ₪`,
       icon: Banknote,
     },
@@ -99,13 +96,15 @@ export default async function AdminOverviewPage() {
         ))}
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-3">
-        {(["PENDING", "PAID", "FAILED"] as const).map((status) => (
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {(["DRAFT", "SUBMITTED", "SENT", "FAILED"] as const).map((status) => (
           <div
             key={status}
             className="border-border/60 bg-card flex items-center justify-between rounded-2xl border px-5 py-4"
           >
-            <span className="text-muted-foreground text-sm">בקשות — {statusLabels[status]}</span>
+            <span className="text-muted-foreground text-sm">
+              בקשות — {REQUEST_STATUS_LABELS_HE[status]}
+            </span>
             <span className="text-foreground text-lg font-bold">{countFor(status)}</span>
           </div>
         ))}
@@ -140,7 +139,7 @@ export default async function AdminOverviewPage() {
                       <p className="text-muted-foreground text-xs">{r.user?.email ?? "—"}</p>
                     </td>
                     <td className="text-foreground px-4 py-3">{r._count.requestDentists}</td>
-                    <td className="px-4 py-3">{statusLabels[r.status]}</td>
+                    <td className="px-4 py-3">{REQUEST_STATUS_LABELS_HE[r.status]}</td>
                     <td className="text-muted-foreground px-4 py-3">
                       {new Intl.DateTimeFormat("he-IL", {
                         day: "numeric",

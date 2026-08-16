@@ -3,9 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { CheckCircle2, Mail } from "lucide-react";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
-import { getPageRequestStatus } from "@/lib/payplus";
-import { isPaymentsTestMode } from "@/lib/payments-mode";
-import { fulfillPaidSession } from "@/server/fulfillment";
+import { fulfillRequest } from "@/server/fulfillment";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
 import { cn } from "@/lib/utils";
@@ -17,15 +15,8 @@ export const metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function RequestSuccessPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<{ payment?: string }>;
-}) {
+export default async function RequestSuccessPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { payment: paymentId } = await searchParams;
   const { userId: clerkUserId } = await auth();
   if (!clerkUserId) redirect("/sign-in");
 
@@ -38,40 +29,22 @@ export default async function RequestSuccessPage({
   });
   if (!request || request.userId !== user.id) notFound();
 
-  // Verify the payment with PayPlus and fulfill (idempotent). This makes the flow
-  // work even without webhook forwarding in local dev; in production the webhook
-  // will usually have fulfilled it already and this is a no-op.
-  let dentistCount = 0;
-  if (paymentId) {
-    const payment = await db.payment.findUnique({
-      where: { id: paymentId },
-      select: { requestId: true, providerRef: true },
-    });
-    // Only fulfill a payment that actually belongs to this request.
-    if (payment?.requestId === id) {
-      const isTest = isPaymentsTestMode() || payment.providerRef.startsWith("test_");
-      if (isTest) {
-        // Test payment: no provider to verify against — fulfill directly.
-        await fulfillPaidSession(payment.providerRef);
-      } else {
-        try {
-          const { approved } = await getPageRequestStatus(payment.providerRef);
-          if (approved) {
-            await fulfillPaidSession(payment.providerRef);
-          }
-        } catch (err) {
-          console.error("Failed to verify PayPlus payment on success page:", err);
-        }
-      }
-    }
+  // There is no payment to verify any more. If the submit action set the request
+  // to SUBMITTED but delivery didn't complete, retry here — fulfillRequest is
+  // idempotent, so a clinic already emailed is never emailed twice.
+  if (request.status === "SUBMITTED") {
+    await fulfillRequest(id);
   }
 
   const fresh = await db.request.findUnique({
     where: { id },
-    select: { status: true, _count: { select: { requestDentists: true } } },
+    select: {
+      status: true,
+      _count: { select: { requestDentists: { where: { emailSent: true } } } },
+    },
   });
-  dentistCount = fresh?._count.requestDentists ?? 0;
-  const paid = fresh?.status === "PAID";
+  const dentistCount = fresh?._count.requestDentists ?? 0;
+  const sent = fresh?.status === "SENT";
 
   return (
     <>
@@ -83,21 +56,21 @@ export default async function RequestSuccessPage({
           </div>
 
           <h1 className="font-display text-foreground mt-6 text-4xl font-bold tracking-tight text-balance sm:text-5xl">
-            {paid ? "הבקשה שלכם נשלחה! 🎉" : "התשלום בעיבוד…"}
+            {sent ? "הבקשה שלכם נשלחה! 🎉" : "השליחה בעיבוד…"}
           </h1>
 
           <p className="text-muted-foreground mt-4 max-w-md text-lg text-pretty">
-            {paid ? (
+            {sent ? (
               <>
                 שלחנו את תוכנית הטיפול והצילום ל-{dentistCount} רופאים. הצעות המחיר יגיעו ישירות
                 לאימייל שלכם — בדרך כלל תוך 48 שעות.
               </>
             ) : (
-              <>קיבלנו את בקשתכם. ברגע שהתשלום יאושר נשלח את הבקשה לרופאים. נסו לרענן בעוד רגע.</>
+              <>קיבלנו את בקשתכם והיא בדרך לרופאים. נסו לרענן בעוד רגע.</>
             )}
           </p>
 
-          {paid && (
+          {sent && (
             <div className="text-muted-foreground mt-8 inline-flex items-center gap-2 text-sm">
               <Mail className="h-4 w-4" />
               עקבו אחר תיבת הדואר הנכנס (ולפעמים הספאם)
