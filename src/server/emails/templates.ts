@@ -23,14 +23,20 @@ export function quoteRequestEmailHtml(opts: {
   dentistName: string;
   patientName: string;
   patientPhone: string;
+  /** Whether the patient completed SMS verification. It's optional, so say so
+   *  rather than let the clinic assume every number was checked. */
+  phoneVerified: boolean;
   requestId: string;
   date: string;
   quoteUrl: string;
 }): string {
-  const { dentistName, patientName, patientPhone, requestId, date, quoteUrl } = opts;
+  const { dentistName, patientName, patientPhone, phoneVerified, requestId, date, quoteUrl } = opts;
   const p = escapeHtml(patientName);
   const d = escapeHtml(dentistName);
   const phone = escapeHtml(patientPhone);
+  const phoneNote = phoneVerified
+    ? ' <span style="color:#0f7a5a;">✓ אומת ב-SMS</span>'
+    : ' <span style="color:#999;">(לא אומת)</span>';
   return `
   <div dir="rtl" style="font-family: Arial, sans-serif; color: #1a1a1a; max-width: 560px; margin: 0 auto;">
     <h2 style="color: #0f4c4c;">${p} ביקש/ה ממך הצעת מחיר</h2>
@@ -48,7 +54,7 @@ export function quoteRequestEmailHtml(opts: {
     <ul style="padding-inline-start: 18px; color: #555; font-size: 13px;">
       <li>מספר בקשה: ${escapeHtml(requestId.slice(0, 8))}</li>
       <li>תאריך: ${escapeHtml(date)}</li>
-      <li>ליצירת קשר ישיר: ${phone || "ראו כפתור למעלה"}</li>
+      <li>ליצירת קשר ישיר: ${phone ? `${phone}${phoneNote}` : "ראו כפתור למעלה"}</li>
     </ul>
 
     <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 24px 0;" />

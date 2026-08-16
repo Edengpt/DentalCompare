@@ -87,9 +87,15 @@ export async function saveRequestDentists(
  * removed checkout action as the single trigger for the whole delivery pipeline
  * — submission is free for the patient (PRD 4.1), so there is no payment gate.
  *
- * The gates that remain are quality gates, and they are enforced here on the
- * server rather than only in the UI: without them the removal of the fee just
- * means clinics get flooded with junk and churn (PRD 4.2).
+ * The remaining gate is the upload requirement, enforced here on the server
+ * rather than only in the UI. That one is the strong filter: someone who
+ * obtained and uploaded a signed treatment plan and an x-ray has already been
+ * diagnosed and is shopping for a price.
+ *
+ * Phone verification is deliberately NOT a gate. It sat at the worst point in
+ * the funnel — after the patient had done all the work — and added little on top
+ * of the upload requirement. It's offered as a nudge instead, and the clinic is
+ * told whether the number was verified so it can judge for itself.
  */
 export async function submitRequest(requestId: string): Promise<SubmitRequestResult> {
   const { userId: clerkUserId } = await auth();
@@ -97,13 +103,17 @@ export async function submitRequest(requestId: string): Promise<SubmitRequestRes
 
   const user = await db.user.findUnique({
     where: { clerkUserId },
-    select: { id: true, phoneVerifiedAt: true },
+    select: { id: true, phone: true },
   });
   if (!user) return { ok: false, error: "המשתמש לא סונכרן עדיין — רעננו ונסו שוב" };
 
-  // Qualification gate 1: verified phone (PRD 4.2).
-  if (!user.phoneVerifiedAt) {
-    return { ok: false, error: "יש לאמת את מספר הטלפון לפני שליחת הבקשה" };
+  // A lead with no phone number at all is worthless to a clinic — calling back
+  // is the entire workflow. Verified or not, there has to be a number.
+  if (!user.phone) {
+    return {
+      ok: false,
+      error: "יש להוסיף מספר טלפון לפני שליחת הבקשה — המרפאות חוזרות אליכם בטלפון",
+    };
   }
 
   const request = await db.request.findUnique({
@@ -124,7 +134,7 @@ export async function submitRequest(requestId: string): Promise<SubmitRequestRes
     return { ok: false, error: "הבקשה כבר נשלחה" };
   }
 
-  // Qualification gate 2: proof of clinical intent (PRD 4.2).
+  // Qualification gate: proof of clinical intent (PRD 4.2).
   if (!request.treatmentFileUrl || !request.xrayFileUrl) {
     return { ok: false, error: "יש להעלות תוכנית טיפול וצילום לפני השליחה" };
   }

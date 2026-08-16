@@ -1,0 +1,15 @@
+-- Phone verification becomes optional (a nudge, not a gate).
+--
+-- The file-upload requirement is the strong qualification filter; SMS
+-- verification adds little on top of it and sat at the worst point in the funnel
+-- — after the patient had already uploaded a treatment plan and picked clinics.
+--
+-- Drop the unique index on phone. It existed to enforce "one account per real
+-- phone" while verification was mandatory. With verification optional it guards
+-- nothing (an unverified number proves nothing) while actively causing harm:
+-- anyone mistyping someone else's number would lock that person out of signing
+-- up. If verification becomes mandatory again, re-add it as a PARTIAL unique
+-- index over verified rows only:
+--   CREATE UNIQUE INDEX "User_phone_verified_key" ON "User"("phone")
+--     WHERE "phoneVerifiedAt" IS NOT NULL;
+DROP INDEX IF EXISTS "User_phone_key";

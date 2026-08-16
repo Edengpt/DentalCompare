@@ -60,7 +60,7 @@ export async function fulfillRequest(requestId: string): Promise<FulfillResult> 
       createdAt: true,
       treatmentFileUrl: true,
       xrayFileUrl: true,
-      user: { select: { fullName: true, email: true, phone: true } },
+      user: { select: { fullName: true, email: true, phone: true, phoneVerifiedAt: true } },
       requestDentists: {
         where: { emailSent: false },
         select: { id: true, dentist: { select: { dentistName: true, email: true } } },
@@ -140,10 +140,10 @@ export async function fulfillRequest(requestId: string): Promise<FulfillResult> 
         html: quoteRequestEmailHtml({
           dentistName: rd.dentist.dentistName,
           patientName: request.user.fullName,
-          // Always set in practice: submitRequest refuses to send without a
-          // verified phone. Kept defensive for the safety-net cron, which can
-          // pick up rows created before that gate existed.
           patientPhone: formatIsraeliMobileForDisplay(request.user.phone) || "—",
+          // Verification is optional (PRD 4.2), so tell the clinic which kind of
+          // number it's getting instead of letting it assume all were checked.
+          phoneVerified: Boolean(request.user.phoneVerifiedAt),
           requestId: request.id,
           date,
           quoteUrl,

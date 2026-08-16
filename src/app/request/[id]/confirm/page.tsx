@@ -20,16 +20,9 @@ export default async function ConfirmRequestPage({ params }: { params: Promise<{
 
   const user = await db.user.findUnique({
     where: { clerkUserId },
-    select: { id: true, phoneVerifiedAt: true },
+    select: { id: true, phone: true, phoneVerifiedAt: true },
   });
   if (!user) redirect("/sign-in");
-
-  // Qualification gate (PRD 4.2). submitRequest enforces this server-side too —
-  // this redirect just means the user meets it here rather than by having the
-  // send button fail on them.
-  if (!user.phoneVerifiedAt) {
-    redirect(`/verify-phone?next=${encodeURIComponent(`/request/${id}/confirm`)}`);
-  }
 
   const request = await db.request.findUnique({
     where: { id },
@@ -141,6 +134,28 @@ export default async function ConfirmRequestPage({ params }: { params: Promise<{
               עריכת בחירת הרופאים
             </Link>
           </div>
+
+          {/* Phone verification — an invitation, not a gate. Sending is allowed
+              either way; this only explains why verifying is worth 30 seconds. */}
+          {!user.phoneVerifiedAt && (
+            <div className="border-border/60 bg-muted/40 flex flex-col gap-3 rounded-2xl border p-5 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-foreground text-sm font-semibold">
+                  {user.phone ? "מומלץ לאמת את מספר הטלפון" : "לא נמצא מספר טלפון"}
+                </p>
+                <p className="text-muted-foreground mt-1 text-sm">
+                  המרפאות חוזרות אליכם בטלפון. אימות מהיר מוודא שלא נפלה טעות במספר — לוקח 30 שניות,
+                  וזה חינם.
+                </p>
+              </div>
+              <Link
+                href={`/verify-phone?next=${encodeURIComponent(`/request/${id}/confirm`)}`}
+                className="border-teal-deep/40 text-teal-deep hover:bg-teal-deep/5 inline-flex shrink-0 items-center justify-center rounded-full border px-5 py-2.5 text-sm font-semibold"
+              >
+                {user.phone ? "אימות המספר" : "הוספת מספר"}
+              </Link>
+            </div>
+          )}
 
           {/* Send */}
           <div className="border-border/60 flex flex-col gap-4 border-t pt-8">

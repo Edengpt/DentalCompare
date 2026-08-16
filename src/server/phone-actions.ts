@@ -32,10 +32,11 @@ export async function syncVerifiedPhone(): Promise<SyncPhoneResult> {
     return { ok: false, error: "יש לאמת מספר נייד ישראלי" };
   }
 
-  // The unique index is the real defence against one person opening unlimited
-  // accounts — surface the clash as a clear message instead of a 500.
+  // phone is no longer unique in the schema (verification is optional, so an
+  // unverified duplicate must not lock anyone out). Two *verified* accounts on
+  // one number is still wrong though, so block that case explicitly.
   const taken = await db.user.findFirst({
-    where: { phone, clerkUserId: { not: clerkUserId } },
+    where: { phone, phoneVerifiedAt: { not: null }, clerkUserId: { not: clerkUserId } },
     select: { id: true },
   });
   if (taken) {

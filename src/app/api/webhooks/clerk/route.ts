@@ -54,15 +54,12 @@ export async function POST(req: Request) {
 
         const fullName = [first_name, last_name].filter(Boolean).join(" ").trim() || primaryEmail;
 
-        // Clerk owns the SMS OTP; we mirror its verdict. Only a number Clerk has
-        // actually verified counts as the qualification gate (PRD 4.2) — an
-        // unverified number on the Clerk profile must not unlock submission.
+        // Clerk owns the SMS OTP; we mirror its verdict. Store the number either
+        // way — it's the clinic's only route to the patient, so an unverified
+        // number still beats none. phoneVerifiedAt is what records the verdict.
         const verified = primaryPhoneEntry?.verification?.status === "verified";
-        const phone = verified
-          ? (normalizeIsraeliMobile(primaryPhoneEntry?.phone_number) ??
-            primaryPhoneEntry?.phone_number ??
-            null)
-          : null;
+        const rawPhone = primaryPhoneEntry?.phone_number ?? null;
+        const phone = rawPhone ? (normalizeIsraeliMobile(rawPhone) ?? rawPhone) : null;
 
         await db.user.upsert({
           where: { clerkUserId: id },

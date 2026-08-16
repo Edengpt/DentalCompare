@@ -3,11 +3,18 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { normalizeIsraeliMobile } from "@/lib/phone";
 
-/** The verified primary phone on a Clerk profile, E.164, or null. */
-function verifiedPhoneOf(clerkUser: NonNullable<Awaited<ReturnType<typeof currentUser>>>) {
+/**
+ * The primary phone on a Clerk profile plus whether Clerk verified it. The
+ * number is returned either way — it's the clinic's only route to the patient,
+ * so an unverified number still beats none.
+ */
+function phoneOf(clerkUser: NonNullable<Awaited<ReturnType<typeof currentUser>>>) {
   const entry = clerkUser.phoneNumbers.find((p) => p.id === clerkUser.primaryPhoneNumberId);
-  if (entry?.verification?.status !== "verified") return null;
-  return normalizeIsraeliMobile(entry.phoneNumber) ?? entry.phoneNumber;
+  if (!entry) return { phone: null, verified: false };
+  return {
+    phone: normalizeIsraeliMobile(entry.phoneNumber) ?? entry.phoneNumber,
+    verified: entry.verification?.status === "verified",
+  };
 }
 
 /**
@@ -31,7 +38,7 @@ export async function getOrCreateUser() {
   )?.emailAddress;
   if (!primaryEmail) return null;
 
-  const phone = verifiedPhoneOf(clerkUser);
+  const { phone, verified } = phoneOf(clerkUser);
 
   const fullName =
     [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ").trim() || primaryEmail;
@@ -43,7 +50,7 @@ export async function getOrCreateUser() {
         clerkUserId,
         email: primaryEmail,
         phone,
-        phoneVerifiedAt: phone ? new Date() : null,
+        phoneVerifiedAt: verified ? new Date() : null,
         fullName,
       },
     });
@@ -51,8 +58,8 @@ export async function getOrCreateUser() {
 
   // Only write when something actually changed, so a page render doesn't issue a
   // pointless UPDATE on every request.
-  const needsStamp = Boolean(phone) && !existing.phoneVerifiedAt;
-  const needsClear = !phone && Boolean(existing.phoneVerifiedAt);
+  const needsStamp = verified && !existing.phoneVerifiedAt;
+  const needsClear = !verified && Boolean(existing.phoneVerifiedAt);
   const phoneChanged = (existing.phone ?? null) !== phone;
   if (!needsStamp && !needsClear && !phoneChanged) return existing;
 
