@@ -49,7 +49,11 @@ model User {
   // E.164 normalised (+9725XXXXXXXX). Unique because phone verification is the
   // qualification gate that replaced the removed patient fee (PRD 4.2) — one
   // account per real phone, or the gate is decorative.
-  phone           String    @unique
+  //
+  // Nullable, and null (never "") when absent: Clerk sign-up doesn't require a
+  // phone, and Postgres allows many NULLs under a unique index but only one "".
+  // Storing "" would make the second phone-less signup fail on a unique clash.
+  phone           String?   @unique
   phoneVerifiedAt DateTime?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt

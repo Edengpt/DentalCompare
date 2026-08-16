@@ -41,18 +41,25 @@ ALTER TABLE "Payment" RENAME TO "Payment_archived";
 -- ── 3. User: verified phone as the qualification gate (PRD 4.2) ──────────────
 ALTER TABLE "User" ADD COLUMN "phoneVerifiedAt" TIMESTAMP(3);
 
--- phone becomes UNIQUE. Existing rows may hold duplicates or blanks (it was never
--- verified before), so make duplicates unique-but-obviously-invalid instead of
--- letting the index creation fail and abort the whole migration. These users are
--- forced through phone verification on their next request either way, since
--- phoneVerifiedAt is null for every pre-existing row.
+-- phone becomes NULLABLE + UNIQUE. Nullable matters: Postgres allows many NULLs
+-- under a unique index but only one empty string, and Clerk sign-up doesn't
+-- require a phone — so blanks must become NULL or the second phone-less user
+-- would collide.
+ALTER TABLE "User" ALTER COLUMN "phone" DROP NOT NULL;
+UPDATE "User" SET "phone" = NULL WHERE btrim(COALESCE("phone", '')) = '';
+
+-- Existing duplicates were legal before (phone was never verified or unique).
+-- Keep the earliest row's number and NULL the rest rather than letting the index
+-- creation fail and abort the whole migration. Those users simply verify a phone
+-- on their next request — phoneVerifiedAt is null for every pre-existing row
+-- anyway, so none of them can submit without going through verification first.
 UPDATE "User" u
-SET "phone" = u."phone" || '#dup-' || u."id"
-WHERE EXISTS (
-  SELECT 1 FROM "User" o
-  WHERE o."phone" = u."phone" AND o."id" <> u."id" AND o."createdAt" < u."createdAt"
-);
-UPDATE "User" SET "phone" = '#missing-' || "id" WHERE "phone" IS NULL OR btrim("phone") = '';
+SET "phone" = NULL
+WHERE u."phone" IS NOT NULL
+  AND EXISTS (
+    SELECT 1 FROM "User" o
+    WHERE o."phone" = u."phone" AND o."id" <> u."id" AND o."createdAt" < u."createdAt"
+  );
 
 CREATE UNIQUE INDEX "User_phone_key" ON "User"("phone");
 

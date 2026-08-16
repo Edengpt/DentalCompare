@@ -18,8 +18,18 @@ export default async function ConfirmRequestPage({ params }: { params: Promise<{
   const { userId: clerkUserId } = await auth();
   if (!clerkUserId) redirect("/sign-in");
 
-  const user = await db.user.findUnique({ where: { clerkUserId }, select: { id: true } });
+  const user = await db.user.findUnique({
+    where: { clerkUserId },
+    select: { id: true, phoneVerifiedAt: true },
+  });
   if (!user) redirect("/sign-in");
+
+  // Qualification gate (PRD 4.2). submitRequest enforces this server-side too —
+  // this redirect just means the user meets it here rather than by having the
+  // send button fail on them.
+  if (!user.phoneVerifiedAt) {
+    redirect(`/verify-phone?next=${encodeURIComponent(`/request/${id}/confirm`)}`);
+  }
 
   const request = await db.request.findUnique({
     where: { id },

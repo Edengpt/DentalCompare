@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { Webhook } from "svix";
 import type { WebhookEvent } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
+import { normalizeIsraeliMobile } from "@/lib/phone";
 
 export const runtime = "nodejs";
 
@@ -42,9 +43,9 @@ export async function POST(req: Request) {
         const primaryEmail = email_addresses.find(
           (e) => e.id === event.data.primary_email_address_id,
         )?.email_address;
-        const primaryPhone = phone_numbers.find(
+        const primaryPhoneEntry = phone_numbers.find(
           (p) => p.id === event.data.primary_phone_number_id,
-        )?.phone_number;
+        );
 
         if (!primaryEmail) {
           console.warn(`Skipping ${event.type} for ${id}: no primary email`);
@@ -53,21 +54,43 @@ export async function POST(req: Request) {
 
         const fullName = [first_name, last_name].filter(Boolean).join(" ").trim() || primaryEmail;
 
+        // Clerk owns the SMS OTP; we mirror its verdict. Only a number Clerk has
+        // actually verified counts as the qualification gate (PRD 4.2) — an
+        // unverified number on the Clerk profile must not unlock submission.
+        const verified = primaryPhoneEntry?.verification?.status === "verified";
+        const phone = verified
+          ? (normalizeIsraeliMobile(primaryPhoneEntry?.phone_number) ??
+            primaryPhoneEntry?.phone_number ??
+            null)
+          : null;
+
         await db.user.upsert({
           where: { clerkUserId: id },
           update: {
             email: primaryEmail,
-            phone: primaryPhone ?? "",
             fullName,
+            phone,
+            // Revoking is immediate; stamping is handled below so the timestamp
+            // records first verification rather than drifting on every sync.
+            ...(verified ? {} : { phoneVerifiedAt: null }),
           },
           create: {
             clerkUserId: id,
             email: primaryEmail,
-            phone: primaryPhone ?? "",
             fullName,
+            phone,
+            phoneVerifiedAt: verified ? new Date() : null,
           },
         });
-        console.log(`✓ Synced ${event.type} for ${id}`);
+
+        if (verified) {
+          await db.user.updateMany({
+            where: { clerkUserId: id, phoneVerifiedAt: null },
+            data: { phoneVerifiedAt: new Date() },
+          });
+        }
+
+        console.log(`✓ Synced ${event.type} for ${id} (phone verified: ${verified})`);
         break;
       }
 

@@ -7,6 +7,7 @@ import { quotePath } from "@/lib/quotes";
 import { audit } from "@/lib/audit";
 import { appUrl } from "@/lib/app-url";
 import { logEvent } from "@/lib/log";
+import { formatIsraeliMobileForDisplay } from "@/lib/phone";
 import { quoteRequestEmailHtml } from "@/server/emails/templates";
 
 /**
@@ -139,7 +140,10 @@ export async function fulfillRequest(requestId: string): Promise<FulfillResult> 
         html: quoteRequestEmailHtml({
           dentistName: rd.dentist.dentistName,
           patientName: request.user.fullName,
-          patientPhone: request.user.phone,
+          // Always set in practice: submitRequest refuses to send without a
+          // verified phone. Kept defensive for the safety-net cron, which can
+          // pick up rows created before that gate existed.
+          patientPhone: formatIsraeliMobileForDisplay(request.user.phone) || "—",
           requestId: request.id,
           date,
           quoteUrl,
