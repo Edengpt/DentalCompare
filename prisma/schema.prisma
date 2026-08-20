@@ -41,6 +41,36 @@ enum SubscriptionStatus {
   CANCELED
 }
 
+/// A country the platform operates in.
+///
+/// This model exists so that no country list is ever hardcoded again. Adding
+/// Mexico is an admin action — one row — not a release. Everything that used to
+/// be an Israeli constant (currency, calling code, the payer list) hangs off
+/// here instead.
+model Country {
+  code          String   @id // ISO 3166-1 alpha-2: "IL", "TR", "HU"
+  nameEn        String
+  currency      String // ISO 4217: "ILS", "TRY", "EUR"
+  callingCode   String // "972", "90", "36"
+  defaultLocale String   @default("en")
+  // Payers to offer in the clinic profile. Empty where the concept doesn't apply.
+  insurers      String[]
+  // Licence documents an admin must see before approving a clinic here. P2
+  // consumes this; P0 only stores it, so the model doesn't have to change again.
+  requiredDocs  String[]
+  // New countries arrive as drafts. An admin flips this only once currency,
+  // insurers and required documents are filled in — a half-configured country
+  // must never reach users.
+  isActive      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  dentists Dentist[]
+  users    User[]
+
+  @@index([isActive])
+}
+
 model User {
   id              String    @id @default(uuid())
   clerkUserId     String    @unique
@@ -58,12 +88,20 @@ model User {
   // index over verified rows only.
   phone           String?
   phoneVerifiedAt DateTime?
+  // Where the patient is. Defaults to IL so every existing row is correct the
+  // moment the column exists; new sign-ups take it from the active locale.
+  countryCode     String    @default("IL")
+  country         Country   @relation(fields: [countryCode], references: [code])
+  // Language for outgoing email. The site locale is in the URL, but a cron
+  // sending a renewal notice at 4am has no request to read it from.
+  locale          String    @default("he")
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
   requests Request[]
 
   @@index([clerkUserId])
+  @@index([countryCode])
 }
 
 model Dentist {
@@ -74,10 +112,20 @@ model Dentist {
   phone           String
   city            String
   address         String
+  // Which country the clinic operates in. Drives its currency, its payer list
+  // and which licence documents an admin must see before approving it.
+  countryCode     String   @default("IL")
+  country         Country  @relation(fields: [countryCode], references: [code])
+  locale          String   @default("he")
   experienceYears Int
   specialties     String[]
   treatments      String[]
   hmoAffiliations String[]
+  // Languages the clinic's staff speak. A patient who can't be understood
+  // won't fly, however good the price — so this is comparison data, not a
+  // profile nicety. Lives on the clinic, not the quote: it doesn't change
+  // between quotes, and duplicating it would let the two disagree.
+  spokenLanguages String[]
   profileImageUrl String?
   rating          Float    @default(5.0)
   reviewCount     Int      @default(0)
