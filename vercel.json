@@ -1,7 +1,20 @@
 {
   "crons": [
-    { "path": "/api/cron/renew-subscriptions", "schedule": "0 6 * * *" },
-    { "path": "/api/cron/retry-fulfillment", "schedule": "0 7 * * *" },
-    { "path": "/api/cron/retry-notifications", "schedule": "0 8 * * *" }
+    {
+      "path": "/api/cron/refresh-exchange-rates",
+      "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/renew-subscriptions",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/retry-fulfillment",
+      "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/cron/retry-notifications",
+      "schedule": "0 8 * * *"
+    }
   ]
 }

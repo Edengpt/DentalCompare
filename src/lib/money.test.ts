@@ -1,5 +1,13 @@
 import { describe, it, expect } from "vitest";
-import { minorUnitDigits, isSupportedCurrency, formatMoney, toMinor, toMajor } from "./money";
+import {
+  minorUnitDigits,
+  isSupportedCurrency,
+  formatMoney,
+  toMinor,
+  toMajor,
+  convert,
+  isRateStale,
+} from "./money";
 
 describe("minorUnitDigits", () => {
   it("returns 2 for the common currencies", () => {
@@ -82,5 +90,47 @@ describe("formatMoney", () => {
   it("shows the currency of the amount, never a hardcoded symbol", () => {
     expect(formatMoney(180000, "EUR", "en")).toContain("€");
     expect(formatMoney(180000, "GBP", "en")).toContain("£");
+  });
+});
+
+describe("convert", () => {
+  it("converts between currencies with the same minor-unit scale", () => {
+    // €1,800.00 at 4.0 ILS/EUR = ₪7,200.00
+    expect(convert(180000, "EUR", "ILS", 4)).toBe(720000);
+  });
+
+  it("rescales when the minor-unit digits differ", () => {
+    // ¥10,000 (0 digits) at 0.025 EUR/JPY = €250.00 -> 25000 minor units
+    expect(convert(10000, "JPY", "EUR", 0.025)).toBe(25000);
+  });
+
+  it("rounds to the nearest minor unit rather than truncating", () => {
+    expect(convert(100, "EUR", "ILS", 3.999)).toBe(400);
+  });
+
+  it("is a no-op when the currencies match, whatever the rate says", () => {
+    // Guards against a stale or wrong self-rate silently rewriting an amount.
+    expect(convert(29900, "ILS", "ILS", 1)).toBe(29900);
+    expect(convert(29900, "ILS", "ILS", 3.7)).toBe(29900);
+  });
+});
+
+describe("isRateStale", () => {
+  it("accepts a rate fetched today", () => {
+    expect(
+      isRateStale(new Date("2026-08-20T09:00:00Z"), new Date("2026-08-20T12:00:00Z")),
+    ).toBe(false);
+  });
+
+  it("accepts a rate just inside the window, so a late cron isn't punished", () => {
+    expect(
+      isRateStale(new Date("2026-08-18T13:00:00Z"), new Date("2026-08-20T12:00:00Z")),
+    ).toBe(false);
+  });
+
+  it("rejects a rate older than 48 hours", () => {
+    expect(
+      isRateStale(new Date("2026-08-17T09:00:00Z"), new Date("2026-08-20T12:00:00Z")),
+    ).toBe(true);
   });
 });

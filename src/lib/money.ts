@@ -90,3 +90,32 @@ export function formatMoney(minor: number, currency: string, locale: string): st
     toMajor(minor, currency),
   );
 }
+
+/**
+ * How old a rate may be before it is no longer shown.
+ *
+ * 48 hours rather than 24: the refresh runs daily, and a single missed run
+ * shouldn't blank out every converted price on the site. Two missed runs
+ * should.
+ */
+export const RATE_STALE_MS = 48 * 60 * 60 * 1000;
+
+export function isRateStale(fetchedAt: Date, now: Date = new Date()): boolean {
+  return now.getTime() - fetchedAt.getTime() > RATE_STALE_MS;
+}
+
+/**
+ * Converts an amount between currencies, rescaling when their minor-unit
+ * digits differ.
+ *
+ * For DISPLAY only. A quote is always stored in the currency the clinic named —
+ * converting at save time would commit the platform to a price it does not
+ * control and cannot honour when the rate moves.
+ *
+ * Same-currency conversion returns the amount untouched regardless of the rate
+ * passed, so a stale or wrong self-rate can never rewrite an amount.
+ */
+export function convert(minor: number, from: string, to: string, rate: number): number {
+  if (from === to) return minor;
+  return Math.round(toMajor(minor, from) * rate * 10 ** minorUnitDigits(to));
+}

@@ -244,6 +244,21 @@ model ClinicSubscription {
   @@index([trialEndsAt])
 }
 
+/// Daily FX snapshot, for DISPLAY conversion only.
+///
+/// A quote is always stored in the currency the clinic named. Converting at
+/// save time would commit the platform to a price it doesn't control, so these
+/// rates never touch a stored amount — they only render one in the reader's
+/// currency, labelled with the date they were fetched.
+model ExchangeRate {
+  base      String // "EUR"
+  quote     String // "ILS"
+  rate      Decimal  @db.Decimal(18, 8)
+  fetchedAt DateTime
+
+  @@id([base, quote])
+}
+
 model RateLimit {
   id        String   @id @default(uuid())
   bucket    String // e.g. "clinic-join:<ip>", "quote:<token>", "upload:<requestId>"
