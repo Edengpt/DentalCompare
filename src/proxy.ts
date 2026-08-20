@@ -1,13 +1,10 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { PROTECTED_PATTERNS } from "./proxy-routes";
 
-const isProtectedRoute = createRouteMatcher([
-  "/dashboard(.*)",
-  "/request(.*)",
-  "/verify-phone(.*)",
-  "/admin(.*)",
-  "/api/requests(.*)",
-  "/api/admin(.*)",
-]);
+// Patterns live in ./proxy-routes so they can be tested without pulling Clerk
+// into the node test environment. They carry an optional locale prefix — see
+// the note there; getting that wrong makes the admin area public in silence.
+const isProtectedRoute = createRouteMatcher([...PROTECTED_PATTERNS]);
 
 export default clerkMiddleware(async (auth, req) => {
   if (isProtectedRoute(req)) {
