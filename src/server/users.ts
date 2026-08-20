@@ -1,7 +1,7 @@
 import "server-only";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
-import { normalizeIsraeliMobile } from "@/lib/phone";
+import { normalizePhone } from "@/lib/phone";
 
 /**
  * The primary phone on a Clerk profile plus whether Clerk verified it. The
@@ -12,7 +12,7 @@ function phoneOf(clerkUser: NonNullable<Awaited<ReturnType<typeof currentUser>>>
   const entry = clerkUser.phoneNumbers.find((p) => p.id === clerkUser.primaryPhoneNumberId);
   if (!entry) return { phone: null, verified: false };
   return {
-    phone: normalizeIsraeliMobile(entry.phoneNumber) ?? entry.phoneNumber,
+    phone: normalizePhone(entry.phoneNumber) ?? entry.phoneNumber,
     verified: entry.verification?.status === "verified",
   };
 }

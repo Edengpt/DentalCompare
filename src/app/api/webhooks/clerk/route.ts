@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { Webhook } from "svix";
 import type { WebhookEvent } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
-import { normalizeIsraeliMobile } from "@/lib/phone";
+import { normalizePhone } from "@/lib/phone";
 
 export const runtime = "nodejs";
 
@@ -59,7 +59,7 @@ export async function POST(req: Request) {
         // number still beats none. phoneVerifiedAt is what records the verdict.
         const verified = primaryPhoneEntry?.verification?.status === "verified";
         const rawPhone = primaryPhoneEntry?.phone_number ?? null;
-        const phone = rawPhone ? (normalizeIsraeliMobile(rawPhone) ?? rawPhone) : null;
+        const phone = rawPhone ? (normalizePhone(rawPhone) ?? rawPhone) : null;
 
         await db.user.upsert({
           where: { clerkUserId: id },

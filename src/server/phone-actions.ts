@@ -2,7 +2,7 @@
 
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
-import { normalizeIsraeliMobile } from "@/lib/phone";
+import { normalizePhone } from "@/lib/phone";
 import { audit } from "@/lib/audit";
 
 export type SyncPhoneResult = { ok: true } | { ok: false; error: string };
@@ -27,9 +27,9 @@ export async function syncVerifiedPhone(): Promise<SyncPhoneResult> {
     return { ok: false, error: "המספר עדיין לא אומת" };
   }
 
-  const phone = normalizeIsraeliMobile(entry.phoneNumber);
+  const phone = normalizePhone(entry.phoneNumber);
   if (!phone) {
-    return { ok: false, error: "יש לאמת מספר נייד ישראלי" };
+    return { ok: false, error: "יש לאמת מספר נייד תקין" };
   }
 
   // phone is no longer unique in the schema (verification is optional, so an

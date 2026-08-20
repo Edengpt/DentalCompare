@@ -7,7 +7,7 @@ import { quotePath } from "@/lib/quotes";
 import { audit } from "@/lib/audit";
 import { appUrl } from "@/lib/app-url";
 import { logEvent } from "@/lib/log";
-import { formatIsraeliMobileForDisplay } from "@/lib/phone";
+import { formatPhoneForDisplay } from "@/lib/phone";
 import { quoteRequestEmailHtml } from "@/server/emails/templates";
 
 /**
@@ -140,7 +140,7 @@ export async function fulfillRequest(requestId: string): Promise<FulfillResult> 
         html: quoteRequestEmailHtml({
           dentistName: rd.dentist.dentistName,
           patientName: request.user.fullName,
-          patientPhone: formatIsraeliMobileForDisplay(request.user.phone) || "—",
+          patientPhone: formatPhoneForDisplay(request.user.phone) || "—",
           // Verification is optional (PRD 4.2), so tell the clinic which kind of
           // number it's getting instead of letting it assume all were checked.
           phoneVerified: Boolean(request.user.phoneVerifiedAt),

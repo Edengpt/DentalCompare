@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { Loader2, Phone, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
-import { normalizeIsraeliMobile, formatIsraeliMobileForDisplay } from "@/lib/phone";
+import { normalizePhone, formatPhoneForDisplay, FALLBACK_PHONE_COUNTRY } from "@/lib/phone";
 import { syncVerifiedPhone } from "@/server/phone-actions";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
@@ -45,7 +45,9 @@ export function PhoneVerification({ redirectTo }: { redirectTo: string }) {
   }
 
   const sendCode = async () => {
-    const e164 = normalizeIsraeliMobile(phone);
+    // The field takes a local spelling (050-555-5555), which needs a country to
+    // be readable at all — without one the parser returns null for every input.
+    const e164 = normalizePhone(phone, FALLBACK_PHONE_COUNTRY);
     if (!e164) {
       toast.error("מספר לא תקין — הזינו מספר נייד ישראלי, למשל 050-123-4567");
       return;
@@ -59,7 +61,7 @@ export function PhoneVerification({ redirectTo }: { redirectTo: string }) {
       await resource.prepareVerification();
       setPendingId(resource.id);
       setStep("code");
-      toast.success(`שלחנו קוד בן 6 ספרות ל-${formatIsraeliMobileForDisplay(e164)}`);
+      toast.success(`שלחנו קוד בן 6 ספרות ל-${formatPhoneForDisplay(e164)}`);
     } catch (err) {
       toast.error(clerkMessage(err, "לא הצלחנו לשלוח את הקוד — בדקו את המספר ונסו שוב"));
     } finally {
@@ -116,7 +118,7 @@ export function PhoneVerification({ redirectTo }: { redirectTo: string }) {
           <p className="text-muted-foreground text-sm">
             {step === "enter"
               ? "המרפאות חוזרות אליכם בטלפון, ולכן אנחנו מוודאים שהמספר נכון."
-              : `שלחנו קוד בן 6 ספרות ל-${formatIsraeliMobileForDisplay(normalizeIsraeliMobile(phone))}`}
+              : `שלחנו קוד בן 6 ספרות ל-${formatPhoneForDisplay(normalizePhone(phone, FALLBACK_PHONE_COUNTRY))}`}
           </p>
         </div>
       </div>
