@@ -16,99 +16,56 @@
 - **Never hardcode a country list in code.** Countries are rows in `Country`.
 - **Money is always integer minor units + an ISO 4217 currency code.** Never float, never a bare number.
 - **`amountILS` / `priceILS` hold WHOLE SHEKELS**, confirmed at `src/lib/payplus.ts:45` (`amount: args.amountILS` with `currency_code: "ILS"`, constant `299`). Backfill multiplies by 100.
-- **Any `middleware.ts` must be wrapped in `clerkMiddleware()`** or Clerk auth breaks silently — there is no middleware in the project today.
+- **`src/proxy.ts` already exists and already wraps `clerkMiddleware()`.** Edit it; never add a second such file.
+- **Every `createRouteMatcher` pattern must tolerate a locale prefix.** A pattern that misses means `auth.protect()` never runs and the route is silently public.
 - **Patients never pay.** Nothing in this plan may introduce a patient-facing fee.
 - **Existing Israeli behaviour must keep working** at every commit. This is an additive migration, not a rewrite.
+- **`AGENTS.md` rule: this is not the Next.js you know.** Next 16 has breaking
+  changes. Read the relevant file under `node_modules/next/dist/docs/` before
+  writing code against a framework API. Ignoring this is what produced the
+  removed Task 1.
+- **Middleware is `src/proxy.ts`**, not `middleware.ts` — renamed in Next 16.
+  Only one such file is allowed; creating `middleware.ts` fails the build.
 - Commit after every task. Keep `main` releasable.
 
 ---
 
 ## Task Order Rationale
 
-The spec's rollout order (§8) put the middleware first and the `[locale]/`
-restructure last. **That order breaks the site in between**: a middleware that
-redirects `/` → `/he/` while `src/app/[locale]/` does not yet exist 404s every
-page.
+**Task 1 was removed after it was attempted, and the reason matters.**
 
-This plan corrects it. Task 1 adds a **pass-through** middleware with no locale
-logic at all — its only job is to prove Clerk survives the introduction of a
-middleware, which is the single highest risk in P0. Locale routing lands in
-Task 10 together with the `[locale]/` directory that makes it valid.
+Both the spec and this plan originally opened with "create `src/middleware.ts`,
+because the project has none, and introducing one risks breaking Clerk
+silently." That premise was false. Next.js 16 renamed the file: it is
+`src/proxy.ts`, it has existed since 2026-08-16, and it is already wrapped in
+`clerkMiddleware()` with `createRouteMatcher` route protection. A `find` for
+`middleware.*` missed it. Creating `src/middleware.ts` alongside it fails the
+build outright:
+
+```
+Error: Both middleware file "./src/middleware.ts" and proxy file
+"./src/proxy.ts" are detected. Please use "./src/proxy.ts" only.
+```
+
+So the risk that task existed to isolate does not exist — Clerk middleware
+already runs on every request. **Locale logic edits `src/proxy.ts`; no new file
+is ever created.**
+
+Finding that file did surface a real and more serious problem, now Task 9a's
+first step: `isProtectedRoute` matches `/dashboard(.*)`, `/admin(.*)` and
+friends **without a locale prefix**. The moment pages move under
+`src/app/[locale]/`, the live path is `/he/dashboard`, which does not match, so
+`auth.protect()` never runs and **the admin area becomes public**. There is no
+error and no build failure — the page simply loads for anyone. That fix is
+written and tested *before* any page moves.
+
+The rest of the ordering stands: Task 9 lands the locale logic together with
+the `[locale]/` directory that makes it valid, because a proxy redirecting `/`
+→ `/he/` while nothing serves `/he/` 404s the entire site.
 
 ---
 
-### Task 1: Pass-through middleware — isolate the Clerk risk
-
-The project has no `src/middleware.ts` and Clerk works via `auth()` directly in
-server components. Introducing a middleware changes the request pipeline. If it
-is not wrapped in `clerkMiddleware()`, auth breaks **silently** — no error, no
-build failure. This task changes nothing else, so if auth breaks, the cause is
-unambiguous.
-
-**Files:**
-- Create: `src/middleware.ts`
-
-**Interfaces:**
-- Consumes: nothing
-- Produces: a `middleware.ts` whose matcher and `clerkMiddleware()` wrapper Task 10 extends with locale logic
-
-- [ ] **Step 1: Create the pass-through middleware**
-
-```ts
-import { clerkMiddleware } from "@clerk/nextjs/server";
-
-/**
- * Deliberately does nothing yet.
- *
- * The project ran without a middleware for its whole life, with Clerk reached
- * through auth() inside server components. Introducing one changes the request
- * pipeline, and an unwrapped middleware breaks Clerk silently — no error, no
- * failed build, just logged-out users. Landing the wrapper on its own, with no
- * other behaviour, makes that failure impossible to misattribute.
- *
- * Locale negotiation is added here in Task 10, once src/app/[locale]/ exists to
- * redirect into.
- */
-export default clerkMiddleware();
-
-export const config = {
-  matcher: [
-    // Everything except Next internals and files with an extension, which must
-    // never pay middleware cost.
-    "/((?!_next|monitoring|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    // API routes: Clerk needs to run on them, locale logic never will.
-    "/(api|trpc)(.*)",
-  ],
-};
-```
-
-- [ ] **Step 2: Verify the build passes**
-
-Run: `npm run build`
-Expected: builds clean. A Clerk misconfiguration usually surfaces here first.
-
-- [ ] **Step 3: Manual Clerk smoke test — BLOCKING**
-
-Run `npm run dev`, then in a browser verify **all four**:
-1. `/sign-up` renders and a new account can be created
-2. `/sign-in` renders and an existing account can sign in
-3. `/dashboard` loads while signed in and shows the user's requests
-4. `/dashboard` redirects to sign-in while signed out
-
-**If any of these fail, STOP.** Do not continue to Task 2 — every later task
-assumes a working auth pipeline, and debugging them against broken auth wastes
-the whole plan.
-
-- [ ] **Step 4: Commit**
-
-```bash
-git add src/middleware.ts
-git commit -m "feat(auth): add pass-through clerkMiddleware ahead of locale routing"
-```
-
----
-
-### Task 2: International phone numbers
+### Task 1: International phone numbers
 
 `src/lib/phone.ts:36` returns `null` for any number that is not `+972`. This is
 the single bug that makes foreign registration impossible, so it comes before
@@ -349,7 +306,7 @@ git commit -m "feat(phone): accept international numbers, not just Israeli mobil
 
 ---
 
-### Task 3: The Country model
+### Task 2: The Country model
 
 **Files:**
 - Modify: `prisma/schema.prisma`
@@ -571,7 +528,7 @@ git commit -m "feat(countries): add data-driven Country model, seeded with Israe
 
 ---
 
-### Task 4: Exchange rates
+### Task 3: Exchange rates
 
 **Files:**
 - Modify: `prisma/schema.prisma`
@@ -581,7 +538,7 @@ git commit -m "feat(countries): add data-driven Country model, seeded with Israe
 - Modify: `vercel.json` (cron schedule) — create it if absent
 
 **Interfaces:**
-- Consumes: `minorUnitDigits` (Task 3)
+- Consumes: `minorUnitDigits` (Task 2)
 - Produces:
   - `formatMoney(minor: number, currency: string, locale: string): string`
   - `convert(minor: number, from: string, to: string, rate: number): number`
@@ -785,7 +742,7 @@ git commit -m "feat(money): add multi-currency helpers and a daily FX refresh cr
 
 ---
 
-### Task 5: Money migration M1 — add the new columns
+### Task 4: Money migration M1 — add the new columns
 
 Additive only. Nothing reads the new columns yet, so this is safe to deploy on
 its own and trivially reversible.
@@ -829,7 +786,7 @@ git commit -m "feat(money): M1 — add nullable minor-unit columns beside the IL
 
 ---
 
-### Task 6: Money migration M2 — backfill
+### Task 5: Money migration M2 — backfill
 
 **Files:**
 - Create: `prisma/migrations/<timestamp>_money_m2_backfill/migration.sql`
@@ -918,7 +875,7 @@ git commit -m "feat(money): M2 — backfill minor units from the shekel columns"
 
 ---
 
-### Task 7: Money migration M3 — switch reads and writes
+### Task 6: Money migration M3 — switch reads and writes
 
 The behavioural cut-over. After this the app uses only the new columns; the old
 ones remain populated but unread, so reverting is a code revert with no data
@@ -997,7 +954,7 @@ git commit -m "feat(money): M3 — read and write minor units, convert only at t
 
 ---
 
-### Task 8: Per-country insurers
+### Task 7: Per-country insurers
 
 **Files:**
 - Modify: `src/lib/constants.ts` (remove `HMO_OPTIONS`, `HMO` type)
@@ -1040,7 +997,7 @@ git commit -m "feat(countries): source clinic insurers from the country, not a h
 
 ---
 
-### Task 9: Quote comparison fields
+### Task 8: Quote comparison fields
 
 Across borders the price alone lies: £3,200 over two trips costs more than
 £4,000 over one. These are the four dimensions that make the comparison honest.
@@ -1104,7 +1061,7 @@ git commit -m "feat(quotes): capture inclusions, trips, and warranty for cross-b
 
 ---
 
-### Task 10: The locale layer
+### Task 9: The locale layer
 
 Largest task by file count (77 files hold Hebrew), lowest risk per file. Split
 into four commits so review stays tractable.
@@ -1114,14 +1071,95 @@ into four commits so review stays tractable.
 - Create: `src/lib/locale-negotiation.ts`, `src/lib/locale-negotiation.test.ts`
 - Create: `src/i18n/dictionaries.test.ts`
 - Create: `src/components/ui/forward-arrow.tsx`
-- Modify: `src/middleware.ts`, `src/app/layout.tsx`
+- Modify: `src/proxy.ts`, `src/app/layout.tsx`
+- Create: `src/proxy-routes.test.ts`
 - Move: all of `src/app/*` except `api/` into `src/app/[locale]/`
 
 **Interfaces:**
-- Consumes: the `clerkMiddleware()` wrapper from Task 1
+- Consumes: the existing `clerkMiddleware()` + `createRouteMatcher` in `src/proxy.ts`
 - Produces: `getDictionary(locale)`, `useT()`, `<ForwardArrow />`, `negotiateLocale(cookie, acceptLanguage)`
 
-- [ ] **Step 10a: Locale plumbing and the `[locale]/` move**
+- [ ] **Step 9.0: Locale-proof the route matcher — BEFORE moving any page**
+
+This is the security step. `src/proxy.ts` currently protects:
+
+```ts
+const isProtectedRoute = createRouteMatcher([
+  "/dashboard(.*)", "/request(.*)", "/verify-phone(.*)",
+  "/admin(.*)", "/api/requests(.*)", "/api/admin(.*)",
+]);
+```
+
+Once pages live at `/he/dashboard`, none of those page patterns match, so
+`auth.protect()` never runs and **the admin area serves to anyone**. No error,
+no build failure.
+
+Write the test first (`src/proxy-routes.test.ts`):
+
+```ts
+import { describe, it, expect } from "vitest";
+import { PROTECTED_PATTERNS } from "./proxy-routes";
+
+/**
+ * Guards against the silent-public failure: if a protected path stops matching
+ * once it carries a locale prefix, auth.protect() is never called and the route
+ * is public with no error anywhere.
+ */
+const PROTECTED_PATHS = ["/dashboard", "/request/abc", "/verify-phone", "/admin", "/admin/clinics"];
+
+function matches(path: string) {
+  return PROTECTED_PATTERNS.some((p) =>
+    new RegExp(`^${p.replace(/\(\.\*\)/g, ".*").replace(/\?/g, "?")}$`).test(path),
+  );
+}
+
+describe("protected route patterns", () => {
+  for (const path of PROTECTED_PATHS) {
+    it(`protects ${path} unprefixed and in every locale`, () => {
+      expect(matches(path)).toBe(true);
+      expect(matches(`/he${path}`)).toBe(true);
+      expect(matches(`/en${path}`)).toBe(true);
+    });
+  }
+
+  it("does not protect public pages in any locale", () => {
+    for (const path of ["/", "/dentists", "/terms", "/clinics/join"]) {
+      expect(matches(path)).toBe(false);
+      expect(matches(`/he${path}`)).toBe(false);
+    }
+  });
+});
+```
+
+Then extract the patterns to `src/proxy-routes.ts` so the test can import them
+without pulling in Clerk, and give each an optional locale prefix:
+
+```ts
+/**
+ * Protected route patterns, with an OPTIONAL locale prefix on each.
+ *
+ * The prefix is not cosmetic: without `(/(he|en))?` the pattern stops matching
+ * the moment pages move under [locale], auth.protect() is skipped, and /he/admin
+ * is served to anyone. Nothing errors — the page just loads.
+ *
+ * Exported separately from proxy.ts so proxy-routes.test.ts can assert on them
+ * without importing Clerk into the node test environment.
+ */
+export const PROTECTED_PATTERNS = [
+  "(/(he|en))?/dashboard(.*)",
+  "(/(he|en))?/request(.*)",
+  "(/(he|en))?/verify-phone(.*)",
+  "(/(he|en))?/admin(.*)",
+  "/api/requests(.*)",
+  "/api/admin(.*)",
+];
+```
+
+Run: `npm test -- src/proxy-routes.test.ts` — must pass **before** step 9a runs.
+
+Commit: `fix(auth): make protected route patterns tolerate a locale prefix`
+
+- [ ] **Step 9a: Locale plumbing and the `[locale]/` move**
 
 1. `src/i18n/config.ts`:
 
@@ -1207,15 +1245,38 @@ describe("isUnsupportedLocaleSegment", () => {
 5. Split `src/app/layout.tsx`: the root keeps only `<html><body>{children}`;
    `[locale]/layout.tsx` takes the fonts, `ClerkProvider`, `Toaster`, and sets
    `lang={locale} dir={dir[locale]}` with Clerk's `heIL`/`enUS`.
-6. Extend `src/middleware.ts` with the negotiation, keeping the
-   `clerkMiddleware()` wrapper from Task 1 intact.
+6. Extend `src/proxy.ts` with the negotiation **inside** the existing
+   `clerkMiddleware(async (auth, req) => { … })` callback, after the
+   `isProtectedRoute` check. Do not create `src/middleware.ts` — Next 16 allows
+   only one, and the build fails if both exist.
+7. `src/i18n/get-dictionary.ts` loads dictionaries **lazily**, per the bundled
+   Next 16 guide (`node_modules/next/dist/docs/01-app/02-guides/internationalization.md`),
+   so a request only ever pulls the locale it needs:
 
-**Re-run the Task 1 Clerk smoke test after this step.** Moving the
-`ClerkProvider` between layouts is the second-most likely way to break auth.
+```ts
+import "server-only";
+import type { Locale } from "./config";
+
+const dictionaries = {
+  he: () => import("./dictionaries/he").then((m) => m.default),
+  en: () => import("./dictionaries/en").then((m) => m.default),
+};
+
+export const getDictionary = async (locale: Locale) => dictionaries[locale]();
+```
+
+8. Pages read the locale via the Next 16 global helper:
+   `export default async function Page({ params }: PageProps<'/[locale]'>)`,
+   then `const { locale } = await params`.
+
+**Manual auth verification after this step — BLOCKING.** Moving `ClerkProvider`
+between layouts and prefixing every path are each capable of breaking auth. Sign
+out, then confirm `/he/admin`, `/en/admin` and `/he/dashboard` all redirect to
+sign-in rather than rendering. If any of them renders, stop.
 
 Commit: `refactor(i18n): move pages under [locale] and negotiate locale in middleware`
 
-- [ ] **Step 10b: The dictionary and the marketing pages**
+- [ ] **Step 1b: The dictionary and the marketing pages**
 
 Build `he.ts` from the strings currently in `components/sections/*`,
 `components/shared/header.tsx`, `footer.tsx`, and the five legal pages. Write
@@ -1279,13 +1340,13 @@ Fix the three directional classes: `request/[id]/page.tsx:158` `mr-2`→`me-2`,
 
 Commit: `feat(i18n): translate marketing pages, header, footer and legal pages`
 
-- [ ] **Step 10c: The patient journey and emails**
+- [ ] **Step 1c: The patient journey and emails**
 
 Extract strings from `app/[locale]/request/**`, `dashboard`, `verify-phone`,
 `components/request/**`, `components/upload/**`, `components/dentists/**`.
 
 Split `src/server/emails/templates.ts` into `emails/he.ts` + `emails/en.ts`;
-each sender reads the recipient's `locale` (added in Task 3). Extend
+each sender reads the recipient's `locale` (added in Task 2). Extend
 `src/server/emails/templates.test.ts` to cover both languages.
 
 Pass `locale` into the Claude prompt in `src/server/explain-treatment.ts` so the
@@ -1297,7 +1358,7 @@ nearly identity — the DB already stores canonical English (`Implants`,
 
 Commit: `feat(i18n): translate the patient journey and outgoing emails`
 
-- [ ] **Step 10d: Clinics, admin, and SEO**
+- [ ] **Step 1d: Clinics, admin, and SEO**
 
 Extract the remaining strings from `app/[locale]/clinics/**`,
 `app/[locale]/admin/**`, `components/clinics/**`, `components/admin/**`.
@@ -1330,7 +1391,7 @@ production on the new columns. Track it separately.
 ## Self-Review
 
 **Spec coverage:** §3.1 Country → Task 3. §3.2 phone → Task 2. §3.3 money →
-Tasks 4–7. §3.4 insurers → Task 8. §3.5 quote fields → Task 9. §3.6 locale
+Tasks 3–6. §3.4 insurers → Task 8. §3.5 quote fields → Task 9. §3.6 locale
 layer → Task 10. §3.7 middleware → Tasks 1 and 10a. §5 migration M1–M3 → Tasks
 5–7; M4 explicitly deferred. §7 testing → tests in Tasks 2, 3, 4, 6, 10a, 10b,
 10c.
@@ -1338,10 +1399,10 @@ layer → Task 10. §3.7 middleware → Tasks 1 and 10a. §5 migration M1–M3 �
 **Known deviation from the spec:** the spec's §8 rollout put the middleware
 first and `[locale]/` last, which would 404 the entire site in between. This
 plan splits the middleware into a pass-through wrapper (Task 1) and the locale
-logic (Task 10a). **Update spec §8 to match.**
+logic (Task 9a). **Update spec §8 to match.**
 
 **Type consistency:** `normalizePhone` / `formatPhoneForDisplay` used
 identically in Tasks 2 and 10c. `minorUnitDigits` defined in Task 3, consumed in
-Tasks 4 and 7. `formatMoney(minor, currency, locale)` — same signature in Tasks
+Tasks 3 and 6. `formatMoney(minor, currency, locale)` — same signature in Tasks
 4 and 7. `Country.insurers` defined in Task 3, consumed in Task 8.
 `QUOTE_INCLUSIONS` defined and consumed within Task 9.
