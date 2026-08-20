@@ -1,0 +1,14 @@
+-- Drop the archived patient-payment table.
+--
+-- Payment_archived is what the free-patient pivot left behind when the 49 ILS
+-- flat fee was removed (see 20260816000000_free_patient_subscription_only). It
+-- was retained as a precaution and never accumulated a row — verified empty
+-- before this ran, and the patient side has been free ever since, so nothing
+-- can write to it.
+--
+-- Removed now because it is not in schema.prisma, which meant every subsequent
+-- `prisma migrate dev` detected drift, proposed this DROP inside an unrelated
+-- migration, and prompted to reset the database. That cost a stuck advisory
+-- lock during the internationalisation work. The table's structure remains in
+-- git history if it is ever needed.
+DROP TABLE IF EXISTS "Payment_archived";
