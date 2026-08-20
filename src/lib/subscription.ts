@@ -49,8 +49,10 @@ export function dueTrialWarning(
   return due ?? null;
 }
 
-export function planPriceILS(plan: SubscriptionPlanType): number {
-  return SUBSCRIPTION_PLANS[plan].priceILS;
+/** A plan's price as the (minor units, currency) pair money is always carried as. */
+export function planPrice(plan: SubscriptionPlanType): { minor: number; currency: string } {
+  const { priceMinor, currency } = SUBSCRIPTION_PLANS[plan];
+  return { minor: priceMinor, currency };
 }
 
 /** Adds whole months, clamping to the last valid day (Jan 31 + 1mo -> Feb 28/29). */

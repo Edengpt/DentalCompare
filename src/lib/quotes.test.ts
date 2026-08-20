@@ -7,12 +7,13 @@ import {
   type QuoteRow,
 } from "./quotes";
 
-const row = (dentistId: string, amountILS: number | null): QuoteRow => ({
+const row = (dentistId: string, amountMinor: number | null): QuoteRow => ({
   dentistId,
   dentistName: `Dr ${dentistId}`,
   clinicName: `Clinic ${dentistId}`,
   city: "תל אביב",
-  amountILS,
+  amountMinor,
+  currency: amountMinor === null ? null : "ILS",
   note: null,
 });
 

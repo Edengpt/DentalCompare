@@ -18,6 +18,32 @@ import { SUBSCRIPTION_PLANS, type SubscriptionPlanType } from "@/lib/constants";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+
+/**
+ * Reads the (minor units, currency) pair off a subscription, refusing to guess.
+ *
+ * Defaulting a missing amount to 0 would charge the clinic nothing and mark the
+ * period paid — a silent revenue loss that looks like success in every log. The
+ * M2 backfill set these on every row and every write path sets them, so null
+ * here means something is genuinely wrong and the subscription must be skipped
+ * loudly rather than processed.
+ */
+function subscriptionPrice(sub: {
+  id: string;
+  priceMinor: number | null;
+  currency: string | null;
+}): { minor: number; currency: string } | null {
+  if (sub.priceMinor === null || sub.currency === null) {
+    logEvent("error", "subscription.missing_price", {
+      subscriptionId: sub.id,
+      priceMinor: sub.priceMinor,
+      currency: sub.currency,
+    });
+    return null;
+  }
+  return { minor: sub.priceMinor, currency: sub.currency };
+}
+
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization");
   if (!process.env.CRON_SECRET || auth !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -45,7 +71,8 @@ export async function GET(req: Request) {
     select: {
       id: true,
       plan: true,
-      priceILS: true,
+      priceMinor: true,
+      currency: true,
       recurringToken: true,
       payplusCustomerUid: true,
       trialEndsAt: true,
@@ -61,6 +88,12 @@ export async function GET(req: Request) {
   for (const sub of trials) {
     if (!sub.trialEndsAt) continue;
 
+    const price = subscriptionPrice(sub);
+    if (!price) {
+      trialsFailed += 1;
+      continue;
+    }
+
     // Still inside the trial → only consider a heads-up email.
     if (!isTrialOver(sub.trialEndsAt, now)) {
       const mark = dueTrialWarning(sub.trialEndsAt, sub.trialWarningSentDays, now);
@@ -69,7 +102,8 @@ export async function GET(req: Request) {
           email: sub.dentist.email,
           clinicName: sub.dentist.clinicName,
           daysRemaining: trialDaysRemaining(sub.trialEndsAt, now),
-          priceILS: sub.priceILS,
+          priceMinor: price.minor,
+          currency: price.currency,
           planLabelHe: SUBSCRIPTION_PLANS[sub.plan as SubscriptionPlanType].labelHe,
         });
         // Only record the mark once the mail actually went out, so a transient
@@ -96,7 +130,8 @@ export async function GET(req: Request) {
       const result = await chargeByToken({
         recurringToken: sub.recurringToken,
         payplusCustomerUid: sub.payplusCustomerUid,
-        amountILS: sub.priceILS,
+        amountMinor: price.minor,
+        currency: price.currency,
         description: `מנוי DentalCompare — ${sub.dentist.clinicName}`,
       });
 
@@ -106,7 +141,8 @@ export async function GET(req: Request) {
         await recordRenewalCharge({
           subscriptionId: sub.id,
           transactionUid: result.transactionUid,
-          amountILS: sub.priceILS,
+          amountMinor: price.minor,
+          currency: price.currency,
           periodStart: sub.trialEndsAt,
           periodEnd: nextPeriodEnd(sub.trialEndsAt, sub.plan as SubscriptionPlanType),
         });
@@ -115,7 +151,11 @@ export async function GET(req: Request) {
           action: "subscription.trial_converted",
           entity: "ClinicSubscription",
           entityId: sub.id,
-          metadata: { transactionUid: result.transactionUid, amountILS: sub.priceILS },
+          metadata: {
+            transactionUid: result.transactionUid,
+            amountMinor: price.minor,
+            currency: price.currency,
+          },
         });
         trialsConverted += 1;
       } else {
@@ -154,7 +194,8 @@ export async function GET(req: Request) {
     select: {
       id: true,
       plan: true,
-      priceILS: true,
+      priceMinor: true,
+      currency: true,
       status: true,
       recurringToken: true,
       payplusCustomerUid: true,
@@ -188,11 +229,20 @@ export async function GET(req: Request) {
     // already past their end, so they get retried on every run within grace.
     if (sub.status === "ACTIVE" && !isDueForRenewal(sub.currentPeriodEnd, now)) continue;
 
+    // Checked after the cancel branch: a lapsed subscription should still be
+    // cancelled even if its price is somehow unreadable.
+    const price = subscriptionPrice(sub);
+    if (!price) {
+      failed += 1;
+      continue;
+    }
+
     try {
       const result = await chargeByToken({
         recurringToken: sub.recurringToken,
         payplusCustomerUid: sub.payplusCustomerUid,
-        amountILS: sub.priceILS,
+        amountMinor: price.minor,
+        currency: price.currency,
         description: `חידוש מנוי DentalCompare — ${sub.dentist.clinicName}`,
       });
 
@@ -202,7 +252,8 @@ export async function GET(req: Request) {
         await recordRenewalCharge({
           subscriptionId: sub.id,
           transactionUid: result.transactionUid,
-          amountILS: sub.priceILS,
+          amountMinor: price.minor,
+          currency: price.currency,
           periodStart,
           periodEnd,
         });
@@ -211,7 +262,11 @@ export async function GET(req: Request) {
           action: "subscription.renewed",
           entity: "ClinicSubscription",
           entityId: sub.id,
-          metadata: { transactionUid: result.transactionUid, amountILS: sub.priceILS },
+          metadata: {
+            transactionUid: result.transactionUid,
+            amountMinor: price.minor,
+            currency: price.currency,
+          },
         });
         renewed += 1;
       } else {

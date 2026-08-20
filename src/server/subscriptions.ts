@@ -1,3 +1,4 @@
+import { legacyMajor } from "@/lib/money";
 import "server-only";
 import { db } from "@/lib/db";
 import { Prisma } from "@/generated/prisma/client";
@@ -16,7 +17,13 @@ export async function createPendingSubscription(
     data: {
       dentistId: args.dentistId,
       plan: args.plan,
-      priceILS: SUBSCRIPTION_PLANS[args.plan].priceILS,
+      priceMinor: SUBSCRIPTION_PLANS[args.plan].priceMinor,
+      currency: SUBSCRIPTION_PLANS[args.plan].currency,
+      // Legacy mirror, unread. Dropped in M4.
+      priceILS: legacyMajor(
+        SUBSCRIPTION_PLANS[args.plan].priceMinor,
+        SUBSCRIPTION_PLANS[args.plan].currency,
+      ),
       setupToken: args.setupToken,
       status: "PENDING",
     },
@@ -36,7 +43,14 @@ export async function activateSubscriptionBySetupToken(args: {
 }): Promise<{ ok: true } | { ok: false; error: string }> {
   const sub = await db.clinicSubscription.findUnique({
     where: { setupToken: args.setupToken },
-    select: { id: true, plan: true, priceILS: true, status: true, recurringToken: true },
+    select: {
+      id: true,
+      plan: true,
+      priceMinor: true,
+      currency: true,
+      status: true,
+      recurringToken: true,
+    },
   });
   if (!sub) return { ok: false, error: "מנוי לא נמצא" };
 
@@ -61,6 +75,15 @@ export async function activateSubscriptionBySetupToken(args: {
   });
   if (existing) return { ok: true };
 
+  // Refuse to record a charge for an amount we can't read — a 0 here would
+  // mark the period paid while collecting nothing.
+  if (sub.priceMinor === null || sub.currency === null) {
+    console.error("activateSubscription: subscription has no price", { subscriptionId: sub.id });
+    return { ok: false, error: "תקלה בהגדרת המנוי. פנו לתמיכה." };
+  }
+  const priceMinor = sub.priceMinor;
+  const currency = sub.currency;
+
   const now = new Date();
   const periodEnd = nextPeriodEnd(now, sub.plan as SubscriptionPlanType);
 
@@ -78,7 +101,10 @@ export async function activateSubscriptionBySetupToken(args: {
     db.subscriptionCharge.create({
       data: {
         subscriptionId: sub.id,
-        amountILS: sub.priceILS,
+        amountMinor: priceMinor,
+        currency,
+        // Legacy mirror, unread. Dropped in M4.
+        amountILS: legacyMajor(priceMinor, currency),
         status: "PAID",
         payplusTransactionUid: args.transactionUid,
         periodStart: now,
@@ -93,7 +119,8 @@ export async function activateSubscriptionBySetupToken(args: {
 export async function recordRenewalCharge(args: {
   subscriptionId: string;
   transactionUid: string;
-  amountILS: number;
+  amountMinor: number;
+  currency: string;
   periodStart: Date;
   periodEnd: Date;
 }): Promise<void> {
@@ -113,7 +140,10 @@ export async function recordRenewalCharge(args: {
     db.subscriptionCharge.create({
       data: {
         subscriptionId: args.subscriptionId,
-        amountILS: args.amountILS,
+        amountMinor: args.amountMinor,
+        currency: args.currency,
+        // Legacy mirror, unread. Dropped in M4.
+        amountILS: legacyMajor(args.amountMinor, args.currency),
         status: "PAID",
         payplusTransactionUid: args.transactionUid,
         periodStart: args.periodStart,

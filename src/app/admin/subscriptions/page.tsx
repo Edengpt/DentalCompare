@@ -1,3 +1,4 @@
+import { formatMoney } from "@/lib/money";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/server/admin";
 import { SUBSCRIPTION_PLANS } from "@/lib/constants";
@@ -23,7 +24,8 @@ export default async function AdminSubscriptionsPage() {
       id: true,
       plan: true,
       status: true,
-      priceILS: true,
+      priceMinor: true,
+      currency: true,
       currentPeriodEnd: true,
       dentist: { select: { clinicName: true, email: true } },
     },
@@ -61,7 +63,8 @@ export default async function AdminSubscriptionsPage() {
                     <p className="text-muted-foreground text-xs">{s.dentist.email}</p>
                   </td>
                   <td className="text-foreground px-4 py-3">
-                    {SUBSCRIPTION_PLANS[s.plan as "MONTHLY" | "YEARLY"].labelHe} · {s.priceILS} ₪
+                    {SUBSCRIPTION_PLANS[s.plan as "MONTHLY" | "YEARLY"].labelHe} ·{" "}
+                    {formatMoney(s.priceMinor ?? 0, s.currency ?? "ILS", "he")}
                   </td>
                   <td className="px-4 py-3">{statusHe[s.status]}</td>
                   <td className="text-muted-foreground px-4 py-3">

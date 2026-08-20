@@ -1,3 +1,4 @@
+import { formatMoney } from "@/lib/money";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import {
@@ -47,7 +48,7 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
         select: {
           emailSent: true,
           sentAt: true,
-          quote: { select: { amountILS: true, note: true } },
+          quote: { select: { amountMinor: true, currency: true, note: true } },
           dentist: {
             select: { id: true, dentistName: true, clinicName: true, city: true },
           },
@@ -66,13 +67,14 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
     dentistName: rd.dentist.dentistName,
     clinicName: rd.dentist.clinicName,
     city: rd.dentist.city,
-    amountILS: rd.quote?.amountILS ?? null,
+    amountMinor: rd.quote?.amountMinor ?? null,
+    currency: rd.quote?.currency ?? null,
     note: rd.quote?.note ?? null,
   }));
   const sortedQuotes = sortByPrice(quoteRows);
   const cheapestId = cheapestDentistId(quoteRows);
   const { responded, total } = responseCounts(quoteRows);
-  const ils = new Intl.NumberFormat("he-IL");
+
 
   const date = new Intl.DateTimeFormat("he-IL", {
     day: "numeric",
@@ -170,9 +172,9 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
                           )}
                         </div>
                         <div className="shrink-0 text-left">
-                          {q.amountILS !== null ? (
+                          {q.amountMinor !== null ? (
                             <span className="text-foreground text-lg font-bold">
-                              ₪{ils.format(q.amountILS)}
+                              {formatMoney(q.amountMinor, q.currency ?? "ILS", "he")}
                             </span>
                           ) : (
                             <span className="text-muted-foreground text-xs">ממתין להצעה</span>

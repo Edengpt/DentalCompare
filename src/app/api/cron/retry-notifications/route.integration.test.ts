@@ -69,7 +69,9 @@ async function seedQuote(opts: { createdAt: Date; notifiedAt?: Date | null }) {
   const quote = await db.quote.create({
     data: {
       requestDentistId: rd.id,
-      amountILS: 5000,
+      amountMinor: 500000,
+      currency: "ILS",
+      amountILS: 5000, // legacy mirror, dropped in M4
       createdAt: opts.createdAt,
       patientNotifiedAt: opts.notifiedAt ?? null,
     },

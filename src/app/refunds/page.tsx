@@ -1,3 +1,4 @@
+import { formatMoney } from "@/lib/money";
 import { SITE_CONFIG, SUBSCRIPTION_PLANS, TRIAL_DAYS } from "@/lib/constants";
 import { LegalLayout, Section, P, List } from "@/components/legal/legal-layout";
 
@@ -28,7 +29,7 @@ export default function RefundsPage() {
         <List
           items={[
             `כל מרפאה חדשה מקבלת תקופת התנסות חינם של ${TRIAL_DAYS} יום. ביטול במהלך תקופה זו אינו כרוך בחיוב כלשהו.`,
-            `בתום תקופת ההתנסות מתחיל החיוב: מסלול חודשי (${SUBSCRIPTION_PLANS.MONTHLY.priceILS} ₪) או שנתי (${SUBSCRIPTION_PLANS.YEARLY.priceILS} ₪), המתחדש אוטומטית בתום כל תקופה.`,
+            `בתום תקופת ההתנסות מתחיל החיוב: מסלול חודשי (${formatMoney(SUBSCRIPTION_PLANS.MONTHLY.priceMinor, SUBSCRIPTION_PLANS.MONTHLY.currency, "he")}) או שנתי (${formatMoney(SUBSCRIPTION_PLANS.YEARLY.priceMinor, SUBSCRIPTION_PLANS.YEARLY.currency, "he")}), המתחדש אוטומטית בתום כל תקופה.`,
             "ניתן לבטל את המנוי בכל עת. הביטול ייכנס לתוקף בתום התקופה ששולמה, והמרפאה לא תחויב בתקופה הבאה.",
             "לא יינתן החזר יחסי עבור תקופה ששולמה ולא נוצלה במלואה.",
           ]}

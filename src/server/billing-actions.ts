@@ -16,19 +16,27 @@ export async function startPayment(
     select: {
       id: true,
       plan: true,
-      priceILS: true,
+      priceMinor: true,
+      currency: true,
       status: true,
       dentist: { select: { clinicName: true, email: true } },
     },
   });
   if (!sub) return { ok: false, error: "קישור לא תקין" };
   if (sub.status === "ACTIVE") return { ok: false, error: "המנוי כבר פעיל" };
+  // Never open a payment page for an amount we can't read. Defaulting to 0
+  // would present the clinic a free checkout and mark the setup complete.
+  if (sub.priceMinor === null || sub.currency === null) {
+    console.error("startPayment: subscription has no price", { subscriptionId: sub.id });
+    return { ok: false, error: "תקלה בהגדרת המנוי. פנו לתמיכה." };
+  }
 
   try {
     const { url, pageRequestUid } = await createSubscriptionPaymentPage({
       subscriptionId: sub.id,
       setupToken,
-      amountILS: sub.priceILS,
+      amountMinor: sub.priceMinor,
+      currency: sub.currency,
       clinicName: sub.dentist.clinicName,
       email: sub.dentist.email,
       planLabelHe: SUBSCRIPTION_PLANS[sub.plan as "MONTHLY" | "YEARLY"].labelHe,

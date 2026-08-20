@@ -28,7 +28,7 @@ export function QuoteForm({
       return;
     }
     setPending(true);
-    const res = await submitQuote({ token, amountILS: parsed, note });
+    const res = await submitQuote({ token, amountMajor: parsed, note });
     setPending(false);
     if (res.ok) setDone(true);
     else setError(res.error);

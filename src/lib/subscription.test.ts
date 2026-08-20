@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  planPriceILS,
+  planPrice,
   addMonths,
   nextPeriodEnd,
   isDueForRenewal,
@@ -16,8 +16,8 @@ import {
 
 describe("subscription helpers", () => {
   it("returns the configured price per plan", () => {
-    expect(planPriceILS("MONTHLY")).toBe(299);
-    expect(planPriceILS("YEARLY")).toBe(1990);
+    expect(planPrice("MONTHLY")).toEqual({ minor: 29900, currency: "ILS" });
+    expect(planPrice("YEARLY")).toEqual({ minor: 199000, currency: "ILS" });
   });
 
   it("adds months and clamps end-of-month overflow", () => {

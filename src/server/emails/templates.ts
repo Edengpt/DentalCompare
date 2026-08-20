@@ -1,3 +1,4 @@
+import { formatMoney } from "@/lib/money";
 import { SITE_CONFIG } from "@/lib/constants";
 
 // Pure HTML builders for the transactional emails. Kept dependency-free and
@@ -111,17 +112,21 @@ export function paymentSetupEmailHtml(opts: {
 export function trialEndingEmailHtml(opts: {
   clinicName: string;
   daysRemaining: number;
-  priceILS: number;
+  priceMinor: number;
+  currency: string;
   planLabelHe: string;
 }): string {
-  const { clinicName, daysRemaining, priceILS, planLabelHe } = opts;
+  const { clinicName, daysRemaining, priceMinor, currency, planLabelHe } = opts;
+  // Symbol comes from the amount's currency, never a hardcoded ₪ — the notice
+  // has to stay true for a clinic billed in euros.
+  const price = formatMoney(priceMinor, currency, "he");
   const when =
     daysRemaining <= 0 ? "היום" : daysRemaining === 1 ? "מחר" : `בעוד ${daysRemaining} ימים`;
   return `
       <div dir="rtl" style="font-family: Arial, sans-serif; color:#1a1a1a; max-width:560px; margin:0 auto;">
         <h2 style="color:#0f4c4c;">תקופת ההתנסות מסתיימת ${when}</h2>
         <p>שלום <strong>${escapeHtml(clinicName)}</strong>,</p>
-        <p>תקופת ההתנסות החינמית שלכם ב-DentalCompare מסתיימת ${when}. מרגע זה יתחיל החיוב במסלול ה${escapeHtml(planLabelHe)}, בסך <strong>${priceILS} ₪</strong>, באמצעי התשלום שנשמר בעת ההרשמה.</p>
+        <p>תקופת ההתנסות החינמית שלכם ב-DentalCompare מסתיימת ${when}. מרגע זה יתחיל החיוב במסלול ה${escapeHtml(planLabelHe)}, בסך <strong>${price}</strong>, באמצעי התשלום שנשמר בעת ההרשמה.</p>
         <p>לא נדרשת מכם כל פעולה כדי להמשיך. אם אינכם מעוניינים להמשיך, ניתן לבטל לפני מועד החיוב ולא תחויבו כלל.</p>
         <p style="font-size:12px;color:#777;">לביטול או לשאלות: <a href="mailto:${SITE_CONFIG.supportEmail}">${SITE_CONFIG.supportEmail}</a></p>
       </div>`;

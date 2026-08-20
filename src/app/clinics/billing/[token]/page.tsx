@@ -1,3 +1,4 @@
+import { formatMoney } from "@/lib/money";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { Header } from "@/components/shared/header";
@@ -14,7 +15,8 @@ export default async function BillingSetupPage({ params }: { params: Promise<{ t
     where: { setupToken: token },
     select: {
       plan: true,
-      priceILS: true,
+      priceMinor: true,
+      currency: true,
       status: true,
       dentist: { select: { clinicName: true } },
     },
@@ -37,7 +39,7 @@ export default async function BillingSetupPage({ params }: { params: Promise<{ t
         ) : (
           <div className="border-border/60 bg-card mt-8 rounded-2xl border p-6">
             <p className="text-foreground text-lg font-semibold">
-              מסלול {planLabel} — {sub.priceILS} ₪
+              מסלול {planLabel} — {formatMoney(sub.priceMinor ?? 0, sub.currency ?? "ILS", "he")}
             </p>
             <p className="text-muted-foreground mt-1 text-sm">
               לאחר התשלום המרפאה תופיע במאגר ותתחילו לקבל פניות. המנוי יתחדש אוטומטית בתום התקופה.

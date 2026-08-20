@@ -1,5 +1,7 @@
 "use client";
 
+import { formatMoney } from "@/lib/money";
+
 import { useState } from "react";
 import { SUBSCRIPTION_PLANS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
@@ -8,14 +10,14 @@ const OPTIONS = [
   {
     value: "MONTHLY" as const,
     title: "מסלול חודשי",
-    price: `${SUBSCRIPTION_PLANS.MONTHLY.priceILS} ₪`,
+    price: `${formatMoney(SUBSCRIPTION_PLANS.MONTHLY.priceMinor, SUBSCRIPTION_PLANS.MONTHLY.currency, "he")}`,
     per: "לחודש",
     note: "ללא התחייבות — ביטול בכל עת",
   },
   {
     value: "YEARLY" as const,
     title: "מסלול שנתי",
-    price: `${SUBSCRIPTION_PLANS.YEARLY.priceILS} ₪`,
+    price: `${formatMoney(SUBSCRIPTION_PLANS.YEARLY.priceMinor, SUBSCRIPTION_PLANS.YEARLY.currency, "he")}`,
     per: "לשנה",
     note: "חיסכון משמעותי לעומת חודשי",
   },

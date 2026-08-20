@@ -1,3 +1,4 @@
+import { formatMoney } from "@/lib/money";
 import Link from "next/link";
 import { requireAdmin } from "@/server/admin";
 import { Users, Stethoscope, FileText, Banknote, Building2, ArrowLeft } from "lucide-react";
@@ -24,7 +25,11 @@ export default async function AdminOverviewPage() {
     db.request.count(),
     // All revenue is B2B now — patients are never charged (PRD 4.1), so this
     // sums paid clinic subscription charges rather than patient payments.
-    db.subscriptionCharge.aggregate({ where: { status: "PAID" }, _sum: { amountILS: true } }),
+    db.subscriptionCharge.groupBy({
+      by: ["currency"],
+      where: { status: "PAID" },
+      _sum: { amountMinor: true },
+    }),
     db.request.groupBy({ by: ["status"], _count: { _all: true } }),
     db.request.findMany({
       orderBy: { createdAt: "desc" },
@@ -40,8 +45,12 @@ export default async function AdminOverviewPage() {
     db.dentist.count({ where: { submittedBySelf: true, isActive: false } }),
   ]);
 
-  // Subscription charges are stored in whole shekels.
-  const totalRevenue = paidAgg._sum.amountILS ?? 0;
+  // Revenue can't be one number any more: summing across currencies would be
+  // meaningless, so it's grouped and rendered per currency. With a single
+  // active country this still reads as one line.
+  const revenueByCurrency = paidAgg
+    .map((row) => formatMoney(row._sum.amountMinor ?? 0, row.currency ?? "ILS", "he"))
+    .join(" · ");
 
   const stats = [
     { label: "סה״כ משתמשים", value: totalUsers.toLocaleString("he-IL"), icon: Users },
@@ -49,7 +58,7 @@ export default async function AdminOverviewPage() {
     { label: "סה״כ בקשות", value: totalRequests.toLocaleString("he-IL"), icon: FileText },
     {
       label: "סה״כ הכנסות (מנויים)",
-      value: `${totalRevenue.toLocaleString("he-IL")} ₪`,
+      value: revenueByCurrency || formatMoney(0, "ILS", "he"),
       icon: Banknote,
     },
   ];

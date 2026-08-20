@@ -45,7 +45,8 @@ export async function sendTrialEndingEmail(args: {
   email: string;
   clinicName: string;
   daysRemaining: number;
-  priceILS: number;
+  priceMinor: number;
+  currency: string;
   planLabelHe: string;
 }): Promise<boolean> {
   try {
@@ -59,7 +60,8 @@ export async function sendTrialEndingEmail(args: {
       html: trialEndingEmailHtml({
         clinicName: args.clinicName,
         daysRemaining: args.daysRemaining,
-        priceILS: args.priceILS,
+        priceMinor: args.priceMinor,
+        currency: args.currency,
         planLabelHe: args.planLabelHe,
       }),
     });

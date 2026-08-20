@@ -1,3 +1,4 @@
+import { toMajor } from "./money";
 import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { appUrl } from "@/lib/app-url";
@@ -29,11 +30,16 @@ function authHeader(): string {
 export async function createSubscriptionPaymentPage(args: {
   subscriptionId: string;
   setupToken: string;
-  amountILS: number;
+  amountMinor: number;
+  currency: string;
   clinicName: string;
   email: string;
   planLabelHe: string;
 }): Promise<{ url: string; pageRequestUid: string }> {
+  // PayPlus takes MAJOR units. This is the only place minor units become
+  // shekels — leaking amountMinor into the request body would charge every
+  // clinic 100x.
+  const amountMajor = toMajor(args.amountMinor, args.currency);
   const base = appUrl();
   const res = await fetch(`${BASE()}/PaymentPages/generateLink`, {
     method: "POST",
@@ -42,11 +48,11 @@ export async function createSubscriptionPaymentPage(args: {
       payment_page_uid: process.env.PAYPLUS_PAYMENT_PAGE_UID,
       charge_method: 1, // immediate charge
       create_token: true, // tokenize the card for recurring charges
-      amount: args.amountILS,
-      currency_code: "ILS",
+      amount: amountMajor,
+      currency_code: args.currency,
       sendEmailApproval: false,
       customer: { email: args.email, customer_name: args.clinicName },
-      items: [{ name: `מנוי DentalCompare (${args.planLabelHe})`, quantity: 1, price: args.amountILS }],
+      items: [{ name: `מנוי DentalCompare (${args.planLabelHe})`, quantity: 1, price: amountMajor }],
       // setupToken round-trips back to us in the IPN + return URL so we can match.
       // "sub_" prefix lets the unified webhook tell subscription vs. patient
       // payments apart (parseWebhook understands it; legacy un-prefixed values
@@ -80,10 +86,15 @@ export async function createSubscriptionPaymentPage(args: {
 export async function createOneTimePaymentPage(args: {
   paymentId: string;
   requestId: string;
-  amountILS: number;
+  amountMinor: number;
+  currency: string;
   patientName: string;
   email: string;
 }): Promise<{ url: string; pageRequestUid: string }> {
+  // PayPlus takes MAJOR units. This is the only place minor units become
+  // shekels — leaking amountMinor into the request body would charge every
+  // clinic 100x.
+  const amountMajor = toMajor(args.amountMinor, args.currency);
   const base = appUrl();
   const res = await fetch(`${BASE()}/PaymentPages/generateLink`, {
     method: "POST",
@@ -91,15 +102,15 @@ export async function createOneTimePaymentPage(args: {
     body: JSON.stringify({
       payment_page_uid: process.env.PAYPLUS_PAYMENT_PAGE_UID,
       charge_method: 1, // immediate charge
-      amount: args.amountILS,
-      currency_code: "ILS",
+      amount: amountMajor,
+      currency_code: args.currency,
       sendEmailApproval: false,
       customer: { email: args.email, customer_name: args.patientName },
       items: [
         {
           name: "DentalCompare — שליחת בקשת הצעת מחיר",
           quantity: 1,
-          price: args.amountILS,
+          price: amountMajor,
         },
       ],
       more_info: `req_${args.paymentId}`,
@@ -158,9 +169,14 @@ export async function getPageRequestStatus(
 export async function chargeByToken(args: {
   recurringToken: string;
   payplusCustomerUid?: string | null;
-  amountILS: number;
+  amountMinor: number;
+  currency: string;
   description: string;
 }): Promise<{ ok: true; transactionUid: string } | { ok: false; error: string }> {
+  // PayPlus takes MAJOR units. This is the only place minor units become
+  // shekels — leaking amountMinor into the request body would charge every
+  // clinic 100x.
+  const amountMajor = toMajor(args.amountMinor, args.currency);
   try {
     const res = await fetch(`${BASE()}/Transactions/Charge`, {
       method: "POST",
@@ -169,8 +185,8 @@ export async function chargeByToken(args: {
         payment_page_uid: process.env.PAYPLUS_PAYMENT_PAGE_UID,
         token: args.recurringToken,
         customer_uid: args.payplusCustomerUid ?? undefined,
-        amount: args.amountILS,
-        currency_code: "ILS",
+        amount: amountMajor,
+        currency_code: args.currency,
         more_info: args.description,
       }),
     });

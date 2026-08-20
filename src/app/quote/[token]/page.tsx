@@ -1,3 +1,4 @@
+import { toMajor } from "@/lib/money";
 import { notFound } from "next/navigation";
 import { FileText, Image as ImageIcon } from "lucide-react";
 import { db } from "@/lib/db";
@@ -13,7 +14,7 @@ export default async function QuotePage({ params }: { params: Promise<{ token: s
   const rd = await db.requestDentist.findUnique({
     where: { quoteToken: token },
     select: {
-      quote: { select: { amountILS: true, note: true } },
+      quote: { select: { amountMinor: true, currency: true, note: true } },
       request: {
         select: {
           treatmentFileUrl: true,
@@ -64,7 +65,9 @@ export default async function QuotePage({ params }: { params: Promise<{ token: s
         <div className="mt-6">
           <QuoteForm
             token={token}
-            initialAmount={rd.quote?.amountILS ?? null}
+            initialAmount={
+              rd.quote ? toMajor(rd.quote.amountMinor ?? 0, rd.quote.currency ?? "ILS") : null
+            }
             initialNote={rd.quote?.note ?? null}
           />
         </div>

@@ -1,5 +1,7 @@
 "use server";
 
+import { legacyMajor } from "@/lib/money";
+
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
@@ -184,7 +186,13 @@ export async function createDentist(formData: FormData): Promise<ActionResult> {
       data: {
         dentistId: dentist.id,
         plan: "MONTHLY",
-        priceILS: SUBSCRIPTION_PLANS.MONTHLY.priceILS,
+        priceMinor: SUBSCRIPTION_PLANS.MONTHLY.priceMinor,
+        currency: SUBSCRIPTION_PLANS.MONTHLY.currency,
+        // Legacy mirror, unread. Dropped in M4.
+        priceILS: legacyMajor(
+          SUBSCRIPTION_PLANS.MONTHLY.priceMinor,
+          SUBSCRIPTION_PLANS.MONTHLY.currency,
+        ),
         setupToken: randomUUID(),
         status: "ACTIVE",
         currentPeriodEnd: null,

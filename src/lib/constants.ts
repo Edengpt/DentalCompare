@@ -1,3 +1,5 @@
+import { formatMoney } from "./money";
+
 export const SITE_CONFIG = {
   name: "DentalCompare",
   url: "https://dentalcompare.co.il",
@@ -54,9 +56,12 @@ export type Treatment = (typeof TREATMENTS)[number];
 
 // --- Clinic subscription billing ---
 
+// Prices are minor units + currency, never a bare number: once clinics exist
+// outside Israel a plan price has to say which currency it is in. 29900 is
+// 299.00 ILS.
 export const SUBSCRIPTION_PLANS = {
-  MONTHLY: { priceILS: 299, intervalMonths: 1, labelHe: "חודשי" },
-  YEARLY: { priceILS: 1990, intervalMonths: 12, labelHe: "שנתי" },
+  MONTHLY: { priceMinor: 29900, currency: "ILS", intervalMonths: 1, labelHe: "חודשי" },
+  YEARLY: { priceMinor: 199000, currency: "ILS", intervalMonths: 12, labelHe: "שנתי" },
 } as const;
 
 export type SubscriptionPlanType = keyof typeof SUBSCRIPTION_PLANS;
@@ -86,8 +91,18 @@ export const RATE_LIMITS = {
   createRequest: { limit: 10, windowMs: HOUR_MS }, // per user — caps request spam
 } as const;
 
+/**
+ * Renders a plan price for Hebrew copy. Goes through formatMoney so the symbol
+ * comes from the plan's currency rather than a hardcoded ₪ — the terms have to
+ * stay true once a plan is priced in euros.
+ */
+function planPriceLabel(plan: SubscriptionPlanType): string {
+  const { priceMinor, currency } = SUBSCRIPTION_PLANS[plan];
+  return formatMoney(priceMinor, currency, "he");
+}
+
 export const SUBSCRIPTION_TERMS_HE: string[] = [
-  `המרפאה בוחרת מסלול מנוי: ${SUBSCRIPTION_PLANS.MONTHLY.priceILS} ₪ לחודש או ${SUBSCRIPTION_PLANS.YEARLY.priceILS} ₪ לשנה, עבור הופעה במאגר DentalCompare וקבלת פניות ממטופלים.`,
+  `המרפאה בוחרת מסלול מנוי: ${planPriceLabel("MONTHLY")} לחודש או ${planPriceLabel("YEARLY")} לשנה, עבור הופעה במאגר DentalCompare וקבלת פניות ממטופלים.`,
   `המרפאה מקבלת תקופת התנסות חינם של ${TRIAL_DAYS} יום, המתחילה במועד אישור המרפאה על ידי צוות DentalCompare. במהלך תקופה זו המרפאה מופיעה במאגר ומקבלת פניות ללא כל חיוב.`,
   `אמצעי התשלום נשמר כבר במעמד ההרשמה, והחיוב הראשון מתבצע אוטומטית בתום ${TRIAL_DAYS} ימי ההתנסות. תישלח התראה במייל לפני מועד החיוב הראשון.`,
   "ניתן לבטל בכל עת במהלך תקופת ההתנסות, ובמקרה זה לא יבוצע כל חיוב.",
