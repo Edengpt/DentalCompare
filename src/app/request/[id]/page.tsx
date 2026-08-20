@@ -1,4 +1,5 @@
 import { formatMoney } from "@/lib/money";
+import { translateInclusion } from "@/lib/labels";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import {
@@ -48,9 +49,29 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
         select: {
           emailSent: true,
           sentAt: true,
-          quote: { select: { amountMinor: true, currency: true, note: true } },
+          quote: {
+            select: {
+              amountMinor: true,
+              currency: true,
+              note: true,
+              includes: true,
+              tripsRequired: true,
+              daysPerTrip: true,
+              weeksBetweenTrips: true,
+              warrantyYears: true,
+              warrantyNote: true,
+            },
+          },
           dentist: {
-            select: { id: true, dentistName: true, clinicName: true, city: true },
+            select: {
+              id: true,
+              dentistName: true,
+              clinicName: true,
+              city: true,
+              // Shown beside the price: which country a quote comes from is
+              // part of what the patient is comparing.
+              country: { select: { nameEn: true } },
+            },
           },
         },
         orderBy: { dentist: { dentistName: "asc" } },
@@ -69,6 +90,13 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
     city: rd.dentist.city,
     amountMinor: rd.quote?.amountMinor ?? null,
     currency: rd.quote?.currency ?? null,
+    country: rd.dentist.country?.nameEn ?? null,
+    includes: rd.quote?.includes ?? [],
+    tripsRequired: rd.quote?.tripsRequired ?? null,
+    daysPerTrip: rd.quote?.daysPerTrip ?? null,
+    weeksBetweenTrips: rd.quote?.weeksBetweenTrips ?? null,
+    warrantyYears: rd.quote?.warrantyYears ?? null,
+    warrantyNote: rd.quote?.warrantyNote ?? null,
     note: rd.quote?.note ?? null,
   }));
   const sortedQuotes = sortByPrice(quoteRows);
@@ -164,7 +192,46 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
                           </p>
                           <p className="text-muted-foreground text-xs">
                             {q.clinicName} ✦ {q.city}
+                            {q.country && ` ✦ ${q.country}`}
                           </p>
+
+                          {/* The facts that make a cross-border price
+                              comparable. Rendered as plain chips rather than a
+                              computed "real total" — the platform deliberately
+                              doesn't guess flight prices (spec 2.3), it just
+                              shows what the patient has to add up. */}
+                          {q.amountMinor !== null && (
+                            <div className="mt-2 flex flex-wrap gap-1.5">
+                              {q.tripsRequired !== null && (
+                                <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs">
+                                  {q.tripsRequired === 1
+                                    ? `נסיעה אחת · ${q.daysPerTrip} ימים`
+                                    : `${q.tripsRequired} נסיעות · ${q.daysPerTrip} ימים כל אחת` +
+                                      (q.weeksBetweenTrips
+                                        ? ` · ${q.weeksBetweenTrips} שבועות ביניהן`
+                                        : "")}
+                                </span>
+                              )}
+                              {q.warrantyYears !== null && (
+                                <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs">
+                                  אחריות {q.warrantyYears} שנים
+                                </span>
+                              )}
+                              {q.includes.map((key) => (
+                                <span
+                                  key={key}
+                                  className="bg-teal-deep/10 text-teal-deep rounded-full px-2 py-0.5 text-xs"
+                                >
+                                  {translateInclusion(key)}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          {q.warrantyNote && (
+                            <p className="text-muted-foreground mt-1.5 text-xs whitespace-pre-wrap">
+                              {q.warrantyNote}
+                            </p>
+                          )}
                           {q.note && (
                             <p className="text-muted-foreground mt-1 text-sm whitespace-pre-wrap">
                               {q.note}

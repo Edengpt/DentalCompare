@@ -8,6 +8,16 @@ export type QuoteRow = {
   // rendered, and across borders two rows may not share a currency.
   currency: string | null;
   note: string | null;
+  // Cross-border comparison. A price without these is not comparable across
+  // countries: two trips and no warranty is a different offer from one trip
+  // with five years, at any price.
+  country: string | null;
+  includes: string[];
+  tripsRequired: number | null;
+  daysPerTrip: number | null;
+  weeksBetweenTrips: number | null;
+  warrantyYears: number | null;
+  warrantyNote: string | null;
 };
 
 /** Quoted rows ascending by price; un-quoted rows keep their order at the end. */

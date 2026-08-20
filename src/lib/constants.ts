@@ -52,6 +52,21 @@ export const TREATMENTS = [
   "Full Mouth Reconstruction",
 ] as const;
 
+// What a quote covers. Canonical keys — the Hebrew/English labels live in
+// labels.ts and, from the locale task onward, in the dictionaries. Stored as
+// keys rather than free text so a patient can compare two clinics on the same
+// axis instead of reading two differently-worded notes.
+export const QUOTE_INCLUSIONS = [
+  "XRAYS",
+  "ANESTHESIA",
+  "TEMP_CROWN",
+  "FOLLOW_UP",
+  "AIRPORT_TRANSFER",
+  "ACCOMMODATION",
+] as const;
+
+export type QuoteInclusion = (typeof QUOTE_INCLUSIONS)[number];
+
 export type Specialty = (typeof SPECIALTIES)[number];
 export type Treatment = (typeof TREATMENTS)[number];
 

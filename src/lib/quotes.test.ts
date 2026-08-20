@@ -15,6 +15,13 @@ const row = (dentistId: string, amountMinor: number | null): QuoteRow => ({
   amountMinor,
   currency: amountMinor === null ? null : "ILS",
   note: null,
+  country: "Israel",
+  includes: [],
+  tripsRequired: 1,
+  daysPerTrip: 1,
+  weeksBetweenTrips: null,
+  warrantyYears: null,
+  warrantyNote: null,
 });
 
 describe("quote comparison helpers", () => {

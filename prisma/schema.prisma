@@ -105,33 +105,33 @@ model User {
 }
 
 model Dentist {
-  id              String   @id @default(uuid())
-  clinicName      String
-  dentistName     String
-  email           String   @unique
-  phone           String
-  city            String
-  address         String
+  id                  String   @id @default(uuid())
+  clinicName          String
+  dentistName         String
+  email               String   @unique
+  phone               String
+  city                String
+  address             String
   // Which country the clinic operates in. Drives its currency, its payer list
   // and which licence documents an admin must see before approving it.
-  countryCode     String   @default("IL")
-  country         Country  @relation(fields: [countryCode], references: [code])
-  locale          String   @default("he")
-  experienceYears Int
-  specialties     String[]
-  treatments      String[]
+  countryCode         String   @default("IL")
+  country             Country  @relation(fields: [countryCode], references: [code])
+  locale              String   @default("he")
+  experienceYears     Int
+  specialties         String[]
+  treatments          String[]
   insurerAffiliations String[]
   // Languages the clinic's staff speak. A patient who can't be understood
   // won't fly, however good the price — so this is comparison data, not a
   // profile nicety. Lives on the clinic, not the quote: it doesn't change
   // between quotes, and duplicating it would let the two disagree.
-  spokenLanguages String[]
-  profileImageUrl String?
-  rating          Float    @default(5.0)
-  reviewCount     Int      @default(0)
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  spokenLanguages     String[]
+  profileImageUrl     String?
+  rating              Float    @default(5.0)
+  reviewCount         Int      @default(0)
+  isActive            Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
   // Self-registration + subscription contract (PRD: clinic onboarding)
   contactName     String? // person who completed the registration
@@ -193,22 +193,43 @@ model RequestDentist {
 }
 
 model Quote {
-  id                String         @id @default(uuid())
-  requestDentistId  String         @unique
-  requestDentist    RequestDentist @relation(fields: [requestDentistId], references: [id], onDelete: Cascade)
-  amountILS         Int // total quoted price in ILS — superseded by amountMinor, dropped in M4
+  id               String         @id @default(uuid())
+  requestDentistId String         @unique
+  requestDentist   RequestDentist @relation(fields: [requestDentistId], references: [id], onDelete: Cascade)
+  amountILS        Int // total quoted price in ILS — superseded by amountMinor, dropped in M4
   // Money migration M1 (see docs/superpowers/specs/2026-08-20-international-p0-design.md).
   // Nullable and unread while the ILS column is still authoritative; M2
   // backfills, M3 switches reads and writes, M4 drops the old column after a
   // week of stable production.
-  amountMinor       Int?
-  currency          String?
-  note              String?        @db.Text // free-text, e.g. "כולל צילום, לא כולל שתל"
+  amountMinor      Int?
+  currency         String?
+  note             String?        @db.Text // free-text, e.g. "כולל צילום, לא כולל שתל"
+
+  // --- Cross-border comparison ---
+  //
+  // Across borders the price alone lies: 3,200 over two trips costs more than
+  // 4,000 over one, once flights and time off work are counted. These are the
+  // dimensions that make the comparison honest. Defaults keep every existing
+  // single-country quote valid without a backfill.
+
+  /// What the price covers. Canonical keys (QUOTE_INCLUSIONS); labels live in
+  /// the i18n layer so they translate with the rest of the site.
+  includes          String[]
+  /// How many separate trips abroad the treatment needs. Implants routinely
+  /// need two, months apart — the single biggest hidden cost.
+  tripsRequired     Int       @default(1)
+  daysPerTrip       Int       @default(1)
+  /// Null when one trip is enough.
+  weeksBetweenTrips Int?
+  /// The dominant fear for a dental-tourism patient: what happens when
+  /// something goes wrong after they have flown home.
+  warrantyYears     Int?
+  warrantyNote      String?   @db.Text
   // When the patient "you got a new quote" email was successfully sent. Null =
   // not yet notified (first send failed) — the retry cron picks these up.
   patientNotifiedAt DateTime?
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   @@index([requestDentistId])
 }

@@ -1,5 +1,5 @@
 import type { RequestStatus } from "@/generated/prisma/enums";
-import type { Specialty } from "./constants";
+import type { QuoteInclusion, Specialty } from "./constants";
 
 /**
  * Request status labels. There is no payment state in the patient journey any
@@ -63,4 +63,18 @@ export function translateSpecialty(s: string) {
 
 export function translateInsurer(name: string) {
   return INSURER_LABELS_HE[name] ?? name;
+}
+
+/** What a quote covers. Keys are canonical; only the labels are localised. */
+export const QUOTE_INCLUSION_LABELS_HE: Record<QuoteInclusion, string> = {
+  XRAYS: "צילומים",
+  ANESTHESIA: "הרדמה",
+  TEMP_CROWN: "כתר זמני",
+  FOLLOW_UP: "ביקורת מעקב",
+  AIRPORT_TRANSFER: "הסעה משדה התעופה",
+  ACCOMMODATION: "לינה",
+};
+
+export function translateInclusion(key: string) {
+  return QUOTE_INCLUSION_LABELS_HE[key as QuoteInclusion] ?? key;
 }

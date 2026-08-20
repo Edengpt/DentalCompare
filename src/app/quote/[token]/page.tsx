@@ -14,7 +14,22 @@ export default async function QuotePage({ params }: { params: Promise<{ token: s
   const rd = await db.requestDentist.findUnique({
     where: { quoteToken: token },
     select: {
-      quote: { select: { amountMinor: true, currency: true, note: true } },
+      quote: {
+        select: {
+          amountMinor: true,
+          currency: true,
+          note: true,
+          includes: true,
+          tripsRequired: true,
+          daysPerTrip: true,
+          weeksBetweenTrips: true,
+          warrantyYears: true,
+          warrantyNote: true,
+        },
+      },
+      // The quote is priced in the clinic's own country's currency, so the form
+      // has to label the field with it rather than assume shekels.
+      dentist: { select: { country: { select: { currency: true } } } },
       request: {
         select: {
           treatmentFileUrl: true,
@@ -27,6 +42,7 @@ export default async function QuotePage({ params }: { params: Promise<{ token: s
   if (!rd) notFound();
 
   const firstName = rd.request.user?.fullName.split(" ")[0] ?? "המטופל";
+  const currency = rd.quote?.currency ?? rd.dentist.country.currency;
   const files = [
     { icon: FileText, label: "תוכנית הטיפול", url: rd.request.treatmentFileUrl },
     { icon: ImageIcon, label: "צילום שיניים", url: rd.request.xrayFileUrl },
@@ -40,7 +56,8 @@ export default async function QuotePage({ params }: { params: Promise<{ token: s
           הצעת מחיר עבור {firstName}
         </h1>
         <p className="text-muted-foreground mt-2 text-sm">
-          עיינו בתוכנית הטיפול ובצילום, והזינו מחיר. שלב אחד — לוקח 5 שניות.
+          עיינו בתוכנית הטיפול ובצילום, והזינו את פרטי ההצעה. ככל שתפרטו יותר, כך
+          קל למטופל להשוות — ובחו"ל המחיר לבדו לא מספר את כל הסיפור.
         </p>
 
         {files.length > 0 && (
@@ -65,10 +82,17 @@ export default async function QuotePage({ params }: { params: Promise<{ token: s
         <div className="mt-6">
           <QuoteForm
             token={token}
-            initialAmount={
-              rd.quote ? toMajor(rd.quote.amountMinor ?? 0, rd.quote.currency ?? "ILS") : null
-            }
-            initialNote={rd.quote?.note ?? null}
+            currencyLabel={currency}
+            initial={{
+              amount: rd.quote ? toMajor(rd.quote.amountMinor ?? 0, currency) : null,
+              note: rd.quote?.note ?? null,
+              includes: rd.quote?.includes ?? [],
+              tripsRequired: rd.quote?.tripsRequired ?? 1,
+              daysPerTrip: rd.quote?.daysPerTrip ?? 1,
+              weeksBetweenTrips: rd.quote?.weeksBetweenTrips ?? null,
+              warrantyYears: rd.quote?.warrantyYears ?? null,
+              warrantyNote: rd.quote?.warrantyNote ?? null,
+            }}
           />
         </div>
       </main>

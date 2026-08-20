@@ -2,8 +2,15 @@
 
 import { db } from "@/lib/db";
 import { rateLimit } from "@/lib/rate-limit";
-import { RATE_LIMITS } from "@/lib/constants";
+import { RATE_LIMITS, QUOTE_INCLUSIONS, type QuoteInclusion } from "@/lib/constants";
 import { toMinor, legacyMajor } from "@/lib/money";
+
+/** Keeps a submitted count inside a sane range instead of trusting the form. */
+function clampInt(value: unknown, fallback: number, min: number, max: number): number {
+  const n = Math.floor(Number(value));
+  if (!Number.isFinite(n)) return fallback;
+  return Math.min(max, Math.max(min, n));
+}
 import { sendNewQuoteEmail } from "./quote-notifications";
 
 /**
@@ -18,6 +25,12 @@ export async function submitQuote(input: {
   token: string;
   amountMajor: number;
   note?: string;
+  includes?: string[];
+  tripsRequired?: number;
+  daysPerTrip?: number;
+  weeksBetweenTrips?: number | null;
+  warrantyYears?: number | null;
+  warrantyNote?: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
   const rl = await rateLimit(
     `quote:${input.token}`,
@@ -54,6 +67,22 @@ export async function submitQuote(input: {
   const currency = rd.dentist.country.currency;
   const amountMinor = toMinor(major, currency);
 
+  // Only canonical inclusion keys are stored, so the patient compares clinics
+  // on the same axis instead of reading two differently-worded notes.
+  const includes = (input.includes ?? []).filter((k): k is QuoteInclusion =>
+    (QUOTE_INCLUSIONS as readonly string[]).includes(k),
+  );
+
+  const tripsRequired = clampInt(input.tripsRequired, 1, 1, 10);
+  const daysPerTrip = clampInt(input.daysPerTrip, 1, 1, 60);
+  // Only meaningful with more than one trip; forced null otherwise so the two
+  // fields can never contradict each other.
+  const weeksBetweenTrips =
+    tripsRequired > 1 ? clampInt(input.weeksBetweenTrips, 1, 1, 104) : null;
+  const warrantyYears =
+    input.warrantyYears == null ? null : clampInt(input.warrantyYears, 0, 0, 50);
+  const warrantyNote = input.warrantyNote?.trim() || null;
+
   const quote = await db.quote.upsert({
     where: { requestDentistId: rd.id },
     // amountILS is a legacy mirror, unread since M3 and dropped in M4. It stays
@@ -64,12 +93,24 @@ export async function submitQuote(input: {
       currency,
       amountILS: legacyMajor(amountMinor, currency),
       note,
+      includes,
+      tripsRequired,
+      daysPerTrip,
+      weeksBetweenTrips,
+      warrantyYears,
+      warrantyNote,
     },
     update: {
       amountMinor,
       currency,
       amountILS: legacyMajor(amountMinor, currency),
       note,
+      includes,
+      tripsRequired,
+      daysPerTrip,
+      weeksBetweenTrips,
+      warrantyYears,
+      warrantyNote,
     },
     select: { id: true },
   });
