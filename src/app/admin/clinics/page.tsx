@@ -1,7 +1,7 @@
 import { Building2, Mail, Phone, MapPin, Clock, FileSignature, User } from "lucide-react";
 import { requireAdmin } from "@/server/admin";
 import { db } from "@/lib/db";
-import { translateSpecialty, translateHmo, translateTreatment } from "@/lib/labels";
+import { translateSpecialty, translateInsurer, translateTreatment } from "@/lib/labels";
 import { ClinicReviewActions } from "@/components/admin/clinic-review-actions";
 
 export const metadata = { title: "ניהול — הרשמות מרפאות" };
@@ -99,7 +99,7 @@ export default async function AdminClinicsPage() {
                 <Detail
                   icon={Building2}
                   label="קופות חולים"
-                  value={d.hmoAffiliations.map(translateHmo).join(", ") || "—"}
+                  value={d.insurerAffiliations.map(translateInsurer).join(", ") || "—"}
                 />
               </div>
 

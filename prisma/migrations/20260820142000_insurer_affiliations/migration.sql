@@ -1,0 +1,11 @@
+-- Rename hmoAffiliations -> insurerAffiliations.
+--
+-- Written by hand on purpose. Prisma renders a column rename as DROP + ADD,
+-- which would silently destroy every clinic's payer affiliations. RENAME COLUMN
+-- preserves the data; the values themselves are unchanged, so Israeli clinics
+-- keep Clalit/Maccabi/Meuhedet/Leumit exactly as before.
+--
+-- The concept generalises rather than disappears: the valid set is now
+-- Country.insurers, which differs per country and is empty where the country
+-- has no payer system at all.
+ALTER TABLE "Dentist" RENAME COLUMN "hmoAffiliations" TO "insurerAffiliations";

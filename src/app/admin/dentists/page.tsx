@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/server/admin";
-import { translateSpecialty, translateHmo } from "@/lib/labels";
+import { translateSpecialty, translateInsurer } from "@/lib/labels";
 import { ToggleActive } from "@/components/admin/toggle-active";
 import { NewDentistForm } from "@/components/admin/new-dentist-form";
 
@@ -84,7 +84,7 @@ export default async function AdminDentistsPage() {
                       {d.specialties.map(translateSpecialty).join(", ") || "—"}
                     </td>
                     <td className="text-muted-foreground px-4 py-3 text-xs">
-                      {d.hmoAffiliations.map(translateHmo).join(", ") || "—"}
+                      {d.insurerAffiliations.map(translateInsurer).join(", ") || "—"}
                     </td>
                     <td className="text-foreground px-4 py-3">{d.experienceYears} שנים</td>
                     <td className="px-4 py-3">

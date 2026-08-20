@@ -4,20 +4,20 @@ import { ChevronDown, X } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { HMO_LABELS_HE, SPECIALTY_LABELS_HE, translateHmo, translateSpecialty } from "@/lib/labels";
-import { HMO_OPTIONS, SPECIALTIES } from "@/lib/constants";
+import { SPECIALTY_LABELS_HE, translateInsurer, translateSpecialty } from "@/lib/labels";
+import { SPECIALTIES } from "@/lib/constants";
 
 export type DentistFilters = {
   city: string | null;
   specialties: string[];
-  hmos: string[];
+  insurers: string[];
   minExperience: number | null;
 };
 
 export const EMPTY_FILTERS: DentistFilters = {
   city: null,
   specialties: [],
-  hmos: [],
+  insurers: [],
   minExperience: null,
 };
 
@@ -31,6 +31,10 @@ type FilterBarProps = {
   filters: DentistFilters;
   onChange: (next: DentistFilters) => void;
   cities: string[];
+  /** Insurers actually present among the listed clinics. Derived from the data
+   * rather than a constant: the valid set differs per country, and several
+   * countries have none at all. */
+  insurers: string[];
   totalCount: number;
   filteredCount: number;
 };
@@ -39,11 +43,12 @@ export function FilterBar({
   filters,
   onChange,
   cities,
+  insurers,
   totalCount,
   filteredCount,
 }: FilterBarProps) {
   const hasFilters =
-    filters.city || filters.specialties.length || filters.hmos.length || filters.minExperience;
+    filters.city || filters.specialties.length || filters.insurers.length || filters.minExperience;
 
   return (
     <div className="bg-background/85 border-border/60 sticky top-16 z-40 border-b backdrop-blur-xl">
@@ -68,14 +73,17 @@ export function FilterBar({
           renderSelected={translateSpecialty}
         />
 
-        {/* HMO */}
-        <MultiPopover
-          label="קופת חולים"
-          values={filters.hmos}
-          options={HMO_OPTIONS.map((h) => ({ value: h, label: HMO_LABELS_HE[h] }))}
-          onChange={(values) => onChange({ ...filters, hmos: values })}
-          renderSelected={translateHmo}
-        />
+        {/* Insurer — hidden entirely where no listed clinic declares one, which
+            is the normal case for countries without a payer system. */}
+        {insurers.length > 0 && (
+          <MultiPopover
+            label="מבטח"
+            values={filters.insurers}
+            options={insurers.map((i) => ({ value: i, label: translateInsurer(i) }))}
+            onChange={(values) => onChange({ ...filters, insurers: values })}
+            renderSelected={translateInsurer}
+          />
+        )}
 
         {/* Experience */}
         <SinglePopover

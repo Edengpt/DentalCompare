@@ -30,7 +30,7 @@ const fields = [
     placeholder: "Implantology, Aesthetics",
   },
   { name: "treatments", label: "טיפולים (מופרד בפסיקים)", placeholder: "Implants, Crowns" },
-  { name: "hmoAffiliations", label: "קופות חולים (מופרד בפסיקים)", placeholder: "Clalit, Maccabi" },
+  { name: "insurerAffiliations", label: "מבטחים (מופרד בפסיקים)", placeholder: "Clalit, Maccabi" },
 ];
 
 export function NewDentistForm() {

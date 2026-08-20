@@ -3,8 +3,8 @@
 import { randomUUID } from "node:crypto";
 import { headers } from "next/headers";
 import { db } from "@/lib/db";
+import { normalizePhone } from "@/lib/phone";
 import {
-  HMO_OPTIONS,
   SPECIALTIES,
   TREATMENTS,
   SUBSCRIPTION_CONTRACT_VERSION,
@@ -54,7 +54,7 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
   const email = String(formData.get("email") ?? "")
     .trim()
     .toLowerCase();
-  const phone = String(formData.get("phone") ?? "").trim();
+  const phoneRaw = String(formData.get("phone") ?? "").trim();
   const city = String(formData.get("city") ?? "").trim();
   const address = String(formData.get("address") ?? "").trim();
   const experienceYears = Number(formData.get("experienceYears") ?? 0);
@@ -69,7 +69,7 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
       ? logoRaw
       : null;
 
-  if (!contactName || !dentistName || !clinicName || !email || !phone || !city || !address) {
+  if (!contactName || !dentistName || !clinicName || !email || !phoneRaw || !city || !address) {
     return { ok: false, error: "יש למלא את כל שדות החובה" };
   }
   if (!email.includes("@")) {
@@ -84,6 +84,24 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
   if (!plan) {
     return { ok: false, error: "יש לבחור מסלול מנוי" };
   }
+
+  // The country has to be one we actually operate in. Trusting the submitted
+  // value would let a clinic attach itself to a draft country that has no
+  // currency and no licence requirements configured.
+  const countryCode = String(formData.get("countryCode") ?? "").trim();
+  const country = await db.country.findFirst({
+    where: { code: countryCode, isActive: true },
+    select: { code: true, insurers: true, defaultLocale: true },
+  });
+  if (!country) {
+    return { ok: false, error: "יש לבחור מדינה" };
+  }
+
+  // Read the number against the clinic's own country, so a Hungarian clinic can
+  // type its local format and still be stored as canonical E.164. Clinic phones
+  // are a contact detail rather than an SMS gate, so an unparseable one is kept
+  // as typed rather than blocking the registration.
+  const phone = normalizePhone(phoneRaw, country.code) ?? phoneRaw;
 
   const existing = await db.dentist.findUnique({ where: { email }, select: { id: true } });
   if (existing) {
@@ -107,7 +125,12 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
         experienceYears: Math.floor(experienceYears),
         specialties: pickAllowed(formData, "specialties", SPECIALTIES),
         treatments: pickAllowed(formData, "treatments", TREATMENTS),
-        hmoAffiliations: pickAllowed(formData, "hmoAffiliations", HMO_OPTIONS),
+        countryCode: country.code,
+        locale: country.defaultLocale,
+        // Validated against THIS country's payer list, not a global constant —
+        // otherwise a clinic could claim an affiliation that doesn't exist where
+        // it operates.
+        insurerAffiliations: pickAllowed(formData, "insurerAffiliations", country.insurers),
         profileImageUrl,
         isActive: false,
         submittedBySelf: true,

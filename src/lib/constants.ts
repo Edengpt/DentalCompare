@@ -21,7 +21,9 @@ export const REQUEST_LIMITS = {
 // free end-to-end (PRD 4.1) — all revenue comes from clinic subscriptions below.
 // Never reintroduce a patient-facing fee, paywall, or card collection step.
 
-export const HMO_OPTIONS = ["Clalit", "Maccabi", "Meuhedet", "Leumit"] as const;
+// NOTE: the Israeli HMO list used to live here as HMO_OPTIONS. It is now
+// Country.insurers — every country has a different set of payers, and several
+// have none at all, so a single hardcoded list can't be right for all of them.
 
 export const SPECIALTIES = [
   "Implantology",
@@ -50,7 +52,6 @@ export const TREATMENTS = [
   "Full Mouth Reconstruction",
 ] as const;
 
-export type HMO = (typeof HMO_OPTIONS)[number];
 export type Specialty = (typeof SPECIALTIES)[number];
 export type Treatment = (typeof TREATMENTS)[number];
 

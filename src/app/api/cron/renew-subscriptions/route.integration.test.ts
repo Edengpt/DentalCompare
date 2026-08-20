@@ -42,7 +42,7 @@ async function seedSub(opts: {
       experienceYears: 3,
       specialties: [],
       treatments: [],
-      hmoAffiliations: [],
+      insurerAffiliations: [],
     },
   });
   created.dentistIds.push(dentist.id);

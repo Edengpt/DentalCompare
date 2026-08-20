@@ -174,7 +174,7 @@ export async function createDentist(formData: FormData): Promise<ActionResult> {
         experienceYears: Math.floor(experienceYears),
         specialties: splitCsv(formData.get("specialties")),
         treatments: splitCsv(formData.get("treatments")),
-        hmoAffiliations: splitCsv(formData.get("hmoAffiliations")),
+        insurerAffiliations: splitCsv(formData.get("insurerAffiliations")),
         isActive: true,
       },
       select: { id: true },

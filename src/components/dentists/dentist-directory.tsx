@@ -31,13 +31,22 @@ export function DentistDirectory({
   const [selected, setSelected] = useState<Set<string>>(() => new Set(initialSelectedIds ?? []));
 
   const cities = useMemo(() => [...new Set(dentists.map((d) => d.city))].sort(), [dentists]);
+  // Insurers come from the listed clinics rather than a constant — the valid
+  // set is per-country data now, and several countries have none.
+  const insurers = useMemo(
+    () => [...new Set(dentists.flatMap((d) => d.insurerAffiliations))].sort(),
+    [dentists],
+  );
 
   const filtered = useMemo(() => {
     return dentists.filter((d) => {
       if (filters.city && d.city !== filters.city) return false;
       if (filters.specialties.length && !filters.specialties.some((s) => d.specialties.includes(s)))
         return false;
-      if (filters.hmos.length && !filters.hmos.some((h) => d.hmoAffiliations.includes(h)))
+      if (
+        filters.insurers.length &&
+        !filters.insurers.some((i) => d.insurerAffiliations.includes(i))
+      )
         return false;
       if (filters.minExperience && d.experienceYears < filters.minExperience) return false;
       return true;
@@ -91,6 +100,7 @@ export function DentistDirectory({
         filters={filters}
         onChange={setFilters}
         cities={cities}
+        insurers={insurers}
         totalCount={dentists.length}
         filteredCount={filtered.length}
       />

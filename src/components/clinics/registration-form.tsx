@@ -5,13 +5,8 @@ import { CheckCircle2, FileSignature, ImagePlus, Loader2, X } from "lucide-react
 import { toast } from "sonner";
 import { registerClinic } from "@/server/clinic-registration";
 import { LOGO_ACCEPT_ATTRIBUTE, LOGO_MAX_FILE_SIZE_MB } from "@/lib/storage";
-import {
-  SUBSCRIPTION_TERMS_HE,
-  HMO_OPTIONS,
-  SPECIALTIES,
-  TREATMENTS,
-} from "@/lib/constants";
-import { HMO_LABELS_HE, SPECIALTY_LABELS_HE, translateTreatment } from "@/lib/labels";
+import { SUBSCRIPTION_TERMS_HE, SPECIALTIES, TREATMENTS } from "@/lib/constants";
+import { SPECIALTY_LABELS_HE, translateInsurer, translateTreatment } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { PlanPicker } from "@/components/clinics/plan-picker";
@@ -56,12 +51,14 @@ const chipGroups: { name: string; label: string; options: { value: string; label
     label: "טיפולים",
     options: TREATMENTS.map((t) => ({ value: t, label: translateTreatment(t) })),
   },
-  {
-    name: "hmoAffiliations",
-    label: "קופות חולים",
-    options: HMO_OPTIONS.map((h) => ({ value: h, label: HMO_LABELS_HE[h] })),
-  },
 ];
+
+/** The subset of Country a clinic needs at registration time. */
+export type RegistrationCountry = {
+  code: string;
+  nameEn: string;
+  insurers: string[];
+};
 
 function ChipGroup({
   name,
@@ -89,8 +86,12 @@ function ChipGroup({
   );
 }
 
-export function RegistrationForm() {
+export function RegistrationForm({ countries }: { countries: RegistrationCountry[] }) {
   const [isPending, startTransition] = useTransition();
+  // Where the clinic operates. Drives its currency, its payer list and which
+  // licence documents an admin will ask for — so it can't be inferred.
+  const [countryCode, setCountryCode] = useState(countries[0]?.code ?? "");
+  const insurers = countries.find((c) => c.code === countryCode)?.insurers ?? [];
   const [done, setDone] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
@@ -181,12 +182,41 @@ export function RegistrationForm() {
               />
             </label>
           ))}
+
+          <label className="flex flex-col gap-1.5 text-sm sm:col-span-2">
+            <span className="text-foreground font-medium">
+              מדינה<span className="text-coral"> *</span>
+            </span>
+            <select
+              name="countryCode"
+              required
+              value={countryCode}
+              onChange={(e) => setCountryCode(e.target.value)}
+              className={inputClass}
+            >
+              {countries.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.nameEn}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
 
         <div className="mt-6 space-y-6">
           {chipGroups.map((g) => (
             <ChipGroup key={g.name} name={g.name} label={g.label} options={g.options} />
           ))}
+
+          {/* Insurers, from the selected country. Hidden entirely where that
+              country has no payer system — an empty picker is worse than none. */}
+          {insurers.length > 0 && (
+            <ChipGroup
+              name="insurerAffiliations"
+              label="מבטחים"
+              options={insurers.map((i) => ({ value: i, label: translateInsurer(i) }))}
+            />
+          )}
 
           {/* Logo (optional) */}
           <div>

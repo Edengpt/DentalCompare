@@ -8,7 +8,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const city = searchParams.get("city") ?? undefined;
   const specialties = searchParams.getAll("specialty");
-  const hmos = searchParams.getAll("hmo");
+  const insurers = searchParams.getAll("insurer");
   const minExperience = Number(searchParams.get("minExperience") ?? 0) || undefined;
 
   const dentists = await db.dentist.findMany({
@@ -17,7 +17,7 @@ export async function GET(request: Request) {
       subscription: visibleSubscriptionFilter(),
       ...(city ? { city } : {}),
       ...(specialties.length ? { specialties: { hasSome: specialties } } : {}),
-      ...(hmos.length ? { hmoAffiliations: { hasSome: hmos } } : {}),
+      ...(insurers.length ? { insurerAffiliations: { hasSome: insurers } } : {}),
       ...(minExperience ? { experienceYears: { gte: minExperience } } : {}),
     },
     orderBy: [{ reviewCount: "desc" }, { rating: "desc" }, { experienceYears: "desc" }],

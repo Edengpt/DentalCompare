@@ -1,6 +1,7 @@
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
 import { RegistrationForm } from "@/components/clinics/registration-form";
+import { getActiveCountries } from "@/lib/countries";
 
 export const metadata = {
   title: "הצטרפות מרפאות",
@@ -8,7 +9,11 @@ export const metadata = {
     "רופאי שיניים ומרפאות — הצטרפו ל-DentalCompare בחינם וקבלו לידים של מטופלים שמחפשים הצעות מחיר.",
 };
 
-export default function ClinicJoinPage() {
+export default async function ClinicJoinPage() {
+  // Only active countries: a half-configured one has no currency or payer list
+  // and must never reach a clinic filling in this form.
+  const countries = await getActiveCountries();
+
   return (
     <>
       <Header />
@@ -27,7 +32,7 @@ export default function ClinicJoinPage() {
         </section>
 
         <div className="mx-auto max-w-3xl px-6 py-10 lg:px-10 lg:py-14">
-          <RegistrationForm />
+          <RegistrationForm countries={countries} />
         </div>
       </main>
       <Footer />

@@ -52,7 +52,7 @@ async function seedQuote(opts: { createdAt: Date; notifiedAt?: Date | null }) {
       experienceYears: 3,
       specialties: [],
       treatments: [],
-      hmoAffiliations: [],
+      insurerAffiliations: [],
     },
   });
   const request = await db.request.create({

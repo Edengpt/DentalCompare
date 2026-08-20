@@ -120,7 +120,7 @@ model Dentist {
   experienceYears Int
   specialties     String[]
   treatments      String[]
-  hmoAffiliations String[]
+  insurerAffiliations String[]
   // Languages the clinic's staff speak. A patient who can't be understood
   // won't fly, however good the price — so this is comparison data, not a
   // profile nicety. Lives on the clinic, not the quote: it doesn't change

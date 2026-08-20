@@ -1,5 +1,5 @@
 import type { RequestStatus } from "@/generated/prisma/enums";
-import type { HMO, Specialty } from "./constants";
+import type { Specialty } from "./constants";
 
 /**
  * Request status labels. There is no payment state in the patient journey any
@@ -13,7 +13,13 @@ export const REQUEST_STATUS_LABELS_HE: Record<RequestStatus, string> = {
   FAILED: "השליחה נכשלה",
 };
 
-export const HMO_LABELS_HE: Record<HMO, string> = {
+/**
+ * Hebrew labels for insurers. Keyed by plain string, not a union: the valid set
+ * is Country.insurers now, so it varies per country and can't be enumerated in
+ * the type system. Unknown values fall through as-is, which is correct for a
+ * foreign payer with no Hebrew name.
+ */
+export const INSURER_LABELS_HE: Record<string, string> = {
   Clalit: "כללית",
   Maccabi: "מכבי",
   Meuhedet: "מאוחדת",
@@ -55,6 +61,6 @@ export function translateSpecialty(s: string) {
   return SPECIALTY_LABELS_HE[s as Specialty] ?? s;
 }
 
-export function translateHmo(h: string) {
-  return HMO_LABELS_HE[h as HMO] ?? h;
+export function translateInsurer(name: string) {
+  return INSURER_LABELS_HE[name] ?? name;
 }

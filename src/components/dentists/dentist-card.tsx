@@ -3,7 +3,7 @@
 import { Check, MapPin, Star } from "lucide-react";
 import type { DentistModel } from "@/generated/prisma/models";
 import { cn } from "@/lib/utils";
-import { translateHmo, translateSpecialty } from "@/lib/labels";
+import { translateInsurer, translateSpecialty } from "@/lib/labels";
 
 type DentistCardProps = {
   dentist: DentistModel;
@@ -98,7 +98,7 @@ export function DentistCard({ dentist, isSelected, onToggle, disabled }: Dentist
       {/* HMOs */}
       <div className="text-muted-foreground mt-4 text-xs">
         <span className="font-medium">קופות חולים: </span>
-        {dentist.hmoAffiliations.map(translateHmo).join(" ✦ ")}
+        {dentist.insurerAffiliations.map(translateInsurer).join(" ✦ ")}
       </div>
 
       {/* Action */}

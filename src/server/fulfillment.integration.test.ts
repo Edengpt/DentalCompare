@@ -82,7 +82,7 @@ async function seed(opts: { dentistCount: number; createdAt?: Date }) {
         experienceYears: 5,
         specialties: [],
         treatments: [],
-        hmoAffiliations: [],
+        insurerAffiliations: [],
       },
     });
     created.dentistIds.push(d.id);
