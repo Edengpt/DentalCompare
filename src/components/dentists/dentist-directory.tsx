@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import type { DentistModel } from "@/generated/prisma/models";
 import { REQUEST_LIMITS } from "@/lib/constants";
 import { useT } from "@/i18n/provider";
+import { format, plural } from "@/i18n/format";
 import { saveRequestDentists } from "@/server/requests";
 import { DentistCard } from "./dentist-card";
 import { FilterBar, type DentistFilters, EMPTY_FILTERS } from "./filter-bar";
@@ -63,7 +64,7 @@ export function DentistDirectory({
         return next;
       }
       if (next.size >= REQUEST_LIMITS.maxDentists) {
-        toast.warning(t.dentists.maxReached(REQUEST_LIMITS.maxDentists), {
+        toast.warning(format(t.dentists.maxReached, { max: REQUEST_LIMITS.maxDentists }), {
           description: t.dentists.maxReachedHint,
         });
         return prev;
@@ -78,7 +79,7 @@ export function DentistDirectory({
     // real request so the selection has somewhere to be saved.
     if (!requestId) {
       toast.info(t.dentists.startRequestFirst, {
-        description: t.dentists.startRequestHint(selected.size),
+        description: plural(t.dentists.startRequestHint, selected.size),
       });
       router.push("/request/new");
       return;

@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { Check, FileText, Image as ImageIcon, Loader2, UploadCloud, X } from "lucide-react";
 import { toast } from "sonner";
 import { useT } from "@/i18n/provider";
+import { format } from "@/i18n/format";
 import { fileValidationMessage } from "@/i18n/validation-message";
 import { cn } from "@/lib/utils";
 import { REQUEST_LIMITS } from "@/lib/constants";
@@ -86,7 +87,7 @@ export function FileDropzone({
           fileSize: file.size,
         });
         onUploaded(json.url);
-        toast.success(t.dropzone.uploadSuccess(kindLabel));
+        toast.success(format(t.dropzone.uploadSuccess, { label: kindLabel }));
       } else {
         let message = t.dropzone.uploadFailed;
         try {
@@ -158,7 +159,7 @@ export function FileDropzone({
             </p>
             <p className="text-muted-foreground mt-1 text-xs">{description}</p>
             <p className="text-muted-foreground/70 mt-3 text-[11px]">
-              {t.dropzone.fileHint(REQUEST_LIMITS.maxFileSizeMB)}
+              {format(t.dropzone.fileHint, { mb: REQUEST_LIMITS.maxFileSizeMB })}
             </p>
           </div>
         </button>
@@ -191,7 +192,7 @@ export function FileDropzone({
             <Check className="h-5 w-5" />
           </span>
           <div>
-            <p className="text-foreground font-semibold">{t.dropzone.uploaded(kindLabel)}</p>
+            <p className="text-foreground font-semibold">{format(t.dropzone.uploaded, { label: kindLabel })}</p>
             {state.fileName && (
               <p className="text-muted-foreground mt-1 inline-flex items-center gap-1.5 text-xs">
                 <FileIcon name={state.fileName} />

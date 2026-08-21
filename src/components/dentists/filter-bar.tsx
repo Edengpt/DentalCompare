@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { SPECIALTY_LABELS_HE, translateInsurer, translateSpecialty } from "@/lib/labels";
 import { SPECIALTIES } from "@/lib/constants";
 import { useT } from "@/i18n/provider";
+import { format } from "@/i18n/format";
 
 export type DentistFilters = {
   city: string | null;
@@ -109,7 +110,7 @@ export function FilterBar({
         )}
 
         <span className="text-muted-foreground ms-2 text-xs">
-          {t.dentists.resultCount(filteredCount, totalCount)}
+          {format(t.dentists.resultCount, { shown: filteredCount, total: totalCount })}
         </span>
       </div>
     </div>
@@ -153,7 +154,7 @@ function SinglePopover({
                 onClick={() => onChange(null)}
                 className="text-muted-foreground hover:bg-muted block w-full rounded-md px-3 py-1.5 text-start text-xs"
               >
-                {t.dentists.clearOne(label)}
+                {format(t.dentists.clearOne, { label })}
               </button>
             </li>
           )}

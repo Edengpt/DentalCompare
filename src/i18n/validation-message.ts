@@ -2,6 +2,7 @@ import type { FileValidationError } from "@/lib/storage";
 import { REQUEST_LIMITS } from "@/lib/constants";
 import { LOGO_MAX_FILE_SIZE_MB } from "@/lib/storage";
 import type { Dictionary } from "./get-dictionary";
+import { format } from "./format";
 
 /**
  * Turns a storage validation code into a message in the reader's language.
@@ -13,12 +14,12 @@ export function fileValidationMessage(
   t: Dictionary["validation"],
   err: FileValidationError,
 ): string {
-  return err === "TYPE" ? t.fileType : t.fileSize(REQUEST_LIMITS.maxFileSizeMB);
+  return err === "TYPE" ? t.fileType : format(t.fileSize, { mb: REQUEST_LIMITS.maxFileSizeMB });
 }
 
 export function logoValidationMessage(
   t: Dictionary["validation"],
   err: FileValidationError,
 ): string {
-  return err === "TYPE" ? t.logoType : t.logoSize(LOGO_MAX_FILE_SIZE_MB);
+  return err === "TYPE" ? t.logoType : format(t.logoSize, { mb: LOGO_MAX_FILE_SIZE_MB });
 }

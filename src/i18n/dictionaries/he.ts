@@ -201,10 +201,13 @@ const he = {
     dentistsSubtitle:
       "סננו לפי מיקום, התמחות ומבטח. סמנו עד 3 רופאים — והבקשה שלכם תישלח לכולם בו זמנית.",
     successMetaTitle: "הבקשה נשלחה",
-    // A function rather than a split string: the count sits mid-sentence, and
-    // English needs the singular/plural to agree with it.
-    successBodySent: (count: number) =>
-      `שלחנו את תוכנית הטיפול והצילום ל-${count} רופאים. הצעות המחיר יגיעו ישירות לאימייל שלכם — בדרך כלל תוך 48 שעות.`,
+    // Templates, not functions: the whole dictionary crosses into a client
+    // provider, and React can't serialise a function over that boundary.
+    successBodySent: {
+      one: "שלחנו את תוכנית הטיפול והצילום לרופא אחד. הצעת המחיר תגיע ישירות לאימייל שלכם — בדרך כלל תוך 48 שעות.",
+      other:
+        "שלחנו את תוכנית הטיפול והצילום ל-{count} רופאים. הצעות המחיר יגיעו ישירות לאימייל שלכם — בדרך כלל תוך 48 שעות.",
+    },
     successTitleSent: "הבקשה שלכם נשלחה! 🎉",
     successTitlePending: "השליחה בעיבוד…",
     successBodyPending: "קיבלנו את בקשתכם והיא בדרך לרופאים. נסו לרענן בעוד רגע.",
@@ -221,7 +224,7 @@ const he = {
     statusFailed: "השליחה נכשלה — נסו שוב",
     statusReady: "מוכן לשליחה",
     selectedDentists: "רופאים נבחרים",
-    dentistsCount: (n: number) => `${n} רופאים`,
+    dentistsCount: { one: "רופא אחד", other: "{count} רופאים" },
     treatmentPlan: "תוכנית טיפול",
     uploadedFeminine: "הועלתה ✓",
     xray: "צילום שיניים",
@@ -248,9 +251,9 @@ const he = {
   },
 
   selection: {
-    chosen: (selected: number, max: number) => `נבחרו ${selected} מתוך ${max}`,
+    chosen: "נבחרו {selected} מתוך {max}",
     ready: "מוכן להמשך — תקבלו הצעות מכל הרופאים הנבחרים",
-    limit: (max: number) => `ניתן לבחור עד ${max} רופאים`,
+    limit: "ניתן לבחור עד {max} רופאים",
     saving: "שומר…",
     continue: "המשך",
   },
@@ -266,8 +269,8 @@ const he = {
   },
 
   dentists: {
-    yearsExperience: (n: number) => `${n} שנות ניסיון`,
-    reviews: (n: number) => `${n} ביקורות`,
+    yearsExperience: "{count} שנות ניסיון",
+    reviews: { one: "ביקורת אחת", other: "{count} ביקורות" },
     isNew: "חדש",
     insurersLabel: "מבטחים: ",
     selected: "נבחר",
@@ -281,36 +284,36 @@ const he = {
     experience15: "15+ שנים",
     clearFilters: "ניקוי סינון",
     clear: "↺ ניקוי",
-    clearOne: (label: string) => `↺ כל ה${label}`,
-    resultCount: (shown: number, total: number) => `${shown} מתוך ${total} רופאים`,
+    clearOne: "↺ כל ה{label}",
+    resultCount: "{shown} מתוך {total} רופאים",
     noResults: "לא נמצאו רופאים שמתאימים לסינון.",
     clearAndRetry: "נקו את הסינון",
-    maxReached: (max: number) => `ניתן לבחור עד ${max} רופאים בלבד`,
+    maxReached: "ניתן לבחור עד {max} רופאים בלבד",
     maxReachedHint: "הסירו רופא מהבחירה כדי להוסיף אחר",
     startRequestFirst: "התחילו בקשה חדשה כדי לשמור את הבחירה",
-    startRequestHint: (n: number) => `כרגע נבחרו ${n} רופאים`,
+    startRequestHint: { one: "כרגע נבחר רופא אחד", other: "כרגע נבחרו {count} רופאים" },
   },
 
   dropzone: {
-    uploadSuccess: (label: string) => `${label} עלה בהצלחה`,
+    uploadSuccess: "{label} עלה בהצלחה",
     uploadFailed: "ההעלאה נכשלה. נסו שוב.",
     networkError: "שגיאת רשת בהעלאה",
     dragHere: "גררו לכאן או",
     chooseFile: "בחרו קובץ",
-    fileHint: (mb: number) => `PDF, JPG, PNG ✦ עד ${mb}MB`,
-    uploaded: (label: string) => `${label} הועלה`,
+    fileHint: "PDF, JPG, PNG ✦ עד {mb}MB",
+    uploaded: "{label} הועלה",
     replace: "החלפה",
   },
 
   validation: {
     fileType: "סוג קובץ לא נתמך. אנא העלו PDF, JPG או PNG בלבד.",
-    fileSize: (mb: number) => `הקובץ גדול מדי. המגבלה היא ${mb}MB.`,
+    fileSize: "הקובץ גדול מדי. המגבלה היא {mb}MB.",
     fileSignature: "תוכן הקובץ אינו תואם לסוג שהוצהר. אנא העלו PDF, JPG או PNG תקין.",
     logoType: "סוג קובץ לא נתמך. אנא העלו תמונה בפורמט JPG, PNG או WEBP.",
     noFile: "לא נשלח קובץ",
     tooManyUploads: "יותר מדי העלאות לבקשה זו. נסו שוב מאוחר יותר.",
     logoUnavailable: "העלאת הלוגו אינה זמינה כרגע",
-    logoSize: (mb: number) => `התמונה גדולה מדי. המגבלה היא ${mb}MB.`,
+    logoSize: "התמונה גדולה מדי. המגבלה היא {mb}MB.",
   },
 
   legal: {

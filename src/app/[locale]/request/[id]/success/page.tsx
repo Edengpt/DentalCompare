@@ -8,6 +8,7 @@ import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { isLocale, defaultLocale } from "@/i18n/config";
+import { plural } from "@/i18n/format";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
@@ -66,7 +67,7 @@ export default async function RequestSuccessPage({ params }: { params: Promise<{
 
           <p className="text-muted-foreground mt-4 max-w-md text-lg text-pretty">
             {sent ? (
-              t.requestFlow.successBodySent(dentistCount)
+              plural(t.requestFlow.successBodySent, dentistCount)
             ) : (
               t.requestFlow.successBodyPending
             )}

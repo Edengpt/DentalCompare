@@ -5,6 +5,7 @@ import type { DentistModel } from "@/generated/prisma/models";
 import { cn } from "@/lib/utils";
 import { translateInsurer, translateSpecialty } from "@/lib/labels";
 import { useT } from "@/i18n/provider";
+import { format, plural } from "@/i18n/format";
 
 type DentistCardProps = {
   dentist: DentistModel;
@@ -62,7 +63,7 @@ export function DentistCard({ dentist, isSelected, onToggle, disabled }: Dentist
           <p className="text-muted-foreground mt-0.5 truncate text-sm">{dentist.clinicName}</p>
           <p className="text-muted-foreground/80 mt-2 inline-flex items-center gap-1 text-xs">
             <MapPin className="h-3 w-3" aria-hidden="true" />
-            {dentist.city} ✦ {t.dentists.yearsExperience(dentist.experienceYears)}
+            {dentist.city} ✦ {format(t.dentists.yearsExperience, { count: dentist.experienceYears })}
           </p>
         </div>
 
@@ -74,7 +75,7 @@ export function DentistCard({ dentist, isSelected, onToggle, disabled }: Dentist
                 {dentist.rating.toFixed(1)}
               </div>
               <p className="text-muted-foreground mt-0.5 text-[10px]">
-                {t.dentists.reviews(dentist.reviewCount)}
+                {plural(t.dentists.reviews, dentist.reviewCount)}
               </p>
             </>
           ) : (

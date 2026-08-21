@@ -3,6 +3,7 @@
 import { Loader2, Users } from "lucide-react";
 import { ForwardArrow } from "@/components/ui/forward-arrow";
 import { useT } from "@/i18n/provider";
+import { format } from "@/i18n/format";
 import { cn } from "@/lib/utils";
 import { REQUEST_LIMITS } from "@/lib/constants";
 
@@ -33,12 +34,12 @@ export function SelectionCounter({ selected, onContinue, isSaving }: SelectionCo
 
         <div className="min-w-0 flex-1">
           <p className="text-sm leading-tight font-semibold">
-            {t.selection.chosen(selected, maxDentists)}
+            {format(t.selection.chosen, { selected, max: maxDentists })}
           </p>
           <p className="text-cream/70 text-[11px]">
             {canContinue
               ? t.selection.ready
-              : t.selection.limit(maxDentists)}
+              : format(t.selection.limit, { max: maxDentists })}
           </p>
         </div>
 

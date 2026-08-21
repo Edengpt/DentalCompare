@@ -210,8 +210,11 @@ const en: typeof he = {
     dentistsSubtitle:
       "Filter by location, speciality and insurer. Tick up to 3 clinics — your request goes to all of them at once.",
     successMetaTitle: "Request sent",
-    successBodySent: (count: number) =>
-      `We've sent your treatment plan and x-ray to ${count} ${count === 1 ? "clinic" : "clinics"}. Their quotes will arrive straight in your inbox — usually within 48 hours.`,
+    successBodySent: {
+      one: "We've sent your treatment plan and x-ray to one clinic. Their quote will arrive straight in your inbox — usually within 48 hours.",
+      other:
+        "We've sent your treatment plan and x-ray to {count} clinics. Their quotes will arrive straight in your inbox — usually within 48 hours.",
+    },
     successTitleSent: "Your request is on its way! 🎉",
     successTitlePending: "Sending in progress…",
     successBodyPending: "We've received your request and it's on its way to the clinics. Try refreshing in a moment.",
@@ -228,7 +231,7 @@ const en: typeof he = {
     statusFailed: "Sending failed — please try again",
     statusReady: "Ready to send",
     selectedDentists: "Selected clinics",
-    dentistsCount: (n: number) => `${n} ${n === 1 ? "clinic" : "clinics"}`,
+    dentistsCount: { one: "1 clinic", other: "{count} clinics" },
     treatmentPlan: "Treatment plan",
     uploadedFeminine: "Uploaded ✓",
     xray: "Dental x-ray",
@@ -256,9 +259,9 @@ const en: typeof he = {
   },
 
   selection: {
-    chosen: (selected: number, max: number) => `${selected} of ${max} selected`,
+    chosen: "{selected} of {max} selected",
     ready: "Ready to continue — you'll get quotes from every clinic you picked",
-    limit: (max: number) => `You can pick up to ${max} clinics`,
+    limit: "You can pick up to {max} clinics",
     saving: "Saving…",
     continue: "Continue",
   },
@@ -275,8 +278,8 @@ const en: typeof he = {
   },
 
   dentists: {
-    yearsExperience: (n: number) => `${n} years' experience`,
-    reviews: (n: number) => `${n} ${n === 1 ? "review" : "reviews"}`,
+    yearsExperience: "{count} years' experience",
+    reviews: { one: "1 review", other: "{count} reviews" },
     isNew: "New",
     insurersLabel: "Insurers: ",
     selected: "Selected",
@@ -290,37 +293,37 @@ const en: typeof he = {
     experience15: "15+ years",
     clearFilters: "Clear filters",
     clear: "↺ Clear",
-    clearOne: (label: string) => `↺ All ${label.toLowerCase()}`,
-    resultCount: (shown: number, total: number) => `${shown} of ${total} clinics`,
+    clearOne: "↺ All {label}",
+    resultCount: "{shown} of {total} clinics",
     noResults: "No clinics match these filters.",
     clearAndRetry: "Clear the filters",
-    maxReached: (max: number) => `You can select up to ${max} clinics`,
+    maxReached: "You can select up to {max} clinics",
     maxReachedHint: "Remove one to add another",
     startRequestFirst: "Start a new request to save your selection",
-    startRequestHint: (n: number) => `${n} ${n === 1 ? "clinic" : "clinics"} selected so far`,
+    startRequestHint: { one: "1 clinic selected so far", other: "{count} clinics selected so far" },
   },
 
   dropzone: {
-    uploadSuccess: (label: string) => `${label} uploaded`,
+    uploadSuccess: "{label} uploaded",
     uploadFailed: "Upload failed. Please try again.",
     networkError: "Network error during upload",
     dragHere: "Drag a file here, or",
     chooseFile: "choose one",
-    fileHint: (mb: number) => `PDF, JPG, PNG ✦ up to ${mb}MB`,
-    uploaded: (label: string) => `${label} uploaded`,
+    fileHint: "PDF, JPG, PNG ✦ up to {mb}MB",
+    uploaded: "{label} uploaded",
     replace: "Replace",
   },
 
   validation: {
     fileType: "Unsupported file type. Please upload a PDF, JPG or PNG.",
-    fileSize: (mb: number) => `That file is too large. The limit is ${mb}MB.`,
+    fileSize: "That file is too large. The limit is {mb}MB.",
     fileSignature:
       "The file's contents don't match its declared type. Please upload a valid PDF, JPG or PNG.",
     logoType: "Unsupported file type. Please upload a JPG, PNG or WEBP image.",
     noFile: "No file was sent",
     tooManyUploads: "Too many uploads for this request. Please try again later.",
     logoUnavailable: "Logo upload isn't available right now",
-    logoSize: (mb: number) => `That image is too large. The limit is ${mb}MB.`,
+    logoSize: "That image is too large. The limit is {mb}MB.",
   },
 
   legal: {

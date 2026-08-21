@@ -7,6 +7,7 @@ import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { isLocale, defaultLocale } from "@/i18n/config";
+import { plural } from "@/i18n/format";
 import { SubmitButton } from "@/components/request/submit-button";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
@@ -73,7 +74,7 @@ export default async function ConfirmRequestPage({ params }: { params: Promise<{
     {
       icon: Users,
       label: t.confirm.selectedDentists,
-      value: t.confirm.dentistsCount(dentists.length),
+      value: plural(t.confirm.dentistsCount, dentists.length),
     },
     { icon: FileText, label: t.confirm.treatmentPlan, value: t.confirm.uploadedFeminine },
     { icon: ImageIcon, label: t.confirm.xray, value: t.confirm.uploadedMasculine },

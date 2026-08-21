@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getDictionary } from "@/i18n/get-dictionary";
+import { format } from "@/i18n/format";
 import { getRequestLocale } from "@/i18n/request-locale";
 import { fileValidationMessage } from "@/i18n/validation-message";
 import { put } from "@vercel/blob";
@@ -32,7 +33,7 @@ export async function POST(request: Request) {
   const declaredLength = Number(request.headers.get("content-length") ?? 0);
   if (declaredLength > MAX_FILE_SIZE_BYTES + 1024 * 1024) {
     return NextResponse.json(
-      { error: t.fileSize(REQUEST_LIMITS.maxFileSizeMB) },
+      { error: format(t.fileSize, { mb: REQUEST_LIMITS.maxFileSizeMB }) },
       { status: 413 },
     );
   }
