@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { SPECIALTY_LABELS_HE, translateInsurer, translateSpecialty } from "@/lib/labels";
 import { SPECIALTIES } from "@/lib/constants";
+import { useT } from "@/i18n/provider";
 
 export type DentistFilters = {
   city: string | null;
@@ -20,12 +21,6 @@ export const EMPTY_FILTERS: DentistFilters = {
   insurers: [],
   minExperience: null,
 };
-
-const EXPERIENCE_OPTIONS = [
-  { value: 5, label: "5+ שנים" },
-  { value: 10, label: "10+ שנים" },
-  { value: 15, label: "15+ שנים" },
-] as const;
 
 type FilterBarProps = {
   filters: DentistFilters;
@@ -47,6 +42,12 @@ export function FilterBar({
   totalCount,
   filteredCount,
 }: FilterBarProps) {
+  const t = useT();
+  const EXPERIENCE_OPTIONS = [
+    { value: 5, label: t.dentists.experience5 },
+    { value: 10, label: t.dentists.experience10 },
+    { value: 15, label: t.dentists.experience15 },
+  ];
   const hasFilters =
     filters.city || filters.specialties.length || filters.insurers.length || filters.minExperience;
 
@@ -55,7 +56,7 @@ export function FilterBar({
       <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 px-6 py-3 lg:px-10">
         {/* City */}
         <SinglePopover
-          label="עיר"
+          label={t.dentists.filterCity}
           value={filters.city}
           options={cities.map((c) => ({ value: c, label: c }))}
           onChange={(v) => onChange({ ...filters, city: v })}
@@ -63,7 +64,7 @@ export function FilterBar({
 
         {/* Specialty */}
         <MultiPopover
-          label="התמחות"
+          label={t.dentists.filterSpecialty}
           values={filters.specialties}
           options={SPECIALTIES.map((s) => ({
             value: s,
@@ -77,7 +78,7 @@ export function FilterBar({
             is the normal case for countries without a payer system. */}
         {insurers.length > 0 && (
           <MultiPopover
-            label="מבטח"
+            label={t.dentists.filterInsurer}
             values={filters.insurers}
             options={insurers.map((i) => ({ value: i, label: translateInsurer(i) }))}
             onChange={(values) => onChange({ ...filters, insurers: values })}
@@ -87,7 +88,7 @@ export function FilterBar({
 
         {/* Experience */}
         <SinglePopover
-          label="ניסיון"
+          label={t.dentists.filterExperience}
           value={filters.minExperience ? String(filters.minExperience) : null}
           options={EXPERIENCE_OPTIONS.map((o) => ({
             value: String(o.value),
@@ -103,12 +104,12 @@ export function FilterBar({
             className="text-muted-foreground hover:text-foreground ms-auto inline-flex items-center gap-1 text-xs underline-offset-4 hover:underline"
           >
             <X className="h-3 w-3" />
-            ניקוי סינון
+            {t.dentists.clearFilters}
           </button>
         )}
 
         <span className="text-muted-foreground ms-2 text-xs">
-          {filteredCount} מתוך {totalCount} רופאים
+          {t.dentists.resultCount(filteredCount, totalCount)}
         </span>
       </div>
     </div>
@@ -130,6 +131,7 @@ function SinglePopover({
   options: Option[];
   onChange: (v: string | null) => void;
 }) {
+  const t = useT();
   const selected = options.find((o) => o.value === value);
   return (
     <Popover>
@@ -151,7 +153,7 @@ function SinglePopover({
                 onClick={() => onChange(null)}
                 className="text-muted-foreground hover:bg-muted block w-full rounded-md px-3 py-1.5 text-start text-xs"
               >
-                ↺ כל ה{label}
+                {t.dentists.clearOne(label)}
               </button>
             </li>
           )}
@@ -191,6 +193,7 @@ function MultiPopover({
   onChange: (v: string[]) => void;
   renderSelected: (v: string) => string;
 }) {
+  const t = useT();
   const hasSelected = values.length > 0;
 
   const toggleValue = (v: string) => {
@@ -238,7 +241,7 @@ function MultiPopover({
                 onClick={() => onChange([])}
                 className="text-muted-foreground hover:bg-muted block w-full rounded-md px-3 py-1.5 text-start text-xs"
               >
-                ↺ ניקוי
+                {t.dentists.clear}
               </button>
             </li>
           )}

@@ -157,6 +157,172 @@ const en: typeof he = {
     reassurance: "✦ Completely free ✦ No credit card ✦ No commitment ✦",
   },
 
+  request: {
+    rateLimitedTitle: "Too many new requests",
+    rateLimitedBody:
+      "You've created a lot of requests in a short time. Try again in an hour, or carry on with an existing request from your account.",
+    backToDashboard: "Back to my account",
+  },
+
+  verifyPhone: {
+    metaTitle: "Verify your mobile number",
+    eyebrow: "One last step before sending",
+    title: "Let's verify your mobile number",
+    subtitle:
+      "Clinics reply to you directly, so the number needs to be right. Verification is free and takes 30 seconds — we never ask for card details at any stage.",
+  },
+
+  requestStatus: {
+    DRAFT: "Draft",
+    SUBMITTED: "Sending",
+    SENT: "Sent",
+    FAILED: "Sending failed",
+  },
+
+  dashboard: {
+    metaTitle: "My account",
+    eyebrow: "My account",
+    adminPanel: "Admin panel",
+    greeting: "Hello",
+    newRequest: "New quote request",
+    emptyTitle: "No active requests yet",
+    emptyBody:
+      "Start your first request — pick up to 3 clinics, upload your treatment plan and x-ray, and the quotes will arrive in your inbox.",
+    emptyCta: "Start a request",
+    myRequests: "My requests",
+    requestLabel: "Request",
+    statusLabel: "Status",
+    dentistsLabel: "clinics",
+    view: "View details",
+    continue: "Continue",
+    fallbackGreetingName: "there",
+  },
+
+  requestFlow: {
+    uploadMetaTitle: "Upload your documents",
+    uploadStep: "Step 1 of 3",
+    uploadTitle: "Upload your medical documents",
+    uploadSubtitle:
+      "Just two files are needed for clinics to quote accurately — the treatment plan you already have, and a recent x-ray.",
+    dentistsMetaTitle: "Choose clinics",
+    dentistsStep: "Step 2 of 3",
+    dentistsTitle: "Choose the clinics that will compete for your treatment.",
+    dentistsSubtitle:
+      "Filter by location, speciality and insurer. Tick up to 3 clinics — your request goes to all of them at once.",
+    successMetaTitle: "Request sent",
+    successBodySent: (count: number) =>
+      `We've sent your treatment plan and x-ray to ${count} ${count === 1 ? "clinic" : "clinics"}. Their quotes will arrive straight in your inbox — usually within 48 hours.`,
+    successTitleSent: "Your request is on its way! 🎉",
+    successTitlePending: "Sending in progress…",
+    successBodyPending: "We've received your request and it's on its way to the clinics. Try refreshing in a moment.",
+    successWatchInbox: "Keep an eye on your inbox (and sometimes your spam folder)",
+    successToDashboard: "Go to my account",
+  },
+
+  confirm: {
+    metaTitle: "Review your request",
+    step: "Step 3 of 3",
+    title: "Review before sending",
+    subtitle:
+      "Check the details are right. When you send, your request goes to every selected clinic at once — at no cost.",
+    statusFailed: "Sending failed — please try again",
+    statusReady: "Ready to send",
+    selectedDentists: "Selected clinics",
+    dentistsCount: (n: number) => `${n} ${n === 1 ? "clinic" : "clinics"}`,
+    treatmentPlan: "Treatment plan",
+    uploadedFeminine: "Uploaded ✓",
+    xray: "Dental x-ray",
+    uploadedMasculine: "Uploaded ✓",
+    status: "Status",
+    createdAt: "Created",
+    recipients: "Clinics that will receive your request",
+    editSelection: "Edit clinic selection",
+    phoneVerifyTitle: "We recommend verifying your phone number",
+    phoneMissingTitle: "No phone number on file",
+    phoneBody:
+      "Clinics call you back. A quick check makes sure the number is right — it takes 30 seconds and it's free.",
+    phoneVerifyCta: "Verify my number",
+    phoneAddCta: "Add a number",
+    freeNoticePrefix:
+      "Your request goes automatically to every selected clinic, together with your files.",
+    freeNoticeStrong: "The service is completely free",
+    freeNoticeSuffix: "— we never ask for card details at any stage.",
+    backToDashboard: "Back to my account",
+  },
+
+  submitButton: {
+    sending: "Sending your request…",
+    submit: "Send my request — free",
+  },
+
+  selection: {
+    chosen: (selected: number, max: number) => `${selected} of ${max} selected`,
+    ready: "Ready to continue — you'll get quotes from every clinic you picked",
+    limit: (max: number) => `You can pick up to ${max} clinics`,
+    saving: "Saving…",
+    continue: "Continue",
+  },
+
+  upload: {
+    treatmentPlanTitle: "Treatment plan",
+    treatmentPlanDescription:
+      "The document your dentist gave you, listing the treatments and their costs",
+    xrayTitle: "Dental x-ray",
+    xrayDescription: "Panoramic, full-mouth series, or a single image from the clinic that examined you",
+    required: "Required",
+    saveForLater: "Save and continue later",
+    continueToDentists: "Continue to choosing clinics",
+  },
+
+  dentists: {
+    yearsExperience: (n: number) => `${n} years' experience`,
+    reviews: (n: number) => `${n} ${n === 1 ? "review" : "reviews"}`,
+    isNew: "New",
+    insurersLabel: "Insurers: ",
+    selected: "Selected",
+    selectAria: "Select this clinic",
+    filterCity: "City",
+    filterSpecialty: "Speciality",
+    filterInsurer: "Insurer",
+    filterExperience: "Experience",
+    experience5: "5+ years",
+    experience10: "10+ years",
+    experience15: "15+ years",
+    clearFilters: "Clear filters",
+    clear: "↺ Clear",
+    clearOne: (label: string) => `↺ All ${label.toLowerCase()}`,
+    resultCount: (shown: number, total: number) => `${shown} of ${total} clinics`,
+    noResults: "No clinics match these filters.",
+    clearAndRetry: "Clear the filters",
+    maxReached: (max: number) => `You can select up to ${max} clinics`,
+    maxReachedHint: "Remove one to add another",
+    startRequestFirst: "Start a new request to save your selection",
+    startRequestHint: (n: number) => `${n} ${n === 1 ? "clinic" : "clinics"} selected so far`,
+  },
+
+  dropzone: {
+    uploadSuccess: (label: string) => `${label} uploaded`,
+    uploadFailed: "Upload failed. Please try again.",
+    networkError: "Network error during upload",
+    dragHere: "Drag a file here, or",
+    chooseFile: "choose one",
+    fileHint: (mb: number) => `PDF, JPG, PNG ✦ up to ${mb}MB`,
+    uploaded: (label: string) => `${label} uploaded`,
+    replace: "Replace",
+  },
+
+  validation: {
+    fileType: "Unsupported file type. Please upload a PDF, JPG or PNG.",
+    fileSize: (mb: number) => `That file is too large. The limit is ${mb}MB.`,
+    fileSignature:
+      "The file's contents don't match its declared type. Please upload a valid PDF, JPG or PNG.",
+    logoType: "Unsupported file type. Please upload a JPG, PNG or WEBP image.",
+    noFile: "No file was sent",
+    tooManyUploads: "Too many uploads for this request. Please try again later.",
+    logoUnavailable: "Logo upload isn't available right now",
+    logoSize: (mb: number) => `That image is too large. The limit is ${mb}MB.`,
+  },
+
   legal: {
     updatedLabel: "Last updated:",
     lastUpdated: "July 2026",

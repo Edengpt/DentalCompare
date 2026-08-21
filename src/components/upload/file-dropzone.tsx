@@ -3,13 +3,13 @@
 import { useRef, useState } from "react";
 import { Check, FileText, Image as ImageIcon, Loader2, UploadCloud, X } from "lucide-react";
 import { toast } from "sonner";
+import { useT } from "@/i18n/provider";
+import { fileValidationMessage } from "@/i18n/validation-message";
 import { cn } from "@/lib/utils";
 import { REQUEST_LIMITS } from "@/lib/constants";
 import {
   ACCEPT_ATTRIBUTE,
-  UPLOAD_KIND_LABELS,
   type UploadKind,
-  fileValidationMessage,
   validateFile,
 } from "@/lib/storage";
 
@@ -43,6 +43,8 @@ export function FileDropzone({
   onUploaded,
   description,
 }: FileDropzoneProps) {
+  const t = useT();
+  const kindLabel = kind === "treatment" ? t.upload.treatmentPlanTitle : t.upload.xrayTitle;
   const inputRef = useRef<HTMLInputElement>(null);
   const [state, setState] = useState<UploadState>(
     initialUrl ? { status: "done", url: initialUrl } : { status: "idle" },
@@ -52,7 +54,7 @@ export function FileDropzone({
   const handleFile = (file: File) => {
     const err = validateFile(file);
     if (err) {
-      toast.error(fileValidationMessage(err));
+      toast.error(fileValidationMessage(t.validation, err));
       return;
     }
 
@@ -84,9 +86,9 @@ export function FileDropzone({
           fileSize: file.size,
         });
         onUploaded(json.url);
-        toast.success(`${UPLOAD_KIND_LABELS[kind]} עלה בהצלחה`);
+        toast.success(t.dropzone.uploadSuccess(kindLabel));
       } else {
-        let message = "ההעלאה נכשלה. נסו שוב.";
+        let message = t.dropzone.uploadFailed;
         try {
           message = JSON.parse(xhr.responseText).error ?? message;
         } catch {
@@ -97,7 +99,7 @@ export function FileDropzone({
       }
     });
     xhr.addEventListener("error", () => {
-      toast.error("שגיאת רשת בהעלאה");
+      toast.error(t.dropzone.networkError);
       setState({ status: "idle" });
     });
     xhr.open("POST", "/api/files/upload");
@@ -152,11 +154,11 @@ export function FileDropzone({
           </span>
           <div>
             <p className="text-foreground font-semibold">
-              גררו לכאן או <span className="text-teal-deep underline">בחרו קובץ</span>
+              {t.dropzone.dragHere} <span className="text-teal-deep underline">{t.dropzone.chooseFile}</span>
             </p>
             <p className="text-muted-foreground mt-1 text-xs">{description}</p>
             <p className="text-muted-foreground/70 mt-3 text-[11px]">
-              PDF, JPG, PNG ✦ עד {REQUEST_LIMITS.maxFileSizeMB}MB
+              {t.dropzone.fileHint(REQUEST_LIMITS.maxFileSizeMB)}
             </p>
           </div>
         </button>
@@ -189,7 +191,7 @@ export function FileDropzone({
             <Check className="h-5 w-5" />
           </span>
           <div>
-            <p className="text-foreground font-semibold">{UPLOAD_KIND_LABELS[kind]} הועלה</p>
+            <p className="text-foreground font-semibold">{t.dropzone.uploaded(kindLabel)}</p>
             {state.fileName && (
               <p className="text-muted-foreground mt-1 inline-flex items-center gap-1.5 text-xs">
                 <FileIcon name={state.fileName} />
@@ -204,7 +206,7 @@ export function FileDropzone({
             className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-xs underline-offset-4 hover:underline"
           >
             <X className="h-3 w-3" />
-            החלפה
+            {t.dropzone.replace}
           </button>
         </div>
       )}

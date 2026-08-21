@@ -148,6 +148,171 @@ const he = {
     reassurance: "✦ חינם לחלוטין ✦ ללא כרטיס אשראי ✦ ללא התחייבות ✦",
   },
 
+  request: {
+    rateLimitedTitle: "יותר מדי בקשות חדשות",
+    rateLimitedBody:
+      "יצרתם הרבה בקשות בזמן קצר. נסו שוב בעוד שעה, או המשיכו בבקשה קיימת מהאזור האישי.",
+    backToDashboard: "חזרה לאזור האישי",
+  },
+
+  verifyPhone: {
+    metaTitle: "אימות מספר נייד",
+    eyebrow: "שלב אחרון לפני שליחה",
+    title: "נאמת את מספר הנייד שלכם",
+    subtitle:
+      "המרפאות חוזרות אליכם ישירות, ולכן חשוב שהמספר יהיה נכון. האימות חינמי ולוקח 30 שניות — לא נבקש מכם פרטי אשראי בשום שלב.",
+  },
+
+  requestStatus: {
+    DRAFT: "טיוטה",
+    SUBMITTED: "בשליחה",
+    SENT: "נשלחה",
+    FAILED: "השליחה נכשלה",
+  },
+
+  dashboard: {
+    metaTitle: "אזור אישי",
+    eyebrow: "אזור אישי",
+    adminPanel: "פאנל ניהול",
+    greeting: "שלום",
+    newRequest: "בקשת מחיר חדשה",
+    emptyTitle: "עוד אין בקשות פעילות",
+    emptyBody:
+      "התחילו את הבקשה הראשונה שלכם — בחרו עד 3 רופאים, העלו את תוכנית הטיפול והצילום, וההצעות יגיעו אליכם למייל.",
+    emptyCta: "להתחלת הבקשה",
+    myRequests: "הבקשות שלי",
+    requestLabel: "בקשה",
+    statusLabel: "סטטוס",
+    dentistsLabel: "רופאים",
+    view: "צפייה בפרטים",
+    continue: "המשך",
+    fallbackGreetingName: "ברוך הבא",
+  },
+
+  requestFlow: {
+    uploadMetaTitle: "העלאת מסמכים רפואיים",
+    uploadStep: "שלב 1 מתוך 3",
+    uploadTitle: "העלאת מסמכים רפואיים",
+    uploadSubtitle:
+      "שני קבצים בלבד דרושים כדי שהרופאים יוכלו להציע לכם הצעת מחיר מדויקת — תוכנית הטיפול הקיימת וצילום עדכני.",
+    dentistsMetaTitle: "בחירת רופאים",
+    dentistsStep: "שלב 2 מתוך 3",
+    dentistsTitle: "בחרו את הרופאים שיתחרו על הטיפול שלכם.",
+    dentistsSubtitle:
+      "סננו לפי מיקום, התמחות ומבטח. סמנו עד 3 רופאים — והבקשה שלכם תישלח לכולם בו זמנית.",
+    successMetaTitle: "הבקשה נשלחה",
+    // A function rather than a split string: the count sits mid-sentence, and
+    // English needs the singular/plural to agree with it.
+    successBodySent: (count: number) =>
+      `שלחנו את תוכנית הטיפול והצילום ל-${count} רופאים. הצעות המחיר יגיעו ישירות לאימייל שלכם — בדרך כלל תוך 48 שעות.`,
+    successTitleSent: "הבקשה שלכם נשלחה! 🎉",
+    successTitlePending: "השליחה בעיבוד…",
+    successBodyPending: "קיבלנו את בקשתכם והיא בדרך לרופאים. נסו לרענן בעוד רגע.",
+    successWatchInbox: "עקבו אחר תיבת הדואר הנכנס (ולפעמים הספאם)",
+    successToDashboard: "לאזור האישי",
+  },
+
+  confirm: {
+    metaTitle: "סיכום הבקשה",
+    step: "שלב 3 מתוך 3",
+    title: "סיכום הבקשה לפני שליחה",
+    subtitle:
+      "בדקו שהפרטים נכונים. בלחיצה על השליחה הבקשה תישלח לכל הרופאים הנבחרים במקביל — ללא עלות.",
+    statusFailed: "השליחה נכשלה — נסו שוב",
+    statusReady: "מוכן לשליחה",
+    selectedDentists: "רופאים נבחרים",
+    dentistsCount: (n: number) => `${n} רופאים`,
+    treatmentPlan: "תוכנית טיפול",
+    uploadedFeminine: "הועלתה ✓",
+    xray: "צילום שיניים",
+    uploadedMasculine: "הועלה ✓",
+    status: "סטטוס",
+    createdAt: "תאריך יצירה",
+    recipients: "הרופאים שיקבלו את הבקשה",
+    editSelection: "עריכת בחירת הרופאים",
+    phoneVerifyTitle: "מומלץ לאמת את מספר הטלפון",
+    phoneMissingTitle: "לא נמצא מספר טלפון",
+    phoneBody:
+      "המרפאות חוזרות אליכם בטלפון. אימות מהיר מוודא שלא נפלה טעות במספר — לוקח 30 שניות, וזה חינם.",
+    phoneVerifyCta: "אימות המספר",
+    phoneAddCta: "הוספת מספר",
+    freeNoticePrefix: "הבקשה תישלח אוטומטית לכל הרופאים הנבחרים, יחד עם הקבצים.",
+    freeNoticeStrong: "השירות חינמי לחלוטין",
+    freeNoticeSuffix: "— לא נבקש מכם פרטי אשראי בשום שלב.",
+    backToDashboard: "חזרה לאזור האישי",
+  },
+
+  submitButton: {
+    sending: "שולחים את הבקשה…",
+    submit: "שליחת הבקשה — ללא עלות",
+  },
+
+  selection: {
+    chosen: (selected: number, max: number) => `נבחרו ${selected} מתוך ${max}`,
+    ready: "מוכן להמשך — תקבלו הצעות מכל הרופאים הנבחרים",
+    limit: (max: number) => `ניתן לבחור עד ${max} רופאים`,
+    saving: "שומר…",
+    continue: "המשך",
+  },
+
+  upload: {
+    treatmentPlanTitle: "תוכנית טיפול",
+    treatmentPlanDescription: "המסמך שקיבלתם מרופא השיניים שלכם עם פירוט הטיפולים והעלויות",
+    xrayTitle: "צילומי שיניים",
+    xrayDescription: "פנורמי, סטטוס, או צילום נקודתי מהמרפאה שביצעה אבחון",
+    required: "חובה",
+    saveForLater: "שמירה והמשך מאוחר יותר",
+    continueToDentists: "המשך לבחירת רופאים",
+  },
+
+  dentists: {
+    yearsExperience: (n: number) => `${n} שנות ניסיון`,
+    reviews: (n: number) => `${n} ביקורות`,
+    isNew: "חדש",
+    insurersLabel: "מבטחים: ",
+    selected: "נבחר",
+    selectAria: "בחירת רופא",
+    filterCity: "עיר",
+    filterSpecialty: "התמחות",
+    filterInsurer: "מבטח",
+    filterExperience: "ניסיון",
+    experience5: "5+ שנים",
+    experience10: "10+ שנים",
+    experience15: "15+ שנים",
+    clearFilters: "ניקוי סינון",
+    clear: "↺ ניקוי",
+    clearOne: (label: string) => `↺ כל ה${label}`,
+    resultCount: (shown: number, total: number) => `${shown} מתוך ${total} רופאים`,
+    noResults: "לא נמצאו רופאים שמתאימים לסינון.",
+    clearAndRetry: "נקו את הסינון",
+    maxReached: (max: number) => `ניתן לבחור עד ${max} רופאים בלבד`,
+    maxReachedHint: "הסירו רופא מהבחירה כדי להוסיף אחר",
+    startRequestFirst: "התחילו בקשה חדשה כדי לשמור את הבחירה",
+    startRequestHint: (n: number) => `כרגע נבחרו ${n} רופאים`,
+  },
+
+  dropzone: {
+    uploadSuccess: (label: string) => `${label} עלה בהצלחה`,
+    uploadFailed: "ההעלאה נכשלה. נסו שוב.",
+    networkError: "שגיאת רשת בהעלאה",
+    dragHere: "גררו לכאן או",
+    chooseFile: "בחרו קובץ",
+    fileHint: (mb: number) => `PDF, JPG, PNG ✦ עד ${mb}MB`,
+    uploaded: (label: string) => `${label} הועלה`,
+    replace: "החלפה",
+  },
+
+  validation: {
+    fileType: "סוג קובץ לא נתמך. אנא העלו PDF, JPG או PNG בלבד.",
+    fileSize: (mb: number) => `הקובץ גדול מדי. המגבלה היא ${mb}MB.`,
+    fileSignature: "תוכן הקובץ אינו תואם לסוג שהוצהר. אנא העלו PDF, JPG או PNG תקין.",
+    logoType: "סוג קובץ לא נתמך. אנא העלו תמונה בפורמט JPG, PNG או WEBP.",
+    noFile: "לא נשלח קובץ",
+    tooManyUploads: "יותר מדי העלאות לבקשה זו. נסו שוב מאוחר יותר.",
+    logoUnavailable: "העלאת הלוגו אינה זמינה כרגע",
+    logoSize: (mb: number) => `התמונה גדולה מדי. המגבלה היא ${mb}MB.`,
+  },
+
   legal: {
     updatedLabel: "עודכן לאחרונה:",
     lastUpdated: "יולי 2026",

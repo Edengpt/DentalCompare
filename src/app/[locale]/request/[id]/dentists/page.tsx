@@ -3,16 +3,21 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
+import { getDictionary } from "@/i18n/get-dictionary";
+import { isLocale, defaultLocale } from "@/i18n/config";
 import { DentistDirectory } from "@/components/dentists/dentist-directory";
 
-export const metadata = {
-  title: "בחירת רופאים",
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
+  return { title: t.requestFlow.dentistsMetaTitle };
+}
 
 export const dynamic = "force-dynamic";
 
-export default async function RequestDentistsPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export default async function RequestDentistsPage({ params }: { params: Promise<{ id: string; locale: string }> }) {
+  const { id, locale } = await params;
+  const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
   const { userId: clerkUserId } = await auth();
   if (!clerkUserId) redirect("/sign-in");
 
@@ -50,13 +55,12 @@ export default async function RequestDentistsPage({ params }: { params: Promise<
       <main className="flex-1">
         <section className="border-border/60 bg-muted/30 border-b py-12 lg:py-16">
           <div className="mx-auto max-w-7xl px-6 lg:px-10">
-            <p className="eyebrow">שלב 2 מתוך 3</p>
+            <p className="eyebrow">{t.requestFlow.dentistsStep}</p>
             <h1 className="font-display text-foreground mt-4 text-4xl font-bold tracking-tight text-balance sm:text-5xl">
-              בחרו את הרופאים שיתחרו על הטיפול שלכם.
+              {t.requestFlow.dentistsTitle}
             </h1>
             <p className="text-muted-foreground mt-4 max-w-2xl text-lg text-pretty">
-              סננו לפי מיקום, התמחות וקופת חולים. סמנו עד 3 רופאים — והבקשה שלכם תישלח לכולם בו
-              זמנית.
+              {t.requestFlow.dentistsSubtitle}
             </p>
           </div>
         </section>

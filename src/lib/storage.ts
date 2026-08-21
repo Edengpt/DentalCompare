@@ -2,10 +2,9 @@ import { REQUEST_LIMITS } from "./constants";
 
 export type UploadKind = "treatment" | "xray";
 
-export const UPLOAD_KIND_LABELS: Record<UploadKind, string> = {
-  treatment: "תוכנית טיפול",
-  xray: "צילומי שיניים",
-};
+// The Hebrew label map that lived here moved into the dictionaries — a display
+// label can't sit in a storage module once the site is bilingual. Use
+// t.upload.treatmentPlanTitle / t.upload.xrayTitle at the call site.
 
 export const ACCEPTED_MIME_TYPES = REQUEST_LIMITS.allowedFileTypes;
 export const MAX_FILE_SIZE_BYTES = REQUEST_LIMITS.maxFileSizeMB * 1024 * 1024;
@@ -24,14 +23,10 @@ export function validateFile(file: File): FileValidationError | null {
   return null;
 }
 
-export function fileValidationMessage(err: FileValidationError): string {
-  switch (err) {
-    case "TYPE":
-      return "סוג קובץ לא נתמך. אנא העלו PDF, JPG או PNG בלבד.";
-    case "SIZE":
-      return `הקובץ גדול מדי. המגבלה היא ${REQUEST_LIMITS.maxFileSizeMB}MB.`;
-  }
-}
+// fileValidationMessage / logoValidationMessage used to live here, returning
+// Hebrew strings. A validator in a storage module can't own display copy once
+// the site is bilingual — the codes it returns ("TYPE" / "SIZE") are the API,
+// and t.validation.* turns them into text at the call site.
 
 /**
  * Verifies the file's leading "magic" bytes match its declared MIME type. The
@@ -86,14 +81,6 @@ export function validateLogo(file: File): FileValidationError | null {
   return null;
 }
 
-export function logoValidationMessage(err: FileValidationError): string {
-  switch (err) {
-    case "TYPE":
-      return "סוג קובץ לא נתמך. אנא העלו תמונה בפורמט JPG, PNG או WEBP.";
-    case "SIZE":
-      return `התמונה גדולה מדי. המגבלה היא ${LOGO_MAX_FILE_SIZE_MB}MB.`;
-  }
-}
 
 function logoExtension(file: File): string {
   if (file.type === "image/png") return "png";

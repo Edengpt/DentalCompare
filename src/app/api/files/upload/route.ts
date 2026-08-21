@@ -1,4 +1,7 @@
 import { NextResponse } from "next/server";
+import { getDictionary } from "@/i18n/get-dictionary";
+import { getRequestLocale } from "@/i18n/request-locale";
+import { fileValidationMessage } from "@/i18n/validation-message";
 import { put } from "@vercel/blob";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
@@ -6,7 +9,6 @@ import {
   blobPath,
   type UploadKind,
   validateFile,
-  fileValidationMessage,
   fileSignatureMatches,
   MAX_FILE_SIZE_BYTES,
 } from "@/lib/storage";
@@ -16,6 +18,7 @@ import { RATE_LIMITS, REQUEST_LIMITS } from "@/lib/constants";
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
+  const t = (await getDictionary(await getRequestLocale())).validation;
   const { userId: clerkUserId } = await auth();
   if (!clerkUserId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -29,7 +32,7 @@ export async function POST(request: Request) {
   const declaredLength = Number(request.headers.get("content-length") ?? 0);
   if (declaredLength > MAX_FILE_SIZE_BYTES + 1024 * 1024) {
     return NextResponse.json(
-      { error: `הקובץ גדול מדי. המגבלה היא ${REQUEST_LIMITS.maxFileSizeMB}MB.` },
+      { error: t.fileSize(REQUEST_LIMITS.maxFileSizeMB) },
       { status: 413 },
     );
   }
@@ -49,14 +52,14 @@ export async function POST(request: Request) {
 
   const validation = validateFile(file);
   if (validation) {
-    return NextResponse.json({ error: fileValidationMessage(validation) }, { status: 400 });
+    return NextResponse.json({ error: fileValidationMessage(t, validation) }, { status: 400 });
   }
 
   // Defense-in-depth: confirm the actual bytes match the declared type — a
   // renamed executable with a spoofed MIME/extension is rejected here.
   if (!(await fileSignatureMatches(file))) {
     return NextResponse.json(
-      { error: "תוכן הקובץ אינו תואם לסוג שהוצהר. אנא העלו PDF, JPG או PNG תקין." },
+      { error: t.fileSignature },
       { status: 400 },
     );
   }
@@ -86,7 +89,7 @@ export async function POST(request: Request) {
   );
   if (!rl.allowed) {
     return NextResponse.json(
-      { error: "יותר מדי העלאות לבקשה זו. נסו שוב מאוחר יותר." },
+      { error: t.tooManyUploads },
       { status: 429 },
     );
   }

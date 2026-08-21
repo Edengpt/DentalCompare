@@ -1,5 +1,5 @@
 import { LocaleLink as Link } from "@/i18n/locale-link";
-import { ArrowLeft, FilePlus } from "lucide-react";
+import { FilePlus } from "lucide-react";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { Header } from "@/components/shared/header";
@@ -9,26 +9,40 @@ import { cn } from "@/lib/utils";
 import { getOrCreateUser } from "@/server/users";
 import { isAdminEmail } from "@/server/admin";
 import { db } from "@/lib/db";
+import { getDictionary } from "@/i18n/get-dictionary";
+import { isLocale, defaultLocale } from "@/i18n/config";
+import { ForwardArrow } from "@/components/ui/forward-arrow";
+import type { RequestStatus } from "@/generated/prisma/enums";
 
-export const metadata = {
-  title: "אזור אישי",
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
+  return { title: t.dashboard.metaTitle };
+}
 
 export const dynamic = "force-dynamic";
 
-const STATUS_LABELS: Record<string, string> = {
-  PENDING: "ממתין לתשלום",
-  PAID: "שולם ונשלח",
-  FAILED: "התשלום נכשל",
-};
+export default async function DashboardPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
 
-export default async function DashboardPage() {
+  // Was a local map keyed PENDING/PAID/FAILED — the payment statuses removed in
+  // the free-patient pivot. RequestStatus is DRAFT/SUBMITTED/SENT/FAILED, so
+  // every normal request rendered a blank status and a failed one claimed the
+  // *payment* had failed. Keyed off the real enum now.
+  const statusLabel = (status: RequestStatus) => t.requestStatus[status];
+
   const { userId } = await auth();
-  if (!userId) redirect("/sign-in");
+  if (!userId) redirect(`/${locale}/sign-in`);
 
   const profile = await getOrCreateUser();
   const clerkUser = await currentUser();
-  const greetingName = clerkUser?.firstName ?? clerkUser?.username ?? "ברוך הבא";
+  const greetingName =
+    clerkUser?.firstName ?? clerkUser?.username ?? t.dashboard.fallbackGreetingName;
   const showAdminLink = !!profile && isAdminEmail(profile.email);
 
   const user = await db.user.findUnique({
@@ -58,20 +72,20 @@ export default async function DashboardPage() {
       <main className="flex-1">
         <div className="mx-auto max-w-7xl px-6 py-16 lg:px-10 lg:py-24">
           <div className="flex items-center justify-between gap-4">
-            <p className="eyebrow">אזור אישי</p>
+            <p className="eyebrow">{t.dashboard.eyebrow}</p>
             {showAdminLink && (
               <Link
                 href="/admin"
                 className="text-muted-foreground hover:text-teal-deep text-sm font-medium underline-offset-4 hover:underline"
               >
-                פאנל ניהול ←
+                {t.dashboard.adminPanel}
               </Link>
             )}
           </div>
 
           <div className="mt-5 flex flex-col items-start gap-6 sm:flex-row sm:items-end sm:justify-between">
             <h1 className="font-display text-foreground text-4xl font-bold tracking-tight sm:text-5xl">
-              שלום {greetingName} 👋
+              {t.dashboard.greeting} {greetingName} 👋
             </h1>
             <Link
               href="/request/new"
@@ -81,19 +95,18 @@ export default async function DashboardPage() {
               )}
             >
               <FilePlus className="h-4 w-4" />
-              בקשת מחיר חדשה
-              <ArrowLeft className="h-4 w-4" />
+              {t.dashboard.newRequest}
+              <ForwardArrow className="h-4 w-4" />
             </Link>
           </div>
 
           {!hasRequests ? (
             <div className="border-border/60 bg-card mt-12 rounded-3xl border border-dashed p-12 text-center">
               <h2 className="font-display text-foreground text-xl font-bold">
-                עוד אין בקשות פעילות
+                {t.dashboard.emptyTitle}
               </h2>
               <p className="text-muted-foreground mx-auto mt-3 max-w-md text-pretty">
-                התחילו את הבקשה הראשונה שלכם — בחרו עד 3 רופאים, העלו את תוכנית הטיפול והצילום,
-                וההצעות יגיעו אליכם למייל.
+                {t.dashboard.emptyBody}
               </p>
               <Link
                 href="/request/new"
@@ -103,12 +116,12 @@ export default async function DashboardPage() {
                 )}
               >
                 <FilePlus className="h-4 w-4" />
-                להתחלת הבקשה
+                {t.dashboard.emptyCta}
               </Link>
             </div>
           ) : (
             <div className="mt-12 space-y-4">
-              <h2 className="font-display text-foreground text-xl font-bold">הבקשות שלי</h2>
+              <h2 className="font-display text-foreground text-xl font-bold">{t.dashboard.myRequests}</h2>
               <ul className="divide-border/60 bg-card border-border/60 divide-y rounded-3xl border">
                 {requests.map((r) => {
                   const isSent = r.status === "SENT" || r.status === "SUBMITTED";
@@ -131,17 +144,19 @@ export default async function DashboardPage() {
                       className="flex flex-wrap items-center justify-between gap-3 p-5"
                     >
                       <div>
-                        <p className="text-foreground font-semibold">בקשה #{r.id.slice(0, 8)}</p>
+                        <p className="text-foreground font-semibold">
+                          {t.dashboard.requestLabel} #{r.id.slice(0, 8)}
+                        </p>
                         <p className="text-muted-foreground mt-0.5 text-xs">
-                          {date} ✦ סטטוס: {STATUS_LABELS[r.status]} ✦ {r._count.requestDentists}{" "}
-                          רופאים
+                          {date} ✦ {t.dashboard.statusLabel}: {statusLabel(r.status)} ✦{" "}
+                          {r._count.requestDentists} {t.dashboard.dentistsLabel}
                         </p>
                       </div>
                       <Link
                         href={href}
                         className="text-teal-deep text-sm font-semibold underline-offset-4 hover:underline"
                       >
-                        {isSent ? "צפייה בפרטים" : "המשך"}
+                        {isSent ? t.dashboard.view : t.dashboard.continue}
                       </Link>
                     </li>
                   );

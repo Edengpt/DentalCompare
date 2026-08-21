@@ -4,6 +4,7 @@ import { Check, MapPin, Star } from "lucide-react";
 import type { DentistModel } from "@/generated/prisma/models";
 import { cn } from "@/lib/utils";
 import { translateInsurer, translateSpecialty } from "@/lib/labels";
+import { useT } from "@/i18n/provider";
 
 type DentistCardProps = {
   dentist: DentistModel;
@@ -24,6 +25,7 @@ function initials(name: string) {
 }
 
 export function DentistCard({ dentist, isSelected, onToggle, disabled }: DentistCardProps) {
+  const t = useT();
   return (
     <article
       className={cn(
@@ -60,7 +62,7 @@ export function DentistCard({ dentist, isSelected, onToggle, disabled }: Dentist
           <p className="text-muted-foreground mt-0.5 truncate text-sm">{dentist.clinicName}</p>
           <p className="text-muted-foreground/80 mt-2 inline-flex items-center gap-1 text-xs">
             <MapPin className="h-3 w-3" aria-hidden="true" />
-            {dentist.city} ✦ {dentist.experienceYears} שנות ניסיון
+            {dentist.city} ✦ {t.dentists.yearsExperience(dentist.experienceYears)}
           </p>
         </div>
 
@@ -72,7 +74,7 @@ export function DentistCard({ dentist, isSelected, onToggle, disabled }: Dentist
                 {dentist.rating.toFixed(1)}
               </div>
               <p className="text-muted-foreground mt-0.5 text-[10px]">
-                {dentist.reviewCount} ביקורות
+                {t.dentists.reviews(dentist.reviewCount)}
               </p>
             </>
           ) : (
@@ -97,7 +99,7 @@ export function DentistCard({ dentist, isSelected, onToggle, disabled }: Dentist
 
       {/* HMOs */}
       <div className="text-muted-foreground mt-4 text-xs">
-        <span className="font-medium">קופות חולים: </span>
+        <span className="font-medium">{t.dentists.insurersLabel}</span>
         {dentist.insurerAffiliations.map(translateInsurer).join(" ✦ ")}
       </div>
 
@@ -121,7 +123,7 @@ export function DentistCard({ dentist, isSelected, onToggle, disabled }: Dentist
             נבחר
           </>
         ) : (
-          "בחירת רופא"
+          t.dentists.selectAria
         )}
       </button>
     </article>

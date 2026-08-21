@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
+import { getDictionary } from "@/i18n/get-dictionary";
+import { getRequestLocale } from "@/i18n/request-locale";
+import { logoValidationMessage } from "@/i18n/validation-message";
 import { put } from "@vercel/blob";
 import {
   logoBlobPath,
   validateLogo,
-  logoValidationMessage,
   LOGO_MAX_FILE_SIZE_BYTES,
 } from "@/lib/storage";
 
@@ -16,19 +18,21 @@ export const runtime = "nodejs";
  * clinic's profileImageUrl. Kept image-only and small to limit abuse.
  */
 export async function POST(request: Request) {
+  const t = (await getDictionary(await getRequestLocale())).validation;
+
   const formData = await request.formData();
   const file = formData.get("file");
 
   if (!(file instanceof File)) {
-    return NextResponse.json({ error: "לא נשלח קובץ" }, { status: 400 });
+    return NextResponse.json({ error: t.noFile }, { status: 400 });
   }
   if (file.size > LOGO_MAX_FILE_SIZE_BYTES) {
-    return NextResponse.json({ error: logoValidationMessage("SIZE") }, { status: 400 });
+    return NextResponse.json({ error: logoValidationMessage(t, "SIZE") }, { status: 400 });
   }
 
   const validation = validateLogo(file);
   if (validation) {
-    return NextResponse.json({ error: logoValidationMessage(validation) }, { status: 400 });
+    return NextResponse.json({ error: logoValidationMessage(t, validation) }, { status: 400 });
   }
 
   // Logos are public images shown in the directory, so they live in the PUBLIC
@@ -37,7 +41,7 @@ export async function POST(request: Request) {
   const logoToken = process.env.LOGO_BLOB_READ_WRITE_TOKEN;
   if (!logoToken) {
     return NextResponse.json(
-      { error: "העלאת הלוגו אינה זמינה כרגע" },
+      { error: t.logoUnavailable },
       { status: 503 },
     );
   }

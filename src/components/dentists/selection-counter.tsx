@@ -1,6 +1,8 @@
 "use client";
 
-import { ArrowLeft, Loader2, Users } from "lucide-react";
+import { Loader2, Users } from "lucide-react";
+import { ForwardArrow } from "@/components/ui/forward-arrow";
+import { useT } from "@/i18n/provider";
 import { cn } from "@/lib/utils";
 import { REQUEST_LIMITS } from "@/lib/constants";
 
@@ -11,6 +13,7 @@ type SelectionCounterProps = {
 };
 
 export function SelectionCounter({ selected, onContinue, isSaving }: SelectionCounterProps) {
+  const t = useT();
   const { minDentists, maxDentists } = REQUEST_LIMITS;
   const canContinue = selected >= minDentists && !isSaving;
 
@@ -30,12 +33,12 @@ export function SelectionCounter({ selected, onContinue, isSaving }: SelectionCo
 
         <div className="min-w-0 flex-1">
           <p className="text-sm leading-tight font-semibold">
-            נבחרו {selected} מתוך {maxDentists}
+            {t.selection.chosen(selected, maxDentists)}
           </p>
           <p className="text-cream/70 text-[11px]">
             {canContinue
-              ? "מוכן להמשך — תקבלו הצעות מכל הרופאים הנבחרים"
-              : `ניתן לבחור עד ${maxDentists} רופאים`}
+              ? t.selection.ready
+              : t.selection.limit(maxDentists)}
           </p>
         </div>
 
@@ -52,13 +55,13 @@ export function SelectionCounter({ selected, onContinue, isSaving }: SelectionCo
         >
           {isSaving ? (
             <>
-              שומר…
+              {t.selection.saving}
               <Loader2 className="h-4 w-4 animate-spin" />
             </>
           ) : (
             <>
-              המשך
-              <ArrowLeft className="h-4 w-4" />
+              {t.selection.continue}
+              <ForwardArrow className="h-4 w-4" />
             </>
           )}
         </button>

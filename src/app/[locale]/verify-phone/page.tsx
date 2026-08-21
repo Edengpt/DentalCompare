@@ -4,22 +4,35 @@ import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
 import { PhoneVerification } from "@/components/request/phone-verification";
 import { getOrCreateUser } from "@/server/users";
+import { getDictionary } from "@/i18n/get-dictionary";
+import { isLocale, defaultLocale } from "@/i18n/config";
 
-export const metadata = { title: "אימות מספר נייד" };
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
+  return { title: t.verifyPhone.metaTitle };
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function VerifyPhonePage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ locale: string }>;
   searchParams: Promise<{ next?: string }>;
 }) {
+  const { locale } = await params;
+  const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
+
   const { userId } = await auth();
-  if (!userId) redirect("/sign-in");
+  if (!userId) redirect(`/${locale}/sign-in`);
 
   const { next } = await searchParams;
   // Only accept same-origin paths — a raw `next` would otherwise be an open
   // redirect straight off the back of a sign-in.
-  const redirectTo = next && next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
+  const redirectTo =
+    next && next.startsWith("/") && !next.startsWith("//") ? next : `/${locale}/dashboard`;
 
   // getOrCreateUser reconciles Clerk's verification state, so an already-verified
   // user never sits on this screen.
@@ -32,13 +45,12 @@ export default async function VerifyPhonePage({
       <main className="flex-1">
         <section className="border-border/60 bg-muted/30 border-b py-12 lg:py-16">
           <div className="mx-auto max-w-xl px-6 lg:px-10">
-            <p className="eyebrow">שלב אחרון לפני שליחה</p>
+            <p className="eyebrow">{t.verifyPhone.eyebrow}</p>
             <h1 className="font-display text-foreground mt-4 text-4xl font-bold tracking-tight text-balance">
-              נאמת את מספר הנייד שלכם
+              {t.verifyPhone.title}
             </h1>
             <p className="text-muted-foreground mt-4 text-lg text-pretty">
-              המרפאות חוזרות אליכם ישירות, ולכן חשוב שהמספר יהיה נכון. האימות חינמי ולוקח 30 שניות —
-              לא נבקש מכם פרטי אשראי בשום שלב.
+              {t.verifyPhone.subtitle}
             </p>
           </div>
         </section>

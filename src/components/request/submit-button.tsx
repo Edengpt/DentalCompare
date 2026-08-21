@@ -2,7 +2,9 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { ForwardArrow } from "@/components/ui/forward-arrow";
+import { useT } from "@/i18n/provider";
 import { toast } from "sonner";
 import { submitRequest } from "@/server/requests";
 import { cn } from "@/lib/utils";
@@ -18,6 +20,7 @@ type SubmitButtonProps = {
  * of redirecting to a payment provider.
  */
 export function SubmitButton({ requestId }: SubmitButtonProps) {
+  const t = useT();
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -45,13 +48,13 @@ export function SubmitButton({ requestId }: SubmitButtonProps) {
     >
       {isPending ? (
         <>
-          שולחים את הבקשה…
+          {t.submitButton.sending}
           <Loader2 className="h-4 w-4 animate-spin" />
         </>
       ) : (
         <>
-          שליחת הבקשה — ללא עלות
-          <ArrowLeft className="h-4 w-4" />
+          {t.submitButton.submit}
+          <ForwardArrow className="h-4 w-4" />
         </>
       )}
     </button>

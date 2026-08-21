@@ -1,5 +1,7 @@
 "use client";
 
+import { useT } from "@/i18n/provider";
+
 import { useState } from "react";
 import { LocaleLink as Link } from "@/i18n/locale-link";
 import { ArrowLeft } from "lucide-react";
@@ -14,6 +16,7 @@ type UploadStepProps = {
 };
 
 export function UploadStep({ requestId, initialTreatmentUrl, initialXrayUrl }: UploadStepProps) {
+  const t = useT();
   const [treatmentUrl, setTreatmentUrl] = useState<string | null>(initialTreatmentUrl);
   const [xrayUrl, setXrayUrl] = useState<string | null>(initialXrayUrl);
 
@@ -23,29 +26,29 @@ export function UploadStep({ requestId, initialTreatmentUrl, initialXrayUrl }: U
     <div className="space-y-8">
       <section>
         <div className="mb-3 flex items-baseline justify-between">
-          <h2 className="font-display text-foreground text-xl font-bold">תוכנית טיפול</h2>
-          <span className="text-muted-foreground text-xs">חובה</span>
+          <h2 className="font-display text-foreground text-xl font-bold">{t.upload.treatmentPlanTitle}</h2>
+          <span className="text-muted-foreground text-xs">{t.upload.required}</span>
         </div>
         <FileDropzone
           kind="treatment"
           requestId={requestId}
           initialUrl={treatmentUrl}
           onUploaded={setTreatmentUrl}
-          description="המסמך שקיבלתם מרופא השיניים שלכם עם פירוט הטיפולים והעלויות"
+          description={t.upload.treatmentPlanDescription}
         />
       </section>
 
       <section>
         <div className="mb-3 flex items-baseline justify-between">
-          <h2 className="font-display text-foreground text-xl font-bold">צילומי שיניים</h2>
-          <span className="text-muted-foreground text-xs">חובה</span>
+          <h2 className="font-display text-foreground text-xl font-bold">{t.upload.xrayTitle}</h2>
+          <span className="text-muted-foreground text-xs">{t.upload.required}</span>
         </div>
         <FileDropzone
           kind="xray"
           requestId={requestId}
           initialUrl={xrayUrl}
           onUploaded={setXrayUrl}
-          description="פנורמי, סטטוס, או צילום נקודתי מהמרפאה שביצעה אבחון"
+          description={t.upload.xrayDescription}
         />
       </section>
 
@@ -54,7 +57,7 @@ export function UploadStep({ requestId, initialTreatmentUrl, initialXrayUrl }: U
           href="/dashboard"
           className="text-muted-foreground hover:text-foreground inline-flex items-center justify-center text-sm font-medium underline-offset-4 hover:underline"
         >
-          שמירה והמשך מאוחר יותר
+          {t.upload.saveForLater}
         </Link>
 
         <Link
@@ -72,7 +75,7 @@ export function UploadStep({ requestId, initialTreatmentUrl, initialXrayUrl }: U
               : "bg-muted text-muted-foreground cursor-not-allowed",
           )}
         >
-          המשך לבחירת רופאים
+          {t.upload.continueToDentists}
           <ArrowLeft className="h-4 w-4" />
         </Link>
       </div>

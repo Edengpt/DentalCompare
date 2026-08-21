@@ -7,15 +7,24 @@ import { rateLimit } from "@/lib/rate-limit";
 import { RATE_LIMITS } from "@/lib/constants";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
+import { getDictionary } from "@/i18n/get-dictionary";
+import { isLocale, defaultLocale } from "@/i18n/config";
 
 export const dynamic = "force-dynamic";
 
-export default async function NewRequestPage() {
+export default async function NewRequestPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
+
   const { userId } = await auth();
-  if (!userId) redirect("/sign-in?redirect_url=/request/new");
+  if (!userId) redirect(`/${locale}/sign-in?redirect_url=/${locale}/request/new`);
 
   const user = await getOrCreateUser();
-  if (!user) redirect("/sign-in");
+  if (!user) redirect(`/${locale}/sign-in`);
 
   // Reuse the most recent PENDING request if one exists without files yet —
   // saves users from creating multiple empty requests on accidental refresh.
@@ -29,7 +38,7 @@ export default async function NewRequestPage() {
     orderBy: { createdAt: "desc" },
   });
 
-  if (existing) redirect(`/request/${existing.id}/upload`);
+  if (existing) redirect(`/${locale}/request/${existing.id}/upload`);
 
   // Only creating a genuinely new request is rate-limited — reusing an empty one
   // above is free, so refreshing never trips this. Caps request-spam per user.
@@ -45,16 +54,14 @@ export default async function NewRequestPage() {
         <main className="flex-1">
           <div className="mx-auto max-w-md px-6 py-24 text-center">
             <h1 className="font-display text-foreground text-2xl font-bold">
-              יותר מדי בקשות חדשות
+              {t.request.rateLimitedTitle}
             </h1>
-            <p className="text-muted-foreground mt-3 text-pretty">
-              יצרתם הרבה בקשות בזמן קצר. נסו שוב בעוד שעה, או המשיכו בבקשה קיימת מהאזור האישי.
-            </p>
+            <p className="text-muted-foreground mt-3 text-pretty">{t.request.rateLimitedBody}</p>
             <Link
               href="/dashboard"
               className="text-teal-deep mt-6 inline-block text-sm font-semibold underline-offset-4 hover:underline"
             >
-              חזרה לאזור האישי ←
+              {t.request.backToDashboard}
             </Link>
           </div>
         </main>
@@ -72,5 +79,5 @@ export default async function NewRequestPage() {
     select: { id: true },
   });
 
-  redirect(`/request/${created.id}/upload`);
+  redirect(`/${locale}/request/${created.id}/upload`);
 }

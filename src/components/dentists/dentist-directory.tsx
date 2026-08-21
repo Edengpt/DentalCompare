@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import type { DentistModel } from "@/generated/prisma/models";
 import { REQUEST_LIMITS } from "@/lib/constants";
+import { useT } from "@/i18n/provider";
 import { saveRequestDentists } from "@/server/requests";
 import { DentistCard } from "./dentist-card";
 import { FilterBar, type DentistFilters, EMPTY_FILTERS } from "./filter-bar";
@@ -25,6 +26,7 @@ export function DentistDirectory({
   requestId,
   initialSelectedIds,
 }: DentistDirectoryProps) {
+  const t = useT();
   const router = useRouter();
   const [isSaving, startSaving] = useTransition();
   const [filters, setFilters] = useState<DentistFilters>(EMPTY_FILTERS);
@@ -61,8 +63,8 @@ export function DentistDirectory({
         return next;
       }
       if (next.size >= REQUEST_LIMITS.maxDentists) {
-        toast.warning(`ניתן לבחור עד ${REQUEST_LIMITS.maxDentists} רופאים בלבד`, {
-          description: "הסירו רופא מהבחירה כדי להוסיף אחר",
+        toast.warning(t.dentists.maxReached(REQUEST_LIMITS.maxDentists), {
+          description: t.dentists.maxReachedHint,
         });
         return prev;
       }
@@ -75,8 +77,8 @@ export function DentistDirectory({
     // Standalone browse mode (no request bound yet): nudge the user to start a
     // real request so the selection has somewhere to be saved.
     if (!requestId) {
-      toast.info("התחילו בקשה חדשה כדי לשמור את הבחירה ולהמשיך לתשלום", {
-        description: `כרגע נבחרו ${selected.size} רופאים`,
+      toast.info(t.dentists.startRequestFirst, {
+        description: t.dentists.startRequestHint(selected.size),
       });
       router.push("/request/new");
       return;
@@ -108,13 +110,13 @@ export function DentistDirectory({
       <div className="mx-auto max-w-7xl px-6 py-10 pb-32 lg:px-10">
         {filtered.length === 0 ? (
           <div className="text-muted-foreground border-border/60 mx-auto max-w-md rounded-3xl border border-dashed p-12 text-center">
-            <p className="text-base">לא נמצאו רופאים שמתאימים לסינון.</p>
+            <p className="text-base">{t.dentists.noResults}</p>
             <button
               type="button"
               onClick={() => setFilters(EMPTY_FILTERS)}
               className="text-teal-deep mt-3 text-sm font-semibold underline-offset-4 hover:underline"
             >
-              נקו את הסינון
+              {t.dentists.clearAndRetry}
             </button>
           </div>
         ) : (

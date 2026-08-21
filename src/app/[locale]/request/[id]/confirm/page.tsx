@@ -5,16 +5,21 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
+import { getDictionary } from "@/i18n/get-dictionary";
+import { isLocale, defaultLocale } from "@/i18n/config";
 import { SubmitButton } from "@/components/request/submit-button";
 
-export const metadata = {
-  title: "סיכום הבקשה",
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
+  return { title: t.confirm.metaTitle };
+}
 
 export const dynamic = "force-dynamic";
 
-export default async function ConfirmRequestPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export default async function ConfirmRequestPage({ params }: { params: Promise<{ id: string; locale: string }> }) {
+  const { id, locale } = await params;
+  const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
   const { userId: clerkUserId } = await auth();
   if (!clerkUserId) redirect("/sign-in");
 
@@ -61,13 +66,18 @@ export default async function ConfirmRequestPage({ params }: { params: Promise<{
   }).format(request.createdAt);
 
   // Sent requests are redirected above, so only DRAFT/FAILED reach here.
-  const statusLabel = request.status === "FAILED" ? "השליחה נכשלה — נסו שוב" : "מוכן לשליחה";
+  const statusLabel =
+    request.status === "FAILED" ? t.confirm.statusFailed : t.confirm.statusReady;
 
   const summaryRows = [
-    { icon: Users, label: "רופאים נבחרים", value: `${dentists.length} רופאים` },
-    { icon: FileText, label: "תוכנית טיפול", value: "הועלתה ✓" },
-    { icon: ImageIcon, label: "צילום שיניים", value: "הועלה ✓" },
-    { icon: CheckCircle2, label: "סטטוס", value: statusLabel },
+    {
+      icon: Users,
+      label: t.confirm.selectedDentists,
+      value: t.confirm.dentistsCount(dentists.length),
+    },
+    { icon: FileText, label: t.confirm.treatmentPlan, value: t.confirm.uploadedFeminine },
+    { icon: ImageIcon, label: t.confirm.xray, value: t.confirm.uploadedMasculine },
+    { icon: CheckCircle2, label: t.confirm.status, value: statusLabel },
   ];
 
   return (
@@ -76,13 +86,12 @@ export default async function ConfirmRequestPage({ params }: { params: Promise<{
       <main className="flex-1">
         <section className="border-border/60 bg-muted/30 border-b py-12 lg:py-16">
           <div className="mx-auto max-w-3xl px-6 lg:px-10">
-            <p className="eyebrow">שלב 3 מתוך 3</p>
+            <p className="eyebrow">{t.confirm.step}</p>
             <h1 className="font-display text-foreground mt-4 text-4xl font-bold tracking-tight text-balance sm:text-5xl">
-              סיכום הבקשה לפני שליחה
+              {t.confirm.title}
             </h1>
             <p className="text-muted-foreground mt-4 text-lg text-pretty">
-              בדקו שהפרטים נכונים. בלחיצה על השליחה הבקשה תישלח לכל הרופאים הנבחרים במקביל — ללא
-              עלות.
+              {t.confirm.subtitle}
             </p>
           </div>
         </section>
@@ -104,7 +113,7 @@ export default async function ConfirmRequestPage({ params }: { params: Promise<{
                 </div>
               ))}
               <div className="flex items-center justify-between gap-4 py-4">
-                <dt className="text-muted-foreground text-sm">תאריך יצירה</dt>
+                <dt className="text-muted-foreground text-sm">{t.confirm.createdAt}</dt>
                 <dd className="text-foreground text-sm font-semibold">{date}</dd>
               </div>
             </dl>
@@ -113,7 +122,7 @@ export default async function ConfirmRequestPage({ params }: { params: Promise<{
           {/* Selected dentists */}
           <div>
             <h2 className="font-display text-foreground mb-3 text-lg font-bold">
-              הרופאים שיקבלו את הבקשה
+              {t.confirm.recipients}
             </h2>
             <ul className="border-border/60 bg-card divide-border/60 divide-y rounded-3xl border">
               {dentists.map((d) => (
@@ -131,7 +140,7 @@ export default async function ConfirmRequestPage({ params }: { params: Promise<{
               href={`/request/${id}/dentists`}
               className="text-teal-deep mt-3 inline-block text-sm font-semibold underline-offset-4 hover:underline"
             >
-              עריכת בחירת הרופאים
+              {t.confirm.editSelection}
             </Link>
           </div>
 
@@ -141,18 +150,17 @@ export default async function ConfirmRequestPage({ params }: { params: Promise<{
             <div className="border-border/60 bg-muted/40 flex flex-col gap-3 rounded-2xl border p-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-foreground text-sm font-semibold">
-                  {user.phone ? "מומלץ לאמת את מספר הטלפון" : "לא נמצא מספר טלפון"}
+                  {user.phone ? t.confirm.phoneVerifyTitle : t.confirm.phoneMissingTitle}
                 </p>
                 <p className="text-muted-foreground mt-1 text-sm">
-                  המרפאות חוזרות אליכם בטלפון. אימות מהיר מוודא שלא נפלה טעות במספר — לוקח 30 שניות,
-                  וזה חינם.
+                  {t.confirm.phoneBody}
                 </p>
               </div>
               <Link
                 href={`/verify-phone?next=${encodeURIComponent(`/request/${id}/confirm`)}`}
                 className="border-teal-deep/40 text-teal-deep hover:bg-teal-deep/5 inline-flex shrink-0 items-center justify-center rounded-full border px-5 py-2.5 text-sm font-semibold"
               >
-                {user.phone ? "אימות המספר" : "הוספת מספר"}
+                {user.phone ? t.confirm.phoneVerifyCta : t.confirm.phoneAddCta}
               </Link>
             </div>
           )}
@@ -160,16 +168,16 @@ export default async function ConfirmRequestPage({ params }: { params: Promise<{
           {/* Send */}
           <div className="border-border/60 flex flex-col gap-4 border-t pt-8">
             <div className="bg-muted/40 text-muted-foreground rounded-2xl px-5 py-4 text-sm">
-              הבקשה תישלח אוטומטית לכל הרופאים הנבחרים, יחד עם הקבצים.{" "}
-              <span className="text-foreground font-semibold">השירות חינמי לחלוטין</span> — לא נבקש
-              מכם פרטי אשראי בשום שלב.
+              {t.confirm.freeNoticePrefix}{" "}
+              <span className="text-foreground font-semibold">{t.confirm.freeNoticeStrong}</span>{" "}
+              {t.confirm.freeNoticeSuffix}
             </div>
             <div className="flex flex-col-reverse items-stretch justify-between gap-4 sm:flex-row sm:items-center">
               <Link
                 href="/dashboard"
                 className="text-muted-foreground hover:text-foreground inline-flex items-center justify-center text-sm font-medium underline-offset-4 hover:underline"
               >
-                חזרה לאזור האישי
+                {t.confirm.backToDashboard}
               </Link>
               <SubmitButton requestId={request.id} />
             </div>
