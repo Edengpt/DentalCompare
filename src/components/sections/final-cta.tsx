@@ -1,10 +1,11 @@
 import { LocaleLink as Link } from "@/i18n/locale-link";
 import { Show } from "@clerk/nextjs";
-import { ArrowLeft } from "lucide-react";
+import { ForwardArrow } from "@/components/ui/forward-arrow";
+import type { Dictionary } from "@/i18n/get-dictionary";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export function FinalCta() {
+export function FinalCta({ t }: { t: Dictionary["finalCta"] }) {
   return (
     <section className="bg-teal-deep relative overflow-hidden py-24 lg:py-32">
       {/* atmosphere */}
@@ -18,13 +19,12 @@ export function FinalCta() {
       />
 
       <div className="relative mx-auto max-w-4xl px-6 text-center lg:px-10">
-        <p className="eyebrow text-cream/70 before:bg-cream/40 justify-center">הצעד הראשון</p>
+        <p className="eyebrow text-cream/70 before:bg-cream/40 justify-center">{t.eyebrow}</p>
         <h2 className="font-display text-cream mt-6 text-4xl font-bold tracking-tight text-balance sm:text-5xl lg:text-6xl">
-          שיניים בריאות לא צריכות לעלות הון.
+          {t.title}
         </h2>
         <p className="text-cream/80 mx-auto mt-6 max-w-xl text-lg leading-relaxed text-pretty">
-          המחיר הראשון שאתם מקבלים כמעט אף פעם לא הזול ביותר. הצטרפו לאלפי מטופלים שכבר משווים —
-          וחוסכים אלפי שקלים, בדיסקרטיות ובזמן שלהם.
+          {t.subtitle}
         </p>
 
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -38,8 +38,8 @@ export function FinalCta() {
                 "bg-accent hover:bg-accent/90 text-accent-foreground inline-flex h-14 items-center gap-2 rounded-full px-8 text-base font-semibold shadow-2xl shadow-black/20",
               )}
             >
-              קבלו הצעות מחיר עכשיו
-              <ArrowLeft className="h-5 w-5" />
+              {t.cta}
+              <ForwardArrow className="h-5 w-5" />
             </Link>
           </Show>
           <Show when="signed-in">
@@ -50,8 +50,8 @@ export function FinalCta() {
                 "bg-accent hover:bg-accent/90 text-accent-foreground inline-flex h-14 items-center gap-2 rounded-full px-8 text-base font-semibold shadow-2xl shadow-black/20",
               )}
             >
-              קבלו הצעות מחיר עכשיו
-              <ArrowLeft className="h-5 w-5" />
+              {t.cta}
+              <ForwardArrow className="h-5 w-5" />
             </Link>
           </Show>
 
@@ -59,12 +59,12 @@ export function FinalCta() {
             href="#faq"
             className="text-cream/80 hover:text-cream px-2 text-sm font-medium underline-offset-4 transition-colors hover:underline"
           >
-            יש לי עדיין שאלות
+            {t.secondaryCta}
           </Link>
         </div>
 
         <p className="text-cream/50 mt-8 text-xs">
-          ✦ חינם לחלוטין ✦ ללא כרטיס אשראי ✦ ללא התחייבות ✦
+          {t.reassurance}
         </p>
       </div>
     </section>

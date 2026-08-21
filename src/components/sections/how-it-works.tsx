@@ -1,43 +1,41 @@
 import { FileUp, Users, Mail } from "lucide-react";
+import type { Dictionary } from "@/i18n/get-dictionary";
 
-const steps = [
-  {
-    number: "01",
-    icon: FileUp,
-    title: "מעלים תוכנית טיפול וצילום",
-    description:
-      "את תוכנית הטיפול שכבר קיבלתם מרופא, ואת צילום השיניים. PDF או תמונה, עד 20MB לקובץ — וזהו.",
-    detail: "1–2 דקות",
-  },
-  {
-    number: "02",
-    icon: Users,
-    title: "בוחרים עד 3 רופאים",
-    description:
-      "מסננים לפי עיר, התמחות וקופת חולים, ובוחרים בדיוק את מי שתרצו. הבקשה נשלחת רק לרופאים שסימנתם — אפס ספאם.",
-    detail: "פילטרים חכמים",
-  },
-  {
-    number: "03",
-    icon: Mail,
-    title: "ההצעות מגיעות למייל",
-    description:
-      "כל רופא מקבל את המסמכים ומשיב אליכם הצעת מחיר כתובה. אתם משווים בנחת ובוחרים — בלי שום התחייבות.",
-    detail: "תוך 24–48 שעות",
-  },
-];
+export function HowItWorks({ t }: { t: Dictionary["howItWorks"] }) {
+  const steps = [
+    {
+      number: "01",
+      icon: FileUp,
+      title: t.step1Title,
+      description: t.step1Description,
+      detail: t.step1Detail,
+    },
+    {
+      number: "02",
+      icon: Users,
+      title: t.step2Title,
+      description: t.step2Description,
+      detail: t.step2Detail,
+    },
+    {
+      number: "03",
+      icon: Mail,
+      title: t.step3Title,
+      description: t.step3Description,
+      detail: t.step3Detail,
+    },
+  ];
 
-export function HowItWorks() {
   return (
     <section id="how" className="bg-muted/40 relative py-24 lg:py-32">
       <div className="mx-auto max-w-7xl px-6 lg:px-10">
         <div className="mx-auto max-w-3xl text-center">
-          <p className="eyebrow justify-center">איך זה עובד</p>
+          <p className="eyebrow justify-center">{t.eyebrow}</p>
           <h2 className="font-display text-foreground mt-5 text-4xl font-bold tracking-tight text-balance sm:text-5xl">
-            שלושה שלבים — והעבודה הכי קשה היא לחכות.
+            {t.title}
           </h2>
           <p className="text-muted-foreground mt-5 text-lg text-pretty">
-            בלי טפסים אינסופיים ובלי שיחות מציקות — כל התהליך במסך אחד, ומסתיים בשלוש דקות.
+            {t.subtitle}
           </p>
         </div>
 

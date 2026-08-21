@@ -1,43 +1,24 @@
-const benefits = [
-  {
-    number: "I",
-    title: "חוסכים אלפי שקלים",
-    description:
-      "השוואה שקופה מחזירה אליכם את כוח המיקוח. מטופלים שלנו חוסכים בממוצע ₪3,400 בטיפול מורכב — ולא פעם הרבה יותר.",
-  },
-  {
-    number: "II",
-    title: "בקשה אחת, 3 מרפאות",
-    description:
-      "במקום שעות של שיחות טלפון וסבבי מיילים — שלוש דקות מול המסך, והבקשה כבר בדרך לכל הרופאים במקביל.",
-  },
-  {
-    number: "III",
-    title: "הפרטיות שלכם נשמרת",
-    description:
-      "המסמכים הרפואיים מגיעים אך ורק לרופאים שבחרתם. בלי שיתוף עם צד שלישי, בלי פרסום, ובלי ספאם.",
-  },
-  {
-    number: "IV",
-    title: "אפס הגעות מיותרות למרפאות",
-    description:
-      "במקום להסתובב בין מרפאה למרפאה ולתאם פגישות רק כדי לשמוע כמה זה יעלה — ההצעות מגיעות אליכם כתובות ומפורטות. מגיעים למרפאה רק כשכבר בחרתם.",
-  },
-];
+import type { Dictionary } from "@/i18n/get-dictionary";
 
-export function Benefits() {
+export function Benefits({ t }: { t: Dictionary["benefits"] }) {
+  const benefits = [
+    { number: "I", title: t.oneTitle, description: t.oneDescription },
+    { number: "II", title: t.twoTitle, description: t.twoDescription },
+    { number: "III", title: t.threeTitle, description: t.threeDescription },
+    { number: "IV", title: t.fourTitle, description: t.fourDescription },
+  ];
+
   return (
     <section id="benefits" className="bg-background py-24 lg:py-32">
       <div className="mx-auto max-w-7xl px-6 lg:px-10">
         <div className="grid gap-16 lg:grid-cols-[1fr_2fr] lg:items-start lg:gap-20">
           <div className="lg:sticky lg:top-28">
-            <p className="eyebrow">למה DentalCompare</p>
+            <p className="eyebrow">{t.eyebrow}</p>
             <h2 className="font-display text-foreground mt-5 text-4xl font-bold tracking-tight text-balance sm:text-5xl">
-              ארבעה כאבים. ארבעה פתרונות.
+              {t.title}
             </h2>
             <p className="text-muted-foreground mt-5 leading-relaxed text-pretty">
-              בלי מילים גדולות ובלי &ldquo;פלטפורמה מהפכנית&rdquo; — רק תשובה ישירה לארבעה כאבים שכל
-              מי שעומד לפני טיפול שיניים יקר מכיר היטב.
+              {t.subtitle}
             </p>
           </div>
 

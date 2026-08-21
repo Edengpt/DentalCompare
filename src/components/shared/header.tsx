@@ -1,25 +1,34 @@
+"use client";
+
 import { LocaleLink as Link } from "@/i18n/locale-link";
 import { Show, UserButton } from "@clerk/nextjs";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Logo } from "./logo";
+import { LanguageSwitcher } from "./language-switcher";
+import { useT } from "@/i18n/provider";
 
 // The dentist directory (/dentists) is intentionally NOT linked here — it's an
 // in-journey step (choosing clinics to compare), not a destination a visitor
 // should browse before starting a request.
-const navLinks = [
-  { href: "/#how", label: "איך זה עובד" },
-  { href: "/#faq", label: "שאלות נפוצות" },
-  { href: "/clinics/join", label: "הצטרפות מרפאות" },
-];
-
 export function Header() {
+  const t = useT();
+
+  // The dentist directory (/dentists) is intentionally NOT linked here — it's an
+  // in-journey step (choosing clinics to compare), not a destination a visitor
+  // should browse before starting a request.
+  const navLinks = [
+    { href: "/#how", label: t.nav.howItWorks },
+    { href: "/#faq", label: t.nav.faq },
+    { href: "/clinics/join", label: t.nav.clinicsJoin },
+  ];
+
   return (
     <header className="bg-background/80 border-border/60 sticky top-0 z-50 border-b backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-10">
         <Logo />
 
-        <nav className="hidden items-center gap-8 md:flex" aria-label="ראשי">
+        <nav className="hidden items-center gap-8 md:flex" aria-label={t.nav.ariaLabel}>
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -32,18 +41,20 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-3">
+          <LanguageSwitcher />
+
           <Show when="signed-out">
             <Link
               href="/sign-in"
               className="text-muted-foreground hover:text-foreground hidden text-sm font-medium transition-colors md:inline-block"
             >
-              כניסה
+              {t.nav.signIn}
             </Link>
             <Link
               href="/sign-up"
               className={cn(buttonVariants({ size: "sm" }), "h-9 rounded-full px-5 text-sm")}
             >
-              התחילו עכשיו
+              {t.nav.getStarted}
             </Link>
           </Show>
 
@@ -52,7 +63,7 @@ export function Header() {
               href="/dashboard"
               className="text-muted-foreground hover:text-foreground hidden text-sm font-medium transition-colors md:inline-block"
             >
-              אזור אישי
+              {t.nav.dashboard}
             </Link>
             <UserButton
               appearance={{

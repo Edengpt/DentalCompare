@@ -1,24 +1,26 @@
 import { LocaleLink as Link } from "@/i18n/locale-link";
 import { Show } from "@clerk/nextjs";
-import { ArrowLeft, Upload, Users, Wallet, PhoneOff } from "lucide-react";
+import { Upload, Users, Wallet, PhoneOff } from "lucide-react";
+import { ForwardArrow } from "@/components/ui/forward-arrow";
+import type { Dictionary } from "@/i18n/get-dictionary";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { HeroVideo } from "./hero-video";
 
-const benefits = [
-  { icon: Upload, text: "מעלים פעם אחת: תוכנית טיפול וצילום שיניים." },
-  { icon: Users, text: "הבקשה נשלחת ל-3 רופאים מובילים במקביל." },
-  { icon: Wallet, text: "הצעות המחיר חוזרות ישירות למייל — משווים וחוסכים." },
-  { icon: PhoneOff, text: "בלי שיחות טלפון, בלי התחייבות, בלי לחץ." },
-];
+export function Hero({ t }: { t: Dictionary["hero"] }) {
+  const benefits = [
+    { icon: Upload, text: t.benefitUpload },
+    { icon: Users, text: t.benefitSend },
+    { icon: Wallet, text: t.benefitCompare },
+    { icon: PhoneOff, text: t.benefitNoCalls },
+  ];
 
-const trustStats = [
-  { value: "300+", label: "רופאי שיניים במאגר" },
-  { value: "97%", label: "מהבקשות מקבלות מענה תוך 48 שעות" },
-  { value: "₪3,400", label: "ממוצע חיסכון לטיפול" },
-];
+  const trustStats = [
+    { value: t.statDentistsValue, label: t.statDentistsLabel },
+    { value: t.statResponseValue, label: t.statResponseLabel },
+    { value: t.statSavingsValue, label: t.statSavingsLabel },
+  ];
 
-export function Hero() {
   return (
     <section className="hero-video relative isolate flex min-h-[88vh] items-center overflow-hidden">
       {/* Looping background video (client component — handles iOS autoplay). */}
@@ -37,15 +39,15 @@ export function Hero() {
 
       <div className="mx-auto w-full max-w-4xl px-6 py-24 text-center [text-shadow:0_1px_10px_rgba(0,0,0,0.45)] lg:px-10 lg:py-32">
         <p className="eyebrow text-cream/70 before:bg-cream/40 justify-center">
-          פלטפורמת השוואת מחירים ✦ ישראל
+          {t.eyebrow}
         </p>
 
         <h1 className="font-display text-cream mt-6 font-bold tracking-tight text-balance">
           <span className="text-cream/80 block text-2xl font-semibold sm:text-3xl">
-            לא יודעים אם המחיר לטיפול השיניים הוגן?
+            {t.headlineTop}
           </span>
           <span className="mt-3 block text-5xl leading-[1.05] sm:text-6xl lg:text-7xl">
-            קבלו 3 הצעות מחיר. <span className="text-coral">חסכו אלפי שקלים.</span>
+            {t.headlineMain} <span className="text-coral">{t.headlineAccent}</span>
           </span>
         </h1>
 
@@ -71,8 +73,8 @@ export function Hero() {
                 "bg-accent hover:bg-accent/90 text-accent-foreground group inline-flex h-14 items-center gap-2 rounded-full px-8 text-base font-semibold shadow-2xl shadow-black/30 transition-all hover:shadow-black/40",
               )}
             >
-              קבלו הצעות מחיר עכשיו
-              <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
+              {t.cta}
+              <ForwardArrow className="h-5 w-5" />
             </Link>
           </Show>
           <Show when="signed-in">
@@ -83,8 +85,8 @@ export function Hero() {
                 "bg-accent hover:bg-accent/90 text-accent-foreground group inline-flex h-14 items-center gap-2 rounded-full px-8 text-base font-semibold shadow-2xl shadow-black/30 transition-all hover:shadow-black/40",
               )}
             >
-              קבלו הצעות מחיר עכשיו
-              <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
+              {t.cta}
+              <ForwardArrow className="h-5 w-5" />
             </Link>
           </Show>
 
@@ -92,11 +94,11 @@ export function Hero() {
             href="#how"
             className="text-cream/90 hover:text-cream inline-flex items-center gap-1.5 px-2 text-sm font-semibold underline-offset-4 transition-colors hover:underline"
           >
-            איך זה עובד?
+            {t.secondaryCta}
           </Link>
         </div>
 
-        <p className="text-cream/60 mt-6 text-xs">חינם לחלוטין ✦ ללא כרטיס אשראי ✦ ללא התחייבות</p>
+        <p className="text-cream/60 mt-6 text-xs">{t.reassurance}</p>
 
         {/* Trust strip */}
         <div className="border-cream/15 mx-auto mt-16 grid max-w-3xl gap-8 border-t pt-10 sm:grid-cols-3 sm:gap-4">

@@ -1,37 +1,42 @@
+"use client";
+
 import { LocaleLink as Link } from "@/i18n/locale-link";
 import { Logo } from "./logo";
 import { SITE_CONFIG } from "@/lib/constants";
-
-const linkGroups = [
-  {
-    title: "המוצר",
-    links: [
-      { href: "#how", label: "איך זה עובד" },
-      { href: "#benefits", label: "יתרונות" },
-      { href: "#faq", label: "שאלות נפוצות" },
-    ],
-  },
-  {
-    title: "חברה",
-    links: [
-      { href: "/about", label: "אודות" },
-      { href: "/contact", label: "צרו קשר" },
-      { href: "/clinics/join", label: "הצטרפות מרפאות" },
-    ],
-  },
-  {
-    title: "משפטי",
-    links: [
-      { href: "/terms", label: "תנאי שימוש" },
-      { href: "/privacy", label: "מדיניות פרטיות" },
-      { href: "/cookies", label: "מדיניות עוגיות" },
-      { href: "/refunds", label: "ביטולים והחזרים" },
-      { href: "/accessibility", label: "הצהרת נגישות" },
-    ],
-  },
-];
+import { useT } from "@/i18n/provider";
 
 export function Footer() {
+  const t = useT();
+
+  const linkGroups = [
+    {
+      title: t.footer.groupProduct,
+      links: [
+        { href: "#how", label: t.footer.howItWorks },
+        { href: "#benefits", label: t.footer.benefits },
+        { href: "#faq", label: t.footer.faq },
+      ],
+    },
+    {
+      title: t.footer.groupCompany,
+      links: [
+        { href: "/about", label: t.footer.about },
+        { href: "/contact", label: t.footer.contact },
+        { href: "/clinics/join", label: t.footer.clinicsJoin },
+      ],
+    },
+    {
+      title: t.footer.groupLegal,
+      links: [
+        { href: "/terms", label: t.footer.terms },
+        { href: "/privacy", label: t.footer.privacy },
+        { href: "/cookies", label: t.footer.cookies },
+        { href: "/refunds", label: t.footer.refunds },
+        { href: "/accessibility", label: t.footer.accessibility },
+      ],
+    },
+  ];
+
   return (
     <footer className="border-border/60 bg-background border-t">
       <div className="mx-auto max-w-7xl px-6 py-16 lg:px-10">
@@ -39,7 +44,7 @@ export function Footer() {
           <div className="space-y-4">
             <Logo />
             <p className="text-muted-foreground max-w-xs text-sm leading-relaxed">
-              הדרך השקופה לקבל מספר הצעות מחיר לטיפול שיניים. ללא שיחות טלפון, ללא לחץ.
+              {t.footer.tagline}
             </p>
           </div>
 
@@ -64,10 +69,10 @@ export function Footer() {
 
         <div className="border-border/60 mt-12 flex flex-col items-start justify-between gap-4 border-t pt-8 md:flex-row md:items-center">
           <p className="text-muted-foreground text-xs">
-            © {new Date().getFullYear()} {SITE_CONFIG.name}. כל הזכויות שמורות.
+            © {new Date().getFullYear()} {SITE_CONFIG.name}. {t.footer.rights}
           </p>
           <p className="text-muted-foreground text-xs">
-            עוצב ופותח באהבה בישראל ✦ {SITE_CONFIG.supportEmail}
+            {t.footer.builtWith} ✦ {SITE_CONFIG.supportEmail}
           </p>
         </div>
       </div>
