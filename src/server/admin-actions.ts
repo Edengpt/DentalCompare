@@ -3,7 +3,6 @@
 import { getDictionary } from "@/i18n/get-dictionary";
 import { getRequestLocale } from "@/i18n/request-locale";
 import { format } from "@/i18n/format";
-import { legacyMajor } from "@/lib/money";
 import { asLocale } from "@/i18n/config";
 
 import { randomUUID } from "node:crypto";
@@ -198,11 +197,6 @@ export async function createDentist(formData: FormData): Promise<ActionResult> {
         plan: "MONTHLY",
         priceMinor: SUBSCRIPTION_PLANS.MONTHLY.priceMinor,
         currency: SUBSCRIPTION_PLANS.MONTHLY.currency,
-        // Legacy mirror, unread. Dropped in M4.
-        priceILS: legacyMajor(
-          SUBSCRIPTION_PLANS.MONTHLY.priceMinor,
-          SUBSCRIPTION_PLANS.MONTHLY.currency,
-        ),
         setupToken: randomUUID(),
         status: "ACTIVE",
         currentPeriodEnd: null,

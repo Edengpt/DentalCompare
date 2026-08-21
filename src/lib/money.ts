@@ -120,17 +120,3 @@ export function convert(minor: number, from: string, to: string, rate: number): 
   return Math.round(toMajor(minor, from) * rate * 10 ** minorUnitDigits(to));
 }
 
-/**
- * Value for the legacy whole-shekel columns during M3.
- *
- * Those columns are NOT NULL, so writes still have to populate them even though
- * nothing reads them any more. Keeping them in sync is what makes M3 a pure
- * code revert if it has to be rolled back.
- *
- * For a non-ILS amount this is a mirror in that amount's own major units, which
- * is meaningful only alongside the currency column — acceptable precisely
- * because no code reads it. Delete this, and the columns, with M4.
- */
-export function legacyMajor(minor: number, currency: string): number {
-  return Math.round(toMajor(minor, currency));
-}

@@ -1,7 +1,6 @@
 import { getDictionary } from "@/i18n/get-dictionary";
 import { getRequestLocale } from "@/i18n/request-locale";
 import { format } from "@/i18n/format";
-import { legacyMajor } from "@/lib/money";
 import "server-only";
 import { db } from "@/lib/db";
 import { Prisma } from "@/generated/prisma/client";
@@ -23,11 +22,6 @@ export async function createPendingSubscription(
       plan: args.plan,
       priceMinor: SUBSCRIPTION_PLANS[args.plan].priceMinor,
       currency: SUBSCRIPTION_PLANS[args.plan].currency,
-      // Legacy mirror, unread. Dropped in M4.
-      priceILS: legacyMajor(
-        SUBSCRIPTION_PLANS[args.plan].priceMinor,
-        SUBSCRIPTION_PLANS[args.plan].currency,
-      ),
       setupToken: args.setupToken,
       status: "PENDING",
     },
@@ -108,8 +102,6 @@ export async function activateSubscriptionBySetupToken(args: {
         subscriptionId: sub.id,
         amountMinor: priceMinor,
         currency,
-        // Legacy mirror, unread. Dropped in M4.
-        amountILS: legacyMajor(priceMinor, currency),
         status: "PAID",
         payplusTransactionUid: args.transactionUid,
         periodStart: now,
@@ -148,8 +140,6 @@ export async function recordRenewalCharge(args: {
         subscriptionId: args.subscriptionId,
         amountMinor: args.amountMinor,
         currency: args.currency,
-        // Legacy mirror, unread. Dropped in M4.
-        amountILS: legacyMajor(args.amountMinor, args.currency),
         status: "PAID",
         payplusTransactionUid: args.transactionUid,
         periodStart: args.periodStart,

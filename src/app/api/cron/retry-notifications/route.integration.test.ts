@@ -71,7 +71,6 @@ async function seedQuote(opts: { createdAt: Date; notifiedAt?: Date | null }) {
       requestDentistId: rd.id,
       amountMinor: 500000,
       currency: "ILS",
-      amountILS: 5000, // legacy mirror, dropped in M4
       createdAt: opts.createdAt,
       patientNotifiedAt: opts.notifiedAt ?? null,
     },

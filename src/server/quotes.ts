@@ -7,7 +7,7 @@ import { db } from "@/lib/db";
 import { rateLimit } from "@/lib/rate-limit";
 import { asLocale } from "@/i18n/config";
 import { RATE_LIMITS, QUOTE_INCLUSIONS, type QuoteInclusion } from "@/lib/constants";
-import { toMinor, legacyMajor } from "@/lib/money";
+import { toMinor } from "@/lib/money";
 
 /** Keeps a submitted count inside a sane range instead of trusting the form. */
 function clampInt(value: unknown, fallback: number, min: number, max: number): number {
@@ -90,13 +90,10 @@ export async function submitQuote(input: {
 
   const quote = await db.quote.upsert({
     where: { requestDentistId: rd.id },
-    // amountILS is a legacy mirror, unread since M3 and dropped in M4. It stays
-    // written so a rollback to the pre-M3 code loses nothing.
     create: {
       requestDentistId: rd.id,
       amountMinor,
       currency,
-      amountILS: legacyMajor(amountMinor, currency),
       note,
       includes,
       tripsRequired,
@@ -108,7 +105,6 @@ export async function submitQuote(input: {
     update: {
       amountMinor,
       currency,
-      amountILS: legacyMajor(amountMinor, currency),
       note,
       includes,
       tripsRequired,

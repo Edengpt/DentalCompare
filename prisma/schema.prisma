@@ -196,11 +196,8 @@ model Quote {
   id               String         @id @default(uuid())
   requestDentistId String         @unique
   requestDentist   RequestDentist @relation(fields: [requestDentistId], references: [id], onDelete: Cascade)
-  amountILS        Int // total quoted price in ILS — superseded by amountMinor, dropped in M4
-  // Money migration M1 (see docs/superpowers/specs/2026-08-20-international-p0-design.md).
-  // Nullable and unread while the ILS column is still authoritative; M2
-  // backfills, M3 switches reads and writes, M4 drops the old column after a
-  // week of stable production.
+  // Money is an integer count of minor units plus an ISO 4217 code. The pair is
+  // the unit — a bare number is meaningless once more than one currency exists.
   amountMinor      Int?
   currency         String?
   note             String?        @db.Text // free-text, e.g. "כולל צילום, לא כולל שתל"
@@ -243,13 +240,10 @@ model ClinicSubscription {
   dentist                 Dentist            @relation(fields: [dentistId], references: [id], onDelete: Cascade)
   plan                    SubscriptionPlan
   status                  SubscriptionStatus @default(PENDING)
-  priceILS                Int // superseded by priceMinor, dropped in M4
-  // Money migration M1 (see docs/superpowers/specs/2026-08-20-international-p0-design.md).
-  // Nullable and unread while the ILS column is still authoritative; M2
-  // backfills, M3 switches reads and writes, M4 drops the old column after a
-  // week of stable production.
-  priceMinor              Int?
-  currency                String?
+  // Money is an integer count of minor units plus an ISO 4217 code. The pair is
+  // the unit — a bare number is meaningless once more than one currency exists.
+  priceMinor              Int
+  currency                String
   setupToken              String             @unique
   recurringToken          String? // PayPlus stored-card token uid (set after first paid charge)
   payplusCustomerUid      String?
@@ -317,13 +311,10 @@ model SubscriptionCharge {
   id                    String             @id @default(uuid())
   subscriptionId        String
   subscription          ClinicSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
-  amountILS             Int // superseded by amountMinor, dropped in M4
-  // Money migration M1 (see docs/superpowers/specs/2026-08-20-international-p0-design.md).
-  // Nullable and unread while the ILS column is still authoritative; M2
-  // backfills, M3 switches reads and writes, M4 drops the old column after a
-  // week of stable production.
-  amountMinor           Int?
-  currency              String?
+  // Money is an integer count of minor units plus an ISO 4217 code. The pair is
+  // the unit — a bare number is meaningless once more than one currency exists.
+  amountMinor           Int
+  currency              String
   status                PaymentStatus      @default(PENDING)
   payplusTransactionUid String?            @unique
   periodStart           DateTime

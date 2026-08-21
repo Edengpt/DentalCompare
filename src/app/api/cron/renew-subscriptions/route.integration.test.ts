@@ -52,7 +52,6 @@ async function seedSub(opts: {
       plan: "MONTHLY",
       priceMinor: 29900,
       currency: "ILS",
-      priceILS: 299, // legacy mirror, dropped in M4
       status: opts.status,
       setupToken: `stk_${sfx}`,
       recurringToken: `rtok_${sfx}`,
