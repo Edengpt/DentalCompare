@@ -1,0 +1,59 @@
+import { formatMoney } from "@/lib/money";
+import { SITE_CONFIG, SUBSCRIPTION_PLANS, TRIAL_DAYS } from "@/lib/constants";
+import { Section, P, List } from "@/components/legal/legal-layout";
+
+export const refundsTitleHe = "מדיניות ביטולים והחזרים";
+
+export default function RefundsContentHe() {
+  return (
+    <>
+      <P>
+        מדיניות זו מפרטת את תנאי הביטול וההחזר בשירות {SITE_CONFIG.name}, בהתאם לחוק הגנת הצרכן,
+        התשמ&ldquo;א-1981.
+      </P>
+
+      <Section heading="1. מטופלים — השירות חינמי">
+        <P>
+          השירות עבור מטופלים ניתן ללא כל תשלום. {SITE_CONFIG.name} אינה גובה מהמטופל תשלום כלשהו,
+          אינה דורשת פרטי אמצעי תשלום בשום שלב, ואין כל התחייבות מצד המטופל.
+        </P>
+        <List
+          items={[
+            "מאחר שלא מתבצע חיוב, לא קיימת עילה להחזר כספי בצד המטופל.",
+            "ניתן להפסיק את השימוש בשירות בכל עת, ולבקש מחיקת המסמכים והחשבון בפנייה לתמיכה.",
+          ]}
+        />
+      </Section>
+
+      <Section heading="2. מנוי מרפאה">
+        <List
+          items={[
+            `כל מרפאה חדשה מקבלת תקופת התנסות חינם של ${TRIAL_DAYS} יום. ביטול במהלך תקופה זו אינו כרוך בחיוב כלשהו.`,
+            `בתום תקופת ההתנסות מתחיל החיוב: מסלול חודשי (${formatMoney(SUBSCRIPTION_PLANS.MONTHLY.priceMinor, SUBSCRIPTION_PLANS.MONTHLY.currency, "he")}) או שנתי (${formatMoney(SUBSCRIPTION_PLANS.YEARLY.priceMinor, SUBSCRIPTION_PLANS.YEARLY.currency, "he")}), המתחדש אוטומטית בתום כל תקופה.`,
+            "ניתן לבטל את המנוי בכל עת. הביטול ייכנס לתוקף בתום התקופה ששולמה, והמרפאה לא תחויב בתקופה הבאה.",
+            "לא יינתן החזר יחסי עבור תקופה ששולמה ולא נוצלה במלואה.",
+          ]}
+        />
+      </Section>
+
+      <Section heading="3. כיצד לבטל">
+        <P>
+          מרפאה: בפנייה לתמיכה לביטול המנוי. מטופל: אין מה לבטל שכן לא בוצע חיוב, וניתן לבקש מחיקת
+          חשבון ומסמכים בכל עת. לכל פנייה ניתן לכתוב אל {SITE_CONFIG.supportEmail}, ונטפל בה בהתאם
+          למדיניות זו ולדין.
+        </P>
+      </Section>
+
+      <Section heading="4. אופן ההחזר">
+        <P>
+          החזר, ככל שיינתן, יבוצע לאמצעי התשלום שבו בוצעה העסקה, בתוך פרק זמן סביר וכפוף לזמני
+          העיבוד של ספק הסליקה. סעיף זה רלוונטי למנויי מרפאות בלבד.
+        </P>
+      </Section>
+
+      <P>
+        מסמך זה הוא טיוטה כללית ואינו מהווה ייעוץ משפטי. יש להעבירו לבדיקת עורך/ת דין לפני פרסום.
+      </P>
+    </>
+  );
+}

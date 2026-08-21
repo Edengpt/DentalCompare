@@ -1,6 +1,9 @@
+"use client";
+
 import type { ReactNode } from "react";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
+import { useT } from "@/i18n/provider";
 
 /**
  * Shared shell for the static legal/policy pages (terms, privacy, cookies,
@@ -17,6 +20,8 @@ export function LegalLayout({
   updated?: string;
   children: ReactNode;
 }) {
+  const t = useT();
+
   return (
     <>
       <Header />
@@ -27,7 +32,9 @@ export function LegalLayout({
               {title}
             </h1>
             {updated && (
-              <p className="text-muted-foreground mt-3 text-sm">עודכן לאחרונה: {updated}</p>
+              <p className="text-muted-foreground mt-3 text-sm">
+                {t.legal.updatedLabel} {updated}
+              </p>
             )}
           </div>
         </section>
@@ -58,7 +65,7 @@ export function P({ children }: { children: ReactNode }) {
 /** Bulleted list. */
 export function List({ items }: { items: ReactNode[] }) {
   return (
-    <ul className="text-muted-foreground list-disc space-y-1.5 pr-5">
+    <ul className="text-muted-foreground list-disc space-y-1.5 ps-5">
       {items.map((it, i) => (
         <li key={i}>{it}</li>
       ))}
@@ -73,7 +80,7 @@ export function List({ items }: { items: ReactNode[] }) {
  */
 export function Ph({ children }: { children: ReactNode }) {
   return (
-    <mark className="bg-coral/15 text-coral rounded px-1.5 py-0.5 font-semibold" dir="rtl">
+    <mark className="bg-coral/15 text-coral rounded px-1.5 py-0.5 font-semibold">
       «{children}»
     </mark>
   );

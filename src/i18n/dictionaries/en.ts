@@ -157,6 +157,11 @@ const en: typeof he = {
     reassurance: "✦ Completely free ✦ No credit card ✦ No commitment ✦",
   },
 
+  legal: {
+    updatedLabel: "Last updated:",
+    lastUpdated: "July 2026",
+  },
+
   footer: {
     tagline:
       "The transparent way to get several quotes for dental treatment. No phone calls, no pressure.",

@@ -1,107 +1,27 @@
-import { formatMoney } from "@/lib/money";
-import { SITE_CONFIG, SUBSCRIPTION_PLANS, TRIAL_DAYS, REQUEST_LIMITS } from "@/lib/constants";
-import { LegalLayout, Section, P, List, Ph } from "@/components/legal/legal-layout";
+import { notFound } from "next/navigation";
+import { LegalLayout } from "@/components/legal/legal-layout";
+import { getDictionary } from "@/i18n/get-dictionary";
+import { isLocale } from "@/i18n/config";
+import TermsContentHe, { termsTitleHe } from "./content.he";
+import TermsContentEn, { termsTitleEn } from "./content.en";
 
-export const metadata = { title: "תנאי שימוש" };
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  if (!isLocale(locale)) return {};
+  const t = await getDictionary(locale);
+  return { title: t.footer.terms };
+}
 
-export default function TermsPage() {
+export default async function TermsPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  if (!isLocale(locale)) notFound();
+  const t = await getDictionary(locale);
+
+  const isHebrew = locale === "he";
+
   return (
-    <LegalLayout title="תנאי שימוש (תקנון)" updated="יולי 2026">
-      <P>
-        ברוכים הבאים ל-{SITE_CONFIG.name}. השירות מופעל על ידי <Ph>שם המפעיל / החברה</Ph> (ח.פ./ע.מ.{" "}
-        <Ph>מספר</Ph>) (להלן &ldquo;המפעיל&rdquo;). השימוש בשירות כפוף לתנאים אלה. אם אינך מסכים להם
-        — אין לעשות שימוש בשירות.
-      </P>
-
-      <Section heading="1. מהות השירות">
-        <P>
-          {SITE_CONFIG.name} היא פלטפורמה המקשרת בין מטופלים המחפשים הצעות מחיר לטיפולי שיניים לבין
-          מרפאות שיניים עצמאיות. המטופל מעלה תוכנית טיפול וצילום, בוחר עד{" "}
-          {REQUEST_LIMITS.maxDentists} מרפאות, והמרפאות מגישות הצעות מחיר. השירות למטופל ניתן ללא
-          תשלום.{" "}
-          <strong>
-            המפעיל אינו נותן שירות רפואי, אינו צד להתקשרות בין המטופל למרפאה, ואינו אחראי לטיב
-            הטיפול, לאבחנה או למחיר.
-          </strong>
-        </P>
-      </Section>
-
-      <Section heading="2. אינו ייעוץ רפואי">
-        <P>
-          המידע בשירות, לרבות הסברים אוטומטיים אם וככל שיינתנו, הוא כללי בלבד ואינו מהווה ייעוץ,
-          אבחון או המלצה רפואית, ואינו תחליף להתייעצות עם רופא/ת שיניים מוסמך/ת.
-        </P>
-      </Section>
-
-      <Section heading="3. חשבון וכשירות">
-        <List
-          items={[
-            "השימוש מותנה בהרשמה עם פרטים נכונים ומלאים.",
-            "עליך לשמור על סודיות פרטי ההתחברות שלך.",
-            "השירות מיועד לבגירים (18+) הכשירים להתקשר בהסכם.",
-          ]}
-        />
-      </Section>
-
-      <Section heading="4. חובות המטופל">
-        <List
-          items={[
-            "להעלות מסמכים שהם שלך ושאתה רשאי לשתף.",
-            "לא להעלות תוכן פוגעני, בלתי חוקי או מפר זכויות.",
-            "להשתמש בשירות בתום לב ולא לנצלו לרעה.",
-          ]}
-        />
-      </Section>
-
-      <Section heading="5. חובות המרפאה">
-        <List
-          items={[
-            "המרפאה מצהירה כי היא בעלת הרישוי הנדרש לעיסוק ברפואת שיניים בישראל.",
-            "המרפאה תשתמש במידע המטופל אך ורק לצורך מתן הצעת מחיר ומתן השירות.",
-            "המפעיל רשאי להסיר מרפאה מהמאגר בכל עת, לפי שיקול דעתו.",
-          ]}
-        />
-      </Section>
-
-      <Section heading="6. תשלומים">
-        <List
-          items={[
-            "מטופל: השירות חינמי לחלוטין. לא נגבה תשלום, ולא יידרשו פרטי אמצעי תשלום בשום שלב — לא עבור שליחת הבקשה ולא עבור קבלת ההצעות.",
-            `מרפאה: מנוי חודשי (${formatMoney(SUBSCRIPTION_PLANS.MONTHLY.priceMinor, SUBSCRIPTION_PLANS.MONTHLY.currency, "he")}) או שנתי (${formatMoney(SUBSCRIPTION_PLANS.YEARLY.priceMinor, SUBSCRIPTION_PLANS.YEARLY.currency, "he")}) עבור הופעה במאגר וקבלת פניות, לאחר תקופת התנסות חינם של ${TRIAL_DAYS} יום.`,
-            "התשלום עבור המנוי הוא עבור נראות ופרסום במאגר בלבד. אין תשלום הנגזר ממספר הפניות שהתקבלו, מזהות המטופל או מביצוע טיפול כלשהו בפועל.",
-            "מדיניות הביטולים וההחזרים מפורטת בעמוד ייעודי.",
-          ]}
-        />
-      </Section>
-
-      <Section heading="7. קניין רוחני">
-        <P>
-          כל הזכויות בשירות, בעיצוב, בקוד ובתכנים (למעט מסמכים שהעלית) שייכות למפעיל. אין להעתיק,
-          לשכפל או לעשות שימוש מסחרי ללא אישור בכתב.
-        </P>
-      </Section>
-
-      <Section heading="8. הגבלת אחריות">
-        <P>
-          השירות ניתן &ldquo;כפי שהוא&rdquo; (AS IS). המפעיל לא יישא באחריות לנזק ישיר או עקיף הנובע
-          מהשימוש בשירות, מהתקשרות עם מרפאה, או מזמינות/דיוק ההצעות, במידה המרבית המותרת בדין.
-        </P>
-      </Section>
-
-      <Section heading="9. דין וסמכות שיפוט">
-        <P>
-          על תנאים אלה יחולו דיני מדינת ישראל, וסמכות השיפוט הבלעדית תהא לבתי המשפט המוסמכים ב
-          <Ph>עיר — למשל תל אביב</Ph>.
-        </P>
-      </Section>
-
-      <Section heading="10. שינויים ויצירת קשר">
-        <P>המפעיל רשאי לעדכן תנאים אלה מעת לעת. לפניות: {SITE_CONFIG.supportEmail}.</P>
-      </Section>
-
-      <P>
-        מסמך זה הוא טיוטה כללית ואינו מהווה ייעוץ משפטי. יש להעבירו לבדיקת עורך/ת דין לפני פרסום.
-      </P>
+    <LegalLayout title={isHebrew ? termsTitleHe : termsTitleEn} updated={t.legal.lastUpdated}>
+      {isHebrew ? <TermsContentHe /> : <TermsContentEn />}
     </LegalLayout>
   );
 }

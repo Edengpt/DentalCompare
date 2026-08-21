@@ -1,117 +1,27 @@
-import { SITE_CONFIG } from "@/lib/constants";
-import { LegalLayout, Section, P, List, Ph } from "@/components/legal/legal-layout";
+import { notFound } from "next/navigation";
+import { LegalLayout } from "@/components/legal/legal-layout";
+import { getDictionary } from "@/i18n/get-dictionary";
+import { isLocale } from "@/i18n/config";
+import PrivacyContentHe, { privacyTitleHe } from "./content.he";
+import PrivacyContentEn, { privacyTitleEn } from "./content.en";
 
-export const metadata = { title: "מדיניות פרטיות" };
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  if (!isLocale(locale)) return {};
+  const t = await getDictionary(locale);
+  return { title: t.footer.privacy };
+}
 
-export default function PrivacyPage() {
+export default async function PrivacyPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  if (!isLocale(locale)) notFound();
+  const t = await getDictionary(locale);
+
+  const isHebrew = locale === "he";
+
   return (
-    <LegalLayout title="מדיניות פרטיות" updated="יולי 2026">
-      <P>
-        פרטיותך חשובה לנו. מדיניות זו מסבירה איזה מידע נאסף באתר {SITE_CONFIG.name} (להלן
-        &ldquo;השירות&rdquo;), המופעל על ידי <Ph>שם המפעיל / החברה</Ph> (ח.פ./ע.מ.{" "}
-        <Ph>מספר</Ph>, כתובת <Ph>כתובת רשומה</Ph>), כיצד נעשה בו שימוש, וזכויותיך לפי חוק הגנת
-        הפרטיות, התשמ&ldquo;א-1981 ותקנותיו.
-      </P>
-
-      <Section heading="1. איזה מידע אנו אוספים">
-        <List
-          items={[
-            "פרטי חשבון: שם מלא, כתובת אימייל ומספר טלפון (מנוהלים דרך שירות ההזדהות Clerk).",
-            "מידע רפואי: תוכנית טיפול וצילום שיניים שאתה מעלה — זהו “מידע רגיש” לפי חוק הגנת הפרטיות.",
-            "מידע תשלום: התשלום מעובד דרך ספק הסליקה PayPlus. איננו שומרים פרטי כרטיס אשראי בשרתינו.",
-            "מידע טכני: לוגים תפעוליים בסיסיים (זמני פעולה, שגיאות) לצורך תחזוקה ואבטחה.",
-          ]}
-        />
-      </Section>
-
-      <Section heading="2. למה אנו משתמשים במידע">
-        <List
-          items={[
-            "כדי לספק את השירות — לשלוח את בקשתך ואת המסמכים הרפואיים למרפאות שבחרת ולקבל מהן הצעות מחיר.",
-            "לעיבוד התשלום החד-פעמי ולניהול מנויי מרפאות.",
-            "ליצירת קשר בנוגע לבקשתך ולתמיכה.",
-            "לאבטחת השירות, מניעת הונאות, ועמידה בדרישות הדין.",
-          ]}
-        />
-        <P>הבסיס החוקי לעיבוד הוא הסכמתך וקיום ההתקשרות עמך.</P>
-      </Section>
-
-      <Section heading="3. שיתוף המידע הרפואי שלך">
-        <P>
-          המסמכים הרפואיים שהעלית נשלחים <strong>אך ורק למרפאות שבחרת במפורש</strong> בעת יצירת
-          הבקשה, לצורך קבלת הצעת מחיר. שליחה זו מתבצעת רק לאחר אישורך והתשלום. איננו מפרסמים את
-          המידע, אין בו שימוש פרסומי, ואיננו מוכרים מידע לצדדים שלישיים.
-        </P>
-      </Section>
-
-      <Section heading="4. ספקי שירות (מעבדי מידע)">
-        <P>אנו נעזרים בספקים המעבדים מידע עבורנו בכפוף להסכמים מתאימים:</P>
-        <List
-          items={[
-            "Clerk — הזדהות וניהול חשבונות.",
-            "Vercel — אירוח האתר ואחסון הקבצים (Vercel Blob), בגישה פרטית ומאובטחת.",
-            "Neon — מסד הנתונים.",
-            "PayPlus — סליקת תשלומים.",
-            "Resend — שליחת הודעות דואר אלקטרוני.",
-          ]}
-        />
-        <P>
-          חלק מהספקים מאחסנים מידע בשרתים מחוץ לישראל (באיחוד האירופי או בארה&ldquo;ב). בעצם השימוש
-          בשירות אתה מסכים להעברת מידע כאמור, בכפוף לאמצעי אבטחה מקובלים.
-        </P>
-      </Section>
-
-      <Section heading="5. שמירת מידע">
-        <P>
-          אנו שומרים את המידע כל עוד חשבונך פעיל וכנדרש כדי לספק את השירות ולעמוד בחובות חוקיות
-          (למשל דרישות מס). ניתן לבקש מחיקה בכפוף לאמור בסעיף 7. תקופת שמירה מוגדרת:{" "}
-          <Ph>תקופת שמירה — לתיאום עם עו&ldquo;ד</Ph>.
-        </P>
-      </Section>
-
-      <Section heading="6. אבטחת מידע">
-        <P>
-          אנו נוקטים אמצעי אבטחה מקובלים: הצפנה בתעבורה (HTTPS) ובאחסון, בקרות גישה מבוססות הרשאה
-          (רק בעל הבקשה או מנהל מורשה ניגשים לקבצים), הגבלת קצב, ואימות חתימות בממשקי תשלום. עם זאת,
-          אין אבטחה מושלמת, ולא נוכל להתחייב לחסינות מוחלטת.
-        </P>
-      </Section>
-
-      <Section heading="7. זכויותיך">
-        <List
-          items={[
-            "לעיין במידע שנאסף עליך.",
-            "לבקש תיקון מידע שגוי.",
-            "לבקש מחיקת חשבונך והמידע הקשור אליו, בכפוף לחובות שמירה חוקיות.",
-            "לחזור בך מהסכמתך לשימושים עתידיים.",
-          ]}
-        />
-        <P>
-          לפניות בנושא פרטיות ולמימוש זכויות: {SITE_CONFIG.supportEmail}. ממונה/ת על הגנת הפרטיות:{" "}
-          <Ph>שם ופרטי קשר — אם רלוונטי</Ph>.
-        </P>
-      </Section>
-
-      <Section heading="8. עוגיות">
-        <P>
-          השירות משתמש בעוגיות חיוניות בלבד (בעיקר לצורך הזדהות). לפרטים ראה{" "}
-          <a className="text-teal-deep font-semibold underline underline-offset-4" href="/cookies">
-            מדיניות העוגיות
-          </a>
-          .
-        </P>
-      </Section>
-
-      <Section heading="9. שינויים במדיניות">
-        <P>
-          נעדכן מדיניות זו מעת לעת. המשך שימוש בשירות לאחר עדכון מהווה הסכמה למדיניות המעודכנת.
-        </P>
-      </Section>
-
-      <P>
-        מסמך זה הוא טיוטה כללית שהוכנה עבור מפעיל השירות ואינו מהווה ייעוץ משפטי. יש להעבירו לבדיקת
-        עורך/ת דין לפני פרסום.
-      </P>
+    <LegalLayout title={isHebrew ? privacyTitleHe : privacyTitleEn} updated={t.legal.lastUpdated}>
+      {isHebrew ? <PrivacyContentHe /> : <PrivacyContentEn />}
     </LegalLayout>
   );
 }

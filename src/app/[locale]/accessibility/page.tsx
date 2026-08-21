@@ -1,66 +1,34 @@
-import { SITE_CONFIG } from "@/lib/constants";
-import { LegalLayout, Section, P, List, Ph } from "@/components/legal/legal-layout";
+import { notFound } from "next/navigation";
+import { LegalLayout } from "@/components/legal/legal-layout";
+import { getDictionary } from "@/i18n/get-dictionary";
+import { isLocale } from "@/i18n/config";
+import AccessibilityContentHe, { accessibilityTitleHe } from "./content.he";
+import AccessibilityContentEn, { accessibilityTitleEn } from "./content.en";
 
-export const metadata = { title: "הצהרת נגישות" };
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  if (!isLocale(locale)) return {};
+  const t = await getDictionary(locale);
+  return { title: t.footer.accessibility };
+}
 
-export default function AccessibilityPage() {
+export default async function AccessibilityPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  if (!isLocale(locale)) notFound();
+  const t = await getDictionary(locale);
+
+  const isHebrew = locale === "he";
+
   return (
-    <LegalLayout title="הצהרת נגישות" updated="יולי 2026">
-      <P>
-        {SITE_CONFIG.name} רואה חשיבות רבה בהנגשת השירות לכלל המשתמשים, לרבות אנשים עם מוגבלות, מתוך
-        מחויבות לשוויון זכויות. אנו פועלים לעמידה בתקנות שוויון זכויות לאנשים עם מוגבלות (התאמות
-        נגישות לשירות), התשע&ldquo;ג-2013, ובתקן הישראלי ת&ldquo;י 5568 המבוסס על הנחיות WCAG 2.0
-        ברמה AA.
-      </P>
-
-      <Section heading="רמת הנגישות באתר">
-        <P>
-          האתר תוכנן במטרה לעמוד ברמת נגישות AA. בין היתר: מבנה סמנטי, תמיכה בניווט מקלדת, ניגודיות
-          צבעים, טקסט חלופי לתמונות משמעותיות, ותאימות לקוראי מסך. <Ph>לעדכן לאחר בדיקת נגישות בפועל</Ph>.
-        </P>
-      </Section>
-
-      <Section heading="מגבלות ידועות">
-        <P>
-          ייתכן שחלקים מסוימים בשירות טרם הונגשו במלואם. אנו פועלים לשיפור מתמיד. אם נתקלת בקושי
-          נגישותי, נשמח שתדווח לנו ונטפל בהקדם. <Ph>לפרט מגבלות ידועות לאחר בדיקה, אם קיימות</Ph>.
-        </P>
-      </Section>
-
-      <Section heading="דרכי פנייה ובקשת התאמה">
-        <P>
-          נתקלת בבעיה, או זקוק/ה להתאמת נגישות? ניתן לפנות אל רכז/ת הנגישות של השירות ואנו נשתדל
-          להיענות בהקדם:
-        </P>
-        <List
-          items={[
-            <>
-              רכז/ת נגישות: <Ph>שם מלא</Ph>
-            </>,
-            <>
-              דוא&ldquo;ל: <Ph>מייל רכז/ת הנגישות</Ph>
-            </>,
-            <>
-              טלפון: <Ph>טלפון</Ph>
-            </>,
-          ]}
-        />
-        <P>
-          בפנייה נא לציין את הדף שבו התגלתה הבעיה, תיאור התקלה, וסוג הטכנולוגיה המסייעת שבה נעשה
-          שימוש (אם רלוונטי).
-        </P>
-      </Section>
-
-      <Section heading="תאריך ההצהרה">
-        <P>
-          הצהרה זו עודכנה בחודש יולי 2026. <Ph>לעדכן בכל שינוי מהותי או לאחר בדיקת נגישות</Ph>.
-        </P>
-      </Section>
-
-      <P>
-        הצהרה זו היא תבנית ראשונית. הצהרת נגישות מחייבת צריכה לשקף בדיקת נגישות בפועל ולכלול את פרטי
-        רכז/ת הנגישות. מומלץ להיעזר בבודק/ת נגישות מוסמך/ת.
-      </P>
+    <LegalLayout
+      title={isHebrew ? accessibilityTitleHe : accessibilityTitleEn}
+      updated={t.legal.lastUpdated}
+    >
+      {isHebrew ? <AccessibilityContentHe /> : <AccessibilityContentEn />}
     </LegalLayout>
   );
 }

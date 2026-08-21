@@ -1,49 +1,38 @@
-import { SITE_CONFIG } from "@/lib/constants";
-import { LegalLayout, Section, P, List } from "@/components/legal/legal-layout";
+import { notFound } from "next/navigation";
+import { LegalLayout } from "@/components/legal/legal-layout";
+import { getDictionary } from "@/i18n/get-dictionary";
+import { isLocale } from "@/i18n/config";
+import CookiesContentHe, { cookiesTitleHe } from "./content.he";
+import CookiesContentEn, { cookiesTitleEn } from "./content.en";
 
-export const metadata = { title: "מדיניות עוגיות" };
+/**
+ * Legal pages keep one content component per language rather than pulling their
+ * prose into the shared dictionary.
+ *
+ * These are long-form documents with structure inside them — emphasis, lists,
+ * inline placeholders for details only the operator can supply. Flattening that
+ * into dictionary strings would either strip the markup or bury it in escaped
+ * fragments, and it would bloat a dictionary that exists for interface labels.
+ * Side-by-side files also make the two versions reviewable against each other,
+ * which is what a legal text actually needs.
+ */
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  if (!isLocale(locale)) return {};
+  const t = await getDictionary(locale);
+  return { title: t.footer.cookies };
+}
 
-export default function CookiesPage() {
+export default async function CookiesPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  if (!isLocale(locale)) notFound();
+  const t = await getDictionary(locale);
+
+  const isHebrew = locale === "he";
+
   return (
-    <LegalLayout title="מדיניות עוגיות (Cookies)" updated="יולי 2026">
-      <P>
-        עוגיות הן קבצי טקסט קטנים שנשמרים בדפדפן שלך. מדיניות זו מסבירה כיצד {SITE_CONFIG.name}{" "}
-        משתמש בעוגיות ובטכנולוגיות דומות.
-      </P>
-
-      <Section heading="1. באילו עוגיות אנו משתמשים">
-        <P>
-          כיום השירות משתמש ב<strong>עוגיות חיוניות בלבד</strong>, הנדרשות לתפקוד תקין:
-        </P>
-        <List
-          items={[
-            "עוגיות הזדהות והתחברות (מנוהלות דרך שירות Clerk) — שומרות אותך מחובר ומאבטחות את הסשן.",
-            "עוגיות אבטחה ותפעול בסיסיות — למניעת שימוש לרעה ולשמירת העדפות חיוניות.",
-          ]}
-        />
-        <P>
-          איננו משתמשים כיום בעוגיות פרסום או מעקב שיווקי של צד שלישי. אם ייווספו בעתיד (למשל
-          אנליטיקה או פרסום), נעדכן מדיניות זו ונבקש הסכמה כנדרש.
-        </P>
-      </Section>
-
-      <Section heading="2. עוגיות חיוניות אינן דורשות הסכמה">
-        <P>
-          עוגיות חיוניות הכרחיות לאספקת השירות, ולכן אינן מצריכות הסכמה מוקדמת. עוגיות שאינן חיוניות
-          (אם וכאשר יתווספו) יופעלו רק בהסכמתך.
-        </P>
-      </Section>
-
-      <Section heading="3. ניהול עוגיות">
-        <P>
-          באפשרותך למחוק או לחסום עוגיות דרך הגדרות הדפדפן. חסימת עוגיות חיוניות עלולה למנוע התחברות
-          ושימוש תקין בשירות.
-        </P>
-      </Section>
-
-      <Section heading="4. יצירת קשר">
-        <P>לשאלות בנוגע לעוגיות: {SITE_CONFIG.supportEmail}.</P>
-      </Section>
+    <LegalLayout title={isHebrew ? cookiesTitleHe : cookiesTitleEn} updated={t.legal.lastUpdated}>
+      {isHebrew ? <CookiesContentHe /> : <CookiesContentEn />}
     </LegalLayout>
   );
 }
