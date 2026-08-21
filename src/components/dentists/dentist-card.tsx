@@ -80,7 +80,7 @@ export function DentistCard({ dentist, isSelected, onToggle, disabled }: Dentist
             </>
           ) : (
             <span className="bg-teal-deep/8 text-teal-deep rounded-full px-2.5 py-1 text-[10px] font-semibold">
-              חדש
+              {t.dentists.isNew}
             </span>
           )}
         </div>
@@ -93,7 +93,7 @@ export function DentistCard({ dentist, isSelected, onToggle, disabled }: Dentist
             key={s}
             className="bg-teal-deep/8 text-teal-deep rounded-full px-2.5 py-1 text-xs font-medium"
           >
-            {translateSpecialty(s)}
+            {translateSpecialty(t.labels, s)}
           </li>
         ))}
       </ul>
@@ -101,7 +101,7 @@ export function DentistCard({ dentist, isSelected, onToggle, disabled }: Dentist
       {/* HMOs */}
       <div className="text-muted-foreground mt-4 text-xs">
         <span className="font-medium">{t.dentists.insurersLabel}</span>
-        {dentist.insurerAffiliations.map(translateInsurer).join(" ✦ ")}
+        {dentist.insurerAffiliations.map((i) => translateInsurer(t.labels, i)).join(" ✦ ")}
       </div>
 
       {/* Action */}

@@ -1,13 +1,26 @@
+import { getDictionary } from "@/i18n/get-dictionary";
+import { isLocale, defaultLocale } from "@/i18n/config";
+import { format } from "@/i18n/format";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/server/admin";
 import { translateSpecialty, translateInsurer } from "@/lib/labels";
 import { ToggleActive } from "@/components/admin/toggle-active";
 import { NewDentistForm } from "@/components/admin/new-dentist-form";
 
-export const metadata = { title: "ניהול — רופאים" };
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
+  return { title: t.admin.metaDentists };
+}
 export const dynamic = "force-dynamic";
 
-export default async function AdminDentistsPage() {
+export default async function AdminDentistsPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
   await requireAdmin();
 
   const dentists = await db.dentist.findMany({
@@ -21,9 +34,9 @@ export default async function AdminDentistsPage() {
     <div className="space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-foreground text-3xl font-bold tracking-tight">רופאים</h1>
+          <h1 className="font-display text-foreground text-3xl font-bold tracking-tight">{t.admin.dentistsTitle}</h1>
           <p className="text-muted-foreground mt-1.5 text-sm">
-            {dentists.length} רופאים במאגר. לחצו על הסטטוס כדי להפעיל/להשבית.
+            {format(t.admin.dentistsSubtitle, { count: dentists.length })}
           </p>
         </div>
         <NewDentistForm />
@@ -31,8 +44,8 @@ export default async function AdminDentistsPage() {
 
       {pendingCount > 0 && (
         <div className="border-coral/40 bg-coral/5 text-foreground rounded-2xl border px-5 py-3 text-sm">
-          <strong className="font-semibold">{pendingCount}</strong> מרפאות נרשמו עצמאית וממתינות
-          לאישור. לחצו על כפתור הסטטוס הכתום כדי לאשר אותן לפרסום במאגר.
+          <strong className="font-semibold">{pendingCount}</strong>{" "}
+          {t.admin.dentistsPendingNotice}
         </div>
       )}
 
@@ -40,19 +53,19 @@ export default async function AdminDentistsPage() {
         <table className="w-full min-w-[680px] text-sm">
           <thead className="bg-muted/40 text-muted-foreground text-xs">
             <tr>
-              <th className="px-4 py-3 text-start font-medium">רופא</th>
-              <th className="px-4 py-3 text-start font-medium">עיר</th>
-              <th className="px-4 py-3 text-start font-medium">התמחויות</th>
-              <th className="px-4 py-3 text-start font-medium">קופות</th>
-              <th className="px-4 py-3 text-start font-medium">ניסיון</th>
-              <th className="px-4 py-3 text-start font-medium">סטטוס</th>
+              <th className="px-4 py-3 text-start font-medium">{t.admin.colDentist}</th>
+              <th className="px-4 py-3 text-start font-medium">{t.admin.colCity}</th>
+              <th className="px-4 py-3 text-start font-medium">{t.admin.colSpecialties}</th>
+              <th className="px-4 py-3 text-start font-medium">{t.admin.colInsurers}</th>
+              <th className="px-4 py-3 text-start font-medium">{t.admin.colExperience}</th>
+              <th className="px-4 py-3 text-start font-medium">{t.admin.colStatus}</th>
             </tr>
           </thead>
           <tbody className="divide-border/60 divide-y">
             {dentists.length === 0 ? (
               <tr>
                 <td colSpan={6} className="text-muted-foreground px-4 py-8 text-center">
-                  אין רופאים במאגר.
+                  {t.admin.emptyDentists}
                 </td>
               </tr>
             ) : (
@@ -65,7 +78,7 @@ export default async function AdminDentistsPage() {
                         {d.dentistName}
                         {pending && (
                           <span className="bg-coral/15 text-coral rounded-full px-2 py-0.5 text-[10px] font-semibold">
-                            הרשמה חדשה
+                            {t.admin.newRegistration}
                           </span>
                         )}
                       </p>
@@ -74,19 +87,19 @@ export default async function AdminDentistsPage() {
                       </p>
                       {d.submittedBySelf && d.contactName && (
                         <p className="text-muted-foreground/80 mt-0.5 text-xs">
-                          איש קשר: {d.contactName}
-                          {d.agreedToTermsAt && " ✦ חתם על החוזה"}
+                          {t.admin.contactPerson}: {d.contactName}
+                          {d.agreedToTermsAt && t.admin.signedContract}
                         </p>
                       )}
                     </td>
                     <td className="text-foreground px-4 py-3">{d.city}</td>
                     <td className="text-muted-foreground px-4 py-3 text-xs">
-                      {d.specialties.map(translateSpecialty).join(", ") || "—"}
+                      {d.specialties.map((s) => translateSpecialty(t.labels, s)).join(", ") || "—"}
                     </td>
                     <td className="text-muted-foreground px-4 py-3 text-xs">
-                      {d.insurerAffiliations.map(translateInsurer).join(", ") || "—"}
+                      {d.insurerAffiliations.map((i) => translateInsurer(t.labels, i)).join(", ") || "—"}
                     </td>
-                    <td className="text-foreground px-4 py-3">{d.experienceYears} שנים</td>
+                    <td className="text-foreground px-4 py-3">{format(t.admin.years, { count: d.experienceYears })}</td>
                     <td className="px-4 py-3">
                       <ToggleActive dentistId={d.id} isActive={d.isActive} pending={pending} />
                     </td>

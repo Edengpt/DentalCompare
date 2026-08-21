@@ -1,80 +1,31 @@
-import type { RequestStatus } from "@/generated/prisma/enums";
-import type { QuoteInclusion, Specialty } from "./constants";
+import type { Dictionary } from "@/i18n/get-dictionary";
 
 /**
- * Request status labels. There is no payment state in the patient journey any
- * more (PRD 4.1), so these describe delivery only. Was duplicated across three
- * pages before the free-patient migration — keep it single-sourced.
+ * Display names for the canonical values stored in the database.
+ *
+ * The maps themselves live in the dictionaries — they are display copy, and a
+ * module named *_HE can only ever be right for one language. What stays here is
+ * the lookup rule, which is the same in every language: fall through to the
+ * stored value when there is no label for it.
+ *
+ * Falling through matters. Treatments and insurers are open sets — a clinic in
+ * Hungary may declare a payer nobody has written a label for — and showing the
+ * raw stored value beats showing a blank.
  */
-export const REQUEST_STATUS_LABELS_HE: Record<RequestStatus, string> = {
-  DRAFT: "טיוטה",
-  SUBMITTED: "בשליחה",
-  SENT: "נשלחה",
-  FAILED: "השליחה נכשלה",
-};
+type Labels = Dictionary["labels"];
 
-/**
- * Hebrew labels for insurers. Keyed by plain string, not a union: the valid set
- * is Country.insurers now, so it varies per country and can't be enumerated in
- * the type system. Unknown values fall through as-is, which is correct for a
- * foreign payer with no Hebrew name.
- */
-export const INSURER_LABELS_HE: Record<string, string> = {
-  Clalit: "כללית",
-  Maccabi: "מכבי",
-  Meuhedet: "מאוחדת",
-  Leumit: "לאומית",
-};
-
-export const SPECIALTY_LABELS_HE: Record<Specialty, string> = {
-  Implantology: "השתלות",
-  Endodontics: "טיפולי שורש",
-  Orthodontics: "יישור שיניים",
-  Aesthetics: "אסתטיקה",
-  Prosthodontics: "שיקום הפה",
-  Pediatric: "ילדים",
-  Periodontics: "חניכיים",
-};
-
-// Treatments are seeded with free-form English strings — map the common ones.
-// Unknown values fall through as-is.
-export const TREATMENT_LABELS_HE: Record<string, string> = {
-  Implants: "השתלות",
-  Crowns: "כתרים",
-  Bridges: "גשרים",
-  Veneers: "ציפויי חרסינה",
-  Whitening: "הלבנת שיניים",
-  "Root Canal": "טיפולי שורש",
-  Braces: "יישור שיניים",
-  Invisalign: "אינוויזליין",
-  "Gum Surgery": "ניתוחי חניכיים",
-  "Bone Grafting": "השתלת עצם",
-  "Pediatric Care": "טיפולי שיניים לילדים",
-  "Full Mouth Reconstruction": "שיקום פה מלא",
-};
-
-export function translateTreatment(t: string) {
-  return TREATMENT_LABELS_HE[t] ?? t;
+export function translateSpecialty(t: Labels, value: string): string {
+  return t.specialties[value as keyof Labels["specialties"]] ?? value;
 }
 
-export function translateSpecialty(s: string) {
-  return SPECIALTY_LABELS_HE[s as Specialty] ?? s;
+export function translateTreatment(t: Labels, value: string): string {
+  return t.treatments[value as keyof Labels["treatments"]] ?? value;
 }
 
-export function translateInsurer(name: string) {
-  return INSURER_LABELS_HE[name] ?? name;
+export function translateInsurer(t: Labels, value: string): string {
+  return t.insurers[value as keyof Labels["insurers"]] ?? value;
 }
 
-/** What a quote covers. Keys are canonical; only the labels are localised. */
-export const QUOTE_INCLUSION_LABELS_HE: Record<QuoteInclusion, string> = {
-  XRAYS: "צילומים",
-  ANESTHESIA: "הרדמה",
-  TEMP_CROWN: "כתר זמני",
-  FOLLOW_UP: "ביקורת מעקב",
-  AIRPORT_TRANSFER: "הסעה משדה התעופה",
-  ACCOMMODATION: "לינה",
-};
-
-export function translateInclusion(key: string) {
-  return QUOTE_INCLUSION_LABELS_HE[key as QuoteInclusion] ?? key;
+export function translateInclusion(t: Labels, value: string): string {
+  return t.inclusions[value as keyof Labels["inclusions"]] ?? value;
 }

@@ -1,30 +1,43 @@
 "use client";
 
 import { formatMoney } from "@/lib/money";
+import { useT, useLocale } from "@/i18n/provider";
 
 import { useState } from "react";
 import { SUBSCRIPTION_PLANS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
-const OPTIONS = [
-  {
-    value: "MONTHLY" as const,
-    title: "מסלול חודשי",
-    price: `${formatMoney(SUBSCRIPTION_PLANS.MONTHLY.priceMinor, SUBSCRIPTION_PLANS.MONTHLY.currency, "he")}`,
-    per: "לחודש",
-    note: "ללא התחייבות — ביטול בכל עת",
-  },
-  {
-    value: "YEARLY" as const,
-    title: "מסלול שנתי",
-    price: `${formatMoney(SUBSCRIPTION_PLANS.YEARLY.priceMinor, SUBSCRIPTION_PLANS.YEARLY.currency, "he")}`,
-    per: "לשנה",
-    note: "חיסכון משמעותי לעומת חודשי",
-  },
-];
-
 export function PlanPicker({ defaultValue = "MONTHLY" }: { defaultValue?: "MONTHLY" | "YEARLY" }) {
+  const t = useT();
+  const locale = useLocale();
   const [selected, setSelected] = useState<"MONTHLY" | "YEARLY">(defaultValue);
+
+  // Built inside the component because the labels come from context, and the
+  // price is formatted in the reader's locale rather than a fixed "he-IL".
+  const OPTIONS = [
+    {
+      value: "MONTHLY" as const,
+      title: t.clinics.planMonthlyTitle,
+      price: formatMoney(
+        SUBSCRIPTION_PLANS.MONTHLY.priceMinor,
+        SUBSCRIPTION_PLANS.MONTHLY.currency,
+        locale,
+      ),
+      per: t.clinics.planMonthlyPer,
+      note: t.clinics.planMonthlyNote,
+    },
+    {
+      value: "YEARLY" as const,
+      title: t.clinics.planYearlyTitle,
+      price: formatMoney(
+        SUBSCRIPTION_PLANS.YEARLY.priceMinor,
+        SUBSCRIPTION_PLANS.YEARLY.currency,
+        locale,
+      ),
+      per: t.clinics.planYearlyPer,
+      note: t.clinics.planYearlyNote,
+    },
+  ];
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       {OPTIONS.map((o) => (

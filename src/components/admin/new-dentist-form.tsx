@@ -11,7 +11,7 @@ const inputClass =
   "border-border/60 bg-background focus:border-teal-deep focus:ring-teal-deep/20 w-full rounded-xl border px-3 py-2 text-sm outline-none focus:ring-2";
 
 const fields = [
-  { name: "dentistName", label: "שם הרופא", required: true, placeholder: 'ד"ר ישראל ישראלי' },
+  { name: "dentistName", label: "שם הרופא", required: true, placeholder: "Dr Jane Smith" },
   { name: "clinicName", label: "שם המרפאה", required: true, placeholder: "מרפאת חיוך" },
   { name: "email", label: "אימייל", required: true, type: "email", placeholder: "dr@clinic.co.il" },
   { name: "phone", label: "טלפון", required: true, placeholder: "03-1234567" },

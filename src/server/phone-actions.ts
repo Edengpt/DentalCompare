@@ -1,5 +1,8 @@
 "use server";
 
+import { getDictionary } from "@/i18n/get-dictionary";
+import { getRequestLocale } from "@/i18n/request-locale";
+import { format } from "@/i18n/format";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { normalizePhone } from "@/lib/phone";
@@ -16,20 +19,21 @@ export type SyncPhoneResult = { ok: true } | { ok: false; error: string };
  * isn't left waiting on a webhook that may never reach a dev machine.
  */
 export async function syncVerifiedPhone(): Promise<SyncPhoneResult> {
+  const e = (await getDictionary(await getRequestLocale())).errors;
   const { userId: clerkUserId } = await auth();
-  if (!clerkUserId) return { ok: false, error: "יש להתחבר כדי להמשיך" };
+  if (!clerkUserId) return { ok: false, error: e.signInRequired };
 
   const clerkUser = await currentUser();
-  if (!clerkUser) return { ok: false, error: "לא הצלחנו לקרוא את פרטי המשתמש" };
+  if (!clerkUser) return { ok: false, error: e.cannotReadUser };
 
   const entry = clerkUser.phoneNumbers.find((p) => p.id === clerkUser.primaryPhoneNumberId);
   if (!entry || entry.verification?.status !== "verified") {
-    return { ok: false, error: "המספר עדיין לא אומת" };
+    return { ok: false, error: e.phoneNotVerified };
   }
 
   const phone = normalizePhone(entry.phoneNumber);
   if (!phone) {
-    return { ok: false, error: "יש לאמת מספר נייד תקין" };
+    return { ok: false, error: e.phoneInvalid };
   }
 
   // phone is no longer unique in the schema (verification is optional, so an
@@ -40,14 +44,14 @@ export async function syncVerifiedPhone(): Promise<SyncPhoneResult> {
     select: { id: true },
   });
   if (taken) {
-    return { ok: false, error: "המספר הזה כבר משויך לחשבון אחר" };
+    return { ok: false, error: e.phoneTaken };
   }
 
   const existing = await db.user.findUnique({
     where: { clerkUserId },
     select: { id: true, phoneVerifiedAt: true },
   });
-  if (!existing) return { ok: false, error: "המשתמש לא סונכרן עדיין — רעננו ונסו שוב" };
+  if (!existing) return { ok: false, error: e.userNotSynced };
 
   await db.user.update({
     where: { clerkUserId },

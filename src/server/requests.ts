@@ -1,5 +1,8 @@
 "use server";
 
+import { getDictionary } from "@/i18n/get-dictionary";
+import { getRequestLocale } from "@/i18n/request-locale";
+import { format } from "@/i18n/format";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { REQUEST_LIMITS } from "@/lib/constants";
@@ -23,14 +26,15 @@ export async function saveRequestDentists(
   requestId: string,
   dentistIds: string[],
 ): Promise<SaveDentistsResult> {
+  const e = (await getDictionary(await getRequestLocale())).errors;
   const { userId: clerkUserId } = await auth();
-  if (!clerkUserId) return { ok: false, error: "יש להתחבר כדי להמשיך" };
+  if (!clerkUserId) return { ok: false, error: e.signInRequired };
 
   const user = await db.user.findUnique({
     where: { clerkUserId },
     select: { id: true },
   });
-  if (!user) return { ok: false, error: "המשתמש לא סונכרן עדיין — רעננו ונסו שוב" };
+  if (!user) return { ok: false, error: e.userNotSynced };
 
   const request = await db.request.findUnique({
     where: { id: requestId },
@@ -43,24 +47,24 @@ export async function saveRequestDentists(
     },
   });
   if (!request || request.userId !== user.id) {
-    return { ok: false, error: "הבקשה לא נמצאה" };
+    return { ok: false, error: e.requestNotFound };
   }
 
   if (request.status !== "DRAFT") {
-    return { ok: false, error: "לא ניתן לערוך בקשה שכבר נשלחה" };
+    return { ok: false, error: e.requestLocked };
   }
 
   if (!request.treatmentFileUrl || !request.xrayFileUrl) {
-    return { ok: false, error: "יש להעלות תוכנית טיפול וצילום לפני בחירת הרופאים" };
+    return { ok: false, error: e.filesRequiredBeforeDentists };
   }
 
   // Dedupe and validate count.
   const uniqueIds = [...new Set(dentistIds)];
   if (uniqueIds.length < REQUEST_LIMITS.minDentists) {
-    return { ok: false, error: "יש לבחור לפחות רופא אחד" };
+    return { ok: false, error: e.pickAtLeastOne };
   }
   if (uniqueIds.length > REQUEST_LIMITS.maxDentists) {
-    return { ok: false, error: `ניתן לבחור עד ${REQUEST_LIMITS.maxDentists} רופאים בלבד` };
+    return { ok: false, error: format(e.tooManyDentists, { max: REQUEST_LIMITS.maxDentists }) };
   }
 
   // Make sure every chosen dentist actually exists and is active.
@@ -68,7 +72,7 @@ export async function saveRequestDentists(
     where: { id: { in: uniqueIds }, isActive: true },
   });
   if (validCount !== uniqueIds.length) {
-    return { ok: false, error: "חלק מהרופאים שנבחרו אינם זמינים יותר" };
+    return { ok: false, error: e.dentistsUnavailable };
   }
 
   // Replace the selection atomically.
@@ -98,21 +102,22 @@ export async function saveRequestDentists(
  * told whether the number was verified so it can judge for itself.
  */
 export async function submitRequest(requestId: string): Promise<SubmitRequestResult> {
+  const e = (await getDictionary(await getRequestLocale())).errors;
   const { userId: clerkUserId } = await auth();
-  if (!clerkUserId) return { ok: false, error: "יש להתחבר כדי להמשיך" };
+  if (!clerkUserId) return { ok: false, error: e.signInRequired };
 
   const user = await db.user.findUnique({
     where: { clerkUserId },
     select: { id: true, phone: true },
   });
-  if (!user) return { ok: false, error: "המשתמש לא סונכרן עדיין — רעננו ונסו שוב" };
+  if (!user) return { ok: false, error: e.userNotSynced };
 
   // A lead with no phone number at all is worthless to a clinic — calling back
   // is the entire workflow. Verified or not, there has to be a number.
   if (!user.phone) {
     return {
       ok: false,
-      error: "יש להוסיף מספר טלפון לפני שליחת הבקשה — המרפאות חוזרות אליכם בטלפון",
+      error: e.phoneRequiredBeforeSend,
     };
   }
 
@@ -128,20 +133,20 @@ export async function submitRequest(requestId: string): Promise<SubmitRequestRes
     },
   });
   if (!request || request.userId !== user.id) {
-    return { ok: false, error: "הבקשה לא נמצאה" };
+    return { ok: false, error: e.requestNotFound };
   }
   if (request.status !== "DRAFT" && request.status !== "FAILED") {
-    return { ok: false, error: "הבקשה כבר נשלחה" };
+    return { ok: false, error: e.requestAlreadySent };
   }
 
   // Qualification gate: proof of clinical intent (PRD 4.2).
   if (!request.treatmentFileUrl || !request.xrayFileUrl) {
-    return { ok: false, error: "יש להעלות תוכנית טיפול וצילום לפני השליחה" };
+    return { ok: false, error: e.filesRequiredBeforeSend };
   }
 
   const selectedIds = request.requestDentists.map((rd) => rd.dentistId);
   if (selectedIds.length === 0) {
-    return { ok: false, error: "יש לבחור לפחות רופא אחד" };
+    return { ok: false, error: e.pickAtLeastOne };
   }
 
   // Re-check eligibility at send time. The directory already filters by the
@@ -158,7 +163,7 @@ export async function submitRequest(requestId: string): Promise<SubmitRequestRes
   const eligibleIds = new Set(eligible.map((d) => d.id));
 
   if (eligibleIds.size === 0) {
-    return { ok: false, error: "המרפאות שנבחרו אינן זמינות כרגע — בחרו מרפאות אחרות" };
+    return { ok: false, error: e.clinicsUnavailable };
   }
 
   // Drop the now-ineligible recipients so fulfillment never emails them.

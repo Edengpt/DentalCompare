@@ -4,7 +4,7 @@ import { ChevronDown, X } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { SPECIALTY_LABELS_HE, translateInsurer, translateSpecialty } from "@/lib/labels";
+import { translateInsurer, translateSpecialty } from "@/lib/labels";
 import { SPECIALTIES } from "@/lib/constants";
 import { useT } from "@/i18n/provider";
 import { format } from "@/i18n/format";
@@ -69,10 +69,10 @@ export function FilterBar({
           values={filters.specialties}
           options={SPECIALTIES.map((s) => ({
             value: s,
-            label: SPECIALTY_LABELS_HE[s],
+            label: translateSpecialty(t.labels, s),
           }))}
           onChange={(values) => onChange({ ...filters, specialties: values })}
-          renderSelected={translateSpecialty}
+          renderSelected={(s) => translateSpecialty(t.labels, s)}
         />
 
         {/* Insurer — hidden entirely where no listed clinic declares one, which
@@ -81,9 +81,9 @@ export function FilterBar({
           <MultiPopover
             label={t.dentists.filterInsurer}
             values={filters.insurers}
-            options={insurers.map((i) => ({ value: i, label: translateInsurer(i) }))}
+            options={insurers.map((i) => ({ value: i, label: translateInsurer(t.labels, i) }))}
             onChange={(values) => onChange({ ...filters, insurers: values })}
-            renderSelected={translateInsurer}
+            renderSelected={(i) => translateInsurer(t.labels, i)}
           />
         )}
 

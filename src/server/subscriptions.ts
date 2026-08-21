@@ -1,3 +1,6 @@
+import { getDictionary } from "@/i18n/get-dictionary";
+import { getRequestLocale } from "@/i18n/request-locale";
+import { format } from "@/i18n/format";
 import { legacyMajor } from "@/lib/money";
 import "server-only";
 import { db } from "@/lib/db";
@@ -13,6 +16,7 @@ export async function createPendingSubscription(
   },
   client: Prisma.TransactionClient | typeof db = db,
 ): Promise<void> {
+  const e = (await getDictionary(await getRequestLocale())).errors;
   await client.clinicSubscription.create({
     data: {
       dentistId: args.dentistId,
@@ -41,6 +45,7 @@ export async function activateSubscriptionBySetupToken(args: {
   recurringToken?: string;
   customerUid?: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
+  const e = (await getDictionary(await getRequestLocale())).errors;
   const sub = await db.clinicSubscription.findUnique({
     where: { setupToken: args.setupToken },
     select: {
@@ -52,7 +57,7 @@ export async function activateSubscriptionBySetupToken(args: {
       recurringToken: true,
     },
   });
-  if (!sub) return { ok: false, error: "מנוי לא נמצא" };
+  if (!sub) return { ok: false, error: e.subscriptionNotFound };
 
   // Backfill the stored-card token if a later caller carries it and we activated
   // earlier without it — e.g. the return page (getPageRequestStatus) activates
@@ -79,7 +84,7 @@ export async function activateSubscriptionBySetupToken(args: {
   // mark the period paid while collecting nothing.
   if (sub.priceMinor === null || sub.currency === null) {
     console.error("activateSubscription: subscription has no price", { subscriptionId: sub.id });
-    return { ok: false, error: "תקלה בהגדרת המנוי. פנו לתמיכה." };
+    return { ok: false, error: e.subscriptionMisconfigured };
   }
   const priceMinor = sub.priceMinor;
   const currency = sub.currency;
@@ -124,6 +129,7 @@ export async function recordRenewalCharge(args: {
   periodStart: Date;
   periodEnd: Date;
 }): Promise<void> {
+  const e = (await getDictionary(await getRequestLocale())).errors;
   const now = new Date();
   await db.$transaction([
     db.clinicSubscription.update({
@@ -160,6 +166,7 @@ export async function recordRenewalCharge(args: {
  * not on every daily retry within the grace window.
  */
 export async function markPastDue(subscriptionId: string): Promise<boolean> {
+  const e = (await getDictionary(await getRequestLocale())).errors;
   const firstTime = await db.clinicSubscription.updateMany({
     where: { id: subscriptionId, paymentFailedNotifiedAt: null },
     data: { status: "PAST_DUE", paymentFailedNotifiedAt: new Date() },
@@ -174,6 +181,7 @@ export async function markPastDue(subscriptionId: string): Promise<boolean> {
 }
 
 export async function cancelSubscription(subscriptionId: string): Promise<void> {
+  const e = (await getDictionary(await getRequestLocale())).errors;
   await db.clinicSubscription.update({
     where: { id: subscriptionId },
     data: { status: "CANCELED", canceledAt: new Date() },

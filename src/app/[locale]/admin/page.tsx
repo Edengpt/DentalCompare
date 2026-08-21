@@ -1,14 +1,26 @@
+import { getDictionary } from "@/i18n/get-dictionary";
+import { isLocale, defaultLocale } from "@/i18n/config";
+import { format } from "@/i18n/format";
 import { formatMoney } from "@/lib/money";
 import { LocaleLink as Link } from "@/i18n/locale-link";
 import { requireAdmin } from "@/server/admin";
 import { Users, Stethoscope, FileText, Banknote, Building2, ArrowLeft } from "lucide-react";
 import { db } from "@/lib/db";
-import { REQUEST_STATUS_LABELS_HE } from "@/lib/labels";
 
-export const metadata = { title: "ניהול — סקירה" };
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
+  return { title: t.admin.metaOverview };
+}
 export const dynamic = "force-dynamic";
 
-export default async function AdminOverviewPage() {
+export default async function AdminOverviewPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
   await requireAdmin();
 
   const [
@@ -53,11 +65,11 @@ export default async function AdminOverviewPage() {
     .join(" · ");
 
   const stats = [
-    { label: "סה״כ משתמשים", value: totalUsers.toLocaleString("he-IL"), icon: Users },
-    { label: "סה״כ רופאים", value: totalDentists.toLocaleString("he-IL"), icon: Stethoscope },
-    { label: "סה״כ בקשות", value: totalRequests.toLocaleString("he-IL"), icon: FileText },
+    { label: t.admin.statUsers, value: totalUsers.toLocaleString(locale), icon: Users },
+    { label: t.admin.statDentists, value: totalDentists.toLocaleString(locale), icon: Stethoscope },
+    { label: t.admin.statRequests, value: totalRequests.toLocaleString(locale), icon: FileText },
     {
-      label: "סה״כ הכנסות (מנויים)",
+      label: t.admin.statRevenue,
       value: revenueByCurrency || formatMoney(0, "ILS", "he"),
       icon: Banknote,
     },
@@ -69,8 +81,8 @@ export default async function AdminOverviewPage() {
   return (
     <div className="space-y-10">
       <header>
-        <h1 className="font-display text-foreground text-3xl font-bold tracking-tight">סקירה</h1>
-        <p className="text-muted-foreground mt-1.5 text-sm">תמונת מצב כללית של הפלטפורמה.</p>
+        <h1 className="font-display text-foreground text-3xl font-bold tracking-tight">{t.admin.overviewTitle}</h1>
+        <p className="text-muted-foreground mt-1.5 text-sm">{t.admin.overviewSubtitle}</p>
       </header>
 
       {pendingClinics > 0 && (
@@ -84,9 +96,9 @@ export default async function AdminOverviewPage() {
             </span>
             <div>
               <p className="text-foreground text-sm font-semibold">
-                {pendingClinics} הרשמות מרפאות ממתינות לאישור
+                {format(t.admin.pendingClinics, { count: pendingClinics })}
               </p>
-              <p className="text-muted-foreground text-xs">לחצו לבדיקה ואישור הרשמות חדשות.</p>
+              <p className="text-muted-foreground text-xs">{t.admin.pendingClinicsHint}</p>
             </div>
           </div>
           <ArrowLeft className="text-coral h-4 w-4 transition-transform group-hover:-translate-x-1" />
@@ -112,7 +124,7 @@ export default async function AdminOverviewPage() {
             className="border-border/60 bg-card flex items-center justify-between rounded-2xl border px-5 py-4"
           >
             <span className="text-muted-foreground text-sm">
-              בקשות — {REQUEST_STATUS_LABELS_HE[status]}
+              {format(t.admin.requestsByStatus, { status: t.requestStatus[status] })}
             </span>
             <span className="text-foreground text-lg font-bold">{countFor(status)}</span>
           </div>
@@ -120,22 +132,22 @@ export default async function AdminOverviewPage() {
       </div>
 
       <section>
-        <h2 className="font-display text-foreground mb-3 text-lg font-bold">בקשות אחרונות</h2>
+        <h2 className="font-display text-foreground mb-3 text-lg font-bold">{t.admin.recentRequests}</h2>
         <div className="border-border/60 bg-card overflow-hidden rounded-2xl border">
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-muted-foreground text-xs">
               <tr>
-                <th className="px-4 py-3 text-start font-medium">מטופל</th>
-                <th className="px-4 py-3 text-start font-medium">רופאים</th>
-                <th className="px-4 py-3 text-start font-medium">סטטוס</th>
-                <th className="px-4 py-3 text-start font-medium">תאריך</th>
+                <th className="px-4 py-3 text-start font-medium">{t.admin.colPatient}</th>
+                <th className="px-4 py-3 text-start font-medium">{t.admin.colDentists}</th>
+                <th className="px-4 py-3 text-start font-medium">{t.admin.colStatus}</th>
+                <th className="px-4 py-3 text-start font-medium">{t.admin.colDate}</th>
               </tr>
             </thead>
             <tbody className="divide-border/60 divide-y">
               {recentRequests.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="text-muted-foreground px-4 py-8 text-center">
-                    אין בקשות עדיין.
+                    {t.admin.emptyRequests}
                   </td>
                 </tr>
               ) : (
@@ -143,12 +155,12 @@ export default async function AdminOverviewPage() {
                   <tr key={r.id}>
                     <td className="px-4 py-3">
                       <p className="text-foreground font-medium">
-                        {r.user?.fullName ?? "משתמש שנמחק"}
+                        {r.user?.fullName ?? t.admin.deletedUser}
                       </p>
                       <p className="text-muted-foreground text-xs">{r.user?.email ?? "—"}</p>
                     </td>
                     <td className="text-foreground px-4 py-3">{r._count.requestDentists}</td>
-                    <td className="px-4 py-3">{REQUEST_STATUS_LABELS_HE[r.status]}</td>
+                    <td className="px-4 py-3">{t.requestStatus[r.status]}</td>
                     <td className="text-muted-foreground px-4 py-3">
                       {new Intl.DateTimeFormat("he-IL", {
                         day: "numeric",

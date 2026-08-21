@@ -14,6 +14,8 @@ import { sendPaymentFailedEmail, sendTrialEndingEmail } from "@/server/subscript
 import { audit } from "@/lib/audit";
 import { logEvent } from "@/lib/log";
 import { asLocale } from "@/i18n/config";
+import { getDictionary } from "@/i18n/get-dictionary";
+import { format } from "@/i18n/format";
 import { SUBSCRIPTION_PLANS, type SubscriptionPlanType } from "@/lib/constants";
 
 export const runtime = "nodejs";
@@ -94,6 +96,7 @@ export async function GET(req: Request) {
       trialsFailed += 1;
       continue;
     }
+    const clinicT = await getDictionary(asLocale(sub.dentist.locale));
 
     // Still inside the trial → only consider a heads-up email.
     if (!isTrialOver(sub.trialEndsAt, now)) {
@@ -134,7 +137,7 @@ export async function GET(req: Request) {
         payplusCustomerUid: sub.payplusCustomerUid,
         amountMinor: price.minor,
         currency: price.currency,
-        description: `מנוי DentalCompare — ${sub.dentist.clinicName}`,
+        description: format(clinicT.clinics.chargeDescription, { clinic: sub.dentist.clinicName }),
       });
 
       if (result.ok) {
@@ -239,6 +242,7 @@ export async function GET(req: Request) {
       failed += 1;
       continue;
     }
+    const clinicT = await getDictionary(asLocale(sub.dentist.locale));
 
     try {
       const result = await chargeByToken({
@@ -246,7 +250,7 @@ export async function GET(req: Request) {
         payplusCustomerUid: sub.payplusCustomerUid,
         amountMinor: price.minor,
         currency: price.currency,
-        description: `חידוש מנוי DentalCompare — ${sub.dentist.clinicName}`,
+        description: format(clinicT.clinics.renewalDescription, { clinic: sub.dentist.clinicName }),
       });
 
       if (result.ok) {

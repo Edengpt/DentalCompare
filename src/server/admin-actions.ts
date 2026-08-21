@@ -1,5 +1,8 @@
 "use server";
 
+import { getDictionary } from "@/i18n/get-dictionary";
+import { getRequestLocale } from "@/i18n/request-locale";
+import { format } from "@/i18n/format";
 import { legacyMajor } from "@/lib/money";
 import { asLocale } from "@/i18n/config";
 
@@ -15,13 +18,14 @@ import { SUBSCRIPTION_PLANS } from "@/lib/constants";
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
 export async function toggleDentistActive(dentistId: string): Promise<ActionResult> {
+  const e = (await getDictionary(await getRequestLocale())).errors;
   const admin = await requireAdmin();
 
   const dentist = await db.dentist.findUnique({
     where: { id: dentistId },
     select: { isActive: true },
   });
-  if (!dentist) return { ok: false, error: "הרופא לא נמצא" };
+  if (!dentist) return { ok: false, error: e.dentistNotFound };
 
   const nextActive = !dentist.isActive;
   await db.dentist.update({
@@ -42,6 +46,7 @@ export async function toggleDentistActive(dentistId: string): Promise<ActionResu
 }
 
 export async function approveClinic(dentistId: string): Promise<ActionResult> {
+  const e = (await getDictionary(await getRequestLocale())).errors;
   const admin = await requireAdmin();
 
   const dentist = await db.dentist.findUnique({
@@ -55,9 +60,9 @@ export async function approveClinic(dentistId: string): Promise<ActionResult> {
       subscription: { select: { id: true, setupToken: true, status: true } },
     },
   });
-  if (!dentist) return { ok: false, error: "המרפאה לא נמצאה" };
+  if (!dentist) return { ok: false, error: e.clinicNotFound };
   if (!dentist.subscription) {
-    return { ok: false, error: "למרפאה אין מנוי משויך — לא ניתן לאשר" };
+    return { ok: false, error: e.clinicNoSubscription };
   }
 
   // Approval starts the free trial (PRD 4.4). The clock starts here, not at
@@ -104,16 +109,17 @@ export async function approveClinic(dentistId: string): Promise<ActionResult> {
 
 /** Reject (delete) a self-registered clinic that has not yet been approved. */
 export async function rejectClinic(dentistId: string): Promise<ActionResult> {
+  const e = (await getDictionary(await getRequestLocale())).errors;
   const admin = await requireAdmin();
 
   const dentist = await db.dentist.findUnique({
     where: { id: dentistId },
     select: { isActive: true, submittedBySelf: true },
   });
-  if (!dentist) return { ok: false, error: "המרפאה לא נמצאה" };
+  if (!dentist) return { ok: false, error: e.clinicNotFound };
   // Guard: only delete still-pending self-registrations, never a live dentist.
   if (dentist.isActive || !dentist.submittedBySelf) {
-    return { ok: false, error: "ניתן לדחות רק הרשמות שטרם אושרו" };
+    return { ok: false, error: e.onlyPendingCanBeRejected };
   }
 
   await db.dentist.delete({ where: { id: dentistId } });
@@ -140,6 +146,7 @@ function splitCsv(value: FormDataEntryValue | null): string[] {
 }
 
 export async function createDentist(formData: FormData): Promise<ActionResult> {
+  const e = (await getDictionary(await getRequestLocale())).errors;
   const admin = await requireAdmin();
 
   const clinicName = String(formData.get("clinicName") ?? "").trim();
@@ -153,17 +160,17 @@ export async function createDentist(formData: FormData): Promise<ActionResult> {
   const experienceYears = Number(formData.get("experienceYears") ?? 0);
 
   if (!clinicName || !dentistName || !email || !phone || !city || !address) {
-    return { ok: false, error: "יש למלא את כל שדות החובה" };
+    return { ok: false, error: e.requiredFields };
   }
   if (!email.includes("@")) {
-    return { ok: false, error: "כתובת אימייל לא תקינה" };
+    return { ok: false, error: e.invalidEmail };
   }
   if (!Number.isFinite(experienceYears) || experienceYears < 0) {
-    return { ok: false, error: "שנות ניסיון לא תקינות" };
+    return { ok: false, error: e.invalidExperience };
   }
 
   const existing = await db.dentist.findUnique({ where: { email }, select: { id: true } });
-  if (existing) return { ok: false, error: "רופא עם אימייל זה כבר קיים" };
+  if (existing) return { ok: false, error: e.dentistEmailTaken };
 
   const dentistId = await db.$transaction(async (tx) => {
     const dentist = await tx.dentist.create({

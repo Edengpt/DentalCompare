@@ -238,7 +238,7 @@ export default async function RequestDetailPage({
                                   key={key}
                                   className="bg-teal-deep/10 text-teal-deep rounded-full px-2 py-0.5 text-xs"
                                 >
-                                  {translateInclusion(key)}
+                                  {translateInclusion(t.labels, key)}
                                 </span>
                               ))}
                             </div>

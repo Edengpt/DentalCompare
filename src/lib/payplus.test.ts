@@ -90,6 +90,7 @@ describe("payplus payment pages", () => {
       requestId: "req_1",
       amountMinor: 4900,
       currency: "ILS",
+      itemName: "DentalCompare quote request",
       patientName: "דנה",
       email: "dana@example.com",
     });
@@ -166,7 +167,7 @@ describe("payplus minor-to-major conversion at the wire", () => {
       currency: "ILS",
       clinicName: "מרפאת בדיקה",
       email: "clinic@example.com",
-      planLabelHe: "חודשי",
+      itemName: "DentalCompare subscription (monthly)",
     });
 
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);

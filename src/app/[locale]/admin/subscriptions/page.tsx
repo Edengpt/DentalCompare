@@ -1,21 +1,31 @@
+import { getDictionary } from "@/i18n/get-dictionary";
+import { isLocale, defaultLocale } from "@/i18n/config";
+import { format } from "@/i18n/format";
 import { formatMoney } from "@/lib/money";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/server/admin";
 import { SUBSCRIPTION_PLANS } from "@/lib/constants";
 
-export const metadata = { title: "ניהול — מנויים" };
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
+  return { title: t.admin.metaSubscriptions };
+}
 export const dynamic = "force-dynamic";
 
 const statusHe: Record<string, string> = {
-  PENDING: "ממתין לתשלום",
-  ACTIVE: "פעיל",
-  PAST_DUE: "חיוב נכשל",
-  CANCELED: "בוטל",
+  
 };
 
 const dateFmt = new Intl.DateTimeFormat("he-IL", { day: "numeric", month: "short", year: "numeric" });
 
-export default async function AdminSubscriptionsPage() {
+export default async function AdminSubscriptionsPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
   await requireAdmin();
 
   const subs = await db.clinicSubscription.findMany({
@@ -34,25 +44,25 @@ export default async function AdminSubscriptionsPage() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="font-display text-foreground text-3xl font-bold tracking-tight">מנויים</h1>
-        <p className="text-muted-foreground mt-1.5 text-sm">מצב המנויים של המרפאות בפלטפורמה.</p>
+        <h1 className="font-display text-foreground text-3xl font-bold tracking-tight">{t.admin.subscriptionsTitle}</h1>
+        <p className="text-muted-foreground mt-1.5 text-sm">{t.admin.subscriptionsSubtitle}</p>
       </header>
 
       <div className="border-border/60 bg-card overflow-hidden rounded-2xl border">
         <table className="w-full text-sm">
           <thead className="bg-muted/40 text-muted-foreground text-xs">
             <tr>
-              <th className="px-4 py-3 text-start font-medium">מרפאה</th>
-              <th className="px-4 py-3 text-start font-medium">מסלול</th>
-              <th className="px-4 py-3 text-start font-medium">סטטוס</th>
-              <th className="px-4 py-3 text-start font-medium">תוקף עד</th>
+              <th className="px-4 py-3 text-start font-medium">{t.admin.colClinic}</th>
+              <th className="px-4 py-3 text-start font-medium">{t.admin.colPlan}</th>
+              <th className="px-4 py-3 text-start font-medium">{t.admin.colStatus}</th>
+              <th className="px-4 py-3 text-start font-medium">{t.admin.colValidUntil}</th>
             </tr>
           </thead>
           <tbody className="divide-border/60 divide-y">
             {subs.length === 0 ? (
               <tr>
                 <td colSpan={4} className="text-muted-foreground px-4 py-8 text-center">
-                  אין מנויים עדיין.
+                  {t.admin.emptySubscriptions}
                 </td>
               </tr>
             ) : (
@@ -63,7 +73,7 @@ export default async function AdminSubscriptionsPage() {
                     <p className="text-muted-foreground text-xs">{s.dentist.email}</p>
                   </td>
                   <td className="text-foreground px-4 py-3">
-                    {SUBSCRIPTION_PLANS[s.plan as "MONTHLY" | "YEARLY"].labelHe} ·{" "}
+                    {(s.plan === "MONTHLY" ? t.emails.planMonthly : t.emails.planYearly)} ·{" "}
                     {formatMoney(s.priceMinor ?? 0, s.currency ?? "ILS", "he")}
                   </td>
                   <td className="px-4 py-3">{statusHe[s.status]}</td>

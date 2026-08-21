@@ -3,6 +3,8 @@
 import { useTransition } from "react";
 import { Check, X } from "lucide-react";
 import { toast } from "sonner";
+import { useT } from "@/i18n/provider";
+import { format } from "@/i18n/format";
 import { approveClinic, rejectClinic } from "@/server/admin-actions";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
@@ -14,6 +16,7 @@ export function ClinicReviewActions({
   dentistId: string;
   clinicName: string;
 }) {
+  const t = useT();
   const [isPending, startTransition] = useTransition();
 
   const handleApprove = () => {
@@ -23,19 +26,19 @@ export function ClinicReviewActions({
         toast.error(result.error);
         return;
       }
-      toast.success(`${clinicName} אושרה ופורסמה במאגר`);
+      toast.success(format(t.admin.approved, { clinic: clinicName }));
     });
   };
 
   const handleReject = () => {
-    if (!window.confirm(`לדחות ולמחוק את ההרשמה של ${clinicName}? פעולה זו אינה הפיכה.`)) return;
+    if (!window.confirm(format(t.admin.rejectConfirm, { clinic: clinicName }))) return;
     startTransition(async () => {
       const result = await rejectClinic(dentistId);
       if (!result.ok) {
         toast.error(result.error);
         return;
       }
-      toast.success(`ההרשמה של ${clinicName} נדחתה`);
+      toast.success(format(t.admin.rejected, { clinic: clinicName }));
     });
   };
 
@@ -51,7 +54,7 @@ export function ClinicReviewActions({
         )}
       >
         <Check className="h-4 w-4" />
-        אישור ופרסום
+        {t.admin.approve}
       </button>
       <button
         type="button"
@@ -60,7 +63,7 @@ export function ClinicReviewActions({
         className="border-border/60 text-muted-foreground hover:border-coral/50 hover:text-coral inline-flex h-10 items-center gap-1.5 rounded-full border px-4 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
       >
         <X className="h-4 w-4" />
-        דחייה
+        {t.admin.reject}
       </button>
     </div>
   );

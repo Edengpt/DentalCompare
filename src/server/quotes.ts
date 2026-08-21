@@ -1,5 +1,8 @@
 "use server";
 
+import { getDictionary } from "@/i18n/get-dictionary";
+import { getRequestLocale } from "@/i18n/request-locale";
+import { format } from "@/i18n/format";
 import { db } from "@/lib/db";
 import { rateLimit } from "@/lib/rate-limit";
 import { asLocale } from "@/i18n/config";
@@ -33,20 +36,21 @@ export async function submitQuote(input: {
   warrantyYears?: number | null;
   warrantyNote?: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
+  const e = (await getDictionary(await getRequestLocale())).errors;
   const rl = await rateLimit(
     `quote:${input.token}`,
     RATE_LIMITS.submitQuote.limit,
     RATE_LIMITS.submitQuote.windowMs,
   );
   if (!rl.allowed) {
-    return { ok: false, error: "יותר מדי ניסיונות. נסו שוב מאוחר יותר." };
+    return { ok: false, error: e.tooManyAttempts };
   }
 
   // Bounds are checked in major units, the way the clinic entered them, so the
   // ceiling means the same thing whatever the currency's minor-unit scale is.
   const major = input.amountMajor;
   if (!Number.isFinite(major) || major <= 0 || major > 1_000_000) {
-    return { ok: false, error: "יש להזין מחיר תקין" };
+    return { ok: false, error: e.invalidPrice };
   }
 
   const rd = await db.requestDentist.findUnique({
@@ -61,7 +65,7 @@ export async function submitQuote(input: {
       },
     },
   });
-  if (!rd) return { ok: false, error: "קישור לא תקין" };
+  if (!rd) return { ok: false, error: e.invalidLink };
 
   const isNew = !rd.quote;
   const note = input.note?.trim() || null;

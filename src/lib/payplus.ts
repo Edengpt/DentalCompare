@@ -34,7 +34,8 @@ export async function createSubscriptionPaymentPage(args: {
   currency: string;
   clinicName: string;
   email: string;
-  planLabelHe: string;
+  /** Line-item text, already in the clinic's language. */
+  itemName: string;
 }): Promise<{ url: string; pageRequestUid: string }> {
   // PayPlus takes MAJOR units. This is the only place minor units become
   // shekels — leaking amountMinor into the request body would charge every
@@ -52,7 +53,7 @@ export async function createSubscriptionPaymentPage(args: {
       currency_code: args.currency,
       sendEmailApproval: false,
       customer: { email: args.email, customer_name: args.clinicName },
-      items: [{ name: `מנוי DentalCompare (${args.planLabelHe})`, quantity: 1, price: amountMajor }],
+      items: [{ name: args.itemName, quantity: 1, price: amountMajor }],
       // setupToken round-trips back to us in the IPN + return URL so we can match.
       // "sub_" prefix lets the unified webhook tell subscription vs. patient
       // payments apart (parseWebhook understands it; legacy un-prefixed values
@@ -88,6 +89,7 @@ export async function createOneTimePaymentPage(args: {
   requestId: string;
   amountMinor: number;
   currency: string;
+  itemName: string;
   patientName: string;
   email: string;
 }): Promise<{ url: string; pageRequestUid: string }> {
@@ -108,7 +110,7 @@ export async function createOneTimePaymentPage(args: {
       customer: { email: args.email, customer_name: args.patientName },
       items: [
         {
-          name: "DentalCompare — שליחת בקשת הצעת מחיר",
+          name: args.itemName,
           quantity: 1,
           price: amountMajor,
         },

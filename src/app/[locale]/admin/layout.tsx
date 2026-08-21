@@ -1,3 +1,5 @@
+import { getDictionary } from "@/i18n/get-dictionary";
+import { isLocale, defaultLocale } from "@/i18n/config";
 import { LocaleLink as Link } from "@/i18n/locale-link";
 import {
   LayoutGrid,
@@ -6,24 +8,38 @@ import {
   Users,
   FileText,
   Repeat,
-  ArrowLeft,
 } from "lucide-react";
+import { ForwardArrow } from "@/components/ui/forward-arrow";
 import { requireAdmin } from "@/server/admin";
 import { db } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-const NAV = [
-  { href: "/admin", label: "סקירה", icon: LayoutGrid },
-  { href: "/admin/clinics", label: "הרשמות מרפאות", icon: Building2, badgeKey: "pendingClinics" },
-  { href: "/admin/dentists", label: "רופאים", icon: Stethoscope },
-  { href: "/admin/users", label: "משתמשים", icon: Users },
-  { href: "/admin/requests", label: "בקשות", icon: FileText },
-  { href: "/admin/subscriptions", label: "מנויים", icon: Repeat },
-] as const;
-
-export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ locale: string }>;
+}) {
   await requireAdmin();
+
+  const { locale } = await params;
+  const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
+
+  const NAV = [
+    { href: "/admin", label: t.admin.navOverview, icon: LayoutGrid },
+    {
+      href: "/admin/clinics",
+      label: t.admin.navClinics,
+      icon: Building2,
+      badgeKey: "pendingClinics",
+    },
+    { href: "/admin/dentists", label: t.admin.navDentists, icon: Stethoscope },
+    { href: "/admin/users", label: t.admin.navUsers, icon: Users },
+    { href: "/admin/requests", label: t.admin.navRequests, icon: FileText },
+    { href: "/admin/subscriptions", label: t.admin.navSubscriptions, icon: Repeat },
+  ] as const;
 
   const pendingClinics = await db.dentist.count({
     where: { submittedBySelf: true, isActive: false },
@@ -37,7 +53,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <Link href="/" className="font-display text-teal-deep text-xl font-bold">
             DentalCompare
           </Link>
-          <p className="text-muted-foreground mt-1 text-xs">פאנל ניהול</p>
+          <p className="text-muted-foreground mt-1 text-xs">{t.admin.panel}</p>
 
           <nav className="mt-6 flex flex-row gap-1 overflow-x-auto lg:mt-8 lg:flex-col">
             {NAV.map((item) => {
@@ -64,8 +80,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             href="/dashboard"
             className="text-muted-foreground hover:text-foreground mt-auto hidden items-center gap-1.5 pt-6 text-xs lg:inline-flex"
           >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            חזרה לאזור האישי
+            <ForwardArrow className="h-3.5 w-3.5" />
+            {t.admin.backToDashboard}
           </Link>
         </div>
       </aside>

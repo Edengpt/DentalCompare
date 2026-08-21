@@ -1,5 +1,8 @@
 "use server";
 
+import { getDictionary } from "@/i18n/get-dictionary";
+import { getRequestLocale } from "@/i18n/request-locale";
+import { format } from "@/i18n/format";
 import { randomUUID } from "node:crypto";
 import { headers } from "next/headers";
 import { db } from "@/lib/db";
@@ -38,6 +41,7 @@ function pickAllowed(formData: FormData, field: string, allowed: readonly string
  * of the subscription contract (timestamp + version) for audit.
  */
 export async function registerClinic(formData: FormData): Promise<RegisterClinicResult> {
+  const e = (await getDictionary(await getRequestLocale())).errors;
   const ip = await clientIp();
   const rl = await rateLimit(
     `clinic-join:${ip}`,
@@ -45,7 +49,7 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
     RATE_LIMITS.clinicRegister.windowMs,
   );
   if (!rl.allowed) {
-    return { ok: false, error: "יותר מדי ניסיונות הרשמה מכתובת זו. נסו שוב בעוד כשעה." };
+    return { ok: false, error: e.tooManyRegistrations };
   }
 
   const contactName = String(formData.get("contactName") ?? "").trim();
@@ -70,19 +74,19 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
       : null;
 
   if (!contactName || !dentistName || !clinicName || !email || !phoneRaw || !city || !address) {
-    return { ok: false, error: "יש למלא את כל שדות החובה" };
+    return { ok: false, error: e.requiredFields };
   }
   if (!email.includes("@")) {
-    return { ok: false, error: "כתובת אימייל לא תקינה" };
+    return { ok: false, error: e.invalidEmail };
   }
   if (!Number.isFinite(experienceYears) || experienceYears < 0) {
-    return { ok: false, error: "שנות ניסיון לא תקינות" };
+    return { ok: false, error: e.invalidExperience };
   }
   if (agreed !== "on" && agreed !== "true") {
-    return { ok: false, error: "יש לאשר את תנאי המנוי כדי להירשם" };
+    return { ok: false, error: e.mustAcceptTerms };
   }
   if (!plan) {
-    return { ok: false, error: "יש לבחור מסלול מנוי" };
+    return { ok: false, error: e.mustPickPlan };
   }
 
   // The country has to be one we actually operate in. Trusting the submitted
@@ -94,7 +98,7 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
     select: { code: true, insurers: true, defaultLocale: true },
   });
   if (!country) {
-    return { ok: false, error: "יש לבחור מדינה" };
+    return { ok: false, error: e.mustPickCountry };
   }
 
   // Read the number against the clinic's own country, so a Hungarian clinic can
@@ -105,7 +109,7 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
 
   const existing = await db.dentist.findUnique({ where: { email }, select: { id: true } });
   if (existing) {
-    return { ok: false, error: "כבר קיימת מרפאה רשומה עם אימייל זה" };
+    return { ok: false, error: e.clinicEmailTaken };
   }
 
   const setupToken = randomUUID();
