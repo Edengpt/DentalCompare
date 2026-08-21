@@ -1,5 +1,7 @@
 "use client";
 
+import { useT } from "@/i18n/provider";
+
 import { useState } from "react";
 import { Sparkles, Loader2, HelpCircle, Stethoscope, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -14,6 +16,7 @@ type Result = {
 type State = "idle" | "loading" | "done" | "error";
 
 export function ExplainTreatment({ requestId }: { requestId: string }) {
+  const t = useT();
   const [state, setState] = useState<State>("idle");
   const [result, setResult] = useState<Result | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -25,14 +28,14 @@ export function ExplainTreatment({ requestId }: { requestId: string }) {
       const res = await fetch(`/api/requests/${requestId}/explain`, { method: "POST" });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(data.error ?? "אירעה שגיאה");
+        setError(data.error ?? t.explain.genericError);
         setState("error");
         return;
       }
       setResult(data as Result);
       setState("done");
     } catch {
-      setError("אירעה שגיאה — נסו שוב");
+      setError(t.explain.retryError);
       setState("error");
     }
   };
@@ -41,14 +44,13 @@ export function ExplainTreatment({ requestId }: { requestId: string }) {
     <section>
       <h2 className="font-display text-foreground mb-3 inline-flex items-center gap-2 text-lg font-bold">
         <Sparkles className="text-teal-deep h-5 w-5" />
-        הבנת תוכנית הטיפול
+        {t.explain.title}
       </h2>
 
       {state !== "done" && (
         <div className="border-border/60 bg-card rounded-2xl border p-5">
           <p className="text-muted-foreground mb-4 text-sm">
-            לא בטוחים מה כולל הטיפול שלכם? קבלו הסבר בעברית פשוטה על כל טיפול בתוכנית — ורשימת שאלות
-            שכדאי לשאול את המרפאות.
+            {t.explain.subtitle}
           </p>
           <button
             type="button"
@@ -62,13 +64,13 @@ export function ExplainTreatment({ requestId }: { requestId: string }) {
           >
             {state === "loading" ? (
               <>
-                מנתח את התוכנית…
+                {t.explain.analyzing}
                 <Loader2 className="h-4 w-4 animate-spin" />
               </>
             ) : (
               <>
                 <Sparkles className="h-4 w-4" />
-                הסבירו לי את תוכנית הטיפול
+                {t.explain.cta}
               </>
             )}
           </button>
@@ -87,7 +89,7 @@ export function ExplainTreatment({ requestId }: { requestId: string }) {
           {!result.isReadable ? (
             <p className="text-muted-foreground inline-flex items-center gap-2 text-sm">
               <AlertCircle className="h-4 w-4" />
-              לא הצלחנו לקרוא את תוכנית הטיפול מהקובץ. ודאו שהעליתם תוכנית טיפול ברורה.
+              {t.explain.unreadable}
             </p>
           ) : (
             <>
@@ -95,7 +97,7 @@ export function ExplainTreatment({ requestId }: { requestId: string }) {
                 <div>
                   <h3 className="text-foreground mb-3 inline-flex items-center gap-2 text-base font-bold">
                     <Stethoscope className="text-teal-deep h-4 w-4" />
-                    מה כולל הטיפול שלך
+                    {t.explain.whatsIncluded}
                   </h3>
                   <ul className="space-y-3">
                     {result.treatments.map((t, i) => (
@@ -114,7 +116,7 @@ export function ExplainTreatment({ requestId }: { requestId: string }) {
                 <div>
                   <h3 className="text-foreground mb-3 inline-flex items-center gap-2 text-base font-bold">
                     <HelpCircle className="text-teal-deep h-4 w-4" />
-                    שאלות כדאי לשאול את המרפאות
+                    {t.explain.questionsToAsk}
                   </h3>
                   <ul className="space-y-2">
                     {result.questions.map((q, i) => (
@@ -133,7 +135,7 @@ export function ExplainTreatment({ requestId }: { requestId: string }) {
           )}
 
           <p className="text-muted-foreground border-border/60 border-t pt-3 text-xs">
-            מידע כללי להבנה בלבד, שנוצר על ידי AI — אינו ייעוץ רפואי או תחליף להתייעצות עם רופא.
+            {t.explain.disclaimer}
           </p>
         </div>
       )}

@@ -6,6 +6,8 @@ import { useUser } from "@clerk/nextjs";
 import { Loader2, Phone, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { normalizePhone, formatPhoneForDisplay, FALLBACK_PHONE_COUNTRY } from "@/lib/phone";
+import { useT } from "@/i18n/provider";
+import { format } from "@/i18n/format";
 import { syncVerifiedPhone } from "@/server/phone-actions";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
@@ -23,6 +25,7 @@ type Step = "enter" | "code";
  * the enforcement.
  */
 export function PhoneVerification({ redirectTo }: { redirectTo: string }) {
+  const t = useT();
   const { user, isLoaded } = useUser();
   const router = useRouter();
   const [step, setStep] = useState<Step>("enter");
@@ -39,7 +42,7 @@ export function PhoneVerification({ redirectTo }: { redirectTo: string }) {
     return (
       <div className="text-muted-foreground flex items-center gap-2 text-sm">
         <Loader2 className="h-4 w-4 animate-spin" />
-        טוען…
+        {t.common.loading}
       </div>
     );
   }
@@ -49,7 +52,7 @@ export function PhoneVerification({ redirectTo }: { redirectTo: string }) {
     // be readable at all — without one the parser returns null for every input.
     const e164 = normalizePhone(phone, FALLBACK_PHONE_COUNTRY);
     if (!e164) {
-      toast.error("מספר לא תקין — הזינו מספר נייד ישראלי, למשל 050-123-4567");
+      toast.error(t.phoneVerification.invalidNumber);
       return;
     }
     setBusy(true);
@@ -61,9 +64,9 @@ export function PhoneVerification({ redirectTo }: { redirectTo: string }) {
       await resource.prepareVerification();
       setPendingId(resource.id);
       setStep("code");
-      toast.success(`שלחנו קוד בן 6 ספרות ל-${formatPhoneForDisplay(e164)}`);
+      toast.success(format(t.phoneVerification.codeSent, { phone: formatPhoneForDisplay(e164) }));
     } catch (err) {
-      toast.error(clerkMessage(err, "לא הצלחנו לשלוח את הקוד — בדקו את המספר ונסו שוב"));
+      toast.error(clerkMessage(err, t.phoneVerification.sendFailed));
     } finally {
       setBusy(false);
     }
@@ -71,7 +74,7 @@ export function PhoneVerification({ redirectTo }: { redirectTo: string }) {
 
   const confirmCode = async () => {
     if (code.trim().length !== 6) {
-      toast.error("הקוד מורכב מ-6 ספרות");
+      toast.error(t.phoneVerification.codeLength);
       return;
     }
     setBusy(true);
@@ -92,12 +95,12 @@ export function PhoneVerification({ redirectTo }: { redirectTo: string }) {
           toast.error(result.error);
           return;
         }
-        toast.success("המספר אומת ✓");
+        toast.success(t.phoneVerification.verified);
         router.push(redirectTo);
         router.refresh();
       });
     } catch (err) {
-      toast.error(clerkMessage(err, "הקוד שגוי או פג תוקף — בקשו קוד חדש"));
+      toast.error(clerkMessage(err, t.phoneVerification.codeWrong));
     } finally {
       setBusy(false);
     }
@@ -113,12 +116,14 @@ export function PhoneVerification({ redirectTo }: { redirectTo: string }) {
         </span>
         <div>
           <p className="text-foreground font-semibold">
-            {step === "enter" ? "אימות מספר נייד" : "הזינו את הקוד שקיבלתם"}
+            {step === "enter" ? t.phoneVerification.titleEnter : t.phoneVerification.titleCode}
           </p>
           <p className="text-muted-foreground text-sm">
             {step === "enter"
-              ? "המרפאות חוזרות אליכם בטלפון, ולכן אנחנו מוודאים שהמספר נכון."
-              : `שלחנו קוד בן 6 ספרות ל-${formatPhoneForDisplay(normalizePhone(phone, FALLBACK_PHONE_COUNTRY))}`}
+              ? t.phoneVerification.subtitleEnter
+              : format(t.phoneVerification.codeSent, {
+                  phone: formatPhoneForDisplay(normalizePhone(phone, FALLBACK_PHONE_COUNTRY)),
+                })}
           </p>
         </div>
       </div>
@@ -135,7 +140,7 @@ export function PhoneVerification({ redirectTo }: { redirectTo: string }) {
             onChange={(e) => setPhone(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && !pending && sendCode()}
             className="border-border/60 bg-background focus:ring-teal-deep/40 w-full rounded-2xl border px-4 py-3 text-base outline-none focus:ring-2"
-            aria-label="מספר נייד"
+            aria-label={t.phoneVerification.phoneAria}
           />
           <button
             type="button"
@@ -149,11 +154,11 @@ export function PhoneVerification({ redirectTo }: { redirectTo: string }) {
           >
             {busy ? (
               <>
-                שולחים קוד…
+                {t.phoneVerification.sending}
                 <Loader2 className="h-4 w-4 animate-spin" />
               </>
             ) : (
-              "שליחת קוד ב-SMS"
+              t.phoneVerification.sendCode
             )}
           </button>
         </>
@@ -170,7 +175,7 @@ export function PhoneVerification({ redirectTo }: { redirectTo: string }) {
             onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
             onKeyDown={(e) => e.key === "Enter" && !pending && confirmCode()}
             className="border-border/60 bg-background focus:ring-teal-deep/40 w-full rounded-2xl border px-4 py-3 text-center text-2xl tracking-[0.4em] outline-none focus:ring-2"
-            aria-label="קוד אימות"
+            aria-label={t.phoneVerification.codeAria}
           />
           <button
             type="button"
@@ -184,11 +189,11 @@ export function PhoneVerification({ redirectTo }: { redirectTo: string }) {
           >
             {pending ? (
               <>
-                מאמתים…
+                {t.phoneVerification.verifying}
                 <Loader2 className="h-4 w-4 animate-spin" />
               </>
             ) : (
-              "אישור הקוד"
+              t.phoneVerification.confirmCode
             )}
           </button>
           <button
@@ -200,7 +205,7 @@ export function PhoneVerification({ redirectTo }: { redirectTo: string }) {
             disabled={pending}
             className="text-muted-foreground hover:text-foreground w-full text-sm underline-offset-4 hover:underline"
           >
-            הזנתי מספר שגוי — חזרה
+            {t.phoneVerification.wrongNumber}
           </button>
         </>
       )}

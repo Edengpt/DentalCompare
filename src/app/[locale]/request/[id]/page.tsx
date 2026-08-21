@@ -19,16 +19,25 @@ import { Footer } from "@/components/shared/footer";
 import { ExplainTreatment } from "@/components/request/explain-treatment";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
-import { REQUEST_STATUS_LABELS_HE } from "@/lib/labels";
+import { getDictionary } from "@/i18n/get-dictionary";
+import { isLocale, defaultLocale } from "@/i18n/config";
+import { format } from "@/i18n/format";
 
-export const metadata = {
-  title: "פרטי הבקשה",
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
+  return { title: t.requestDetail.metaTitle };
+}
 
 export const dynamic = "force-dynamic";
 
-export default async function RequestDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export default async function RequestDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string; locale: string }>;
+}) {
+  const { id, locale } = await params;
+  const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
   const { userId: clerkUserId } = await auth();
   if (!clerkUserId) redirect("/sign-in");
 
@@ -123,11 +132,11 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
   const fileLinks = [
     {
       icon: FileText,
-      label: "תוכנית הטיפול",
+      label: t.requestDetail.treatmentPlan,
       kind: "treatment",
       present: !!request.treatmentFileUrl,
     },
-    { icon: ImageIcon, label: "צילום שיניים", kind: "xray", present: !!request.xrayFileUrl },
+    { icon: ImageIcon, label: t.requestDetail.xray, kind: "xray", present: !!request.xrayFileUrl },
   ].filter((f) => f.present);
 
   return (
@@ -141,11 +150,11 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
               className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-sm font-medium"
             >
               <ArrowRight className="h-3.5 w-3.5" />
-              חזרה לאזור האישי
+              {t.requestDetail.back}
             </Link>
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <h1 className="font-display text-foreground text-4xl font-bold tracking-tight sm:text-5xl">
-                בקשה #{request.id.slice(0, 8)}
+                {t.requestDetail.requestLabel} #{request.id.slice(0, 8)}
               </h1>
               <span
                 className={cn(
@@ -158,10 +167,12 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
                 )}
               >
                 {isSent ? <CheckCircle2 className="h-4 w-4" /> : <Clock className="h-4 w-4" />}
-                {REQUEST_STATUS_LABELS_HE[request.status]}
+                {t.requestStatus[request.status]}
               </span>
             </div>
-            <p className="text-muted-foreground mt-3 text-sm">נוצרה ב-{date}</p>
+            <p className="text-muted-foreground mt-3 text-sm">
+              {format(t.requestDetail.createdOn, { date })}
+            </p>
           </div>
         </section>
 
@@ -171,8 +182,8 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
               <div className="border-teal-deep/30 bg-teal-deep/5 text-foreground mb-4 flex items-center gap-2.5 rounded-2xl border px-5 py-4 text-sm">
                 <Mail className="text-teal-deep h-4 w-4 shrink-0" />
                 {responded > 0
-                  ? `${responded} מתוך ${total} רופאים הגיבו. השוו את ההצעות למטה.`
-                  : `הבקשה נשלחה ל-${total} רופאים. ההצעות יופיעו כאן ברגע שיגיבו.`}
+                  ? format(t.requestDetail.someResponded, { responded, total })
+                  : format(t.requestDetail.noneYet, { total })}
               </div>
 
               {responded > 0 && (
@@ -186,7 +197,7 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
                             {q.dentistName}
                             {isCheapest && (
                               <span className="bg-teal-deep/10 text-teal-deep mr-2 rounded-full px-2 py-0.5 text-xs font-semibold">
-                                המחיר הזול ביותר
+                                {t.requestDetail.cheapest}
                               </span>
                             )}
                           </p>
@@ -205,16 +216,21 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
                               {q.tripsRequired !== null && (
                                 <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs">
                                   {q.tripsRequired === 1
-                                    ? `נסיעה אחת · ${q.daysPerTrip} ימים`
-                                    : `${q.tripsRequired} נסיעות · ${q.daysPerTrip} ימים כל אחת` +
+                                    ? format(t.requestDetail.oneTrip, { days: q.daysPerTrip ?? 1 })
+                                    : format(t.requestDetail.manyTrips, {
+                                        trips: q.tripsRequired,
+                                        days: q.daysPerTrip ?? 1,
+                                      }) +
                                       (q.weeksBetweenTrips
-                                        ? ` · ${q.weeksBetweenTrips} שבועות ביניהן`
+                                        ? format(t.requestDetail.weeksBetween, {
+                                            weeks: q.weeksBetweenTrips,
+                                          })
                                         : "")}
                                 </span>
                               )}
                               {q.warrantyYears !== null && (
                                 <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs">
-                                  אחריות {q.warrantyYears} שנים
+                                  {format(t.requestDetail.warranty, { years: q.warrantyYears })}
                                 </span>
                               )}
                               {q.includes.map((key) => (
@@ -244,7 +260,7 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
                               {formatMoney(q.amountMinor, q.currency ?? "ILS", "he")}
                             </span>
                           ) : (
-                            <span className="text-muted-foreground text-xs">ממתין להצעה</span>
+                            <span className="text-muted-foreground text-xs">{t.requestDetail.awaitingQuote}</span>
                           )}
                         </div>
                       </li>
@@ -259,8 +275,8 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
             <div className="border-border/60 bg-card flex flex-col gap-4 rounded-2xl border p-5 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-muted-foreground text-sm">
                 {request.status === "FAILED"
-                  ? "התשלום לא הושלם. ניתן לנסות שוב כדי לשלוח את הבקשה."
-                  : "הבקשה עדיין לא נשלחה — השלימו את התהליך כדי לשלוח אותה לרופאים."}
+                  ? t.requestDetail.sendFailed
+                  : t.requestDetail.notSentYet}
               </p>
               <Link
                 href={continueHref}
@@ -269,17 +285,19 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
                   "bg-teal-deep hover:bg-teal-deep/90 text-cream inline-flex h-11 shrink-0 items-center gap-2 rounded-full px-6 font-semibold",
                 )}
               >
-                המשך הבקשה
+                {t.requestDetail.continueRequest}
               </Link>
             </div>
           )}
 
           {/* Files */}
           <section>
-            <h2 className="font-display text-foreground mb-3 text-lg font-bold">המסמכים שהועלו</h2>
+            <h2 className="font-display text-foreground mb-3 text-lg font-bold">
+              {t.requestDetail.uploadedDocuments}
+            </h2>
             {fileLinks.length === 0 ? (
               <p className="text-muted-foreground border-border/60 bg-card rounded-2xl border px-5 py-4 text-sm">
-                עדיין לא הועלו מסמכים.
+                {t.requestDetail.noDocuments}
               </p>
             ) : (
               <ul className="border-border/60 bg-card divide-border/60 divide-y rounded-2xl border">
@@ -295,7 +313,7 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
                       rel="noopener noreferrer"
                       className="text-teal-deep text-sm font-semibold underline-offset-4 hover:underline"
                     >
-                      צפייה בקובץ
+                      {t.requestDetail.viewFile}
                     </a>
                   </li>
                 ))}
@@ -309,7 +327,9 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
           {/* Patient notes */}
           {request.patientNotes && (
             <section>
-              <h2 className="font-display text-foreground mb-3 text-lg font-bold">הערות המטופל</h2>
+              <h2 className="font-display text-foreground mb-3 text-lg font-bold">
+              {t.requestDetail.patientNotes}
+            </h2>
               <p className="border-border/60 bg-card text-foreground rounded-2xl border px-5 py-4 text-sm whitespace-pre-wrap">
                 {request.patientNotes}
               </p>
@@ -320,11 +340,11 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
           <section>
             <h2 className="font-display text-foreground mb-3 inline-flex items-center gap-2 text-lg font-bold">
               <Users className="text-teal-deep h-5 w-5" />
-              הרופאים בבקשה ({dentists.length})
+              {format(t.requestDetail.dentistsInRequest, { count: dentists.length })}
             </h2>
             {dentists.length === 0 ? (
               <p className="text-muted-foreground border-border/60 bg-card rounded-2xl border px-5 py-4 text-sm">
-                עדיין לא נבחרו רופאים.
+                {t.requestDetail.noDentists}
               </p>
             ) : (
               <ul className="border-border/60 bg-card divide-border/60 divide-y rounded-2xl border">
@@ -339,7 +359,7 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
                     {rd.emailSent && (
                       <span className="text-teal-deep inline-flex items-center gap-1 text-xs font-medium">
                         <CheckCircle2 className="h-3.5 w-3.5" />
-                        נשלח
+                        {t.requestDetail.sent}
                       </span>
                     )}
                   </li>
