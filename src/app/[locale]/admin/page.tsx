@@ -1,5 +1,5 @@
 import { formatMoney } from "@/lib/money";
-import Link from "next/link";
+import { LocaleLink as Link } from "@/i18n/locale-link";
 import { requireAdmin } from "@/server/admin";
 import { Users, Stethoscope, FileText, Banknote, Building2, ArrowLeft } from "lucide-react";
 import { db } from "@/lib/db";

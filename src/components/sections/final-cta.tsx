@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { LocaleLink as Link } from "@/i18n/locale-link";
 import { Show } from "@clerk/nextjs";
 import { ArrowLeft } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";

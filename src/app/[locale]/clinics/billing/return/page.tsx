@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { LocaleLink as Link } from "@/i18n/locale-link";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { db } from "@/lib/db";
 import { getPageRequestStatus } from "@/lib/payplus";

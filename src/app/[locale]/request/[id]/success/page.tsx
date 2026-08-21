@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { LocaleLink as Link } from "@/i18n/locale-link";
 import { notFound, redirect } from "next/navigation";
 import { CheckCircle2, Mail } from "lucide-react";
 import { auth } from "@clerk/nextjs/server";

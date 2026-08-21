@@ -1,6 +1,6 @@
 import { formatMoney } from "@/lib/money";
 import { translateInclusion } from "@/lib/labels";
-import Link from "next/link";
+import { LocaleLink as Link } from "@/i18n/locale-link";
 import { notFound, redirect } from "next/navigation";
 import {
   ArrowRight,

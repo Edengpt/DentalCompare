@@ -1,0 +1,112 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { Frank_Ruhl_Libre, Heebo } from "next/font/google";
+import { ClerkProvider } from "@clerk/nextjs";
+import { heIL, enUS } from "@clerk/localizations";
+import { shadcn } from "@clerk/ui/themes";
+import { Toaster } from "@/components/ui/sonner";
+import { I18nProvider } from "@/i18n/provider";
+import { getDictionary } from "@/i18n/get-dictionary";
+import { dir, isLocale, locales, type Locale } from "@/i18n/config";
+import "@clerk/ui/themes/shadcn.css";
+import "../globals.css";
+
+/**
+ * This IS the root layout — it owns <html> and <body>.
+ *
+ * It lives under [locale] rather than at src/app/ because `lang` and `dir` have
+ * to come from the route parameter. A root layout one level up would have to
+ * hardcode them, which is exactly the assumption being removed. Next supports
+ * nesting the root layout in the dynamic segment for this reason.
+ */
+
+const heebo = Heebo({
+  variable: "--font-sans",
+  subsets: ["hebrew", "latin"],
+  display: "swap",
+});
+
+// Hebrew display face. Latin text falls back to the stack in globals.css, since
+// Frank Ruhl's Latin is a companion rather than a face to set English in.
+const frankRuhl = Frank_Ruhl_Libre({
+  variable: "--font-serif",
+  subsets: ["hebrew", "latin"],
+  weight: ["400", "500", "700", "900"],
+  display: "swap",
+});
+
+const clerkLocalizations = { he: heIL, en: enUS };
+
+/** Pre-render both locales rather than resolving them per request. */
+export function generateStaticParams() {
+  return locales.map((locale) => ({ locale }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  if (!isLocale(locale)) return {};
+  const t = await getDictionary(locale);
+
+  return {
+    metadataBase: new URL("https://dentalcompare.co.il"),
+    title: { default: t.meta.title, template: "%s | DentalCompare" },
+    description: t.meta.description,
+    // Tells search engines these are translations of one another rather than
+    // duplicate pages. x-default points at Hebrew, the default locale.
+    alternates: {
+      canonical: `/${locale}`,
+      languages: { "he-IL": "/he", en: "/en", "x-default": "/he" },
+    },
+    openGraph: {
+      type: "website",
+      locale: locale === "he" ? "he_IL" : "en_US",
+      siteName: "DentalCompare",
+      title: t.meta.ogTitle,
+      description: t.meta.ogDescription,
+    },
+    twitter: { card: "summary_large_image" },
+  };
+}
+
+export default async function LocaleLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  // A path like /de/... reaches here with an unsupported segment. 404 rather
+  // than fall back silently, so a broken link stays visible.
+  if (!isLocale(locale)) notFound();
+
+  const typedLocale = locale as Locale;
+  const dictionary = await getDictionary(typedLocale);
+
+  return (
+    <html
+      lang={typedLocale}
+      dir={dir[typedLocale]}
+      className={`${heebo.variable} ${frankRuhl.variable} h-full antialiased`}
+    >
+      <body className="bg-background text-foreground flex min-h-full flex-col">
+        <ClerkProvider
+          localization={clerkLocalizations[typedLocale]}
+          appearance={{ theme: shadcn }}
+        >
+          {/* The dictionary is already loaded on the server; the provider hands
+              client components their strings without a second fetch, and only
+              this locale's copy ever reaches the browser. */}
+          <I18nProvider locale={typedLocale} dictionary={dictionary}>
+            {children}
+            <Toaster position="top-center" richColors closeButton />
+          </I18nProvider>
+        </ClerkProvider>
+      </body>
+    </html>
+  );
+}
