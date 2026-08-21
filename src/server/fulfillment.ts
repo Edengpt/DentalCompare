@@ -10,6 +10,7 @@ import { logEvent } from "@/lib/log";
 import { formatPhoneForDisplay } from "@/lib/phone";
 import { quoteRequestEmailHtml } from "@/server/emails/templates";
 import { getDictionary } from "@/i18n/get-dictionary";
+import { getRequestLocale } from "@/i18n/request-locale";
 import { asLocale } from "@/i18n/config";
 
 /**
@@ -57,6 +58,7 @@ function attachmentName(url: string, fallback: string): string {
  * enforced: `emailSent` gates each recipient.
  */
 export async function fulfillRequest(requestId: string): Promise<FulfillResult> {
+  const e = (await getDictionary(await getRequestLocale())).errors;
   const request = await db.request.findUnique({
     where: { id: requestId },
     select: {
@@ -74,10 +76,10 @@ export async function fulfillRequest(requestId: string): Promise<FulfillResult> 
       },
     },
   });
-  if (!request) return { ok: false, error: "הבקשה לא נמצאה" };
+  if (!request) return { ok: false, error: e.requestNotFound };
   // The patient (User) is required to email dentists on their behalf. A null
   // user means the account was deleted (userId set to null) — nothing to fulfill.
-  if (!request.user) return { ok: false, error: "המטופל לא נמצא" };
+  if (!request.user) return { ok: false, error: e.patientNotFound };
 
   const pending = request.requestDentists;
   if (pending.length === 0) {
@@ -107,7 +109,7 @@ export async function fulfillRequest(requestId: string): Promise<FulfillResult> 
       requestId: request.id,
       error: err instanceof Error ? err.message : String(err),
     });
-    return { ok: false, error: "טעינת הקבצים לצירוף נכשלה" };
+    return { ok: false, error: e.attachmentsFailed };
   }
 
   const resend = getResend();

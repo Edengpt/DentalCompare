@@ -1,5 +1,3 @@
-import { formatMoney } from "./money";
-
 export const SITE_CONFIG = {
   name: "DentalCompare",
   url: "https://dentalcompare.co.il",
@@ -76,8 +74,8 @@ export type Treatment = (typeof TREATMENTS)[number];
 // outside Israel a plan price has to say which currency it is in. 29900 is
 // 299.00 ILS.
 export const SUBSCRIPTION_PLANS = {
-  MONTHLY: { priceMinor: 29900, currency: "ILS", intervalMonths: 1, labelHe: "חודשי" },
-  YEARLY: { priceMinor: 199000, currency: "ILS", intervalMonths: 12, labelHe: "שנתי" },
+  MONTHLY: { priceMinor: 29900, currency: "ILS", intervalMonths: 1 },
+  YEARLY: { priceMinor: 199000, currency: "ILS", intervalMonths: 12 },
 } as const;
 
 export type SubscriptionPlanType = keyof typeof SUBSCRIPTION_PLANS;
@@ -107,22 +105,7 @@ export const RATE_LIMITS = {
   createRequest: { limit: 10, windowMs: HOUR_MS }, // per user — caps request spam
 } as const;
 
-/**
- * Renders a plan price for Hebrew copy. Goes through formatMoney so the symbol
- * comes from the plan's currency rather than a hardcoded ₪ — the terms have to
- * stay true once a plan is priced in euros.
- */
-function planPriceLabel(plan: SubscriptionPlanType): string {
-  const { priceMinor, currency } = SUBSCRIPTION_PLANS[plan];
-  return formatMoney(priceMinor, currency, "he");
-}
-
-export const SUBSCRIPTION_TERMS_HE: string[] = [
-  `המרפאה בוחרת מסלול מנוי: ${planPriceLabel("MONTHLY")} לחודש או ${planPriceLabel("YEARLY")} לשנה, עבור הופעה במאגר DentalCompare וקבלת פניות ממטופלים.`,
-  `המרפאה מקבלת תקופת התנסות חינם של ${TRIAL_DAYS} יום, המתחילה במועד אישור המרפאה על ידי צוות DentalCompare. במהלך תקופה זו המרפאה מופיעה במאגר ומקבלת פניות ללא כל חיוב.`,
-  `אמצעי התשלום נשמר כבר במעמד ההרשמה, והחיוב הראשון מתבצע אוטומטית בתום ${TRIAL_DAYS} ימי ההתנסות. תישלח התראה במייל לפני מועד החיוב הראשון.`,
-  "ניתן לבטל בכל עת במהלך תקופת ההתנסות, ובמקרה זה לא יבוצע כל חיוב.",
-  "המנוי מתחדש אוטומטית בתום כל תקופה באמצעי התשלום שנשמר, עד לביטול על ידי המרפאה.",
-  "ניתן לבטל את המנוי בכל עת; הביטול ייכנס לתוקף בתום התקופה ששולמה. לא יינתן החזר יחסי.",
-  "המרפאה מצהירה כי הפרטים שמסרה נכונים וכי היא בעלת הרישוי הנדרש לעיסוק ברפואת שיניים בישראל. DentalCompare רשאית להסיר את המרפאה מהמאגר בכל עת.",
-];
+// SUBSCRIPTION_TERMS_HE lived here. The contract text is display copy, and a
+// constant suffixed _HE can only ever be right for one language, so it moved to
+// the dictionaries as clinics.terms — a template list the registration form
+// fills with the plan prices and trial length.

@@ -1,3 +1,6 @@
+import { getDictionary } from "@/i18n/get-dictionary";
+import { isLocale, defaultLocale } from "@/i18n/config";
+import { format } from "@/i18n/format";
 import { LocaleLink as Link } from "@/i18n/locale-link";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { db } from "@/lib/db";
@@ -7,13 +10,21 @@ import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "סטטוס תשלום" };
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
+  return { title: t.clinics.returnMetaTitle };
+}
 
 export default async function BillingReturnPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ locale: string }>;
   searchParams: Promise<{ token?: string; status?: string }>;
 }) {
+  const { locale } = await params;
+  const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
   const { token } = await searchParams;
 
   const sub = token
@@ -56,18 +67,18 @@ export default async function BillingReturnPage({
           <XCircle className="text-coral h-14 w-14" />
         )}
         <h1 className="font-display text-foreground mt-6 text-2xl font-bold">
-          {success ? "התשלום התקבל!" : "התשלום לא הושלם"}
+          {success ? t.clinics.returnSuccessTitle : t.clinics.returnFailedTitle}
         </h1>
         <p className="text-muted-foreground mt-3">
           {success
-            ? "המנוי הופעל. המרפאה מופיעה במאגר ותתחילו לקבל פניות ממטופלים."
-            : "לא הצלחנו לאשר את התשלום. ניתן לנסות שוב מקישור ההפעלה שנשלח במייל."}
+            ? t.clinics.returnSuccessBody
+            : t.clinics.returnFailedBody}
         </p>
         <Link
           href="/"
           className="text-teal-deep mt-8 text-sm font-semibold underline-offset-4 hover:underline"
         >
-          חזרה לדף הבית
+          {t.clinics.returnHome}
         </Link>
       </main>
       <Footer />

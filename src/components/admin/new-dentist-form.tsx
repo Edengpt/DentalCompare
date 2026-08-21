@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/i18n/provider";
 import { useRef, useState, useTransition } from "react";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -10,30 +11,32 @@ import { buttonVariants } from "@/components/ui/button";
 const inputClass =
   "border-border/60 bg-background focus:border-teal-deep focus:ring-teal-deep/20 w-full rounded-xl border px-3 py-2 text-sm outline-none focus:ring-2";
 
-const fields = [
-  { name: "dentistName", label: "שם הרופא", required: true, placeholder: "Dr Jane Smith" },
-  { name: "clinicName", label: "שם המרפאה", required: true, placeholder: "מרפאת חיוך" },
-  { name: "email", label: "אימייל", required: true, type: "email", placeholder: "dr@clinic.co.il" },
-  { name: "phone", label: "טלפון", required: true, placeholder: "03-1234567" },
-  { name: "city", label: "עיר", required: true, placeholder: "תל אביב" },
-  { name: "address", label: "כתובת", required: true, placeholder: "הרצל 1, תל אביב" },
-  {
-    name: "experienceYears",
-    label: "שנות ניסיון",
-    required: true,
-    type: "number",
-    placeholder: "10",
-  },
-  {
-    name: "specialties",
-    label: "התמחויות (מופרד בפסיקים)",
-    placeholder: "Implantology, Aesthetics",
-  },
-  { name: "treatments", label: "טיפולים (מופרד בפסיקים)", placeholder: "Implants, Crowns" },
-  { name: "insurerAffiliations", label: "מבטחים (מופרד בפסיקים)", placeholder: "Clalit, Maccabi" },
-];
-
 export function NewDentistForm() {
+  const t = useT();
+
+  const fields = [
+    { name: "dentistName", label: t.clinics.regDentistName, required: true, placeholder: "Dr Jane Smith" },
+    { name: "clinicName", label: t.clinics.regClinicName, required: true, placeholder: "Smile Dental" },
+    { name: "email", label: t.clinics.regEmail, required: true, type: "email", placeholder: "dr@clinic.com" },
+    { name: "phone", label: t.clinics.regPhone, required: true, placeholder: "+44 20 1234 5678" },
+    { name: "city", label: t.clinics.regCity, required: true, placeholder: "Budapest" },
+    { name: "address", label: t.admin.address, required: true, placeholder: "1 Main Street, Budapest" },
+    {
+      name: "experienceYears",
+      label: t.clinics.regExperience,
+      required: true,
+      type: "number",
+      placeholder: "10",
+    },
+    {
+      name: "specialties",
+      label: t.admin.colSpecialties,
+      placeholder: "Implantology, Aesthetics",
+    },
+    { name: "treatments", label: t.admin.treatments, placeholder: "Implants, Crowns" },
+    { name: "insurerAffiliations", label: t.admin.colInsurers, placeholder: "Clalit, Maccabi" },
+  ];
+
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const formRef = useRef<HTMLFormElement>(null);
@@ -47,7 +50,7 @@ export function NewDentistForm() {
         toast.error(result.error);
         return;
       }
-      toast.success("הרופא נוסף בהצלחה");
+      toast.success(t.admin.newRegistration);
       formRef.current?.reset();
       setOpen(false);
     });
@@ -64,7 +67,7 @@ export function NewDentistForm() {
         )}
       >
         <Plus className="h-4 w-4" />
-        רופא חדש
+        {t.admin.newRegistration}
       </button>
     );
   }
@@ -101,14 +104,14 @@ export function NewDentistForm() {
             "bg-teal-deep hover:bg-teal-deep/90 text-cream inline-flex h-10 items-center rounded-full px-5 text-sm font-semibold disabled:opacity-60",
           )}
         >
-          {isPending ? "שומר…" : "שמירה"}
+          {isPending ? t.selection.saving : t.admin.approve}
         </button>
         <button
           type="button"
           onClick={() => setOpen(false)}
           className="text-muted-foreground hover:text-foreground text-sm font-medium"
         >
-          ביטול
+          {t.admin.reject}
         </button>
       </div>
     </form>

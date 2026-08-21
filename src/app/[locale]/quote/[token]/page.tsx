@@ -1,3 +1,6 @@
+import { getDictionary } from "@/i18n/get-dictionary";
+import { isLocale, defaultLocale } from "@/i18n/config";
+import { format } from "@/i18n/format";
 import { toMajor } from "@/lib/money";
 import { notFound } from "next/navigation";
 import { FileText, Image as ImageIcon } from "lucide-react";
@@ -7,10 +10,19 @@ import { Footer } from "@/components/shared/footer";
 import { QuoteForm } from "@/components/quote/quote-form";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "הגשת הצעת מחיר" };
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
+  return { title: t.quoteForm.metaTitle };
+}
 
-export default async function QuotePage({ params }: { params: Promise<{ token: string }> }) {
-  const { token } = await params;
+export default async function QuotePage({
+  params,
+}: {
+  params: Promise<{ token: string; locale: string }>;
+}) {
+  const { token, locale } = await params;
+  const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
   const rd = await db.requestDentist.findUnique({
     where: { quoteToken: token },
     select: {
@@ -41,11 +53,11 @@ export default async function QuotePage({ params }: { params: Promise<{ token: s
   });
   if (!rd) notFound();
 
-  const firstName = rd.request.user?.fullName.split(" ")[0] ?? "המטופל";
+  const firstName = rd.request.user?.fullName.split(" ")[0] ?? t.quoteForm.fallbackPatient;
   const currency = rd.quote?.currency ?? rd.dentist.country.currency;
   const files = [
-    { icon: FileText, label: "תוכנית הטיפול", url: rd.request.treatmentFileUrl },
-    { icon: ImageIcon, label: "צילום שיניים", url: rd.request.xrayFileUrl },
+    { icon: FileText, label: t.requestDetail.treatmentPlan, url: rd.request.treatmentFileUrl },
+    { icon: ImageIcon, label: t.requestDetail.xray, url: rd.request.xrayFileUrl },
   ].filter((f) => !!f.url);
 
   return (
@@ -53,17 +65,16 @@ export default async function QuotePage({ params }: { params: Promise<{ token: s
       <Header />
       <main className="mx-auto flex w-full max-w-xl flex-1 flex-col px-6 py-16">
         <h1 className="font-display text-foreground text-3xl font-bold">
-          הצעת מחיר עבור {firstName}
+          {format(t.quoteForm.pageTitle, { name: firstName })}
         </h1>
         <p className="text-muted-foreground mt-2 text-sm">
-          עיינו בתוכנית הטיפול ובצילום, והזינו את פרטי ההצעה. ככל שתפרטו יותר, כך
-          קל למטופל להשוות — ובחו"ל המחיר לבדו לא מספר את כל הסיפור.
+          {t.quoteForm.pageSubtitle}
         </p>
 
         {files.length > 0 && (
           <div className="border-border/60 bg-card mt-6 rounded-2xl border p-4">
             <p className="text-muted-foreground text-sm">
-              תוכנית הטיפול והצילום מצורפים למייל שקיבלת — פתחו את הצרופות לצפייה.
+              {t.quoteForm.attachmentsNote}
             </p>
             <ul className="divide-border/60 mt-3 divide-y">
               {files.map((f) => (

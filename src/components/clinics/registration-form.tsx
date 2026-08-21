@@ -5,7 +5,9 @@ import { CheckCircle2, FileSignature, ImagePlus, Loader2, X } from "lucide-react
 import { toast } from "sonner";
 import { registerClinic } from "@/server/clinic-registration";
 import { LOGO_ACCEPT_ATTRIBUTE, LOGO_MAX_FILE_SIZE_MB } from "@/lib/storage";
-import { SUBSCRIPTION_TERMS_HE, SPECIALTIES, TREATMENTS } from "@/lib/constants";
+import { SPECIALTIES, TREATMENTS, SUBSCRIPTION_PLANS, TRIAL_DAYS } from "@/lib/constants";
+import { formatMoney } from "@/lib/money";
+import { useLocale } from "@/i18n/provider";
 import { translateInsurer, translateSpecialty, translateTreatment } from "@/lib/labels";
 import { useT } from "@/i18n/provider";
 import { format } from "@/i18n/format";
@@ -51,6 +53,7 @@ function ChipGroup({
 
 export function RegistrationForm({ countries }: { countries: RegistrationCountry[] }) {
   const t = useT();
+  const locale = useLocale();
   const [isPending, startTransition] = useTransition();
 
   // Defined inside the component: every label comes from context now.
@@ -323,12 +326,26 @@ export function RegistrationForm({ countries }: { countries: RegistrationCountry
         </div>
 
         <ol className="text-foreground/90 mt-6 space-y-3 text-sm">
-          {SUBSCRIPTION_TERMS_HE.map((clause, i) => (
+          {t.clinics.terms.map((clause: string, i: number) => (
             <li key={i} className="flex gap-2.5">
               <span className="bg-teal-deep/10 text-teal-deep mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold">
                 {i + 1}
               </span>
-              <span className="text-pretty">{clause}</span>
+              <span className="text-pretty">
+                {format(clause, {
+                  monthly: formatMoney(
+                    SUBSCRIPTION_PLANS.MONTHLY.priceMinor,
+                    SUBSCRIPTION_PLANS.MONTHLY.currency,
+                    locale,
+                  ),
+                  yearly: formatMoney(
+                    SUBSCRIPTION_PLANS.YEARLY.priceMinor,
+                    SUBSCRIPTION_PLANS.YEARLY.currency,
+                    locale,
+                  ),
+                  trialDays: TRIAL_DAYS,
+                })}
+              </span>
             </li>
           ))}
         </ol>

@@ -83,7 +83,7 @@ export function QuoteForm({
   if (done) {
     return (
       <div className="border-teal-deep/30 bg-teal-deep/5 rounded-2xl border p-6 text-center">
-        <p className="text-foreground text-lg font-semibold">ההצעה נשלחה — תודה! 🎉</p>
+        <p className="text-foreground text-lg font-semibold">{t.quoteForm.sentTitle}</p>
         <p className="text-muted-foreground mt-1 text-sm">{t.quoteForm.sentBody}</p>
       </div>
     );

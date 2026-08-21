@@ -16,7 +16,8 @@ type DentistCardProps = {
 
 function initials(name: string) {
   const parts = name
-    .replace(/^ד"ר\s*/u, "")
+    // Strips an honorific so the avatar initials read from the name itself.
+    .replace(/^(ד"ר|Dr\.?)\s*/iu, "")
     .trim()
     .split(/\s+/);
   return parts
@@ -121,7 +122,7 @@ export function DentistCard({ dentist, isSelected, onToggle, disabled }: Dentist
         {isSelected ? (
           <>
             <Check className="h-4 w-4" />
-            נבחר
+            {t.dentists.selected}
           </>
         ) : (
           t.dentists.selectAria

@@ -551,6 +551,15 @@ const en: typeof he = {
     regDoneTitle: "Registration received",
     regDoneBody:
       "Thank you for joining DentalCompare. Your application is waiting for our team to approve it — once approved, the clinic appears in the directory and starts receiving quote requests. We'll email you.",
+    terms: [
+      "The clinic chooses a subscription plan: {monthly} per month or {yearly} per year, for appearing in the DentalCompare directory and receiving patient enquiries.",
+      "The clinic receives a free {trialDays}-day trial, beginning when the DentalCompare team approves it. During that period the clinic appears in the directory and receives enquiries at no charge.",
+      "A payment method is stored at registration, and the first charge is taken automatically when the {trialDays}-day trial ends. An email notice is sent before that first charge.",
+      "The subscription can be cancelled at any point during the trial, in which case nothing is charged.",
+      "The subscription renews automatically at the end of each period using the stored payment method, until the clinic cancels.",
+      "The subscription can be cancelled at any time; cancellation takes effect at the end of the period already paid for. No pro-rata refund is given.",
+      "The clinic declares that the details it provided are accurate and that it holds the licensing required to practise dentistry in the country in which it operates. DentalCompare may remove the clinic from the directory at any time.",
+    ],
     joinMetaTitle: "For clinics",
     joinMetaDescription:
       "Dentists and clinics — join DentalCompare free and receive enquiries from patients looking for quotes.",
@@ -680,6 +689,8 @@ const en: typeof he = {
   errors: {
     signInRequired: "Please sign in to continue",
     userNotSynced: "Your account hasn't synced yet — refresh and try again",
+    patientNotFound: "Patient not found",
+    attachmentsFailed: "We couldn't load the files to attach",
     requestNotFound: "Request not found",
     requestAlreadySent: "This request has already been sent",
     requestLocked: "A request that has been sent can no longer be edited",
