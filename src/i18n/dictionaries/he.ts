@@ -336,6 +336,9 @@ const he = {
   },
 
   explain: {
+    noTreatmentPlan: "אין תוכנית טיפול להסביר",
+    aiUnavailable: "שירות ה-AI אינו מוגדר כרגע",
+    explainFailed: "יצירת ההסבר נכשלה — נסו שוב",
     genericError: "אירעה שגיאה",
     retryError: "אירעה שגיאה — נסו שוב",
     title: "הבנת תוכנית הטיפול",
@@ -377,6 +380,53 @@ const he = {
     sent: "נשלח",
     treatmentPlan: "תוכנית הטיפול",
     xray: "צילום שיניים",
+  },
+
+  emails: {
+    subjectNewQuote: "קיבלת הצעת מחיר חדשה 🎉",
+    subjectQuoteRequest: "בקשת הצעת מחיר חדשה — DentalCompare",
+    subjectPaymentSetup: "אישור מרפאה — הפעלת מנוי DentalCompare",
+    subjectTrialEndingSoon: "תקופת ההתנסות מסתיימת — החיוב הראשון בקרוב",
+    subjectTrialDaysLeft: "נותרו {days} ימי התנסות ב-DentalCompare",
+    subjectPaymentFailed: "חיוב המנוי נכשל — DentalCompare",
+    planMonthly: "חודשי",
+    planYearly: "שנתי",
+    autoFooter: "מייל זה נשלח אוטומטית על ידי DentalCompare.",
+    questionsPrefix: "לשאלות:",
+    quoteRequestSubjectPrefix: "בקשת הצעת מחיר",
+    quoteRequestHeading: "{patient} ביקש/ה ממך הצעת מחיר",
+    greeting: "שלום {name},",
+    quoteRequestBody:
+      "{patient} מבקש/ת הצעת מחיר לטיפול שיניים דרך DentalCompare. תוכנית הטיפול והצילום מצורפים למייל זה.",
+    quoteRequestCta: "💰 להזנת מחיר מהירה — לוקח 5 שניות",
+    requestNumber: "מספר בקשה:",
+    dateLabel: "תאריך:",
+    directContact: "ליצירת קשר ישיר:",
+    seeButtonAbove: "ראו כפתור למעלה",
+    smsVerified: "✓ אומת ב-SMS",
+    smsNotVerified: "(לא אומת)",
+    newQuoteHeading: "קיבלת הצעת מחיר חדשה 🎉",
+    newQuoteBody:
+      "רופא הגיש הצעת מחיר לבקשה שלך ב-DentalCompare. היכנס/י כדי לראות את ההשוואה ולבחור.",
+    newQuoteCta: "צפייה בהשוואה",
+    setupHeading: "המרפאה אושרה — נותר רק להפעיל מנוי",
+    clinicTeam: "צוות המרפאה",
+    setupApproved: "המרפאה {clinic} אושרה על ידי צוות DentalCompare.",
+    setupInstruction: "כדי שהמרפאה תופיע במאגר ותתחילו לקבל פניות, השלימו את הגדרת המנוי והתשלום:",
+    setupCta: "הפעלת המנוי והתשלום",
+    trialToday: "היום",
+    trialTomorrow: "מחר",
+    trialInDays: "בעוד {days} ימים",
+    trialHeading: "תקופת ההתנסות מסתיימת {when}",
+    trialBody:
+      "תקופת ההתנסות החינמית שלכם ב-DentalCompare מסתיימת {when}. מרגע זה יתחיל החיוב במסלול ה{plan}, בסך {price}, באמצעי התשלום שנשמר בעת ההרשמה.",
+    trialNoAction:
+      "לא נדרשת מכם כל פעולה כדי להמשיך. אם אינכם מעוניינים להמשיך, ניתן לבטל לפני מועד החיוב ולא תחויבו כלל.",
+    trialCancelPrefix: "לביטול או לשאלות:",
+    chargeFailedHeading: "לא הצלחנו לחייב את המנוי",
+    chargeFailedBody:
+      "החיוב התקופתי עבור {clinic} נכשל. כדי שהמרפאה תמשיך להופיע במאגר, יש לעדכן את אמצעי התשלום.",
+    supportPrefix: "פנו לתמיכה:",
   },
 
   legal: {

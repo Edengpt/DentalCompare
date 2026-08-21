@@ -1,6 +1,7 @@
 "use server";
 
 import { legacyMajor } from "@/lib/money";
+import { asLocale } from "@/i18n/config";
 
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
@@ -50,6 +51,7 @@ export async function approveClinic(dentistId: string): Promise<ActionResult> {
       email: true,
       contactName: true,
       clinicName: true,
+      locale: true,
       subscription: { select: { id: true, setupToken: true, status: true } },
     },
   });
@@ -80,6 +82,7 @@ export async function approveClinic(dentistId: string): Promise<ActionResult> {
     contactName: dentist.contactName,
     clinicName: dentist.clinicName,
     setupToken: dentist.subscription.setupToken,
+    locale: asLocale(dentist.locale),
   });
 
   await audit({

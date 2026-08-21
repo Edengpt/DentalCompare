@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { asLocale } from "@/i18n/config";
 import { sendNewQuoteEmail } from "@/server/quote-notifications";
 
 export const runtime = "nodejs";
@@ -31,7 +32,10 @@ export async function GET(req: Request) {
       requestDentist: {
         select: {
           request: {
-            select: { id: true, user: { select: { fullName: true, email: true } } },
+            select: {
+              id: true,
+              user: { select: { fullName: true, email: true, locale: true } },
+            },
           },
         },
       },
@@ -46,6 +50,7 @@ export async function GET(req: Request) {
       to: user.email,
       patientName: user.fullName,
       requestId: q.requestDentist.request.id,
+      locale: asLocale(user.locale),
     });
     if (ok) {
       await db.quote.update({ where: { id: q.id }, data: { patientNotifiedAt: new Date() } });

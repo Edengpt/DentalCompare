@@ -346,6 +346,9 @@ const en: typeof he = {
   },
 
   explain: {
+    noTreatmentPlan: "There's no treatment plan to explain",
+    aiUnavailable: "The AI service isn't configured right now",
+    explainFailed: "We couldn't generate the explanation — please try again",
     genericError: "Something went wrong",
     retryError: "Something went wrong — please try again",
     title: "Understand your treatment plan",
@@ -386,6 +389,54 @@ const en: typeof he = {
     sent: "Sent",
     treatmentPlan: "Treatment plan",
     xray: "Dental x-ray",
+  },
+
+  emails: {
+    subjectNewQuote: "You've received a new quote 🎉",
+    subjectQuoteRequest: "New quote request — DentalCompare",
+    subjectPaymentSetup: "Clinic approved — activate your DentalCompare subscription",
+    subjectTrialEndingSoon: "Your trial is ending — first charge coming up",
+    subjectTrialDaysLeft: "{days} days left in your DentalCompare trial",
+    subjectPaymentFailed: "Subscription charge failed — DentalCompare",
+    planMonthly: "monthly",
+    planYearly: "annual",
+    autoFooter: "This email was sent automatically by DentalCompare.",
+    questionsPrefix: "Questions:",
+    quoteRequestSubjectPrefix: "Quote request",
+    quoteRequestHeading: "{patient} has asked you for a quote",
+    greeting: "Hello {name},",
+    quoteRequestBody:
+      "{patient} is requesting a quote for dental treatment through DentalCompare. Their treatment plan and x-ray are attached to this email.",
+    quoteRequestCta: "💰 Submit your price — takes 5 seconds",
+    requestNumber: "Request number:",
+    dateLabel: "Date:",
+    directContact: "Direct contact:",
+    seeButtonAbove: "see the button above",
+    smsVerified: "✓ verified by SMS",
+    smsNotVerified: "(not verified)",
+    newQuoteHeading: "You've received a new quote 🎉",
+    newQuoteBody:
+      "A clinic has submitted a quote for your DentalCompare request. Sign in to see the comparison and choose.",
+    newQuoteCta: "View the comparison",
+    setupHeading: "Your clinic is approved — just activate your subscription",
+    clinicTeam: "there",
+    setupApproved: "{clinic} has been approved by the DentalCompare team.",
+    setupInstruction:
+      "To appear in the directory and start receiving enquiries, complete your subscription and payment setup:",
+    setupCta: "Activate subscription and payment",
+    trialToday: "today",
+    trialTomorrow: "tomorrow",
+    trialInDays: "in {days} days",
+    trialHeading: "Your free trial ends {when}",
+    trialBody:
+      "Your free DentalCompare trial ends {when}. Billing then begins on the {plan} plan, at {price}, using the payment method saved at registration.",
+    trialNoAction:
+      "You don't need to do anything to continue. If you'd rather not, you can cancel before the billing date and nothing will be charged.",
+    trialCancelPrefix: "To cancel, or for questions:",
+    chargeFailedHeading: "We couldn't charge your subscription",
+    chargeFailedBody:
+      "The recurring charge for {clinic} failed. To keep the clinic listed in the directory, please update the payment method.",
+    supportPrefix: "Contact support:",
   },
 
   legal: {

@@ -29,3 +29,15 @@ export function isLocale(value: string): value is Locale {
 
 /** Cookie the proxy writes and reads to remember an explicit language choice. */
 export const LOCALE_COOKIE = "NEXT_LOCALE";
+
+/**
+ * Narrows a locale string read from the database.
+ *
+ * User.locale and Dentist.locale are plain columns, so nothing stops a stale or
+ * hand-edited row holding something we don't serve. Falling back beats throwing
+ * in a cron: a renewal notice in the wrong language is recoverable, a crashed
+ * billing run is not.
+ */
+export function asLocale(value: string | null | undefined): Locale {
+  return value && isLocale(value) ? value : defaultLocale;
+}

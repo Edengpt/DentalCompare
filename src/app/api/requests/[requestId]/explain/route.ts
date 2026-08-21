@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { explainTreatment } from "@/server/explain-treatment";
+import { getRequestLocale } from "@/i18n/request-locale";
+import { getDictionary } from "@/i18n/get-dictionary";
 
 export const runtime = "nodejs";
 
@@ -14,6 +16,8 @@ export async function POST(
   _req: Request,
   { params }: { params: Promise<{ requestId: string }> },
 ) {
+  const locale = await getRequestLocale();
+  const t = (await getDictionary(locale)).explain;
   const { requestId } = await params;
 
   const { userId: clerkUserId } = await auth();
@@ -34,21 +38,21 @@ export async function POST(
     return new NextResponse("Not found", { status: 404 });
   }
   if (!request.treatmentFileUrl) {
-    return NextResponse.json({ error: "אין תוכנית טיפול להסביר" }, { status: 400 });
+    return NextResponse.json({ error: t.noTreatmentPlan }, { status: 400 });
   }
 
   if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json(
-      { error: "שירות ה-AI אינו מוגדר כרגע" },
+      { error: t.aiUnavailable },
       { status: 503 },
     );
   }
 
   try {
-    const result = await explainTreatment(request.treatmentFileUrl);
+    const result = await explainTreatment(request.treatmentFileUrl, locale);
     return NextResponse.json(result);
   } catch (err) {
     console.error("explainTreatment failed:", err);
-    return NextResponse.json({ error: "יצירת ההסבר נכשלה — נסו שוב" }, { status: 500 });
+    return NextResponse.json({ error: t.explainFailed }, { status: 500 });
   }
 }

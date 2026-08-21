@@ -13,6 +13,7 @@ import { recordRenewalCharge, markPastDue, cancelSubscription } from "@/server/s
 import { sendPaymentFailedEmail, sendTrialEndingEmail } from "@/server/subscription-notifications";
 import { audit } from "@/lib/audit";
 import { logEvent } from "@/lib/log";
+import { asLocale } from "@/i18n/config";
 import { SUBSCRIPTION_PLANS, type SubscriptionPlanType } from "@/lib/constants";
 
 export const runtime = "nodejs";
@@ -77,7 +78,7 @@ export async function GET(req: Request) {
       payplusCustomerUid: true,
       trialEndsAt: true,
       trialWarningSentDays: true,
-      dentist: { select: { clinicName: true, email: true } },
+      dentist: { select: { clinicName: true, email: true, locale: true } },
     },
   });
 
@@ -104,7 +105,8 @@ export async function GET(req: Request) {
           daysRemaining: trialDaysRemaining(sub.trialEndsAt, now),
           priceMinor: price.minor,
           currency: price.currency,
-          planLabelHe: SUBSCRIPTION_PLANS[sub.plan as SubscriptionPlanType].labelHe,
+          plan: sub.plan as SubscriptionPlanType,
+          locale: asLocale(sub.dentist.locale),
         });
         // Only record the mark once the mail actually went out, so a transient
         // Resend failure doesn't silently swallow the warning.
@@ -170,6 +172,7 @@ export async function GET(req: Request) {
           await sendPaymentFailedEmail({
             email: sub.dentist.email,
             clinicName: sub.dentist.clinicName,
+            locale: asLocale(sub.dentist.locale),
           });
         }
         trialsFailed += 1;
@@ -200,7 +203,7 @@ export async function GET(req: Request) {
       recurringToken: true,
       payplusCustomerUid: true,
       currentPeriodEnd: true,
-      dentist: { select: { clinicName: true, email: true } },
+      dentist: { select: { clinicName: true, email: true, locale: true } },
     },
   });
 
@@ -280,6 +283,7 @@ export async function GET(req: Request) {
           await sendPaymentFailedEmail({
             email: sub.dentist.email,
             clinicName: sub.dentist.clinicName,
+            locale: asLocale(sub.dentist.locale),
           });
         }
         failed += 1;

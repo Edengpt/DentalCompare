@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/db";
 import { rateLimit } from "@/lib/rate-limit";
+import { asLocale } from "@/i18n/config";
 import { RATE_LIMITS, QUOTE_INCLUSIONS, type QuoteInclusion } from "@/lib/constants";
 import { toMinor, legacyMajor } from "@/lib/money";
 
@@ -56,7 +57,7 @@ export async function submitQuote(input: {
       // The quote is denominated in the clinic's own country's currency.
       dentist: { select: { country: { select: { currency: true } } } },
       request: {
-        select: { id: true, user: { select: { fullName: true, email: true } } },
+        select: { id: true, user: { select: { fullName: true, email: true, locale: true } } },
       },
     },
   });
@@ -123,6 +124,7 @@ export async function submitQuote(input: {
       to: rd.request.user.email,
       patientName: rd.request.user.fullName,
       requestId: rd.request.id,
+      locale: asLocale(rd.request.user.locale),
     });
     if (sent) {
       await db.quote.update({

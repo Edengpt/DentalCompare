@@ -1,6 +1,7 @@
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import { get } from "@vercel/blob";
+import type { Locale } from "@/i18n/config";
 
 /**
  * AI explanation of a patient's uploaded treatment plan. On-demand only (called
@@ -8,7 +9,7 @@ import { get } from "@vercel/blob";
  * reads the treatment-plan file directly (PDF or image) and returns a structured
  * result via strict tool use — no fragile free-text JSON parsing.
  *
- * Guardrails live in the system prompt: plain-Hebrew explanations, questions to
+ * Guardrails live in the system prompt: plain-language explanations, questions to
  * ask the clinic, explicitly NON-diagnostic, no invented treatments, no prices.
  */
 export type TreatmentExplanation = {
@@ -21,14 +22,33 @@ export type TreatmentExplanation = {
 // medical-adjacent explanation).
 const MODEL = "claude-sonnet-5";
 
-const SYSTEM = `אתה עוזר שמסביר למטופלים בישראל תוכניות טיפול שיניים בשפה פשוטה, חמה וברורה.
+/**
+ * Instructions are per-language rather than one prompt with a "reply in X" line
+ * appended. A model told to write Hebrew produces different phrasing from one
+ * writing English natively, and for medical-adjacent copy read by a nervous
+ * patient that difference matters more than the token saving.
+ *
+ * The guardrails are identical in both: no diagnosis, no recommendation, no
+ * prices, and nothing invented that isn't in the document.
+ */
+const SYSTEM: Record<Locale, string> = {
+  he: `אתה עוזר שמסביר למטופלים תוכניות טיפול שיניים בשפה פשוטה, חמה וברורה.
 הנחיות:
 - קרא את המסמך המצורף (תוכנית טיפול שיניים).
 - לכל טיפול שמופיע במסמך, החזר שם קצר בעברית והסבר של 1-2 משפטים: מה זה ולמה הוא נדרש. אל תמציא טיפולים שאינם מופיעים במסמך.
 - הצע 4-6 שאלות חכמות שכדאי למטופל לשאול את המרפאות (למשל אחריות, חלופות טיפול, מה כלול במחיר, לוחות זמנים).
 - אל תיתן אבחנה רפואית, אל תמליץ על טיפול ספציפי, ואל תציין מחירים או טווחי מחיר.
 - אם המסמך אינו קריא, ריק, או אינו תוכנית טיפול שיניים — החזר is_readable=false והשאר את הרשימות ריקות.
-כתוב הכול בעברית פשוטה.`;
+כתוב הכול בעברית פשוטה.`,
+  en: `You explain dental treatment plans to patients in plain, warm, clear language.
+Guidelines:
+- Read the attached document (a dental treatment plan).
+- For each treatment in the document, return a short name and a 1-2 sentence explanation: what it is and why it is needed. Never invent treatments that do not appear in the document.
+- Suggest 4-6 useful questions the patient should ask the clinics (warranty, treatment alternatives, what the price includes, timelines).
+- Do not give a medical diagnosis, do not recommend a specific treatment, and do not state prices or price ranges.
+- If the document is unreadable, empty, or is not a dental treatment plan, return is_readable=false and leave the lists empty.
+Write everything in plain English.`,
+};
 
 const EXPLAIN_TOOL: Anthropic.Tool = {
   name: "provide_explanation",
@@ -85,14 +105,17 @@ async function treatmentBlock(url: string): Promise<Anthropic.ContentBlockParam>
   return { type: "image", source: { type: "base64", media_type, data } };
 }
 
-export async function explainTreatment(treatmentFileUrl: string): Promise<TreatmentExplanation> {
+export async function explainTreatment(
+  treatmentFileUrl: string,
+  locale: Locale,
+): Promise<TreatmentExplanation> {
   const client = new Anthropic();
   const doc = await treatmentBlock(treatmentFileUrl);
 
   const response = await client.messages.create({
     model: MODEL,
     max_tokens: 4000,
-    system: SYSTEM,
+    system: SYSTEM[locale],
     tools: [EXPLAIN_TOOL],
     tool_choice: { type: "tool", name: "provide_explanation" },
     messages: [

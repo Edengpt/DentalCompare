@@ -9,6 +9,8 @@ import { appUrl } from "@/lib/app-url";
 import { logEvent } from "@/lib/log";
 import { formatPhoneForDisplay } from "@/lib/phone";
 import { quoteRequestEmailHtml } from "@/server/emails/templates";
+import { getDictionary } from "@/i18n/get-dictionary";
+import { asLocale } from "@/i18n/config";
 
 /**
  * Downloads a private blob and returns it as a Resend attachment (Buffer content)
@@ -27,7 +29,9 @@ async function toAttachment(url: string, filename: string) {
 export type FulfillResult =
   { ok: true; emailsSent: number; alreadySent: number } | { ok: false; error: string };
 
-const SUBJECT = "בקשה להצעת מחיר לטיפול שיניים";
+// Subject and body follow the CLINIC's language, not the patient's: it lands in
+// the clinic's inbox, and a Budapest clinic reading Hebrew is the failure this
+// whole change exists to prevent.
 
 function attachmentName(url: string, fallback: string): string {
   try {
@@ -63,7 +67,10 @@ export async function fulfillRequest(requestId: string): Promise<FulfillResult> 
       user: { select: { fullName: true, email: true, phone: true, phoneVerifiedAt: true } },
       requestDentists: {
         where: { emailSent: false },
-        select: { id: true, dentist: { select: { dentistName: true, email: true } } },
+        select: {
+          id: true,
+          dentist: { select: { dentistName: true, email: true, locale: true } },
+        },
       },
     },
   });
@@ -77,11 +84,12 @@ export async function fulfillRequest(requestId: string): Promise<FulfillResult> 
     return { ok: true, emailsSent: 0, alreadySent: 0 };
   }
 
-  const date = new Intl.DateTimeFormat("he-IL", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(request.createdAt);
+  const formatDate = (locale: string) =>
+    new Intl.DateTimeFormat(locale === "he" ? "he-IL" : "en-GB", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }).format(request.createdAt);
 
   // Download both private files once and attach them as content — the dentist
   // gets real attachments, not a link to a private blob.
@@ -132,12 +140,17 @@ export async function fulfillRequest(requestId: string): Promise<FulfillResult> 
       const token = row?.quoteToken ?? quoteToken;
       const quoteUrl = `${appUrl()}${quotePath(token)}`;
 
+      const clinicLocale = asLocale(rd.dentist.locale);
+      const t = (await getDictionary(clinicLocale)).emails;
+
       const { error } = await resend.emails.send({
         from,
         to: rd.dentist.email,
         replyTo: request.user.email,
-        subject: SUBJECT,
+        subject: t.subjectQuoteRequest,
         html: quoteRequestEmailHtml({
+          locale: clinicLocale,
+          t,
           dentistName: rd.dentist.dentistName,
           patientName: request.user.fullName,
           patientPhone: formatPhoneForDisplay(request.user.phone) || "—",
@@ -145,7 +158,7 @@ export async function fulfillRequest(requestId: string): Promise<FulfillResult> 
           // number it's getting instead of letting it assume all were checked.
           phoneVerified: Boolean(request.user.phoneVerifiedAt),
           requestId: request.id,
-          date,
+          date: formatDate(clinicLocale),
           quoteUrl,
         }),
         attachments,

@@ -6,20 +6,28 @@ import {
   trialEndingEmailHtml,
 } from "@/server/emails/templates";
 import { appUrl } from "@/lib/app-url";
+import { getDictionary } from "@/i18n/get-dictionary";
+import { format } from "@/i18n/format";
+import type { Locale } from "@/i18n/config";
 
 export async function sendPaymentSetupEmail(args: {
   email: string;
   contactName: string | null;
   clinicName: string;
   setupToken: string;
+  /** The clinic's own language, from Dentist.locale. */
+  locale: Locale;
 }): Promise<boolean> {
-  const link = `${appUrl()}/clinics/billing/${args.setupToken}`;
+  const t = (await getDictionary(args.locale)).emails;
+  const link = `${appUrl()}/${args.locale}/clinics/billing/${args.setupToken}`;
   try {
     const { error } = await getResend().emails.send({
       from: fromAddress(),
       to: args.email,
-      subject: "אישור מרפאה — הפעלת מנוי DentalCompare",
+      subject: t.subjectPaymentSetup,
       html: paymentSetupEmailHtml({
+        locale: args.locale,
+        t,
         contactName: args.contactName ?? "",
         clinicName: args.clinicName,
         link,
@@ -47,22 +55,27 @@ export async function sendTrialEndingEmail(args: {
   daysRemaining: number;
   priceMinor: number;
   currency: string;
-  planLabelHe: string;
+  plan: "MONTHLY" | "YEARLY";
+  locale: Locale;
 }): Promise<boolean> {
+  const t = (await getDictionary(args.locale)).emails;
+  const planLabel = args.plan === "MONTHLY" ? t.planMonthly : t.planYearly;
   try {
     const { error } = await getResend().emails.send({
       from: fromAddress(),
       to: args.email,
       subject:
         args.daysRemaining <= 2
-          ? "תקופת ההתנסות מסתיימת — החיוב הראשון בקרוב"
-          : `נותרו ${args.daysRemaining} ימי התנסות ב-DentalCompare`,
+          ? t.subjectTrialEndingSoon
+          : format(t.subjectTrialDaysLeft, { days: args.daysRemaining }),
       html: trialEndingEmailHtml({
+        locale: args.locale,
+        t,
         clinicName: args.clinicName,
         daysRemaining: args.daysRemaining,
         priceMinor: args.priceMinor,
         currency: args.currency,
-        planLabelHe: args.planLabelHe,
+        planLabel,
       }),
     });
     if (error) {
@@ -79,13 +92,15 @@ export async function sendTrialEndingEmail(args: {
 export async function sendPaymentFailedEmail(args: {
   email: string;
   clinicName: string;
+  locale: Locale;
 }): Promise<boolean> {
+  const t = (await getDictionary(args.locale)).emails;
   try {
     const { error } = await getResend().emails.send({
       from: fromAddress(),
       to: args.email,
-      subject: "חיוב המנוי נכשל — DentalCompare",
-      html: paymentFailedEmailHtml({ clinicName: args.clinicName }),
+      subject: t.subjectPaymentFailed,
+      html: paymentFailedEmailHtml({ locale: args.locale, t, clinicName: args.clinicName }),
     });
     if (error) {
       console.error(`Resend error for payment-failed ${args.email}:`, error);
