@@ -6,8 +6,19 @@ import type { Dictionary } from "@/i18n/get-dictionary";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { HeroVideo } from "./hero-video";
+import type { Locale } from "@/i18n/config";
+import type { HomepageStats } from "@/lib/homepage-stats";
+import { formatMoney } from "@/lib/money";
 
-export function Hero({ t }: { t: Dictionary["hero"] }) {
+export function Hero({
+  t,
+  stats,
+  locale,
+}: {
+  t: Dictionary["hero"];
+  stats: HomepageStats;
+  locale: Locale;
+}) {
   const benefits = [
     { icon: Upload, text: t.benefitUpload },
     { icon: Users, text: t.benefitSend },
@@ -15,10 +26,35 @@ export function Hero({ t }: { t: Dictionary["hero"] }) {
     { icon: PhoneOff, text: t.benefitNoCalls },
   ];
 
+  // Each tile falls back on its own. The clinic count crosses its floor months
+  // before ten requests have carried two quotes each, and there is no reason
+  // for the first to wait on the third.
+  //
+  // A measured figure is always accompanied by the label that describes what
+  // was measured; the fallback swaps BOTH halves, because "48 שעות" under
+  // "of requests answered within 48 hours" would read as a broken number.
+  const number = (value: number) => new Intl.NumberFormat(locale).format(value);
+
   const trustStats = [
-    { value: t.statDentistsValue, label: t.statDentistsLabel },
-    { value: t.statResponseValue, label: t.statResponseLabel },
-    { value: t.statSavingsValue, label: t.statSavingsLabel },
+    stats.clinics === null
+      ? { value: t.statClinicsFallbackValue, label: t.statClinicsFallbackLabel }
+      : { value: number(stats.clinics), label: t.statClinicsLabel },
+
+    stats.responseRate === null
+      ? { value: t.statResponseFallbackValue, label: t.statResponseFallbackLabel }
+      : {
+          value: new Intl.NumberFormat(locale, { style: "percent" }).format(
+            stats.responseRate / 100,
+          ),
+          label: t.statResponseLabel,
+        },
+
+    stats.medianSpread === null
+      ? { value: t.statSpreadFallbackValue, label: t.statSpreadFallbackLabel }
+      : {
+          value: formatMoney(stats.medianSpread.minor, stats.medianSpread.currency, locale),
+          label: t.statSpreadLabel,
+        },
   ];
 
   return (
@@ -38,9 +74,7 @@ export function Hero({ t }: { t: Dictionary["hero"] }) {
       />
 
       <div className="mx-auto w-full max-w-4xl px-6 py-24 text-center [text-shadow:0_1px_10px_rgba(0,0,0,0.45)] lg:px-10 lg:py-32">
-        <p className="eyebrow text-cream/70 before:bg-cream/40 justify-center">
-          {t.eyebrow}
-        </p>
+        <p className="eyebrow text-cream/70 before:bg-cream/40 justify-center">{t.eyebrow}</p>
 
         <h1 className="font-display text-cream mt-6 font-bold tracking-tight text-balance">
           <span className="text-cream/80 block text-2xl font-semibold sm:text-3xl">
