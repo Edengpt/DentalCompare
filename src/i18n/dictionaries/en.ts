@@ -55,12 +55,15 @@ const en: typeof he = {
     cta: "Get my quotes",
     secondaryCta: "How does it work?",
     reassurance: "Completely free ✦ No credit card ✦ No commitment",
-    statDentistsValue: "300+",
-    statDentistsLabel: "dentists in our network",
-    statResponseValue: "97%",
+    statClinicsLabel: "clinics in our network",
+    statClinicsFallbackValue: "up to 3",
+    statClinicsFallbackLabel: "quotes from a single request",
     statResponseLabel: "of requests answered within 48 hours",
-    statSavingsValue: "£750",
-    statSavingsLabel: "average saving per treatment",
+    statResponseFallbackValue: "48 hours",
+    statResponseFallbackLabel: "the target for quotes to arrive",
+    statSpreadLabel: "median gap between quotes for the same plan",
+    statSpreadFallbackValue: "£0",
+    statSpreadFallbackLabel: "what a patient pays, always",
   },
 
   howItWorks: {
@@ -89,7 +92,7 @@ const en: typeof he = {
       "No grand claims about a “revolutionary platform” — just a direct answer to four frustrations anyone facing expensive dental work knows well.",
     oneTitle: "Save thousands",
     oneDescription:
-      "Transparent comparison hands you back the bargaining power. Our patients save around £750 on complex treatment, and often a great deal more.",
+      "Transparent comparison hands you back the bargaining power. The same treatment plan is priced differently from one clinic to the next — and once the quotes sit side by side in writing, the difference stops being guesswork.",
     twoTitle: "One request, 3 clinics",
     twoDescription:
       "Instead of hours of phone calls and email chains — three minutes at your screen, and your request is already on its way to every clinic at once.",
@@ -101,30 +104,23 @@ const en: typeof he = {
       "Instead of travelling between clinics and booking appointments just to hear a price — quotes arrive written down and itemised. You only visit once you've chosen.",
   },
 
-  testimonials: {
-    eyebrow: "Our patients",
-    title: "Real savings, real people.",
+  comparingQuotes: {
+    eyebrow: "After the quotes arrive",
+    title: "Three quotes are in. Now the real work starts.",
     subtitle:
-      "Three patients, three different treatments — and the same thought at the end: “why didn't I do this sooner?”",
-    savedLabel: "Saved",
-    oneQuote:
-      "I was quoted £6,000 for 3 implants. Through DentalCompare I had 6 quotes within 3 days — the lowest was £4,200. I saved almost 30%.",
-    oneName: "Ori Ben-David",
-    oneLocation: "Ra'anana",
-    oneSavings: "£1,800",
-    oneTreatment: "3 implants + crowns",
-    twoQuote:
-      "I was convinced I had to stay with my usual dentist because he “already knows me”. Turned out a clinic ten minutes away offered the same treatment for 40% less.",
-    twoName: "Maya Cohen",
-    twoLocation: "Tel Aviv",
-    twoSavings: "£900",
-    twoTreatment: "Root canal + crown",
-    threeQuote:
-      "With three kids I have no time to shop around between clinics. I uploaded my husband's plan one evening and by morning there were 4 quotes. We picked the clinic that suited our schedule — and saved as well.",
-    threeName: "Shira Levi",
-    threeLocation: "Modi'in",
-    threeSavings: "£600",
-    threeTreatment: "Orthodontics",
+      "The lowest price is almost never the cheapest quote. Four things to check before you choose.",
+    oneTitle: "What's included, and what arrives as a separate bill",
+    oneDescription:
+      "A £4,800 quote that leaves the crown out is not cheaper than a £5,500 one that includes it. The difference doesn't disappear — it just arrives later.",
+    twoTitle: "How many visits, and over how long",
+    twoDescription:
+      "An implant is usually two stages months apart. A clinic that finishes in two visits and one that needs six differ in days off work, not only in money.",
+    threeTitle: "What happens if something fails in two years",
+    threeDescription:
+      "A clinic offering five years of warranty in writing has priced its own risk. One offering none has handed that risk to you without mentioning it.",
+    fourTitle: "The gap itself is information, not a verdict",
+    fourDescription:
+      "If three clinics price the same plan at £4,800, £5,500 and £6,900, it doesn't mean the dearest is overcharging. It means you have a precise question to ask them — and now you have it in writing.",
   },
 
   faq: {
@@ -138,7 +134,7 @@ const en: typeof he = {
     q2: "Is my medical information secure?",
     a2: "Yes. Every file is stored in encrypted cloud storage with private access only, transferred over HTTPS, and sent solely to the clinics you personally chose. We don't share it with third parties and we don't use it for advertising or sell it. You can request full deletion at any time.",
     q3: "How long until quotes arrive?",
-    a3: "97% of requests receive at least 3 replies within 48 hours, and most arrive within 24. Clinics reply straight to your email — there's no need to come back to the site.",
+    a3: "Your request reaches every clinic you picked at the same moment, and our target is for quotes to come back within 48 hours. Clinics reply straight to your email — there's no need to come back to the site.",
     q4: "How do clinics get back to me?",
     a4: "Each clinic receives a dedicated email with your documents and a private link for submitting a quote. You get personal replies by email — exactly as if you had approached them directly, except you approached 3 clinics at once.",
     q5: "What if I don't like any of the quotes?",
