@@ -395,6 +395,8 @@ const he = {
     quoteRequestSubjectPrefix: "בקשת הצעת מחיר",
     quoteRequestHeading: "{patient} ביקש/ה ממך הצעת מחיר",
     greeting: "שלום {name},",
+    greetingNoName: "שלום,",
+    patientFallback: "המטופל",
     quoteRequestBody:
       "{patient} מבקש/ת הצעת מחיר לטיפול שיניים דרך DentalCompare. תוכנית הטיפול והצילום מצורפים למייל זה.",
     quoteRequestCta: "💰 להזנת מחיר מהירה — לוקח 5 שניות",

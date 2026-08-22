@@ -154,7 +154,8 @@ export async function fulfillRequest(requestId: string): Promise<FulfillResult> 
           locale: clinicLocale,
           t,
           dentistName: rd.dentist.dentistName,
-          patientName: request.user.fullName,
+          // Third person in this email, so the label reads naturally.
+          patientName: request.user.fullName ?? t.patientFallback,
           patientPhone: formatPhoneForDisplay(request.user.phone) || "—",
           // Verification is optional (PRD 4.2), so tell the clinic which kind of
           // number it's getting instead of letting it assume all were checked.

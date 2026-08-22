@@ -7,7 +7,7 @@ import type { Locale } from "@/i18n/config";
 
 export async function sendNewQuoteEmail(args: {
   to: string;
-  patientName: string;
+  patientName: string | null;
   requestId: string;
   /** The recipient's own language, from User.locale — a cron sending this at
    *  4am has no request to read it from. */

@@ -53,7 +53,9 @@ export default async function QuotePage({
   });
   if (!rd) notFound();
 
-  const firstName = rd.request.user?.fullName.split(" ")[0] ?? t.quoteForm.fallbackPatient;
+  // Two different unknowns collapse to the same label here: the account was
+  // deleted, or the patient never gave a name. Neither is the dentist's problem.
+  const firstName = rd.request.user?.fullName?.split(" ")[0] ?? t.quoteForm.fallbackPatient;
   const currency = rd.quote?.currency ?? rd.dentist.country.currency;
   const files = [
     { icon: FileText, label: t.requestDetail.treatmentPlan, url: rd.request.treatmentFileUrl },
@@ -67,15 +69,11 @@ export default async function QuotePage({
         <h1 className="font-display text-foreground text-3xl font-bold">
           {format(t.quoteForm.pageTitle, { name: firstName })}
         </h1>
-        <p className="text-muted-foreground mt-2 text-sm">
-          {t.quoteForm.pageSubtitle}
-        </p>
+        <p className="text-muted-foreground mt-2 text-sm">{t.quoteForm.pageSubtitle}</p>
 
         {files.length > 0 && (
           <div className="border-border/60 bg-card mt-6 rounded-2xl border p-4">
-            <p className="text-muted-foreground text-sm">
-              {t.quoteForm.attachmentsNote}
-            </p>
+            <p className="text-muted-foreground text-sm">{t.quoteForm.attachmentsNote}</p>
             <ul className="divide-border/60 mt-3 divide-y">
               {files.map((f) => (
                 <li

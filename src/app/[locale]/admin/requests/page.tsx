@@ -37,8 +37,12 @@ export default async function AdminRequestsPage({
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="font-display text-foreground text-3xl font-bold tracking-tight">{t.admin.requestsTitle}</h1>
-        <p className="text-muted-foreground mt-1.5 text-sm">{format(t.admin.requestsSubtitle, { count: requests.length })}</p>
+        <h1 className="font-display text-foreground text-3xl font-bold tracking-tight">
+          {t.admin.requestsTitle}
+        </h1>
+        <p className="text-muted-foreground mt-1.5 text-sm">
+          {format(t.admin.requestsSubtitle, { count: requests.length })}
+        </p>
       </header>
 
       <div className="border-border/60 bg-card overflow-x-auto rounded-2xl border">
@@ -71,7 +75,7 @@ export default async function AdminRequestsPage({
                     </td>
                     <td className="px-4 py-3">
                       <p className="text-foreground font-medium">
-                        {r.user?.fullName ?? t.admin.deletedUser}
+                        {r.user ? (r.user.fullName ?? "—") : t.admin.deletedUser}
                       </p>
                       <p className="text-muted-foreground text-xs">{r.user?.email ?? "—"}</p>
                     </td>

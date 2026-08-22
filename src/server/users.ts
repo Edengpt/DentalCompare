@@ -40,8 +40,11 @@ export async function getOrCreateUser() {
 
   const { phone, verified } = phoneOf(clerkUser);
 
+  // Null rather than the email address. Sign-up may not ask for a name at all
+  // (it is a Clerk dashboard setting), and an email in a field the dentist
+  // reads as the patient's name is worse than admitting we don't have one.
   const fullName =
-    [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ").trim() || primaryEmail;
+    [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ").trim() || null;
 
   const existing = await db.user.findUnique({ where: { clerkUserId } });
   if (!existing) {

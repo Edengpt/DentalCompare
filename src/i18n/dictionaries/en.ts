@@ -404,6 +404,8 @@ const en: typeof he = {
     quoteRequestSubjectPrefix: "Quote request",
     quoteRequestHeading: "{patient} has asked you for a quote",
     greeting: "Hello {name},",
+    greetingNoName: "Hello,",
+    patientFallback: "the patient",
     quoteRequestBody:
       "{patient} is requesting a quote for dental treatment through DentalCompare. Their treatment plan and x-ray are attached to this email.",
     quoteRequestCta: "💰 Submit your price — takes 5 seconds",

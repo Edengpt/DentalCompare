@@ -81,7 +81,9 @@ export default async function AdminOverviewPage({
   return (
     <div className="space-y-10">
       <header>
-        <h1 className="font-display text-foreground text-3xl font-bold tracking-tight">{t.admin.overviewTitle}</h1>
+        <h1 className="font-display text-foreground text-3xl font-bold tracking-tight">
+          {t.admin.overviewTitle}
+        </h1>
         <p className="text-muted-foreground mt-1.5 text-sm">{t.admin.overviewSubtitle}</p>
       </header>
 
@@ -132,7 +134,9 @@ export default async function AdminOverviewPage({
       </div>
 
       <section>
-        <h2 className="font-display text-foreground mb-3 text-lg font-bold">{t.admin.recentRequests}</h2>
+        <h2 className="font-display text-foreground mb-3 text-lg font-bold">
+          {t.admin.recentRequests}
+        </h2>
         <div className="border-border/60 bg-card overflow-hidden rounded-2xl border">
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-muted-foreground text-xs">
@@ -155,7 +159,7 @@ export default async function AdminOverviewPage({
                   <tr key={r.id}>
                     <td className="px-4 py-3">
                       <p className="text-foreground font-medium">
-                        {r.user?.fullName ?? t.admin.deletedUser}
+                        {r.user ? (r.user.fullName ?? "—") : t.admin.deletedUser}
                       </p>
                       <p className="text-muted-foreground text-xs">{r.user?.email ?? "—"}</p>
                     </td>

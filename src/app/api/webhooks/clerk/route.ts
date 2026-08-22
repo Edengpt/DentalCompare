@@ -52,7 +52,8 @@ export async function POST(req: Request) {
           break;
         }
 
-        const fullName = [first_name, last_name].filter(Boolean).join(" ").trim() || primaryEmail;
+        // Null rather than the email — see the note on User.fullName.
+        const fullName = [first_name, last_name].filter(Boolean).join(" ").trim() || null;
 
         // Clerk owns the SMS OTP; we mirror its verdict. Store the number either
         // way — it's the clinic's only route to the patient, so an unverified

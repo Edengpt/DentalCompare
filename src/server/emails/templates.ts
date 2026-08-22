@@ -45,6 +45,7 @@ export function quoteRequestEmailHtml(opts: {
   locale: Locale;
   t: EmailStrings;
   dentistName: string;
+  /** Already resolved to a display value — never null here. */
   patientName: string;
   patientPhone: string;
   /** Whether the patient completed SMS verification. It's optional, so say so
@@ -54,8 +55,17 @@ export function quoteRequestEmailHtml(opts: {
   date: string;
   quoteUrl: string;
 }): string {
-  const { locale, t, dentistName, patientName, patientPhone, phoneVerified, requestId, date, quoteUrl } =
-    opts;
+  const {
+    locale,
+    t,
+    dentistName,
+    patientName,
+    patientPhone,
+    phoneVerified,
+    requestId,
+    date,
+    quoteUrl,
+  } = opts;
   const p = escapeHtml(patientName);
   const d = escapeHtml(dentistName);
   const phone = escapeHtml(patientPhone);
@@ -92,15 +102,22 @@ export function quoteRequestEmailHtml(opts: {
 export function newQuoteEmailHtml(opts: {
   locale: Locale;
   t: EmailStrings;
-  patientName: string;
+  /** Null when the patient never gave a name — see User.fullName. */
+  patientName: string | null;
   link: string;
 }): string {
   const { locale, t, patientName, link } = opts;
+  // Addressing the reader by name is the point of a greeting; with no name the
+  // greeting drops it rather than substituting a placeholder, because "Hello
+  // the patient," reads worse than "Hello,".
+  const greeting = patientName
+    ? format(t.greeting, { name: escapeHtml(patientName) })
+    : t.greetingNoName;
 
   return shell(
     locale,
     `    <h2 style="color: #0f4c4c;">${t.newQuoteHeading}</h2>
-    <p>${format(t.greeting, { name: escapeHtml(patientName) })}</p>
+    <p>${greeting}</p>
     <p>${t.newQuoteBody}</p>
     <div style="text-align: center; margin: 28px 0;">
       <a href="${link}"

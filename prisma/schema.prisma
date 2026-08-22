@@ -74,7 +74,13 @@ model Country {
 model User {
   id              String    @id @default(uuid())
   clerkUserId     String    @unique
-  fullName        String
+  // Null when we genuinely do not know it. It used to fall back to the email
+  // address, which meant a column named fullName quietly held something that is
+  // not a name — and that value is shown to the dentist, on the quote page and
+  // in the email asking them to price the work. Null is the honest answer, and
+  // every reader already had to handle a missing patient (a deleted account),
+  // so the display fallback existed before this column could use it.
+  fullName        String?
   email           String    @unique
   // E.164 normalised (+9725XXXXXXXX) where possible. Stored whether or not it
   // has been verified — it's the only way a clinic can reach the patient, so an

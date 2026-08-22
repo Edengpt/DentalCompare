@@ -11,11 +11,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 export const dynamic = "force-dynamic";
 
-export default async function AdminUsersPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function AdminUsersPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
   await requireAdmin();
@@ -35,8 +31,12 @@ export default async function AdminUsersPage({
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="font-display text-foreground text-3xl font-bold tracking-tight">{t.admin.usersTitle}</h1>
-        <p className="text-muted-foreground mt-1.5 text-sm">{format(t.admin.usersSubtitle, { count: users.length })}</p>
+        <h1 className="font-display text-foreground text-3xl font-bold tracking-tight">
+          {t.admin.usersTitle}
+        </h1>
+        <p className="text-muted-foreground mt-1.5 text-sm">
+          {format(t.admin.usersSubtitle, { count: users.length })}
+        </p>
       </header>
 
       <div className="border-border/60 bg-card overflow-x-auto rounded-2xl border">
@@ -60,7 +60,7 @@ export default async function AdminUsersPage({
             ) : (
               users.map((u) => (
                 <tr key={u.id}>
-                  <td className="text-foreground px-4 py-3 font-medium">{u.fullName}</td>
+                  <td className="text-foreground px-4 py-3 font-medium">{u.fullName ?? "—"}</td>
                   <td className="text-muted-foreground px-4 py-3">{u.email}</td>
                   <td className="text-muted-foreground px-4 py-3">{u.phone || "—"}</td>
                   <td className="text-foreground px-4 py-3">{u._count.requests}</td>
