@@ -39,46 +39,62 @@
 
 ### משימה 3: הצגת המדידות ב-Hero
 
-- [ ] `getHomepageStats()` נקרא ב-`src/app/[locale]/page.tsx`, מועבר ל-`Hero`
-- [ ] כל משבצת נופלת לגיבוי **בנפרד** מהאחרות
-- [ ] `formatMoney(minor, currency, locale)` לפער — לא מספר גולמי
-- [ ] מפתחות מילון לגיבויים, בשתי השפות
+- [x] `getHomepageStats()` נקרא ב-`src/app/[locale]/page.tsx`, מועבר ל-`Hero`
+- [x] כל משבצת נופלת לגיבוי **בנפרד** מהאחרות
+- [x] `formatMoney(minor, currency, locale)` לפער — לא מספר גולמי
+- [x] מפתחות מילון לגיבויים, בשתי השפות
 
 ### משימה 4: „חיסכון” → „פער בין ההצעות”
 
-- [ ] `hero.statSavingsValue` / `statSavingsLabel` מוחלפים בזוג שמתאר פער
-- [ ] אותו שינוי ב-`en.ts`
+- [x] `hero.statSavingsValue` / `statSavingsLabel` מוחלפים בזוג שמתאר פער
+- [x] אותו שינוי ב-`en.ts`
 
 ### משימה 5: ניקוי הפרוזה
 
-- [ ] `he.ts` `benefits.oneDescription` — ללא ₪3,400
-- [ ] `en.ts` `benefits.oneDescription` — ללא £750
-- [ ] `he.ts` `faq.a3` — ללא 97%
-- [ ] `en.ts` `faq.a3` — ללא 97%
-- [ ] `grep -nE "300\+|3,400|£750|97%"` על `src/i18n/` מחזיר ריק
+- [x] `he.ts` `benefits.oneDescription` — ללא ₪3,400
+- [x] `en.ts` `benefits.oneDescription` — ללא £750
+- [x] `he.ts` `faq.a3` — ללא 97%
+- [x] `en.ts` `faq.a3` — ללא 97%
+- [x] `grep -nE "300\+|3,400|£750|97%"` על `src/i18n/` מחזיר ריק
 
 ### משימה 6: הסרת העדויות
 
-- [ ] מחיקת `src/components/sections/testimonials.tsx`
-- [ ] הסרה מ-`src/app/[locale]/page.tsx`
-- [ ] הסרת בלוק `testimonials` משתי המילונים
-- [ ] בדיקה שאין קישור עגון ל-`#testimonials` בניווט או בפוטר
+- [x] מחיקת `src/components/sections/testimonials.tsx`
+- [x] הסרה מ-`src/app/[locale]/page.tsx`
+- [x] הסרת בלוק `testimonials` משתי המילונים
+- [x] בדיקה שאין קישור עגון ל-`#testimonials` בניווט או בפוטר
 
 ### משימה 7: הסקשן החדש
 
-- [ ] `src/components/sections/comparing-quotes.tsx`, ארבעה כרטיסים
-- [ ] תוכן לפי ספק §4, בשתי השפות — האנגלית נכתבת ילידית ולא מתורגמת
-- [ ] ממוקם בין `Benefits` ל-`Faq`
+- [x] `src/components/sections/comparing-quotes.tsx`, ארבעה כרטיסים
+- [x] תוכן לפי ספק §4, בשתי השפות — האנגלית נכתבת ילידית ולא מתורגמת
+- [x] ממוקם בין `Benefits` ל-`Faq`
 
 ### משימה 8: אימות
 
-- [ ] `npm test` ירוק
-- [ ] `npx tsc --noEmit` נקי
-- [ ] `npx eslint` נקי על הקבצים שנגעתי
-- [ ] `npm run build` עובר
-- [ ] `npx prettier --write` על כל מה שנגעתי
+- [x] `npm test` ירוק
+- [x] `npx tsc --noEmit` נקי
+- [x] `npx eslint` נקי על הקבצים שנגעתי
+- [x] `npm run build` עובר
+- [x] `npx prettier --write` על כל מה שנגעתי
 
 ---
+
+## מה אומת בפועל
+
+- `npm test` — 149 עוברות (138 בסיס + 11 חדשות), אפס נכשלות
+- `npx tsc --noEmit` — נקי
+- `npx eslint src/` — 15 אזהרות, **בדיוק אותן 15 שיש ב-main**, אף אחת לא בקבצים
+  שנגעתי בהם
+- `npm run build` — עובר
+- נבדק בדפדפן מקומי בשתי השפות: רצועת הנתונים מציגה את שלושת הגיבויים
+  („עד 3” / „48 שעות” / „₪0” ובאנגלית „up to 3” / „48 hours” / „£0”), הסקשן
+  החדש מוצג, סקשן העדויות נעלם
+
+**הערה שעלתה תוך כדי:** Clerk מדפיס אזהרת הוצאה משימוש —
+`createRouteMatcher` יוסר בגרסה המרכזית הבאה, וההמלצה היא לעבור לבדיקות
+הרשאה ברמת העמוד. זה נוגע ישירות ל-`src/proxy-routes.ts`. תועד ב-HANDOFF,
+מחוץ להיקף כאן.
 
 ## Self-Review
 
