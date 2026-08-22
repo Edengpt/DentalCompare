@@ -12,6 +12,7 @@ import {
   TREATMENTS,
   SUBSCRIPTION_CONTRACT_VERSION,
   RATE_LIMITS,
+  SPOKEN_LANGUAGES,
 } from "@/lib/constants";
 import { rateLimit } from "@/lib/rate-limit";
 import { createPendingSubscription } from "@/server/subscriptions";
@@ -129,6 +130,7 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
         experienceYears: Math.floor(experienceYears),
         specialties: pickAllowed(formData, "specialties", SPECIALTIES),
         treatments: pickAllowed(formData, "treatments", TREATMENTS),
+        spokenLanguages: pickAllowed(formData, "spokenLanguages", SPOKEN_LANGUAGES),
         countryCode: country.code,
         locale: country.defaultLocale,
         // Validated against THIS country's payer list, not a global constant —

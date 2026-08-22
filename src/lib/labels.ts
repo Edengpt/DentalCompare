@@ -29,3 +29,7 @@ export function translateInsurer(t: Labels, value: string): string {
 export function translateInclusion(t: Labels, value: string): string {
   return t.inclusions[value as keyof Labels["inclusions"]] ?? value;
 }
+
+export function translateLanguage(t: Labels, value: string): string {
+  return t.languages[value as keyof Labels["languages"]] ?? value;
+}

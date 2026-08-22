@@ -3,7 +3,7 @@
 import { Check, MapPin, Star } from "lucide-react";
 import type { DentistModel } from "@/generated/prisma/models";
 import { cn } from "@/lib/utils";
-import { translateInsurer, translateSpecialty } from "@/lib/labels";
+import { translateInsurer, translateLanguage, translateSpecialty } from "@/lib/labels";
 import { useT } from "@/i18n/provider";
 import { format, plural } from "@/i18n/format";
 
@@ -64,7 +64,8 @@ export function DentistCard({ dentist, isSelected, onToggle, disabled }: Dentist
           <p className="text-muted-foreground mt-0.5 truncate text-sm">{dentist.clinicName}</p>
           <p className="text-muted-foreground/80 mt-2 inline-flex items-center gap-1 text-xs">
             <MapPin className="h-3 w-3" aria-hidden="true" />
-            {dentist.city} ✦ {format(t.dentists.yearsExperience, { count: dentist.experienceYears })}
+            {dentist.city} ✦{" "}
+            {format(t.dentists.yearsExperience, { count: dentist.experienceYears })}
           </p>
         </div>
 
@@ -104,6 +105,15 @@ export function DentistCard({ dentist, isSelected, onToggle, disabled }: Dentist
         <span className="font-medium">{t.dentists.insurersLabel}</span>
         {dentist.insurerAffiliations.map((i) => translateInsurer(t.labels, i)).join(" ✦ ")}
       </div>
+
+      {/* Languages. Hidden when the clinic named none, rather than shown empty —
+          a blank row reads as "speaks nothing" instead of "didn't say". */}
+      {dentist.spokenLanguages.length > 0 && (
+        <div className="text-muted-foreground mt-1.5 text-xs">
+          <span className="font-medium">{t.dentists.languagesLabel}</span>
+          {dentist.spokenLanguages.map((l) => translateLanguage(t.labels, l)).join(" ✦ ")}
+        </div>
+      )}
 
       {/* Action */}
       <button

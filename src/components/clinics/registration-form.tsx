@@ -5,10 +5,21 @@ import { CheckCircle2, FileSignature, ImagePlus, Loader2, X } from "lucide-react
 import { toast } from "sonner";
 import { registerClinic } from "@/server/clinic-registration";
 import { LOGO_ACCEPT_ATTRIBUTE, LOGO_MAX_FILE_SIZE_MB } from "@/lib/storage";
-import { SPECIALTIES, TREATMENTS, SUBSCRIPTION_PLANS, TRIAL_DAYS } from "@/lib/constants";
+import {
+  SPECIALTIES,
+  SPOKEN_LANGUAGES,
+  TREATMENTS,
+  SUBSCRIPTION_PLANS,
+  TRIAL_DAYS,
+} from "@/lib/constants";
 import { formatMoney } from "@/lib/money";
 import { useLocale } from "@/i18n/provider";
-import { translateInsurer, translateSpecialty, translateTreatment } from "@/lib/labels";
+import {
+  translateInsurer,
+  translateLanguage,
+  translateSpecialty,
+  translateTreatment,
+} from "@/lib/labels";
 import { useT } from "@/i18n/provider";
 import { format } from "@/i18n/format";
 import { cn } from "@/lib/utils";
@@ -109,7 +120,13 @@ export function RegistrationForm({ countries }: { countries: RegistrationCountry
       required: true,
       placeholder: t.clinics.regAddressPlaceholder,
     },
-    { name: "experienceYears", label: t.clinics.regExperience, required: true, type: "number", placeholder: "10" },
+    {
+      name: "experienceYears",
+      label: t.clinics.regExperience,
+      required: true,
+      type: "number",
+      placeholder: "10",
+    },
   ];
 
   // Multi-select chip groups — clinics pick from the canonical lists so stored
@@ -125,6 +142,13 @@ export function RegistrationForm({ countries }: { countries: RegistrationCountry
         name: "treatments",
         label: t.clinics.regTreatments,
         options: TREATMENTS.map((v) => ({ value: v, label: translateTreatment(t.labels, v) })),
+      },
+      // Comparison data rather than a profile nicety: across borders a patient
+      // who cannot be understood will not travel, however good the price.
+      {
+        name: "spokenLanguages",
+        label: t.clinics.regLanguages,
+        options: SPOKEN_LANGUAGES.map((v) => ({ value: v, label: translateLanguage(t.labels, v) })),
       },
     ];
 
@@ -184,10 +208,10 @@ export function RegistrationForm({ countries }: { countries: RegistrationCountry
         <div className="bg-teal-deep/10 text-teal-deep mx-auto inline-flex h-16 w-16 items-center justify-center rounded-full">
           <CheckCircle2 className="h-8 w-8" />
         </div>
-        <h2 className="font-display text-foreground mt-6 text-2xl font-bold">{t.clinics.regDoneTitle}</h2>
-        <p className="text-muted-foreground mt-3 text-pretty">
-          {t.clinics.regDoneBody}
-        </p>
+        <h2 className="font-display text-foreground mt-6 text-2xl font-bold">
+          {t.clinics.regDoneTitle}
+        </h2>
+        <p className="text-muted-foreground mt-3 text-pretty">{t.clinics.regDoneBody}</p>
       </div>
     );
   }
@@ -196,7 +220,9 @@ export function RegistrationForm({ countries }: { countries: RegistrationCountry
     <form onSubmit={handleSubmit} className="space-y-8">
       {/* Details */}
       <div className="border-border/60 bg-card rounded-3xl border p-6 sm:p-8">
-        <h2 className="font-display text-foreground text-lg font-bold">{t.clinics.regDetailsHeading}</h2>
+        <h2 className="font-display text-foreground text-lg font-bold">
+          {t.clinics.regDetailsHeading}
+        </h2>
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           {fields.map((f) => (
             <label
@@ -254,7 +280,10 @@ export function RegistrationForm({ countries }: { countries: RegistrationCountry
             <ChipGroup
               name="insurerAffiliations"
               label={t.clinics.regInsurers}
-              options={insurers.map((i: string) => ({ value: i, label: translateInsurer(t.labels, i) }))}
+              options={insurers.map((i: string) => ({
+                value: i,
+                label: translateInsurer(t.labels, i),
+              }))}
             />
           )}
 
@@ -269,7 +298,11 @@ export function RegistrationForm({ countries }: { countries: RegistrationCountry
               {logoUrl ? (
                 <span className="border-border/60 relative inline-block h-20 w-20 overflow-hidden rounded-2xl border">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={logoUrl} alt={t.clinics.regLogoAlt} className="h-full w-full object-cover" />
+                  <img
+                    src={logoUrl}
+                    alt={t.clinics.regLogoAlt}
+                    className="h-full w-full object-cover"
+                  />
                   <button
                     type="button"
                     onClick={() => setLogoUrl(null)}
@@ -315,11 +348,11 @@ export function RegistrationForm({ countries }: { countries: RegistrationCountry
       <div className="border-teal-deep/30 bg-teal-deep/5 rounded-3xl border p-6 sm:p-8">
         <div className="flex items-center gap-2.5">
           <FileSignature className="text-teal-deep h-5 w-5" />
-          <h2 className="font-display text-foreground text-lg font-bold">{t.clinics.regPlanHeading}</h2>
+          <h2 className="font-display text-foreground text-lg font-bold">
+            {t.clinics.regPlanHeading}
+          </h2>
         </div>
-        <p className="text-muted-foreground mt-2 text-sm">
-          {t.clinics.regPlanIntro}
-        </p>
+        <p className="text-muted-foreground mt-2 text-sm">{t.clinics.regPlanIntro}</p>
 
         <div className="mt-5">
           <PlanPicker />
@@ -358,9 +391,7 @@ export function RegistrationForm({ countries }: { countries: RegistrationCountry
             onChange={(e) => setAgreed(e.target.checked)}
             className="accent-teal-deep mt-0.5 h-4 w-4 shrink-0"
           />
-          <span className="text-foreground">
-            {t.clinics.regAgree}
-          </span>
+          <span className="text-foreground">{t.clinics.regAgree}</span>
         </label>
       </div>
 

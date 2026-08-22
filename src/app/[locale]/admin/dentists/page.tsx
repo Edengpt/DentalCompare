@@ -3,7 +3,7 @@ import { isLocale, defaultLocale } from "@/i18n/config";
 import { format } from "@/i18n/format";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/server/admin";
-import { translateSpecialty, translateInsurer } from "@/lib/labels";
+import { translateSpecialty, translateInsurer, translateLanguage } from "@/lib/labels";
 import { ToggleActive } from "@/components/admin/toggle-active";
 import { NewDentistForm } from "@/components/admin/new-dentist-form";
 
@@ -34,7 +34,9 @@ export default async function AdminDentistsPage({
     <div className="space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-foreground text-3xl font-bold tracking-tight">{t.admin.dentistsTitle}</h1>
+          <h1 className="font-display text-foreground text-3xl font-bold tracking-tight">
+            {t.admin.dentistsTitle}
+          </h1>
           <p className="text-muted-foreground mt-1.5 text-sm">
             {format(t.admin.dentistsSubtitle, { count: dentists.length })}
           </p>
@@ -44,8 +46,7 @@ export default async function AdminDentistsPage({
 
       {pendingCount > 0 && (
         <div className="border-coral/40 bg-coral/5 text-foreground rounded-2xl border px-5 py-3 text-sm">
-          <strong className="font-semibold">{pendingCount}</strong>{" "}
-          {t.admin.dentistsPendingNotice}
+          <strong className="font-semibold">{pendingCount}</strong> {t.admin.dentistsPendingNotice}
         </div>
       )}
 
@@ -57,6 +58,7 @@ export default async function AdminDentistsPage({
               <th className="px-4 py-3 text-start font-medium">{t.admin.colCity}</th>
               <th className="px-4 py-3 text-start font-medium">{t.admin.colSpecialties}</th>
               <th className="px-4 py-3 text-start font-medium">{t.admin.colInsurers}</th>
+              <th className="px-4 py-3 text-start font-medium">{t.admin.colLanguages}</th>
               <th className="px-4 py-3 text-start font-medium">{t.admin.colExperience}</th>
               <th className="px-4 py-3 text-start font-medium">{t.admin.colStatus}</th>
             </tr>
@@ -64,7 +66,7 @@ export default async function AdminDentistsPage({
           <tbody className="divide-border/60 divide-y">
             {dentists.length === 0 ? (
               <tr>
-                <td colSpan={6} className="text-muted-foreground px-4 py-8 text-center">
+                <td colSpan={7} className="text-muted-foreground px-4 py-8 text-center">
                   {t.admin.emptyDentists}
                 </td>
               </tr>
@@ -97,9 +99,16 @@ export default async function AdminDentistsPage({
                       {d.specialties.map((s) => translateSpecialty(t.labels, s)).join(", ") || "—"}
                     </td>
                     <td className="text-muted-foreground px-4 py-3 text-xs">
-                      {d.insurerAffiliations.map((i) => translateInsurer(t.labels, i)).join(", ") || "—"}
+                      {d.insurerAffiliations.map((i) => translateInsurer(t.labels, i)).join(", ") ||
+                        "—"}
                     </td>
-                    <td className="text-foreground px-4 py-3">{format(t.admin.years, { count: d.experienceYears })}</td>
+                    <td className="text-muted-foreground px-4 py-3 text-xs">
+                      {d.spokenLanguages.map((l) => translateLanguage(t.labels, l)).join(", ") ||
+                        "—"}
+                    </td>
+                    <td className="text-foreground px-4 py-3">
+                      {format(t.admin.years, { count: d.experienceYears })}
+                    </td>
                     <td className="px-4 py-3">
                       <ToggleActive dentistId={d.id} isActive={d.isActive} pending={pending} />
                     </td>

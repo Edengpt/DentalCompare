@@ -33,6 +33,36 @@ export const SPECIALTIES = [
   "Periodontics",
 ] as const;
 
+/**
+ * Languages a clinic's staff can actually hold a consultation in.
+ *
+ * A closed list rather than free text, because this is meant to be filtered on:
+ * "clinics I can talk to" is the first filter a cross-border patient needs, and
+ * free-typed "English"/"english"/"Eng" cannot be filtered or translated.
+ *
+ * A constant rather than a Country column, unlike insurers: staff languages are
+ * not a property of the country — a Budapest clinic serving British patients
+ * speaks English — and unlike a country, a language carries no configuration.
+ * Adding one is this line plus a label in each dictionary, which is a code
+ * change either way.
+ */
+export const SPOKEN_LANGUAGES = [
+  "English",
+  "Hebrew",
+  "Arabic",
+  "Russian",
+  "French",
+  "Spanish",
+  "German",
+  "Italian",
+  "Turkish",
+  "Hungarian",
+  "Romanian",
+  "Polish",
+  "Greek",
+  "Ukrainian",
+] as const;
+
 // Canonical treatment list — keep in sync with TREATMENT_LABELS_HE in labels.ts.
 // Clinics pick from these so stored values always have a Hebrew label.
 export const TREATMENTS = [

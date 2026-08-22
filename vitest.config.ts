@@ -6,6 +6,15 @@ export default defineConfig({
     environment: "node",
     include: ["src/**/*.test.ts"],
     setupFiles: ["./vitest.setup.ts"],
+    // One database, shared by every integration suite in here — and several of
+    // them legitimately need to own its state for a moment: the homepage stats
+    // are global aggregates, and the country guard has to be the last active
+    // country to be the last active country. Run files in parallel and those
+    // suites take table locks against each other and deadlock.
+    //
+    // The cost is a few seconds. The alternative is a suite that passes file by
+    // file and fails, intermittently, only when run together.
+    fileParallelism: false,
   },
   resolve: {
     alias: {
