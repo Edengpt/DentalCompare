@@ -1,14 +1,7 @@
 import { getDictionary } from "@/i18n/get-dictionary";
 import { isLocale, defaultLocale } from "@/i18n/config";
 import { LocaleLink as Link } from "@/i18n/locale-link";
-import {
-  LayoutGrid,
-  Stethoscope,
-  Building2,
-  Users,
-  FileText,
-  Repeat,
-} from "lucide-react";
+import { LayoutGrid, Stethoscope, Building2, Users, FileText, Repeat, Globe } from "lucide-react";
 import { ForwardArrow } from "@/components/ui/forward-arrow";
 import { requireAdmin } from "@/server/admin";
 import { db } from "@/lib/db";
@@ -39,6 +32,7 @@ export default async function AdminLayout({
     { href: "/admin/users", label: t.admin.navUsers, icon: Users },
     { href: "/admin/requests", label: t.admin.navRequests, icon: FileText },
     { href: "/admin/subscriptions", label: t.admin.navSubscriptions, icon: Repeat },
+    { href: "/admin/countries", label: t.admin.navCountries, icon: Globe },
   ] as const;
 
   const pendingClinics = await db.dentist.count({
