@@ -217,7 +217,8 @@ const en: typeof he = {
     },
     successTitleSent: "Your request is on its way! 🎉",
     successTitlePending: "Sending in progress…",
-    successBodyPending: "We've received your request and it's on its way to the clinics. Try refreshing in a moment.",
+    successBodyPending:
+      "We've received your request and it's on its way to the clinics. Try refreshing in a moment.",
     successWatchInbox: "Keep an eye on your inbox (and sometimes your spam folder)",
     successToDashboard: "Go to my account",
   },
@@ -271,7 +272,8 @@ const en: typeof he = {
     treatmentPlanDescription:
       "The document your dentist gave you, listing the treatments and their costs",
     xrayTitle: "Dental x-ray",
-    xrayDescription: "Panoramic, full-mouth series, or a single image from the clinic that examined you",
+    xrayDescription:
+      "Panoramic, full-mouth series, or a single image from the clinic that examined you",
     required: "Required",
     saveForLater: "Save and continue later",
     continueToDentists: "Continue to choosing clinics",
@@ -580,7 +582,8 @@ const en: typeof he = {
     payCta: "Continue to secure payment",
     billingMetaTitle: "Activate subscription",
     billingTitle: "Activate your subscription",
-    billingAlreadyActive: "Your subscription is already active. The clinic is listed in the directory.",
+    billingAlreadyActive:
+      "Your subscription is already active. The clinic is listed in the directory.",
     billingPlanLine: "{plan} plan — {price}",
     billingAfterPayment:
       "Once payment is complete your clinic appears in the directory and starts receiving enquiries. The subscription renews automatically at the end of each period.",
@@ -684,6 +687,34 @@ const en: typeof he = {
     rejected: "{clinic}'s application was rejected",
     approve: "Approve and publish",
     reject: "Reject",
+
+    navCountries: "Countries",
+    metaCountries: "Admin — countries",
+    countriesTitle: "Countries",
+    countriesSubtitle:
+      "{count} countries. A new country is created as a draft and stays invisible until you activate it.",
+    newCountry: "New country",
+    countryDraftNotice:
+      "A country sets the currency, calling code, payers and required documents for every clinic in it. Fill all of it in before activating — a half-configured country reaching users fails quietly.",
+    colCode: "Code",
+    colCountry: "Country",
+    colCurrency: "Currency",
+    colCallingCode: "Calling code",
+    colDefaultLocale: "Default language",
+    colRequiredDocs: "Required documents",
+    colClinics: "Clinics",
+    emptyCountries: "No countries yet",
+    countryDraft: "Draft",
+    countryCreated: "{country} created as a draft",
+    countryActivated: "{country} activated",
+    countryDeactivated: "{country} switched off",
+    fieldCode: "ISO code (two letters)",
+    fieldNameEn: "Name in English",
+    fieldCurrency: "ISO 4217 currency",
+    fieldCallingCode: "Calling code",
+    fieldDefaultLocale: "Default language",
+    fieldRequiredDocs: "Documents required for approval (comma separated)",
+    fieldInsurers: "Insurers / payers (comma separated)",
   },
 
   errors: {
@@ -694,15 +725,13 @@ const en: typeof he = {
     requestNotFound: "Request not found",
     requestAlreadySent: "This request has already been sent",
     requestLocked: "A request that has been sent can no longer be edited",
-    filesRequiredBeforeDentists:
-      "Upload your treatment plan and x-ray before choosing clinics",
+    filesRequiredBeforeDentists: "Upload your treatment plan and x-ray before choosing clinics",
     filesRequiredBeforeSend: "Upload your treatment plan and x-ray before sending",
     pickAtLeastOne: "Choose at least one clinic",
     tooManyDentists: "You can choose up to {max} clinics",
     dentistsUnavailable: "Some of the clinics you chose are no longer available",
     clinicsUnavailable: "The clinics you chose aren't available right now — please pick others",
-    phoneRequiredBeforeSend:
-      "Add a phone number before sending — clinics call you back directly",
+    phoneRequiredBeforeSend: "Add a phone number before sending — clinics call you back directly",
     cannotReadUser: "We couldn't read your account details",
     phoneNotVerified: "That number hasn't been verified yet",
     phoneInvalid: "Please verify a valid mobile number",
@@ -729,6 +758,12 @@ const en: typeof he = {
     subscriptionNotFound: "Subscription not found",
     tooManyAttempts: "Too many attempts. Please try again later.",
     invalidPrice: "Please enter a valid price",
+    countryInvalidField: "Invalid value in: {field}",
+    countryCodeTaken: "A country with this code already exists",
+    countryNotFound: "Country not found",
+    countryIncomplete: "A country can't be activated without a name, a currency and a calling code",
+    countryLastActive:
+      "This is the only active country — switching it off would empty the country picker on the clinic registration form",
   },
 
   legal: {

@@ -15,8 +15,7 @@ const he = {
     description:
       "פלטפורמה להשוואת הצעות מחיר מרופאי שיניים — בבקשה אחת, בחינם. העלאה חד-פעמית של תוכנית טיפול, ללא שיחות טלפון, ללא לחץ.",
     ogTitle: "DentalCompare – השוו מחירים. חסכו אלפי שקלים.",
-    ogDescription:
-      "קבלו הצעות מחיר מ-3 רופאי שיניים בבקשה אחת, בחינם — ללא שיחות טלפון, ללא לחץ.",
+    ogDescription: "קבלו הצעות מחיר מ-3 רופאי שיניים בבקשה אחת, בחינם — ללא שיחות טלפון, ללא לחץ.",
   },
 
   common: {
@@ -57,8 +56,7 @@ const he = {
   howItWorks: {
     eyebrow: "איך זה עובד",
     title: "שלושה שלבים — והעבודה הכי קשה היא לחכות.",
-    subtitle:
-      "בלי טפסים אינסופיים ובלי שיחות מציקות — כל התהליך במסך אחד, ומסתיים בשלוש דקות.",
+    subtitle: "בלי טפסים אינסופיים ובלי שיחות מציקות — כל התהליך במסך אחד, ומסתיים בשלוש דקות.",
     step1Title: "מעלים תוכנית טיפול וצילום",
     step1Description:
       "את תוכנית הטיפול שכבר קיבלתם מרופא, ואת צילום השיניים. PDF או תמונה, עד 20MB לקובץ — וזהו.",
@@ -95,8 +93,7 @@ const he = {
   testimonials: {
     eyebrow: "מטופלים שלנו",
     title: "סיפורי חיסכון אמיתיים.",
-    subtitle:
-      "שלושה מטופלים, שלושה טיפולים שונים — ואותה מחשבה בסוף: „למה לא עשיתי את זה קודם?”",
+    subtitle: "שלושה מטופלים, שלושה טיפולים שונים — ואותה מחשבה בסוף: „למה לא עשיתי את זה קודם?”",
     savedLabel: "חסך/ה",
     oneQuote:
       "קיבלתי הצעה ל-3 השתלות בסכום של 27,500 ₪. דרך DentalCompare קיבלתי 6 הצעות תוך 3 ימים — הזולה הייתה 19,200 ₪. חסכתי כמעט 30%.",
@@ -502,7 +499,7 @@ const he = {
     regContactName: "איש קשר",
     regContactNamePlaceholder: "השם שלך",
     regDentistName: "שם הרופא",
-    regDentistNamePlaceholder: "ד\"ר ישראל ישראלי",
+    regDentistNamePlaceholder: 'ד"ר ישראל ישראלי',
     regClinicName: "שם המרפאה",
     regClinicNamePlaceholder: "מרפאת חיוך",
     regEmail: "אימייל",
@@ -668,6 +665,34 @@ const he = {
     rejected: "ההרשמה של {clinic} נדחתה",
     approve: "אישור ופרסום",
     reject: "דחייה",
+
+    navCountries: "מדינות",
+    metaCountries: "ניהול — מדינות",
+    countriesTitle: "מדינות",
+    countriesSubtitle:
+      "{count} מדינות במערכת. מדינה חדשה נוצרת כטיוטה ואינה גלויה עד שמפעילים אותה.",
+    newCountry: "מדינה חדשה",
+    countryDraftNotice:
+      "מדינה מגדירה את המטבע, קידומת החיוג, קופות החולים והמסמכים הנדרשים לכל המרפאות שבה. מלאו הכל לפני ההפעלה — מדינה חצי-מוגדרת שמגיעה למשתמשים היא תקלה שקטה.",
+    colCode: "קוד",
+    colCountry: "מדינה",
+    colCurrency: "מטבע",
+    colCallingCode: "קידומת חיוג",
+    colDefaultLocale: "שפת ברירת מחדל",
+    colRequiredDocs: "מסמכים נדרשים",
+    colClinics: "מרפאות",
+    emptyCountries: "אין מדינות עדיין",
+    countryDraft: "טיוטה",
+    countryCreated: "{country} נוצרה כטיוטה",
+    countryActivated: "{country} הופעלה",
+    countryDeactivated: "{country} כובתה",
+    fieldCode: "קוד ISO (שתי אותיות)",
+    fieldNameEn: "שם באנגלית",
+    fieldCurrency: "מטבע ISO 4217",
+    fieldCallingCode: "קידומת חיוג",
+    fieldDefaultLocale: "שפת ברירת מחדל",
+    fieldInsurers: "קופות חולים / מבטחים (מופרד בפסיקים)",
+    fieldRequiredDocs: "מסמכים נדרשים לאישור (מופרד בפסיקים)",
   },
 
   errors: {
@@ -710,6 +735,11 @@ const he = {
     subscriptionNotFound: "מנוי לא נמצא",
     tooManyAttempts: "יותר מדי ניסיונות. נסו שוב מאוחר יותר.",
     invalidPrice: "יש להזין מחיר תקין",
+    countryInvalidField: "ערך לא תקין בשדה: {field}",
+    countryCodeTaken: "כבר קיימת מדינה עם קוד זה",
+    countryNotFound: "המדינה לא נמצאה",
+    countryIncomplete: "לא ניתן להפעיל מדינה שחסרים בה מטבע, קידומת חיוג או שם",
+    countryLastActive: "זו המדינה הפעילה היחידה — כיבוי שלה ירוקן את בורר המדינות בטופס ההרשמה",
   },
 
   legal: {
