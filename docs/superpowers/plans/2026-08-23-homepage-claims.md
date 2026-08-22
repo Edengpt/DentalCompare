@@ -22,20 +22,20 @@
 
 ### משימה 1: מודול המדידות
 
-- [ ] `src/lib/homepage-stats.ts` — `getHomepageStats(): Promise<HomepageStats>`
-- [ ] ספירת מרפאות עם `visibleSubscriptionFilter()` (לא `isActive` לבד — ספק §3.1)
-- [ ] שיעור מענה ב-`$queryRaw`, מכנה = בקשות שסיימו חלון 48 שעות
-- [ ] פער חציוני ב-`$queryRaw` עם `PERCENTILE_CONT`, בקשות חד-מטבעיות בלבד
-- [ ] ספים כקבועים מיוצאים עם הסבר: 25 / 25 / 10
-- [ ] מתחת לסף מוחזר `null`, לא 0
+- [x] `src/lib/homepage-stats.ts` — `getHomepageStats(): Promise<HomepageStats>`
+- [x] ספירת מרפאות עם `visibleSubscriptionFilter()` (לא `isActive` לבד — ספק §3.1)
+- [x] שיעור מענה ב-`$queryRaw`, מכנה = בקשות שסיימו חלון 48 שעות
+- [x] פער חציוני ב-`$queryRaw` עם `PERCENTILE_CONT`, בקשות חד-מטבעיות בלבד
+- [x] ספים כקבועים מיוצאים עם הסבר: 25 / 25 / 10
+- [x] מתחת לסף מוחזר `null`, לא 0
 
 ### משימה 2: בדיקות למדידות
 
-- [ ] `src/lib/homepage-stats.integration.test.ts`
-- [ ] `null` מתחת לסף, ערך מעליו — לכל אחת מהשלוש
-- [ ] בקשה שטרם סיימה 48 שעות אינה נכנסת למכנה
-- [ ] חציון עמיד לחריג בודד
-- [ ] בקשה רב-מטבעית אינה משפיעה על הפער
+- [x] `src/lib/homepage-stats.integration.test.ts`
+- [x] `null` מתחת לסף, ערך מעליו — לכל אחת מהשלוש
+- [x] בקשה שטרם סיימה 48 שעות אינה נכנסת למכנה
+- [x] חציון עמיד לחריג בודד
+- [x] בקשה רב-מטבעית אינה משפיעה על הפער
 
 ### משימה 3: הצגת המדידות ב-Hero
 
