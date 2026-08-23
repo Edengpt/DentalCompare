@@ -180,6 +180,9 @@ const he = {
     emptyCta: "להתחלת הבקשה",
     myRequests: "הבקשות שלי",
     requestLabel: "בקשה",
+    deleteRequest: "מחיקת הבקשה",
+    deleteConfirm: "למחוק את הבקשה ואת הקבצים שהעליתם? הפעולה אינה הפיכה.",
+    deleted: "הבקשה והקבצים נמחקו",
     statusLabel: "סטטוס",
     dentistsLabel: "רופאים",
     view: "צפייה בפרטים",
@@ -781,6 +784,7 @@ const he = {
     countryNotFound: "המדינה לא נמצאה",
     countryIncomplete: "לא ניתן להפעיל מדינה שחסרים בה מטבע, קידומת חיוג או שם",
     consentRequired: "יש לאשר את ההסכמה לפני שליחת הבקשה",
+    deleteFailed: "מחיקת הקבצים נכשלה — נסו שוב",
     countryLastActive: "זו המדינה הפעילה היחידה — כיבוי שלה ירוקן את בורר המדינות בטופס ההרשמה",
   },
 

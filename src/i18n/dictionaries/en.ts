@@ -187,6 +187,9 @@ const en: typeof he = {
     emptyCta: "Start a request",
     myRequests: "My requests",
     requestLabel: "Request",
+    deleteRequest: "Delete request",
+    deleteConfirm: "Delete this request and the files you uploaded? This can't be undone.",
+    deleted: "The request and its files were deleted",
     statusLabel: "Status",
     dentistsLabel: "clinics",
     view: "View details",
@@ -799,6 +802,7 @@ const en: typeof he = {
     countryNotFound: "Country not found",
     countryIncomplete: "A country can't be activated without a name, a currency and a calling code",
     consentRequired: "Please give your consent before sending the request",
+    deleteFailed: "We couldn't delete the files — please try again",
     countryLastActive:
       "This is the only active country — switching it off would empty the country picker on the clinic registration form",
   },

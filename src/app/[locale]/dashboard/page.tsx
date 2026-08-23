@@ -7,6 +7,7 @@ import { Footer } from "@/components/shared/footer";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getOrCreateUser } from "@/server/users";
+import { DeleteRequestButton } from "@/components/request/delete-request-button";
 import { isAdminEmail } from "@/server/admin";
 import { db } from "@/lib/db";
 import { getDictionary } from "@/i18n/get-dictionary";
@@ -22,11 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export const dynamic = "force-dynamic";
 
-export default async function DashboardPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function DashboardPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
 
@@ -121,7 +118,9 @@ export default async function DashboardPage({
             </div>
           ) : (
             <div className="mt-12 space-y-4">
-              <h2 className="font-display text-foreground text-xl font-bold">{t.dashboard.myRequests}</h2>
+              <h2 className="font-display text-foreground text-xl font-bold">
+                {t.dashboard.myRequests}
+              </h2>
               <ul className="divide-border/60 bg-card border-border/60 divide-y rounded-3xl border">
                 {requests.map((r) => {
                   const isSent = r.status === "SENT" || r.status === "SUBMITTED";
@@ -152,12 +151,15 @@ export default async function DashboardPage({
                           {r._count.requestDentists} {t.dashboard.dentistsLabel}
                         </p>
                       </div>
-                      <Link
-                        href={href}
-                        className="text-teal-deep text-sm font-semibold underline-offset-4 hover:underline"
-                      >
-                        {isSent ? t.dashboard.view : t.dashboard.continue}
-                      </Link>
+                      <div className="flex shrink-0 flex-col items-end gap-2">
+                        <Link
+                          href={href}
+                          className="text-teal-deep text-sm font-semibold underline-offset-4 hover:underline"
+                        >
+                          {isSent ? t.dashboard.view : t.dashboard.continue}
+                        </Link>
+                        <DeleteRequestButton requestId={r.id} />
+                      </div>
                     </li>
                   );
                 })}
