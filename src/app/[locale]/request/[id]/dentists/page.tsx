@@ -7,6 +7,7 @@ import { getDictionary } from "@/i18n/get-dictionary";
 import { isLocale, defaultLocale } from "@/i18n/config";
 import { DentistDirectory } from "@/components/dentists/dentist-directory";
 import { PUBLIC_DENTIST_SELECT, publicDentistWhere } from "@/lib/dentist-public";
+import { destinationCountryCodes } from "@/lib/travel-scope";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -26,7 +27,10 @@ export default async function RequestDentistsPage({
   const { userId: clerkUserId } = await auth();
   if (!clerkUserId) redirect("/sign-in");
 
-  const user = await db.user.findUnique({ where: { clerkUserId }, select: { id: true } });
+  const user = await db.user.findUnique({
+    where: { clerkUserId },
+    select: { id: true, countryCode: true },
+  });
   if (!user) redirect("/sign-in");
 
   const request = await db.request.findUnique({
@@ -36,6 +40,8 @@ export default async function RequestDentistsPage({
       userId: true,
       treatmentFileUrl: true,
       xrayFileUrl: true,
+      travelScope: true,
+      destinationCountries: true,
       requestDentists: { select: { dentistId: true } },
     },
   });
@@ -47,8 +53,20 @@ export default async function RequestDentistsPage({
     redirect(`/request/${id}/upload`);
   }
 
+  // What the patient said they would do, not a list frozen when they said it:
+  // ANY returns null and therefore adds no condition, so a country activated
+  // tomorrow appears here without anyone revisiting old requests.
+  const codes = destinationCountryCodes(
+    request.travelScope,
+    request.destinationCountries,
+    user.countryCode,
+  );
+
   const dentists = await db.dentist.findMany({
-    where: publicDentistWhere(),
+    where: {
+      ...publicDentistWhere(),
+      ...(codes ? { countryCode: { in: codes } } : {}),
+    },
     select: PUBLIC_DENTIST_SELECT,
     orderBy: [{ rating: "desc" }, { reviewCount: "desc" }],
   });
