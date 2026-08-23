@@ -37,9 +37,7 @@ export function SelectionCounter({ selected, onContinue, isSaving }: SelectionCo
             {format(t.selection.chosen, { selected, max: maxDentists })}
           </p>
           <p className="text-cream/70 text-[11px]">
-            {canContinue
-              ? t.selection.ready
-              : format(t.selection.limit, { max: maxDentists })}
+            {canContinue ? t.selection.ready : format(t.selection.limit, { max: maxDentists })}
           </p>
         </div>
 

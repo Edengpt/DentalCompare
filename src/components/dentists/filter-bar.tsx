@@ -4,13 +4,15 @@ import { ChevronDown, X } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { translateInsurer, translateSpecialty } from "@/lib/labels";
+import { translateInsurer, translateLanguage, translateSpecialty } from "@/lib/labels";
 import { SPECIALTIES } from "@/lib/constants";
 import { useT } from "@/i18n/provider";
 import { format } from "@/i18n/format";
 
 export type DentistFilters = {
   city: string | null;
+  countries: string[];
+  languages: string[];
   specialties: string[];
   insurers: string[];
   minExperience: number | null;
@@ -18,6 +20,8 @@ export type DentistFilters = {
 
 export const EMPTY_FILTERS: DentistFilters = {
   city: null,
+  countries: [],
+  languages: [],
   specialties: [],
   insurers: [],
   minExperience: null,
@@ -31,6 +35,12 @@ type FilterBarProps = {
    * rather than a constant: the valid set differs per country, and several
    * countries have none at all. */
   insurers: string[];
+  /** Countries present among the listed clinics, as ISO codes. */
+  countries: string[];
+  /** Languages present among the listed clinics. */
+  languages: string[];
+  /** Code to display name, so the filter reads "Israel" and not "IL". */
+  countryNames: Record<string, string>;
   totalCount: number;
   filteredCount: number;
 };
@@ -40,6 +50,9 @@ export function FilterBar({
   onChange,
   cities,
   insurers,
+  countries,
+  languages,
+  countryNames,
   totalCount,
   filteredCount,
 }: FilterBarProps) {
@@ -50,7 +63,12 @@ export function FilterBar({
     { value: 15, label: t.dentists.experience15 },
   ];
   const hasFilters =
-    filters.city || filters.specialties.length || filters.insurers.length || filters.minExperience;
+    filters.city ||
+    filters.countries.length ||
+    filters.languages.length ||
+    filters.specialties.length ||
+    filters.insurers.length ||
+    filters.minExperience;
 
   return (
     <div className="bg-background/85 border-border/60 sticky top-16 z-40 border-b backdrop-blur-xl">
@@ -77,6 +95,31 @@ export function FilterBar({
 
         {/* Insurer — hidden entirely where no listed clinic declares one, which
             is the normal case for countries without a payer system. */}
+        {/* Country first: across borders it is the coarsest cut, and the one a
+            patient reaches for before speciality or insurer. Hidden when every
+            clinic is in the same country, where it would filter nothing. */}
+        {countries.length > 1 && (
+          <MultiPopover
+            label={t.dentists.filterCountry}
+            values={filters.countries}
+            options={countries.map((c) => ({ value: c, label: countryNames[c] ?? c }))}
+            onChange={(values) => onChange({ ...filters, countries: values })}
+            renderSelected={(c) => countryNames[c] ?? c}
+          />
+        )}
+
+        {/* "Clinics I can talk to" — the first thing a cross-border patient
+            needs, and the reason spokenLanguages is a closed list. */}
+        {languages.length > 0 && (
+          <MultiPopover
+            label={t.dentists.filterLanguage}
+            values={filters.languages}
+            options={languages.map((l) => ({ value: l, label: translateLanguage(t.labels, l) }))}
+            onChange={(values) => onChange({ ...filters, languages: values })}
+            renderSelected={(l) => translateLanguage(t.labels, l)}
+          />
+        )}
+
         {insurers.length > 0 && (
           <MultiPopover
             label={t.dentists.filterInsurer}

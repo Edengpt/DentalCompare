@@ -295,6 +295,8 @@ const en: typeof he = {
     languagesLabel: "Languages: ",
     selected: "Selected",
     selectAria: "Select this clinic",
+    filterCountry: "Country",
+    filterLanguage: "Language",
     filterCity: "City",
     filterSpecialty: "Speciality",
     filterInsurer: "Insurer",

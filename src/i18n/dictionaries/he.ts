@@ -286,6 +286,8 @@ const he = {
     languagesLabel: "שפות: ",
     selected: "נבחר",
     selectAria: "בחירת רופא",
+    filterCountry: "מדינה",
+    filterLanguage: "שפה",
     filterCity: "עיר",
     filterSpecialty: "התמחות",
     filterInsurer: "מבטח",

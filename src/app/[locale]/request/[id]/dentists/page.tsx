@@ -8,6 +8,7 @@ import { isLocale, defaultLocale } from "@/i18n/config";
 import { DentistDirectory } from "@/components/dentists/dentist-directory";
 import { PUBLIC_DENTIST_SELECT, publicDentistWhere } from "@/lib/dentist-public";
 import { destinationCountryCodes } from "@/lib/travel-scope";
+import { getActiveCountries } from "@/lib/countries";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -71,6 +72,10 @@ export default async function RequestDentistsPage({
     orderBy: [{ rating: "desc" }, { reviewCount: "desc" }],
   });
 
+  // Names, not codes: the filter and the card both read "Israel" rather than "IL".
+  const countries = await getActiveCountries();
+  const countryNames = Object.fromEntries(countries.map((c) => [c.code, c.nameEn]));
+
   const initialSelectedIds = request.requestDentists.map((rd) => rd.dentistId);
 
   return (
@@ -93,6 +98,7 @@ export default async function RequestDentistsPage({
           dentists={dentists}
           requestId={request.id}
           initialSelectedIds={initialSelectedIds}
+          countryNames={countryNames}
         />
       </main>
       <Footer />

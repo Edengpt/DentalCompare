@@ -9,6 +9,8 @@ import { format, plural } from "@/i18n/format";
 
 type DentistCardProps = {
   dentist: PublicDentist;
+  /** Already resolved for display — the card never sees a raw ISO code. */
+  countryName: string;
   isSelected: boolean;
   onToggle: () => void;
   disabled?: boolean;
@@ -26,7 +28,13 @@ function initials(name: string) {
     .join("");
 }
 
-export function DentistCard({ dentist, isSelected, onToggle, disabled }: DentistCardProps) {
+export function DentistCard({
+  dentist,
+  countryName,
+  isSelected,
+  onToggle,
+  disabled,
+}: DentistCardProps) {
   const t = useT();
   return (
     <article
@@ -64,7 +72,9 @@ export function DentistCard({ dentist, isSelected, onToggle, disabled }: Dentist
           <p className="text-muted-foreground mt-0.5 truncate text-sm">{dentist.clinicName}</p>
           <p className="text-muted-foreground/80 mt-2 inline-flex items-center gap-1 text-xs">
             <MapPin className="h-3 w-3" aria-hidden="true" />
-            {dentist.city} ✦{" "}
+            {/* Country before city: "Tel Aviv" beside "Budapest" with no country
+                is a list the reader has to decode. */}
+            {countryName} ✦ {dentist.city} ✦{" "}
             {format(t.dentists.yearsExperience, { count: dentist.experienceYears })}
           </p>
         </div>

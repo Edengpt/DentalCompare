@@ -20,12 +20,15 @@ type DentistDirectoryProps = {
   requestId?: string;
   /** Dentist ids already attached to the request, to prefill the selection. */
   initialSelectedIds?: string[];
+  /** Country code to display name, so cards and filters read "Israel", not "IL". */
+  countryNames: Record<string, string>;
 };
 
 export function DentistDirectory({
   dentists,
   requestId,
   initialSelectedIds,
+  countryNames,
 }: DentistDirectoryProps) {
   const t = useT();
   const router = useRouter();
@@ -41,9 +44,21 @@ export function DentistDirectory({
     [dentists],
   );
 
+  const countries = useMemo(
+    () => [...new Set(dentists.map((d) => d.countryCode))].sort(),
+    [dentists],
+  );
+  const languages = useMemo(
+    () => [...new Set(dentists.flatMap((d) => d.spokenLanguages))].sort(),
+    [dentists],
+  );
+
   const filtered = useMemo(() => {
     return dentists.filter((d) => {
       if (filters.city && d.city !== filters.city) return false;
+      if (filters.countries.length && !filters.countries.includes(d.countryCode)) return false;
+      if (filters.languages.length && !filters.languages.some((l) => d.spokenLanguages.includes(l)))
+        return false;
       if (filters.specialties.length && !filters.specialties.some((s) => d.specialties.includes(s)))
         return false;
       if (
@@ -104,6 +119,9 @@ export function DentistDirectory({
         onChange={setFilters}
         cities={cities}
         insurers={insurers}
+        countries={countries}
+        languages={languages}
+        countryNames={countryNames}
         totalCount={dentists.length}
         filteredCount={filtered.length}
       />
@@ -126,6 +144,7 @@ export function DentistDirectory({
               <li key={d.id}>
                 <DentistCard
                   dentist={d}
+                  countryName={countryNames[d.countryCode] ?? d.countryCode}
                   isSelected={selected.has(d.id)}
                   onToggle={() => toggle(d.id)}
                   disabled={atMax}
