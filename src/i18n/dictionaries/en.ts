@@ -283,6 +283,11 @@ const en: typeof he = {
     xrayDescription:
       "Panoramic, full-mouth series, or a single image from the clinic that examined you",
     required: "Required",
+    consentTitle: "Before you continue",
+    consentLabel:
+      "I agree that my treatment plan and dental x-ray will be sent to the clinics I choose, and stored on servers in the United States.",
+    consentReadMore: "Privacy policy",
+    consentSaveFailed: "We couldn't save your consent — please try again",
     saveForLater: "Save and continue later",
     continueToDentists: "Continue to choosing clinics",
   },
@@ -793,6 +798,7 @@ const en: typeof he = {
     countryCodeTaken: "A country with this code already exists",
     countryNotFound: "Country not found",
     countryIncomplete: "A country can't be activated without a name, a currency and a calling code",
+    consentRequired: "Please give your consent before sending the request",
     countryLastActive:
       "This is the only active country — switching it off would empty the country picker on the clinic registration form",
   },

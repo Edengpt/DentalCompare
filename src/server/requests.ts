@@ -129,6 +129,7 @@ export async function submitRequest(requestId: string): Promise<SubmitRequestRes
       status: true,
       treatmentFileUrl: true,
       xrayFileUrl: true,
+      consentAt: true,
       requestDentists: { select: { dentistId: true } },
     },
   });
@@ -142,6 +143,13 @@ export async function submitRequest(requestId: string): Promise<SubmitRequestRes
   // Qualification gate: proof of clinical intent (PRD 4.2).
   if (!request.treatmentFileUrl || !request.xrayFileUrl) {
     return { ok: false, error: e.filesRequiredBeforeSend };
+  }
+
+  // Without consent there is no lawful basis to send health data to anyone.
+  // A gate rather than a warning, and checked here rather than only in the UI:
+  // this is the last point before the files actually leave.
+  if (!request.consentAt) {
+    return { ok: false, error: e.consentRequired };
   }
 
   const selectedIds = request.requestDentists.map((rd) => rd.dentistId);

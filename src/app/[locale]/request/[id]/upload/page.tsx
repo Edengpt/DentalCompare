@@ -15,7 +15,11 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export const dynamic = "force-dynamic";
 
-export default async function UploadPage({ params }: { params: Promise<{ id: string; locale: string }> }) {
+export default async function UploadPage({
+  params,
+}: {
+  params: Promise<{ id: string; locale: string }>;
+}) {
   const { id, locale } = await params;
   const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
   const { userId: clerkUserId } = await auth();
@@ -31,6 +35,7 @@ export default async function UploadPage({ params }: { params: Promise<{ id: str
       userId: true,
       treatmentFileUrl: true,
       xrayFileUrl: true,
+      consentAt: true,
       status: true,
     },
   });
@@ -58,6 +63,7 @@ export default async function UploadPage({ params }: { params: Promise<{ id: str
             requestId={request.id}
             initialTreatmentUrl={request.treatmentFileUrl || null}
             initialXrayUrl={request.xrayFileUrl || null}
+            initialConsented={Boolean(request.consentAt)}
           />
         </div>
       </main>
