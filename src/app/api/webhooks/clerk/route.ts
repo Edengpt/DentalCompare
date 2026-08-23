@@ -3,6 +3,7 @@ import { Webhook } from "svix";
 import type { WebhookEvent } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { normalizePhone } from "@/lib/phone";
+import { relinkByVerifiedEmail } from "@/server/users";
 
 export const runtime = "nodejs";
 
@@ -61,6 +62,15 @@ export async function POST(req: Request) {
         const verified = primaryPhoneEntry?.verification?.status === "verified";
         const rawPhone = primaryPhoneEntry?.phone_number ?? null;
         const phone = rawPhone ? (normalizePhone(rawPhone) ?? rawPhone) : null;
+
+        // Same hazard as getOrCreateUser: after an instance swap this id is new
+        // while the email is not, and the upsert's create path would hit the
+        // unique index on email — leaving Clerk retrying a 500 forever. One
+        // shared implementation so the two cannot drift.
+        const emailVerified =
+          email_addresses.find((e) => e.id === event.data.primary_email_address_id)?.verification
+            ?.status === "verified";
+        await relinkByVerifiedEmail(id, primaryEmail, emailVerified);
 
         await db.user.upsert({
           where: { clerkUserId: id },
