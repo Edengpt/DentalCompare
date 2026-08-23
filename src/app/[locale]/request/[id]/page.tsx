@@ -1,5 +1,5 @@
-import { formatMoney } from "@/lib/money";
-import { translateInclusion } from "@/lib/labels";
+import { getConverter } from "@/lib/exchange-rates";
+import { QuoteComparison, type ConvertedPrice } from "@/components/request/quote-comparison";
 import { LocaleLink as Link } from "@/i18n/locale-link";
 import { notFound, redirect } from "next/navigation";
 import {
@@ -41,7 +41,10 @@ export default async function RequestDetailPage({
   const { userId: clerkUserId } = await auth();
   if (!clerkUserId) redirect("/sign-in");
 
-  const user = await db.user.findUnique({ where: { clerkUserId }, select: { id: true } });
+  const user = await db.user.findUnique({
+    where: { clerkUserId },
+    select: { id: true, country: { select: { currency: true } } },
+  });
   if (!user) redirect("/sign-in");
 
   const request = await db.request.findUnique({
@@ -80,6 +83,7 @@ export default async function RequestDetailPage({
               // Shown beside the price: which country a quote comes from is
               // part of what the patient is comparing.
               country: { select: { nameEn: true } },
+              spokenLanguages: true,
             },
           },
         },
@@ -100,6 +104,7 @@ export default async function RequestDetailPage({
     amountMinor: rd.quote?.amountMinor ?? null,
     currency: rd.quote?.currency ?? null,
     country: rd.dentist.country?.nameEn ?? null,
+    spokenLanguages: rd.dentist.spokenLanguages,
     includes: rd.quote?.includes ?? [],
     tripsRequired: rd.quote?.tripsRequired ?? null,
     daysPerTrip: rd.quote?.daysPerTrip ?? null,
@@ -108,10 +113,26 @@ export default async function RequestDetailPage({
     warrantyNote: rd.quote?.warrantyNote ?? null,
     note: rd.quote?.note ?? null,
   }));
-  const sortedQuotes = sortByPrice(quoteRows);
-  const cheapestId = cheapestDentistId(quoteRows);
-  const { responded, total } = responseCounts(quoteRows);
+  // One converter per page load, handed to the table — which never touches the
+  // database itself. Null for a quote with no honest rate: the patient still
+  // sees exactly what the clinic named, and nothing beside it.
+  const patientCurrency = user.country?.currency ?? "ILS";
+  const convertTo = await getConverter(patientCurrency);
 
+  const converted: Record<string, ConvertedPrice> = {};
+  for (const q of quoteRows) {
+    converted[q.dentistId] =
+      q.amountMinor !== null && q.currency ? convertTo(q.amountMinor, q.currency) : null;
+  }
+
+  // Rank on the converted figure, never on the raw minor units: ₺5,000 carries
+  // a larger integer than €4,000 while being worth about a tenth as much.
+  const comparable = (row: (typeof quoteRows)[number]) =>
+    converted[row.dentistId]?.minor ?? (row.currency === patientCurrency ? row.amountMinor : null);
+
+  const sortedQuotes = sortByPrice(quoteRows, comparable);
+  const cheapestId = cheapestDentistId(quoteRows, comparable);
+  const { responded, total } = responseCounts(quoteRows);
 
   const date = new Intl.DateTimeFormat("he-IL", {
     day: "numeric",
@@ -187,86 +208,14 @@ export default async function RequestDetailPage({
               </div>
 
               {responded > 0 && (
-                <ul className="border-border/60 bg-card divide-border/60 divide-y rounded-2xl border">
-                  {sortedQuotes.map((q) => {
-                    const isCheapest = q.dentistId === cheapestId;
-                    return (
-                      <li key={q.dentistId} className="flex items-start justify-between gap-4 p-4">
-                        <div>
-                          <p className="text-foreground font-semibold">
-                            {q.dentistName}
-                            {isCheapest && (
-                              <span className="bg-teal-deep/10 text-teal-deep mr-2 rounded-full px-2 py-0.5 text-xs font-semibold">
-                                {t.requestDetail.cheapest}
-                              </span>
-                            )}
-                          </p>
-                          <p className="text-muted-foreground text-xs">
-                            {q.clinicName} ✦ {q.city}
-                            {q.country && ` ✦ ${q.country}`}
-                          </p>
-
-                          {/* The facts that make a cross-border price
-                              comparable. Rendered as plain chips rather than a
-                              computed "real total" — the platform deliberately
-                              doesn't guess flight prices (spec 2.3), it just
-                              shows what the patient has to add up. */}
-                          {q.amountMinor !== null && (
-                            <div className="mt-2 flex flex-wrap gap-1.5">
-                              {q.tripsRequired !== null && (
-                                <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs">
-                                  {q.tripsRequired === 1
-                                    ? format(t.requestDetail.oneTrip, { days: q.daysPerTrip ?? 1 })
-                                    : format(t.requestDetail.manyTrips, {
-                                        trips: q.tripsRequired,
-                                        days: q.daysPerTrip ?? 1,
-                                      }) +
-                                      (q.weeksBetweenTrips
-                                        ? format(t.requestDetail.weeksBetween, {
-                                            weeks: q.weeksBetweenTrips,
-                                          })
-                                        : "")}
-                                </span>
-                              )}
-                              {q.warrantyYears !== null && (
-                                <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs">
-                                  {format(t.requestDetail.warranty, { years: q.warrantyYears })}
-                                </span>
-                              )}
-                              {q.includes.map((key) => (
-                                <span
-                                  key={key}
-                                  className="bg-teal-deep/10 text-teal-deep rounded-full px-2 py-0.5 text-xs"
-                                >
-                                  {translateInclusion(t.labels, key)}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                          {q.warrantyNote && (
-                            <p className="text-muted-foreground mt-1.5 text-xs whitespace-pre-wrap">
-                              {q.warrantyNote}
-                            </p>
-                          )}
-                          {q.note && (
-                            <p className="text-muted-foreground mt-1 text-sm whitespace-pre-wrap">
-                              {q.note}
-                            </p>
-                          )}
-                        </div>
-                        <div className="shrink-0 text-left">
-                          {q.amountMinor !== null ? (
-                            <span className="text-foreground text-lg font-bold">
-                              {formatMoney(q.amountMinor, q.currency ?? "ILS", "he")}
-                            </span>
-                          ) : (
-                            <span className="text-muted-foreground text-xs">{t.requestDetail.awaitingQuote}</span>
-                          )}
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
+                <QuoteComparison
+                  t={t}
+                  locale={isLocale(locale) ? locale : defaultLocale}
+                  quotes={sortedQuotes}
+                  cheapestId={cheapestId}
+                  patientCurrency={patientCurrency}
+                  converted={converted}
+                />
               )}
             </section>
           )}
@@ -328,8 +277,8 @@ export default async function RequestDetailPage({
           {request.patientNotes && (
             <section>
               <h2 className="font-display text-foreground mb-3 text-lg font-bold">
-              {t.requestDetail.patientNotes}
-            </h2>
+                {t.requestDetail.patientNotes}
+              </h2>
               <p className="border-border/60 bg-card text-foreground rounded-2xl border px-5 py-4 text-sm whitespace-pre-wrap">
                 {request.patientNotes}
               </p>
