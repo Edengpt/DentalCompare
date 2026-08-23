@@ -154,6 +154,16 @@ model Dentist {
   @@index([submittedBySelf])
 }
 
+/// עד לאן המטופל מוכן לנסוע — עבור הבקשה הזו.
+///
+/// על הבקשה ולא על המשתמש: אותו אדם יטוס בשביל שתי השתלות ולא בשביל סתימה.
+/// זו תכונה של הטיפול, לא של האדם.
+enum TravelScope {
+  LOCAL // רק במדינה שלו
+  SELECTED // מדינות שבחר במפורש
+  ANY // כל מדינה פעילה — נקרא בזמן אמת, לא מוקפא
+}
+
 model Request {
   id               String        @id @default(uuid())
   // Nullable so deleting a user (Clerk user.deleted) preserves the request as a
@@ -166,6 +176,16 @@ model Request {
   patientNotes     String?       @db.Text
   status           RequestStatus @default(DRAFT)
   sentAt           DateTime?
+  travelScope          TravelScope @default(LOCAL)
+  /// In use only when travelScope = SELECTED; empty otherwise.
+  destinationCountries String[]
+  /// Explicit consent to send health data to the chosen clinics and to store it
+  /// in the United States. Null means not yet given, and sending is blocked.
+  /// The version is kept alongside the timestamp because consent without the
+  /// wording it was given to proves nothing — same pattern as the clinic's
+  /// agreedToTermsAt / termsVersion.
+  consentAt            DateTime?
+  consentVersion       String?
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 

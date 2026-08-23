@@ -139,3 +139,12 @@ export const RATE_LIMITS = {
 // constant suffixed _HE can only ever be right for one language, so it moved to
 // the dictionaries as clinics.terms — a template list the registration form
 // fills with the plan prices and trial length.
+
+/**
+ * Version of the patient consent wording.
+ *
+ * Bumped whenever the wording changes materially. Stored next to the timestamp
+ * so it is possible to show what a given patient actually agreed to — consent
+ * without the wording it was given to proves nothing.
+ */
+export const PATIENT_CONSENT_VERSION = "2026-08-24";
