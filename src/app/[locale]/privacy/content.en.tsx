@@ -64,10 +64,28 @@ export default function PrivacyContentEn() {
             "Resend — sending email.",
           ]}
         />
+      </Section>
+
+      <Section heading="4a. Where your information is stored">
         <P>
-          Some providers store information on servers outside Israel (in the European Union or the
-          United States). By using the service you consent to such transfers, subject to accepted
-          security measures.
+          <strong>
+            Your information — including your treatment plan and your dental x-ray — is processed
+            and stored on servers in the United States.
+          </strong>{" "}
+          This is not a footnote: it is the central fact a patient should know before uploading a
+          medical document, which is why it also appears on the consent checkbox itself rather than
+          only here.
+        </P>
+        <P>
+          Concretely: server functions and file storage run in Vercel&rsquo;s <code>iad1</code>{" "}
+          region (Virginia, USA), and the database is hosted with Neon. Clerk handles identity and
+          Resend sends email.
+        </P>
+        <P>
+          For patients in the European Union, the EEA and the United Kingdom, the transfer relies on{" "}
+          <Ph>transfer mechanism — SCCs / Data Privacy Framework, for legal review</Ph> together
+          with your explicit consent, which is recorded alongside the wording it was given to and
+          the moment it was given.
         </P>
       </Section>
 
@@ -90,6 +108,11 @@ export default function PrivacyContentEn() {
       </Section>
 
       <Section heading="7. Your rights">
+        <P>
+          <strong>Deleting it yourself:</strong> every request in your account has a &ldquo;Delete
+          request&rdquo; button, which removes the request together with the treatment plan and
+          x-ray from storage. You do not need to contact us.
+        </P>
         <List
           items={[
             "To review the information collected about you.",
