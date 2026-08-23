@@ -6,6 +6,7 @@ import { Footer } from "@/components/shared/footer";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { isLocale, defaultLocale } from "@/i18n/config";
 import { DentistDirectory } from "@/components/dentists/dentist-directory";
+import { PUBLIC_DENTIST_SELECT, publicDentistWhere } from "@/lib/dentist-public";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -15,7 +16,11 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export const dynamic = "force-dynamic";
 
-export default async function RequestDentistsPage({ params }: { params: Promise<{ id: string; locale: string }> }) {
+export default async function RequestDentistsPage({
+  params,
+}: {
+  params: Promise<{ id: string; locale: string }>;
+}) {
   const { id, locale } = await params;
   const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
   const { userId: clerkUserId } = await auth();
@@ -43,7 +48,8 @@ export default async function RequestDentistsPage({ params }: { params: Promise<
   }
 
   const dentists = await db.dentist.findMany({
-    where: { isActive: true },
+    where: publicDentistWhere(),
+    select: PUBLIC_DENTIST_SELECT,
     orderBy: [{ rating: "desc" }, { reviewCount: "desc" }],
   });
 

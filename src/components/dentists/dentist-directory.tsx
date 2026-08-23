@@ -3,7 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import type { DentistModel } from "@/generated/prisma/models";
+import type { PublicDentist } from "@/lib/dentist-public";
 import { REQUEST_LIMITS } from "@/lib/constants";
 import { useT } from "@/i18n/provider";
 import { format, plural } from "@/i18n/format";
@@ -13,7 +13,7 @@ import { FilterBar, type DentistFilters, EMPTY_FILTERS } from "./filter-bar";
 import { SelectionCounter } from "./selection-counter";
 
 type DentistDirectoryProps = {
-  dentists: DentistModel[];
+  dentists: PublicDentist[];
   /** When set, the picker is bound to a request: continuing persists the
    * selection and advances to the confirmation step. When omitted, the
    * directory is in standalone browse mode. */

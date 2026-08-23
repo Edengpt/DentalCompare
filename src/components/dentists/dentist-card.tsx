@@ -1,14 +1,14 @@
 "use client";
 
 import { Check, MapPin, Star } from "lucide-react";
-import type { DentistModel } from "@/generated/prisma/models";
+import type { PublicDentist } from "@/lib/dentist-public";
 import { cn } from "@/lib/utils";
 import { translateInsurer, translateLanguage, translateSpecialty } from "@/lib/labels";
 import { useT } from "@/i18n/provider";
 import { format, plural } from "@/i18n/format";
 
 type DentistCardProps = {
-  dentist: DentistModel;
+  dentist: PublicDentist;
   isSelected: boolean;
   onToggle: () => void;
   disabled?: boolean;

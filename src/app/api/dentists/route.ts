@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { visibleSubscriptionFilter } from "@/lib/subscription";
+import { PUBLIC_DENTIST_SELECT, publicDentistWhere } from "@/lib/dentist-public";
 
 export const runtime = "nodejs";
 
@@ -11,10 +11,12 @@ export async function GET(request: Request) {
   const insurers = searchParams.getAll("insurer");
   const minExperience = Number(searchParams.get("minExperience") ?? 0) || undefined;
 
+  // Unauthenticated and reachable by anyone — proxy-routes.test.ts pins that it
+  // is deliberately public — so the select matters more here than anywhere.
   const dentists = await db.dentist.findMany({
+    select: PUBLIC_DENTIST_SELECT,
     where: {
-      isActive: true,
-      subscription: visibleSubscriptionFilter(),
+      ...publicDentistWhere(),
       ...(city ? { city } : {}),
       ...(specialties.length ? { specialties: { hasSome: specialties } } : {}),
       ...(insurers.length ? { insurerAffiliations: { hasSome: insurers } } : {}),
