@@ -26,7 +26,9 @@ export function UploadStep({ requestId, initialTreatmentUrl, initialXrayUrl }: U
     <div className="space-y-8">
       <section>
         <div className="mb-3 flex items-baseline justify-between">
-          <h2 className="font-display text-foreground text-xl font-bold">{t.upload.treatmentPlanTitle}</h2>
+          <h2 className="font-display text-foreground text-xl font-bold">
+            {t.upload.treatmentPlanTitle}
+          </h2>
           <span className="text-muted-foreground text-xs">{t.upload.required}</span>
         </div>
         <FileDropzone
@@ -61,7 +63,7 @@ export function UploadStep({ requestId, initialTreatmentUrl, initialXrayUrl }: U
         </Link>
 
         <Link
-          href={canContinue ? `/request/${requestId}/dentists` : "#"}
+          href={canContinue ? `/request/${requestId}/travel` : "#"}
           aria-disabled={!canContinue}
           tabIndex={canContinue ? 0 : -1}
           onClick={(e) => {

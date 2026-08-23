@@ -46,10 +46,7 @@ export const FALLBACK_PHONE_COUNTRY = "IL";
  * `07X…` as British). An explicit international prefix always wins over it, so
  * a wrong hint can't corrupt a number the caller already spelled out in full.
  */
-export function normalizePhone(
-  input: string | null | undefined,
-  country?: string,
-): string | null {
+export function normalizePhone(input: string | null | undefined, country?: string): string | null {
   if (!input?.trim()) return null;
 
   try {
@@ -68,5 +65,22 @@ export function formatPhoneForDisplay(e164: string | null | undefined): string {
     return parsed.isValid() ? parsed.formatNational() : e164;
   } catch {
     return e164;
+  }
+}
+
+/**
+ * The country a stored E.164 number belongs to, or null if it can't be read.
+ *
+ * Used to pre-fill the "where do you live" question rather than to answer it.
+ * The distinction matters: an Israeli living in London keeps an Israeli mobile,
+ * so a number is a good guess and a bad conclusion — and this value decides
+ * which currency prices appear in and which privacy regime applies.
+ */
+export function countryFromPhone(e164: string | null | undefined): string | null {
+  if (!e164) return null;
+  try {
+    return parsePhoneNumberWithError(e164).country ?? null;
+  } catch {
+    return null;
   }
 }

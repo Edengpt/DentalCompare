@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { normalizePhone, formatPhoneForDisplay } from "./phone";
+import { normalizePhone, formatPhoneForDisplay, countryFromPhone } from "./phone";
 
 /**
  * Fixtures use the subscriber suffix 5555555 deliberately. The mobile metadata
@@ -86,5 +86,28 @@ describe("formatPhoneForDisplay", () => {
   it("passes through anything it can't parse rather than throwing", () => {
     expect(formatPhoneForDisplay("nonsense")).toBe("nonsense");
     expect(formatPhoneForDisplay(null)).toBe("");
+  });
+});
+
+describe("countryFromPhone", () => {
+  it("reads the country out of a stored number", () => {
+    expect(countryFromPhone("+972501234567")).toBe("IL");
+    expect(countryFromPhone("+905321234567")).toBe("TR");
+    expect(countryFromPhone("+13475551234")).toBe("US");
+  });
+
+  // +44 is shared between the UK and the crown dependencies, and a mobile range
+  // can resolve to Guernsey rather than Great Britain. Worth knowing, because
+  // the UK is a source market and Guernsey is not the UK for privacy purposes —
+  // which is exactly why this only pre-fills the question instead of answering
+  // it.
+  it("can resolve a +44 mobile to a crown dependency, not the UK", () => {
+    expect(countryFromPhone("+447911123456")).toBe("GG");
+  });
+
+  // It pre-fills a question rather than answering it, so an unreadable number
+  // is a missing default and not an error.
+  it.each([null, undefined, "", "not a phone", "+999"])("returns null for %o", (input) => {
+    expect(countryFromPhone(input)).toBeNull();
   });
 });

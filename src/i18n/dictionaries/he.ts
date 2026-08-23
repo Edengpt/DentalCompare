@@ -189,12 +189,24 @@ const he = {
 
   requestFlow: {
     uploadMetaTitle: "העלאת מסמכים רפואיים",
-    uploadStep: "שלב 1 מתוך 3",
+    uploadStep: "שלב 1 מתוך 4",
     uploadTitle: "העלאת מסמכים רפואיים",
     uploadSubtitle:
       "שני קבצים בלבד דרושים כדי שהרופאים יוכלו להציע לכם הצעת מחיר מדויקת — תוכנית הטיפול הקיימת וצילום עדכני.",
+    travelMetaTitle: "איפה אתם, ולאן",
+    travelStep: "שלב 2 מתוך 4",
+    travelTitle: "איפה אתם גרים, ועד לאן תיסעו?",
+    travelSubtitle:
+      "המדינה שלכם קובעת באיזה מטבע נציג מחירים. מרחק הנכונות קובע אילו מרפאות תראו — ואפשר לענות אחרת בבקשה הבאה.",
+    travelCountryLabel: "איפה אתם גרים",
+    travelScopeLabel: "עד לאן תיסעו עבור הטיפול הזה",
+    travelScopeLocal: "רק במדינה שלי",
+    travelScopeSelected: "למדינות מסוימות",
+    travelScopeAny: "לכל מקום שבו יש מרפאה",
+    travelDestinationsLabel: "לאילו מדינות",
+    travelContinue: "המשך לבחירת מרפאות",
     dentistsMetaTitle: "בחירת רופאים",
-    dentistsStep: "שלב 2 מתוך 3",
+    dentistsStep: "שלב 3 מתוך 4",
     dentistsTitle: "בחרו את הרופאים שיתחרו על הטיפול שלכם.",
     dentistsSubtitle:
       "סננו לפי מיקום, התמחות ומבטח. סמנו עד 3 רופאים — והבקשה שלכם תישלח לכולם בו זמנית.",
@@ -215,7 +227,7 @@ const he = {
 
   confirm: {
     metaTitle: "סיכום הבקשה",
-    step: "שלב 3 מתוך 3",
+    step: "שלב 4 מתוך 4",
     title: "סיכום הבקשה לפני שליחה",
     subtitle:
       "בדקו שהפרטים נכונים. בלחיצה על השליחה הבקשה תישלח לכל הרופאים הנבחרים במקביל — ללא עלות.",

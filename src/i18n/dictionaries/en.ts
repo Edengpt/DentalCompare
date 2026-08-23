@@ -196,12 +196,24 @@ const en: typeof he = {
 
   requestFlow: {
     uploadMetaTitle: "Upload your documents",
-    uploadStep: "Step 1 of 3",
+    uploadStep: "Step 1 of 4",
     uploadTitle: "Upload your medical documents",
     uploadSubtitle:
       "Just two files are needed for clinics to quote accurately — the treatment plan you already have, and a recent x-ray.",
+    travelMetaTitle: "Where you are, and how far",
+    travelStep: "Step 2 of 4",
+    travelTitle: "Where do you live, and how far would you travel?",
+    travelSubtitle:
+      "Your country sets the currency we show prices in. How far you'll travel sets which clinics you see — and you can answer differently on your next request.",
+    travelCountryLabel: "Where you live",
+    travelScopeLabel: "How far you'd travel for this treatment",
+    travelScopeLocal: "Only in my own country",
+    travelScopeSelected: "To particular countries",
+    travelScopeAny: "Anywhere there's a clinic",
+    travelDestinationsLabel: "Which countries",
+    travelContinue: "Continue to choosing clinics",
     dentistsMetaTitle: "Choose clinics",
-    dentistsStep: "Step 2 of 3",
+    dentistsStep: "Step 3 of 4",
     dentistsTitle: "Choose the clinics that will compete for your treatment.",
     dentistsSubtitle:
       "Filter by location, speciality and insurer. Tick up to 3 clinics — your request goes to all of them at once.",
@@ -221,7 +233,7 @@ const en: typeof he = {
 
   confirm: {
     metaTitle: "Review your request",
-    step: "Step 3 of 3",
+    step: "Step 4 of 4",
     title: "Review before sending",
     subtitle:
       "Check the details are right. When you send, your request goes to every selected clinic at once — at no cost.",
