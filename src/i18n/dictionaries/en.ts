@@ -586,7 +586,7 @@ const en: typeof he = {
     regLogoAlt: "Logo preview",
     regLogoRemove: "Remove logo",
     regLogoUpload: "Upload",
-    regLogoHint: "JPG, PNG or WEBP ✦ up to {mb}MB",
+    regLogoHint: "Accepted files: JPG, PNG or WEBP ✦ maximum size: {mb}MB",
     regLogoFailed: "Logo upload failed",
     regLogoRetry: "Logo upload failed — please try again",
     regLogoWait: "Wait for the logo upload to finish",

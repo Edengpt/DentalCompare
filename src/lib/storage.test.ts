@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { fileSignatureMatches } from "./storage";
+import { fileSignatureMatches, LOGO_MAX_FILE_SIZE_MB } from "./storage";
 
 function file(bytes: number[], type: string, name = "f"): File {
   return new File([new Uint8Array(bytes)], name, { type });
@@ -27,5 +27,26 @@ describe("fileSignatureMatches", () => {
 
   it("rejects an unsupported declared type", async () => {
     expect(await fileSignatureMatches(file(PDF, "application/zip"))).toBe(false);
+  });
+});
+
+describe("the logo limit against the platform's own", () => {
+  // Vercel rejects a request body over roughly 4.5MB at the edge, before any
+  // route code runs, and answers with plain text rather than JSON. Measured
+  // against production: 4MB uploads, 4.4MB returns 413.
+  //
+  // If our advertised limit is the larger of the two, we invite clinics to
+  // upload a file we have promised to accept and the platform silently
+  // refuses — and a phone camera photo lands squarely in that gap.
+  const VERCEL_REQUEST_BODY_LIMIT_MB = 4.5;
+
+  it("stays under the request body limit the platform enforces", () => {
+    expect(LOGO_MAX_FILE_SIZE_MB).toBeLessThan(VERCEL_REQUEST_BODY_LIMIT_MB);
+  });
+
+  // The multipart envelope adds boundaries and headers around the bytes, so
+  // the request is always somewhat larger than the file.
+  it("leaves room for the multipart overhead", () => {
+    expect(VERCEL_REQUEST_BODY_LIMIT_MB - LOGO_MAX_FILE_SIZE_MB).toBeGreaterThanOrEqual(0.4);
   });
 });

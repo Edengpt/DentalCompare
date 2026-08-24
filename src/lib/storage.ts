@@ -67,7 +67,19 @@ export function blobPath(requestId: string, kind: UploadKind, file: File): strin
 // --- Clinic logo upload (public, image-only) ---
 
 export const LOGO_ACCEPTED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
-export const LOGO_MAX_FILE_SIZE_MB = 5;
+/**
+ * The largest logo a clinic may upload.
+ *
+ * Four rather than five, and the ceiling is not ours: Vercel refuses a request
+ * body over roughly 4.5MB at the edge, before any route code runs, and answers
+ * with plain text instead of JSON. Advertising five meant inviting a clinic to
+ * upload a file we had promised to accept and the platform then silently
+ * refused — with a phone camera photo landing squarely in that gap.
+ *
+ * Four leaves room for the multipart envelope, which wraps the bytes in
+ * boundaries and headers and makes the request larger than the file.
+ */
+export const LOGO_MAX_FILE_SIZE_MB = 4;
 export const LOGO_MAX_FILE_SIZE_BYTES = LOGO_MAX_FILE_SIZE_MB * 1024 * 1024;
 export const LOGO_ACCEPT_ATTRIBUTE = ".jpg,.jpeg,.png,.webp";
 
@@ -80,7 +92,6 @@ export function validateLogo(file: File): FileValidationError | null {
   }
   return null;
 }
-
 
 function logoExtension(file: File): string {
   if (file.type === "image/png") return "png";

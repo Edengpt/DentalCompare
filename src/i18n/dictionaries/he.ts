@@ -573,7 +573,7 @@ const he = {
     regLogoAlt: "תצוגת לוגו",
     regLogoRemove: "הסרת הלוגו",
     regLogoUpload: "העלאה",
-    regLogoHint: "JPG, PNG או WEBP ✦ עד {mb}MB",
+    regLogoHint: "קבצים מותרים: JPG, PNG או WEBP ✦ גודל מרבי: {mb}MB",
     regLogoFailed: "העלאת הלוגו נכשלה",
     regLogoRetry: "העלאת הלוגו נכשלה — נסו שוב",
     regLogoWait: "המתינו לסיום העלאת הלוגו",

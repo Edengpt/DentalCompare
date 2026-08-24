@@ -166,14 +166,36 @@ export function RegistrationForm({ countries }: { countries: RegistrationCountry
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Checked here as well as on the server, because a file over the platform's
+    // request limit never reaches the server at all — the edge rejects it and
+    // the clinic is left with an error that retrying cannot fix.
+    if (file.size > LOGO_MAX_FILE_SIZE_MB * 1024 * 1024) {
+      toast.error(format(t.validation.logoSize, { mb: LOGO_MAX_FILE_SIZE_MB }));
+      if (logoInputRef.current) logoInputRef.current.value = "";
+      return;
+    }
+
     setLogoUploading(true);
     try {
       const body = new FormData();
       body.append("file", file);
       const res = await fetch("/api/clinics/logo", { method: "POST", body });
-      const data = (await res.json()) as { url?: string; error?: string };
-      if (!res.ok || !data.url) {
-        toast.error(data.error ?? t.clinics.regLogoFailed);
+
+      // Not every failure is ours to phrase. A rejection at the edge comes back
+      // as plain text, and parsing it as JSON throws — which used to surface as
+      // "please try again", advice that could never work.
+      const data = (await res.json().catch(() => null)) as {
+        url?: string;
+        error?: string;
+      } | null;
+
+      if (!res.ok || !data?.url) {
+        toast.error(
+          data?.error ??
+            (res.status === 413
+              ? format(t.validation.logoSize, { mb: LOGO_MAX_FILE_SIZE_MB })
+              : t.clinics.regLogoFailed),
+        );
         return;
       }
       setLogoUrl(data.url);
@@ -293,6 +315,12 @@ export function RegistrationForm({ countries }: { countries: RegistrationCountry
               {t.clinics.regLogo}
               <span className="text-muted-foreground font-normal">{t.clinics.regOptional}</span>
             </p>
+            {/* Above the button, not beside it. What is allowed has to be read
+                before the file picker opens — afterwards it is a complaint, not
+                a hint. */}
+            <p className="text-muted-foreground mt-1 text-xs">
+              {format(t.clinics.regLogoHint, { mb: LOGO_MAX_FILE_SIZE_MB })}
+            </p>
             <input type="hidden" name="profileImageUrl" value={logoUrl ?? ""} />
             <div className="mt-2 flex items-center gap-4">
               {logoUrl ? (
@@ -329,9 +357,6 @@ export function RegistrationForm({ countries }: { countries: RegistrationCountry
                   )}
                 </button>
               )}
-              <p className="text-muted-foreground text-xs">
-                {format(t.clinics.regLogoHint, { mb: LOGO_MAX_FILE_SIZE_MB })}
-              </p>
             </div>
             <input
               ref={logoInputRef}
