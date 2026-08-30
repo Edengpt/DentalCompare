@@ -130,6 +130,9 @@ export const SUBSCRIPTION_CONTRACT_VERSION = "2026-08-sub-v2";
 const HOUR_MS = 60 * 60 * 1000;
 export const RATE_LIMITS = {
   clinicRegister: { limit: 3, windowMs: HOUR_MS }, // per IP
+  // Per IP. Higher than clinicRegister because one registration legitimately
+  // uploads several documents, and a clinic that mis-shoots a photo retries.
+  clinicDocument: { limit: 20, windowMs: HOUR_MS },
   submitQuote: { limit: 10, windowMs: HOUR_MS }, // per quote token
   fileUpload: { limit: 20, windowMs: HOUR_MS }, // per request
   createRequest: { limit: 10, windowMs: HOUR_MS }, // per user — caps request spam
