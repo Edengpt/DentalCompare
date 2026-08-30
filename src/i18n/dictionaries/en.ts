@@ -625,6 +625,13 @@ const en: typeof he = {
     regDocUploaded: "Uploaded",
     regDocRemove: "Remove document",
     regDocFailed: "That upload failed. Please try again.",
+    replaceTitle: "Upload a replacement",
+    replaceIntro:
+      "These are the documents to send again. There is no need to fill in the form afresh.",
+    replaceReceived: "Received",
+    replaceDone: "Thank you — we have it. We will email you after we look.",
+    replaceNothing: "Nothing is waiting to be replaced right now. We will email you.",
+    replaceHint: "A phone photo is enough — PDF, JPG or PNG, up to {mb}MB.",
     regLogoRemove: "Remove logo",
     regLogoUpload: "Upload",
     regLogoHint: "Accepted files: JPG, PNG or WEBP ✦ maximum size: {mb}MB",
@@ -855,6 +862,9 @@ const en: typeof he = {
     documentRequired: "At least one licence document is required.",
     documentNotFound: "That document was not found, or does not belong to this clinic.",
     documentPickOne: "Pick at least one document that needs replacing.",
+    documentLinkInvalid: "That link is not valid. Ask us for a new one.",
+    documentLinkExpired:
+      "That link has expired. Reply to the email you received and we will send a new one.",
     clinicEmailTaken: "A clinic is already registered with this email",
     dentistEmailTaken: "A dentist with this email already exists",
     dentistNotFound: "Dentist not found",
