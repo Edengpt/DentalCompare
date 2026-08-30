@@ -1,10 +1,8 @@
 import { getDictionary } from "@/i18n/get-dictionary";
 import { isLocale, defaultLocale } from "@/i18n/config";
-import { format } from "@/i18n/format";
 import { formatMoney } from "@/lib/money";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/server/admin";
-import { SUBSCRIPTION_PLANS } from "@/lib/constants";
 import type { Dictionary } from "@/i18n/get-dictionary";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {

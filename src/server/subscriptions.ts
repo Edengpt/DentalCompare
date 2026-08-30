@@ -1,6 +1,5 @@
 import { getDictionary } from "@/i18n/get-dictionary";
 import { getRequestLocale } from "@/i18n/request-locale";
-import { format } from "@/i18n/format";
 import "server-only";
 import { db } from "@/lib/db";
 import { Prisma } from "@/generated/prisma/client";
@@ -15,7 +14,6 @@ export async function createPendingSubscription(
   },
   client: Prisma.TransactionClient | typeof db = db,
 ): Promise<void> {
-  const e = (await getDictionary(await getRequestLocale())).errors;
   await client.clinicSubscription.create({
     data: {
       dentistId: args.dentistId,
@@ -121,7 +119,6 @@ export async function recordRenewalCharge(args: {
   periodStart: Date;
   periodEnd: Date;
 }): Promise<void> {
-  const e = (await getDictionary(await getRequestLocale())).errors;
   const now = new Date();
   await db.$transaction([
     db.clinicSubscription.update({
@@ -156,7 +153,6 @@ export async function recordRenewalCharge(args: {
  * not on every daily retry within the grace window.
  */
 export async function markPastDue(subscriptionId: string): Promise<boolean> {
-  const e = (await getDictionary(await getRequestLocale())).errors;
   const firstTime = await db.clinicSubscription.updateMany({
     where: { id: subscriptionId, paymentFailedNotifiedAt: null },
     data: { status: "PAST_DUE", paymentFailedNotifiedAt: new Date() },
@@ -188,7 +184,6 @@ export async function markTrialEndedUnbilled(subscriptionId: string): Promise<bo
 }
 
 export async function cancelSubscription(subscriptionId: string): Promise<void> {
-  const e = (await getDictionary(await getRequestLocale())).errors;
   await db.clinicSubscription.update({
     where: { id: subscriptionId },
     data: { status: "CANCELED", canceledAt: new Date() },
