@@ -745,6 +745,14 @@ const he = {
     clinicsTitle: "הרשמות מרפאות",
     clinicDocs: "מסמכי רישיון",
     clinicDocsNone: "לא צורפו מסמכים — אין מה לאמת.",
+    requestBetterDocs: "דרוש מסמך טוב יותר",
+    requestBetterDocsTitle: "איזה מסמך צריך להחליף?",
+    requestBetterDocsHint:
+      "כתבו למה — הטקסט הזה הוא כל מה שהמרפאה תראה במייל. שדה ריק פירושו שהמסמך תקין.",
+    requestBetterDocsPlaceholder: "למשל: התמונה מטושטשת, אי אפשר לקרוא את מספר הרישיון",
+    requestBetterDocsSend: "שליחת בקשה למרפאה",
+    docsRequested: "נשלחה בקשה ל{clinic}",
+    docRejectedOn: "נפסל ב-{date}",
     clinicsSubtitle:
       "מרפאות שנרשמו עצמאית וממתינות לאישור. בדקו את הפרטים ואת אישור החוזה, ואשרו לפרסום במאגר — או דחו את ההרשמה.",
     clinicsEmptyTitle: "אין הרשמות שממתינות לאישור",

@@ -763,6 +763,14 @@ const en: typeof he = {
     clinicsTitle: "Clinic applications",
     clinicDocs: "Licence documents",
     clinicDocsNone: "No documents attached — there is nothing to verify.",
+    requestBetterDocs: "Ask for a better copy",
+    requestBetterDocsTitle: "Which document needs replacing?",
+    requestBetterDocsHint:
+      "Say why — this text is all the clinic sees in the email. Leave a field empty if that document is fine.",
+    requestBetterDocsPlaceholder: "e.g. the photo is blurred, the licence number is unreadable",
+    requestBetterDocsSend: "Send the request",
+    docsRequested: "Request sent to {clinic}",
+    docRejectedOn: "Rejected {date}",
     clinicsSubtitle:
       "Clinics that registered themselves and are awaiting approval. Check their details and contract acceptance, then publish them to the directory — or reject the application.",
     clinicsEmptyTitle: "No applications awaiting approval",

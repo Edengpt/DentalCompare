@@ -15,6 +15,7 @@ import { requireAdmin } from "@/server/admin";
 import { db } from "@/lib/db";
 import { translateSpecialty, translateInsurer, translateTreatment } from "@/lib/labels";
 import { ClinicReviewActions } from "@/components/admin/clinic-review-actions";
+import { RequestDocumentsForm } from "@/components/admin/request-documents-form";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -152,6 +153,17 @@ export default async function AdminClinicsPage({
                         <span className="text-muted-foreground ms-2 text-xs">
                           {dateFmt.format(doc.uploadedAt)}
                         </span>
+                        {/* Without this there is no way to tell a document you
+                            have already asked to have replaced from one you
+                            have not looked at yet. */}
+                        {doc.rejectedAt && (
+                          <span className="text-coral ms-2 text-xs">
+                            {format(t.admin.docRejectedOn, {
+                              date: dateFmt.format(doc.rejectedAt),
+                            })}
+                            {doc.rejectionReason ? ` — ${doc.rejectionReason}` : ""}
+                          </span>
+                        )}
                       </li>
                     ))}
                   </ul>
@@ -171,6 +183,16 @@ export default async function AdminClinicsPage({
                   )}
                 </p>
                 <ClinicReviewActions dentistId={d.id} clinicName={d.clinicName} />
+              </div>
+
+              <div className="border-border/60 border-t px-6 py-4">
+                {d.documents.length > 0 && (
+                  <RequestDocumentsForm
+                    dentistId={d.id}
+                    clinicName={d.clinicName}
+                    documents={d.documents.map((doc) => ({ id: doc.id, kind: doc.kind }))}
+                  />
+                )}
               </div>
             </article>
           ))}
