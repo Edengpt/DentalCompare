@@ -9,11 +9,14 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/server/admin";
-import { sendPaymentSetupEmail } from "@/server/subscription-notifications";
+import {
+  sendPaymentSetupEmail,
+  sendDocumentsRejectedEmail,
+} from "@/server/subscription-notifications";
 import { audit } from "@/lib/audit";
 import { trialEndFrom } from "@/lib/subscription";
 import { SUBSCRIPTION_PLANS } from "@/lib/constants";
-import { isClinicDocumentBlobUrl } from "@/lib/clinic-documents";
+import { documentTokenExpiry, isClinicDocumentBlobUrl } from "@/lib/clinic-documents";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -121,6 +124,80 @@ export async function approveClinic(dentistId: string): Promise<ActionResult> {
   revalidatePath("/admin/clinics");
   revalidatePath("/admin/dentists");
   revalidatePath("/admin");
+  return { ok: true };
+}
+
+/**
+ * Asks a clinic for a better copy of one or more documents.
+ *
+ * Not a rejection: rejectClinic below deletes a clinic that should not be here
+ * at all, while this one is registered, waiting, and one readable photograph
+ * from approval. Nothing about its status changes — it stays unlisted and
+ * unverified, because a document nobody could read is not a licence anyone saw.
+ */
+export async function requestBetterDocuments(
+  dentistId: string,
+  rejections: { documentId: string; reason: string }[],
+): Promise<ActionResult> {
+  const e = (await getDictionary(await getRequestLocale())).errors;
+  const admin = await requireAdmin();
+
+  if (rejections.length === 0) return { ok: false, error: e.documentPickOne };
+
+  const dentist = await db.dentist.findUnique({
+    where: { id: dentistId },
+    select: { id: true, email: true, clinicName: true, locale: true },
+  });
+  if (!dentist) return { ok: false, error: e.clinicNotFound };
+
+  // Scoped to THIS clinic. Without dentistId in the where, an admin could
+  // reject another clinic's document and email the wrong people about it.
+  const docs = await db.clinicDocument.findMany({
+    where: { dentistId, id: { in: rejections.map((r) => r.documentId) } },
+    select: { id: true, kind: true },
+  });
+  if (docs.length !== rejections.length) return { ok: false, error: e.documentNotFound };
+
+  const now = new Date();
+  // A fresh token every round. The clinic is sent a link and it has to be the
+  // link that works; reusing one that may already have expired sends a dead
+  // link and produces another round of silence.
+  const token = randomUUID();
+
+  await db.$transaction([
+    ...rejections.map((r) =>
+      db.clinicDocument.update({
+        where: { id: r.documentId },
+        data: { rejectedAt: now, rejectionReason: r.reason.trim() || null },
+      }),
+    ),
+    db.dentist.update({
+      where: { id: dentistId },
+      data: { documentToken: token, documentTokenExpiresAt: documentTokenExpiry(now) },
+    }),
+  ]);
+
+  const kindById = new Map(docs.map((d) => [d.id, d.kind]));
+  await sendDocumentsRejectedEmail({
+    email: dentist.email,
+    clinicName: dentist.clinicName,
+    locale: asLocale(dentist.locale),
+    token,
+    items: rejections.map((r) => ({
+      kind: kindById.get(r.documentId) ?? "",
+      reason: r.reason.trim(),
+    })),
+  });
+
+  await audit({
+    actor: admin.email,
+    action: "clinic.documents_rejected",
+    entity: "Dentist",
+    entityId: dentistId,
+    metadata: { documents: rejections.map((r) => r.documentId) },
+  });
+
+  revalidatePath("/admin/clinics");
   return { ok: true };
 }
 

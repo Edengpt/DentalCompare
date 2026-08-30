@@ -1,17 +1,23 @@
-import { describe, it, expect, vi, beforeAll, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from "vitest";
 import { randomUUID } from "node:crypto";
 import type { db as Db } from "@/lib/db";
 
-const { requireAdmin, sendPaymentSetupEmail } = vi.hoisted(() => ({
+const { requireAdmin, sendPaymentSetupEmail, sendDocumentsRejectedEmail } = vi.hoisted(() => ({
   requireAdmin: vi.fn(async () => ({ id: "u1", email: "admin@example.com" })),
   sendPaymentSetupEmail: vi.fn(async () => true),
+  sendDocumentsRejectedEmail: vi.fn(
+    async (_args: { token: string; items: { kind: string; reason: string }[] }) => true,
+  ),
 }));
 
 vi.mock("@/server/admin", async (orig) => {
   const actual = await orig<typeof import("@/server/admin")>();
   return { ...actual, requireAdmin };
 });
-vi.mock("@/server/subscription-notifications", () => ({ sendPaymentSetupEmail }));
+vi.mock("@/server/subscription-notifications", () => ({
+  sendPaymentSetupEmail,
+  sendDocumentsRejectedEmail,
+}));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
 const hasDb = Boolean(process.env.DATABASE_URL);
@@ -58,6 +64,14 @@ describe.skipIf(!hasDb)("approveClinic (integration, real DB)", () => {
     ({ db } = await import("@/lib/db"));
     ({ approveClinic } = await import("./admin-actions"));
   }, DB_TIMEOUT);
+
+  // Call counts are asserted per test, and vitest does not clear them between
+  // tests on its own — without this, calls[1] in one test is a call another
+  // test made.
+  beforeEach(() => {
+    sendDocumentsRejectedEmail.mockClear();
+    sendPaymentSetupEmail.mockClear();
+  });
 
   afterEach(async () => {
     for (const id of created) {
@@ -159,6 +173,89 @@ describe.skipIf(!hasDb)("approveClinic (integration, real DB)", () => {
       expect(d!.licenceVerifiedAt).not.toBeNull();
       expect(d!.licenceVerifiedBy).toBe("admin@example.com");
       expect(d!.documents).toHaveLength(1);
+    },
+    DB_TIMEOUT,
+  );
+  async function seedClinicWithDoc() {
+    const dentistId = await seedPendingClinic();
+    const doc = await db.clinicDocument.create({
+      data: {
+        dentistId,
+        kind: "Licence",
+        blobUrl: "https://x.blob.vercel-storage.com/clinics/documents/r.pdf",
+        contentType: "application/pdf",
+      },
+    });
+    return { dentistId, docId: doc.id };
+  }
+
+  it(
+    "marks the document rejected, issues a token with an expiry, and emails the clinic",
+    async () => {
+      const { requestBetterDocuments } = await import("./admin-actions");
+      const { dentistId, docId } = await seedClinicWithDoc();
+
+      const result = await requestBetterDocuments(dentistId, [
+        { documentId: docId, reason: "התמונה מטושטשת" },
+      ]);
+      expect(result.ok).toBe(true);
+
+      const doc = await db.clinicDocument.findUnique({ where: { id: docId } });
+      expect(doc!.rejectedAt).not.toBeNull();
+      expect(doc!.rejectionReason).toBe("התמונה מטושטשת");
+
+      const d = await db.dentist.findUnique({ where: { id: dentistId } });
+      expect(d!.documentToken).toBeTruthy();
+      // Unlike the payment token, this one dies on its own.
+      expect(d!.documentTokenExpiresAt!.getTime()).toBeGreaterThan(Date.now());
+      // Not an approval path: still unlisted, still unverified. A document
+      // nobody could read is not a licence anyone saw.
+      expect(d!.isActive).toBe(false);
+      expect(d!.licenceVerifiedAt).toBeNull();
+
+      expect(sendDocumentsRejectedEmail).toHaveBeenCalledTimes(1);
+      expect(sendDocumentsRejectedEmail.mock.calls[0][0].items).toEqual([
+        { kind: "Licence", reason: "התמונה מטושטשת" },
+      ]);
+    },
+    DB_TIMEOUT,
+  );
+
+  // A second round has to reach the clinic, so the link it is sent must be one
+  // that works. Reusing a token that may already have expired sends a dead link
+  // and produces another round of silence.
+  it(
+    "issues a fresh token on a second round rather than reusing the old one",
+    async () => {
+      const { requestBetterDocuments } = await import("./admin-actions");
+      const { dentistId, docId } = await seedClinicWithDoc();
+
+      await requestBetterDocuments(dentistId, [{ documentId: docId, reason: "blurry" }]);
+      const first = (await db.dentist.findUnique({ where: { id: dentistId } }))!.documentToken;
+
+      await requestBetterDocuments(dentistId, [{ documentId: docId, reason: "still blurry" }]);
+      const second = (await db.dentist.findUnique({ where: { id: dentistId } }))!.documentToken;
+
+      expect(second).not.toBe(first);
+      expect(sendDocumentsRejectedEmail.mock.calls[1][0].token).toBe(second);
+    },
+    DB_TIMEOUT,
+  );
+
+  // Documents belong to clinics. Passing another clinic's document id must not
+  // reject it under the wrong clinic and email the wrong people about it.
+  it(
+    "refuses a document that belongs to a different clinic",
+    async () => {
+      const { requestBetterDocuments } = await import("./admin-actions");
+      const { docId } = await seedClinicWithDoc();
+      const otherId = await seedPendingClinic();
+
+      const result = await requestBetterDocuments(otherId, [
+        { documentId: docId, reason: "blurry" },
+      ]);
+      expect(result.ok).toBe(false);
+      expect((await db.clinicDocument.findUnique({ where: { id: docId } }))!.rejectedAt).toBeNull();
     },
     DB_TIMEOUT,
   );

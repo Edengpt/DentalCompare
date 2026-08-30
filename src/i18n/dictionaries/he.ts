@@ -825,6 +825,8 @@ const he = {
     missingDocuments: "חסרים מסמכים: {kinds}",
     invalidDocument: "אחד המסמכים לא הועלה דרך הטופס הזה. העלו אותו מחדש.",
     documentRequired: "צריך לצרף לפחות מסמך רישיון אחד.",
+    documentNotFound: "המסמך לא נמצא, או שאינו שייך למרפאה הזו.",
+    documentPickOne: "בחרו לפחות מסמך אחד שדורש החלפה.",
     clinicEmailTaken: "כבר קיימת מרפאה רשומה עם אימייל זה",
     dentistEmailTaken: "רופא עם אימייל זה כבר קיים",
     dentistNotFound: "הרופא לא נמצא",

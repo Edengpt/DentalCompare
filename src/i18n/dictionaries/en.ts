@@ -845,6 +845,8 @@ const en: typeof he = {
     invalidDocument:
       "One of the documents was not uploaded through this form. Please upload it again.",
     documentRequired: "At least one licence document is required.",
+    documentNotFound: "That document was not found, or does not belong to this clinic.",
+    documentPickOne: "Pick at least one document that needs replacing.",
     clinicEmailTaken: "A clinic is already registered with this email",
     dentistEmailTaken: "A dentist with this email already exists",
     dentistNotFound: "Dentist not found",
