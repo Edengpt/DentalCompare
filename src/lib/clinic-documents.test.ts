@@ -7,6 +7,8 @@ import {
   clinicDocumentBlobPath,
   isClinicDocumentBlobUrl,
   DOC_MAX_FILE_SIZE_BYTES,
+  documentTokenExpiry,
+  isDocumentTokenLive,
 } from "./clinic-documents";
 
 function fileOf(name: string, type: string, bytes: number): File {
@@ -101,5 +103,25 @@ describe("isClinicDocumentBlobUrl", () => {
     expect(
       isClinicDocumentBlobUrl("https://abc.public.blob.vercel-storage.com/requests/r1/xray.jpg"),
     ).toBe(false);
+  });
+});
+
+describe("the replacement-document token", () => {
+  const now = new Date("2026-09-01T00:00:00Z");
+
+  it("expires DOCUMENT_TOKEN_DAYS after it is issued", () => {
+    expect(documentTokenExpiry(now).toISOString()).toBe("2026-09-15T00:00:00.000Z");
+  });
+
+  it("is live right up to the moment it expires, and not after", () => {
+    const expires = documentTokenExpiry(now);
+    expect(isDocumentTokenLive(expires, new Date("2026-09-14T23:59:59Z"))).toBe(true);
+    expect(isDocumentTokenLive(expires, new Date("2026-09-15T00:00:01Z"))).toBe(false);
+  });
+
+  // A clinic with no token at all must not read as one with a live token just
+  // because null compares loosely somewhere downstream.
+  it("is not live when there is no expiry, meaning no token was ever issued", () => {
+    expect(isDocumentTokenLive(null, now)).toBe(false);
   });
 });

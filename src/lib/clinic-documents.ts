@@ -82,3 +82,27 @@ export function isClinicDocumentBlobUrl(url: string): boolean {
     url,
   );
 }
+
+/**
+ * How long a replacement-upload link stays usable.
+ *
+ * The payment-setup token deliberately never expires; this one does. That token
+ * opens a page at an external provider, this one opens a write path into our own
+ * private storage — and it travels by email, where it outlives the conversation
+ * that produced it. Two weeks is long enough for a clinic that has to go and
+ * photograph something, short enough that a forwarded mailbox is not a standing
+ * key. An admin can always issue a new one.
+ */
+export const DOCUMENT_TOKEN_DAYS = 14;
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+export function documentTokenExpiry(now: Date): Date {
+  return new Date(now.getTime() + DOCUMENT_TOKEN_DAYS * DAY_MS);
+}
+
+/** Null means no token was ever issued, which is not the same as a live one. */
+export function isDocumentTokenLive(expiresAt: Date | null, now: Date): boolean {
+  if (!expiresAt) return false;
+  return now.getTime() < expiresAt.getTime();
+}
