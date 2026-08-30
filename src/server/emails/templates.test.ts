@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { escapeHtml, quoteRequestEmailHtml, newQuoteEmailHtml } from "./templates";
+import {
+  escapeHtml,
+  quoteRequestEmailHtml,
+  newQuoteEmailHtml,
+  trialEndingEmailHtml,
+} from "./templates";
 import he from "@/i18n/dictionaries/he";
 import en from "@/i18n/dictionaries/en";
 
@@ -100,5 +105,49 @@ describe("email templates follow the recipient's language", () => {
   it("interpolates the patient name into the heading in both languages", () => {
     expect(quoteRequestEmailHtml({ ...base, locale: "en", t: en.emails })).toContain("Dana has");
     expect(quoteRequestEmailHtml({ ...base, locale: "he", t: he.emails })).toContain("Dana ביקש");
+  });
+});
+
+// A clinic starts its trial the moment an admin approves it — payment setup is a
+// separate link it may never click. So "we will charge the card you saved" is
+// false for a large share of trialing clinics, and this is the one email they
+// are guaranteed to read before the trial ends.
+describe("the trial-ending email tells the truth about the card", () => {
+  const base = {
+    locale: "he" as const,
+    t: he.emails,
+    clinicName: "מרפאת בדיקה",
+    daysRemaining: 2,
+    priceMinor: 29900,
+    currency: "ILS",
+    planLabel: "חודשי",
+  };
+
+  it("announces the charge when a card is on file", () => {
+    const html = trialEndingEmailHtml({ ...base, setupUrl: null });
+    expect(html).toContain(he.emails.trialBody.split("{")[0].trim().slice(0, 12));
+    expect(html).not.toContain(he.emails.trialSetupCta);
+  });
+
+  it("asks for payment setup, with a link, when no card was ever stored", () => {
+    const html = trialEndingEmailHtml({
+      ...base,
+      setupUrl: "https://example.com/he/clinics/billing/stk_1",
+    });
+    expect(html).toContain("https://example.com/he/clinics/billing/stk_1");
+    expect(html).toContain(he.emails.trialSetupCta);
+    // The false promise must be gone, not merely accompanied by the CTA.
+    expect(html).not.toContain(he.emails.trialNoAction);
+  });
+
+  it("keeps the same distinction in English", () => {
+    const html = trialEndingEmailHtml({
+      ...base,
+      locale: "en",
+      t: en.emails,
+      setupUrl: "https://example.com/en/clinics/billing/stk_1",
+    });
+    expect(html).toContain(en.emails.trialSetupCta);
+    expect(html).not.toContain(en.emails.trialNoAction);
   });
 });

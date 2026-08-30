@@ -12,6 +12,7 @@ import {
   trialDaysRemaining,
   dueTrialWarning,
   visibleSubscriptionFilter,
+  billingBlocker,
 } from "./subscription";
 
 describe("subscription helpers", () => {
@@ -121,5 +122,28 @@ describe("free trial helpers", () => {
   it("skips straight to the smaller mark when a clinic is approved late in the window", () => {
     // Nothing was sent yet and only 2 days remain — send the 2-day warning, not 15.
     expect(dueTrialWarning(trialEnd, null, new Date("2026-07-29T00:00:00Z"))).toBe(2);
+  });
+});
+
+describe("billingBlocker", () => {
+  it("has no blocker when the provider is live and the clinic left a card", () => {
+    expect(billingBlocker({ payplusConfigured: true, recurringToken: "rtok_1" })).toBeNull();
+  });
+
+  it("blames the provider when PayPlus is not configured at all", () => {
+    expect(billingBlocker({ payplusConfigured: false, recurringToken: "rtok_1" })).toBe(
+      "no_provider",
+    );
+  });
+
+  it("blames the missing card when the provider is live but no token was stored", () => {
+    expect(billingBlocker({ payplusConfigured: true, recurringToken: null })).toBe("no_card");
+  });
+
+  // Both are wrong at once. The provider is reported first because it is ours to
+  // fix and it blocks every clinic — chasing one clinic for a card while the
+  // provider is down would be the wrong action.
+  it("reports the provider first when both are missing", () => {
+    expect(billingBlocker({ payplusConfigured: false, recurringToken: null })).toBe("no_provider");
   });
 });

@@ -427,6 +427,7 @@ const en: typeof he = {
     subjectQuoteRequest: "New quote request — DentalCompare",
     subjectPaymentSetup: "Clinic approved — activate your DentalCompare subscription",
     subjectTrialEndingSoon: "Your trial is ending — first charge coming up",
+    subjectTrialSetupNeeded: "Your free trial is ending — payment details still missing",
     subjectTrialDaysLeft: "{days} days left in your DentalCompare trial",
     subjectPaymentFailed: "Subscription charge failed — DentalCompare",
     planMonthly: "monthly",
@@ -466,10 +467,25 @@ const en: typeof he = {
     trialNoAction:
       "You don't need to do anything to continue. If you'd rather not, you can cancel before the billing date and nothing will be charged.",
     trialCancelPrefix: "To cancel, or for questions:",
+    trialSetupHeading: "Your free trial ends {when} — payment details still missing",
+    trialSetupBody:
+      "The free trial for {clinic} ends {when}, and we still have no payment method on file. To continue on the {plan} plan at {price}, complete the setup:",
+    trialSetupCta: "Complete payment setup",
+    trialSetupNoCharge: "Nothing is charged until the setup is complete.",
     chargeFailedHeading: "We couldn't charge your subscription",
     chargeFailedBody:
       "The recurring charge for {clinic} failed. To keep the clinic listed in the directory, please update the payment method.",
     supportPrefix: "Contact support:",
+    subjectTrialUnbilled: "Alert: a free trial ended without a charge — DentalCompare",
+    trialUnbilledHeading: "A free trial ended and could not be billed",
+    trialUnbilledBody:
+      "The free trial for {clinic} has ended, but there was no way to charge it. The clinic stays listed and keeps receiving leads — this alert is sent once and only once.",
+    trialUnbilledReasonLabel: "Reason:",
+    trialUnbilledReasonNoProvider: "The payment provider is not configured (PayPlus)",
+    trialUnbilledReasonNoCard: "The clinic never completed payment setup",
+    trialUnbilledClinicLabel: "Clinic:",
+    trialUnbilledStillVisible:
+      "Nothing else was changed automatically. To charge, cancel or extend, act from the subscriptions screen in the admin area.",
   },
 
   labels: {
@@ -706,6 +722,10 @@ const en: typeof he = {
     subActive: "Active",
     subPastDue: "Charge failed",
     subCanceled: "Cancelled",
+    subTrialing: "In free trial",
+    subTrialUnbilled: "Trial ended — not billed",
+    subTrialUnbilledHint:
+      "The free trial ended and there was no way to charge it. The clinic stays listed.",
     dentistsTitle: "Clinics",
     dentistsSubtitle: "{count} clinics in the directory. Click a status to enable or disable it.",
     dentistsPendingNotice:

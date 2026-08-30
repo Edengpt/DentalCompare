@@ -168,8 +168,18 @@ export function trialEndingEmailHtml(opts: {
   priceMinor: number;
   currency: string;
   planLabel: string;
+  /**
+   * Where the clinic can still enter a card, or null when one is already stored.
+   *
+   * A clinic enters its trial the moment an admin approves it; payment setup is
+   * a separate link it may never have clicked. Announcing a charge to "the card
+   * you saved at registration" is therefore false for a large share of trialing
+   * clinics — and this is the one email they are guaranteed to read before the
+   * trial ends, so it is also the best chance to convert them.
+   */
+  setupUrl: string | null;
 }): string {
-  const { locale, t, clinicName, daysRemaining, priceMinor, currency, planLabel } = opts;
+  const { locale, t, clinicName, daysRemaining, priceMinor, currency, planLabel, setupUrl } = opts;
   // Symbol comes from the amount's currency, never a hardcoded ₪ — the notice
   // has to stay true for a clinic billed in euros. Formatted in the recipient's
   // locale so the grouping separators match the rest of the message.
@@ -180,6 +190,18 @@ export function trialEndingEmailHtml(opts: {
       : daysRemaining === 1
         ? t.trialTomorrow
         : format(t.trialInDays, { days: daysRemaining });
+
+  if (setupUrl) {
+    return shell(
+      locale,
+      `    <h2 style="color:#0f4c4c;">${format(t.trialSetupHeading, { when })}</h2>
+    <p>${format(t.greeting, { name: `<strong>${escapeHtml(clinicName)}</strong>` })}</p>
+    <p>${format(t.trialSetupBody, { clinic: `<strong>${escapeHtml(clinicName)}</strong>`, when, plan: escapeHtml(planLabel), price: `<strong>${price}</strong>` })}</p>
+    <p style="margin:24px 0;"><a href="${setupUrl}" style="background:#0f4c4c;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;">${t.trialSetupCta}</a></p>
+    <p>${t.trialSetupNoCharge}</p>
+    <p style="font-size:12px;color:#777;">${t.trialCancelPrefix} <a href="mailto:${SITE_CONFIG.supportEmail}">${SITE_CONFIG.supportEmail}</a></p>`,
+    );
+  }
 
   return shell(
     locale,
@@ -204,5 +226,33 @@ export function paymentFailedEmailHtml(opts: {
     `    <h2 style="color:#0f4c4c;">${t.chargeFailedHeading}</h2>
     <p>${format(t.chargeFailedBody, { clinic: `<strong>${escapeHtml(clinicName)}</strong>` })}</p>
     <p style="font-size:12px;color:#777;">${t.supportPrefix} <a href="mailto:${SITE_CONFIG.supportEmail}">${SITE_CONFIG.supportEmail}</a></p>`,
+  );
+}
+
+/**
+ * Internal "a trial ended and we could not bill it" alert.
+ *
+ * Addressed to the operator, not the clinic — the clinic is told nothing,
+ * because from its side nothing changed and nothing is owed. It names the clinic
+ * and the reason because those decide the next action: a missing provider is one
+ * fix for everyone, a missing card is one clinic to call.
+ */
+export function trialUnbilledAdminEmailHtml(opts: {
+  locale: Locale;
+  t: EmailStrings;
+  clinicName: string;
+  clinicEmail: string;
+  reasonLabel: string;
+}): string {
+  const { locale, t, clinicName, clinicEmail, reasonLabel } = opts;
+
+  return shell(
+    locale,
+    `    <h2 style="color:#0f4c4c;">${t.trialUnbilledHeading}</h2>
+    <p>${format(t.trialUnbilledBody, { clinic: `<strong>${escapeHtml(clinicName)}</strong>` })}</p>
+    <p>${t.trialUnbilledReasonLabel} <strong>${escapeHtml(reasonLabel)}</strong></p>
+    <p>${t.trialUnbilledClinicLabel} <a href="mailto:${escapeHtml(clinicEmail)}">${escapeHtml(clinicEmail)}</a></p>
+    ${HR}
+    <p style="font-size:12px;color:#777;">${t.trialUnbilledStillVisible}</p>`,
   );
 }

@@ -136,3 +136,27 @@ export function isClinicVisible(
   if (sub.status === "PAST_DUE") return isWithinGrace(sub.currentPeriodEnd ?? null, now);
   return false;
 }
+
+/**
+ * Why a subscription cannot be charged right now, or null when it can be.
+ *
+ * A trial that ends with a blocker must NOT be charged, and must not silently
+ * roll on either — that is the difference between "we chose to let them stay"
+ * and "nobody noticed". The two reasons need different actions from different
+ * people, which is why this returns which one rather than a boolean:
+ *
+ * - `no_provider` — PayPlus is not configured. Ours to fix, and it blocks every
+ *   clinic at once.
+ * - `no_card` — the provider is live but this clinic never completed payment
+ *   setup, so there is no stored-card token. One clinic to chase.
+ */
+export type BillingBlocker = "no_provider" | "no_card";
+
+export function billingBlocker(args: {
+  payplusConfigured: boolean;
+  recurringToken: string | null;
+}): BillingBlocker | null {
+  if (!args.payplusConfigured) return "no_provider";
+  if (!args.recurringToken) return "no_card";
+  return null;
+}

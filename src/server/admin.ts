@@ -4,7 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 
 /** Comma-separated allowlist of admin emails (ADMIN_EMAILS), case-insensitive. */
-function adminEmails(): string[] {
+export function adminEmails(): string[] {
   return (process.env.ADMIN_EMAILS ?? "")
     .split(",")
     .map((e) => e.trim().toLowerCase())

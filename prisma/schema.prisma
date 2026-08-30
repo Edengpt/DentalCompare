@@ -287,6 +287,14 @@ model ClinicSubscription {
   // Smallest "days remaining" warning already emailed for this trial (see
   // TRIAL_WARNING_DAYS_BEFORE), so each warning goes out at most once.
   trialWarningSentDays    Int?
+  // When the trial ran out with no way to charge — PayPlus unconfigured, or the
+  // clinic never stored a card. The clinic deliberately stays TRIALING and stays
+  // visible; this stamp is the only record that its free period is over, and the
+  // reason the admin screen can show it and the alert email fires exactly once.
+  // Status is not used for this: a new SubscriptionStatus missing from either
+  // visibleSubscriptionFilter or isClinicVisible drops a clinic from the
+  // directory with no error anywhere.
+  trialEndedUnbilledAt    DateTime?
   createdAt               DateTime           @default(now())
   updatedAt               DateTime           @updatedAt
 

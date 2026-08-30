@@ -7,10 +7,20 @@ import {
   isTrialOver,
   dueTrialWarning,
   trialDaysRemaining,
+  billingBlocker,
 } from "@/lib/subscription";
 import { chargeByToken, isPayPlusConfigured } from "@/lib/payplus";
-import { recordRenewalCharge, markPastDue, cancelSubscription } from "@/server/subscriptions";
-import { sendPaymentFailedEmail, sendTrialEndingEmail } from "@/server/subscription-notifications";
+import {
+  recordRenewalCharge,
+  markPastDue,
+  cancelSubscription,
+  markTrialEndedUnbilled,
+} from "@/server/subscriptions";
+import {
+  sendPaymentFailedEmail,
+  sendTrialEndingEmail,
+  sendTrialUnbilledAdminEmail,
+} from "@/server/subscription-notifications";
 import { audit } from "@/lib/audit";
 import { logEvent } from "@/lib/log";
 import { asLocale } from "@/i18n/config";
@@ -53,16 +63,11 @@ export async function GET(req: Request) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
-  // Defensive gate: no-op if PayPlus credentials aren't configured.
-  if (!isPayPlusConfigured()) {
-    return NextResponse.json({
-      checked: 0,
-      renewed: 0,
-      failed: 0,
-      canceled: 0,
-      trials: { checked: 0, converted: 0, warned: 0, failed: 0 },
-    });
-  }
+  // The PayPlus gate guards the CHARGE, not the job. It used to return here, and
+  // production has never had PayPlus configured — so a trialing clinic got no
+  // warning emails, no charge and no expiry: free forever, with nothing anywhere
+  // saying so. The trial clock is ours and runs regardless of who takes the money.
+  const payplusConfigured = isPayPlusConfigured();
 
   const now = new Date();
 
@@ -77,6 +82,7 @@ export async function GET(req: Request) {
       priceMinor: true,
       currency: true,
       recurringToken: true,
+      setupToken: true,
       payplusCustomerUid: true,
       trialEndsAt: true,
       trialWarningSentDays: true,
@@ -87,6 +93,7 @@ export async function GET(req: Request) {
   let trialsConverted = 0;
   let trialsWarned = 0;
   let trialsFailed = 0;
+  let trialsUnbilled = 0;
 
   for (const sub of trials) {
     if (!sub.trialEndsAt) continue;
@@ -110,6 +117,9 @@ export async function GET(req: Request) {
           currency: price.currency,
           plan: sub.plan as SubscriptionPlanType,
           locale: asLocale(sub.dentist.locale),
+          // A stored card means nothing left to set up; without one the warning
+          // has to ask for the card instead of announcing a charge.
+          setupToken: sub.recurringToken ? null : sub.setupToken,
         });
         // Only record the mark once the mail actually went out, so a transient
         // Resend failure doesn't silently swallow the warning.
@@ -124,16 +134,41 @@ export async function GET(req: Request) {
       continue;
     }
 
-    // Trial is over → run the first real charge.
-    if (!sub.recurringToken) {
-      logEvent("error", "subscription.trial_ended_without_token", { subscriptionId: sub.id });
-      trialsFailed += 1;
+    // Trial is over. Before charging, ask whether charging is even possible —
+    // and if it is not, say so once rather than retry into silence every day.
+    const blocker = billingBlocker({ payplusConfigured, recurringToken: sub.recurringToken });
+    if (blocker) {
+      // Status stays TRIALING on purpose: the clinic keeps its listing and keeps
+      // receiving leads. Losing a clinic over a billing gap that is usually ours
+      // would cost more than the month it did not pay for.
+      const firstTime = await markTrialEndedUnbilled(sub.id);
+      if (firstTime) {
+        logEvent("error", "subscription.trial_ended_unbilled", {
+          subscriptionId: sub.id,
+          reason: blocker,
+        });
+        await audit({
+          actor: "system",
+          action: "subscription.trial_ended_unbilled",
+          entity: "ClinicSubscription",
+          entityId: sub.id,
+          metadata: { reason: blocker },
+        });
+        await sendTrialUnbilledAdminEmail({
+          clinicName: sub.dentist.clinicName,
+          clinicEmail: sub.dentist.email,
+          reason: blocker,
+        });
+      }
+      trialsUnbilled += 1;
       continue;
     }
 
     try {
       const result = await chargeByToken({
-        recurringToken: sub.recurringToken,
+        // Non-null past the blocker check above; billingBlocker returns
+        // "no_card" for exactly this case.
+        recurringToken: sub.recurringToken!,
         payplusCustomerUid: sub.payplusCustomerUid,
         amountMinor: price.minor,
         currency: price.currency,
@@ -191,24 +226,31 @@ export async function GET(req: Request) {
 
   // ── Pass 2: renewals ───────────────────────────────────────────────────────
   // Both ACTIVE (due for renewal) and PAST_DUE (being retried within grace).
-  const candidates = await db.clinicSubscription.findMany({
-    where: {
-      status: { in: ["ACTIVE", "PAST_DUE"] },
-      recurringToken: { not: null },
-      currentPeriodEnd: { not: null },
-    },
-    select: {
-      id: true,
-      plan: true,
-      priceMinor: true,
-      currency: true,
-      status: true,
-      recurringToken: true,
-      payplusCustomerUid: true,
-      currentPeriodEnd: true,
-      dentist: { select: { clinicName: true, email: true, locale: true } },
-    },
-  });
+  //
+  // Unlike the trial pass this one is skipped wholesale without a provider, and
+  // that includes the lapse-to-CANCELED branch: cancelling a paying clinic
+  // because OUR provider is down would punish it for our outage. The skip is
+  // reported in the response rather than hidden.
+  const candidates = payplusConfigured
+    ? await db.clinicSubscription.findMany({
+        where: {
+          status: { in: ["ACTIVE", "PAST_DUE"] },
+          recurringToken: { not: null },
+          currentPeriodEnd: { not: null },
+        },
+        select: {
+          id: true,
+          plan: true,
+          priceMinor: true,
+          currency: true,
+          status: true,
+          recurringToken: true,
+          payplusCustomerUid: true,
+          currentPeriodEnd: true,
+          dentist: { select: { clinicName: true, email: true, locale: true } },
+        },
+      })
+    : [];
 
   let renewed = 0;
   let failed = 0;
@@ -302,6 +344,9 @@ export async function GET(req: Request) {
   }
 
   return NextResponse.json({
+    // Reported so a run that did nothing can be told apart from a run that
+    // could do nothing.
+    payplusConfigured,
     checked: candidates.length,
     renewed,
     failed,
@@ -311,6 +356,7 @@ export async function GET(req: Request) {
       converted: trialsConverted,
       warned: trialsWarned,
       failed: trialsFailed,
+      unbilled: trialsUnbilled,
     },
   });
 }

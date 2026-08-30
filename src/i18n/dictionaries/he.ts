@@ -418,6 +418,7 @@ const he = {
     subjectQuoteRequest: "בקשת הצעת מחיר חדשה — DentalCompare",
     subjectPaymentSetup: "אישור מרפאה — הפעלת מנוי DentalCompare",
     subjectTrialEndingSoon: "תקופת ההתנסות מסתיימת — החיוב הראשון בקרוב",
+    subjectTrialSetupNeeded: "תקופת ההתנסות מסתיימת — נותר להשלים את פרטי התשלום",
     subjectTrialDaysLeft: "נותרו {days} ימי התנסות ב-DentalCompare",
     subjectPaymentFailed: "חיוב המנוי נכשל — DentalCompare",
     planMonthly: "חודשי",
@@ -456,10 +457,25 @@ const he = {
     trialNoAction:
       "לא נדרשת מכם כל פעולה כדי להמשיך. אם אינכם מעוניינים להמשיך, ניתן לבטל לפני מועד החיוב ולא תחויבו כלל.",
     trialCancelPrefix: "לביטול או לשאלות:",
+    trialSetupHeading: "תקופת ההתנסות מסתיימת {when} — נותר להשלים את פרטי התשלום",
+    trialSetupBody:
+      "תקופת ההתנסות החינמית של {clinic} מסתיימת {when}, ועדיין לא הוגדר אצלנו אמצעי תשלום. כדי להמשיך במסלול ה{plan}, בסך {price}, יש להשלים את ההגדרה:",
+    trialSetupCta: "השלמת פרטי התשלום",
+    trialSetupNoCharge: "לא נגבה מכם דבר עד להשלמת ההגדרה.",
     chargeFailedHeading: "לא הצלחנו לחייב את המנוי",
     chargeFailedBody:
       "החיוב התקופתי עבור {clinic} נכשל. כדי שהמרפאה תמשיך להופיע במאגר, יש לעדכן את אמצעי התשלום.",
     supportPrefix: "פנו לתמיכה:",
+    subjectTrialUnbilled: "התראה: תקופת התנסות הסתיימה ללא חיוב — DentalCompare",
+    trialUnbilledHeading: "תקופת התנסות הסתיימה ולא נגבה תשלום",
+    trialUnbilledBody:
+      "תקופת ההתנסות של {clinic} הסתיימה, אך לא הייתה דרך לגבות ממנה תשלום. המרפאה נשארה גלויה במאגר וממשיכה לקבל פניות — ההתראה הזו נשלחת פעם אחת בלבד.",
+    trialUnbilledReasonLabel: "הסיבה:",
+    trialUnbilledReasonNoProvider: "ספק התשלומים אינו מוגדר (PayPlus)",
+    trialUnbilledReasonNoCard: "המרפאה מעולם לא השלימה הזנת אמצעי תשלום",
+    trialUnbilledClinicLabel: "המרפאה:",
+    trialUnbilledStillVisible:
+      "לא בוצע שום שינוי אוטומטי נוסף. כדי לגבות, לבטל או להאריך — פעלו ממסך המנויים בממשק הניהול.",
   },
 
   labels: {
@@ -689,6 +705,10 @@ const he = {
     subActive: "פעיל",
     subPastDue: "חיוב נכשל",
     subCanceled: "בוטל",
+    subTrialing: "בתקופת התנסות",
+    subTrialUnbilled: "ההתנסות הסתיימה — לא נגבה",
+    subTrialUnbilledHint:
+      "תקופת ההתנסות הסתיימה ולא הייתה דרך לגבות תשלום. המרפאה נשארה גלויה במאגר.",
     dentistsTitle: "רופאים",
     dentistsSubtitle: "{count} רופאים במאגר. לחצו על הסטטוס כדי להפעיל/להשבית.",
     dentistsPendingNotice:

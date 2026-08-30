@@ -170,6 +170,23 @@ export async function markPastDue(subscriptionId: string): Promise<boolean> {
   return false;
 }
 
+/**
+ * Records that a free trial ran out with no way to charge it, and returns true
+ * only the FIRST time — the caller alerts once, not on every daily cron run.
+ *
+ * The status deliberately stays TRIALING: the clinic keeps its listing and keeps
+ * receiving leads, because it should not lose the platform over a billing gap
+ * that is usually ours. The stamp is what stops that decision from being
+ * indistinguishable from nobody noticing.
+ */
+export async function markTrialEndedUnbilled(subscriptionId: string): Promise<boolean> {
+  const firstTime = await db.clinicSubscription.updateMany({
+    where: { id: subscriptionId, trialEndedUnbilledAt: null },
+    data: { trialEndedUnbilledAt: new Date() },
+  });
+  return firstTime.count === 1;
+}
+
 export async function cancelSubscription(subscriptionId: string): Promise<void> {
   const e = (await getDictionary(await getRequestLocale())).errors;
   await db.clinicSubscription.update({
