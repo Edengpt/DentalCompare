@@ -69,9 +69,22 @@ export async function approveClinic(dentistId: string): Promise<ActionResult> {
   // live in the directory, so trial days before approval would be worthless.
   const approvedAt = new Date();
   await db.$transaction([
-    db.dentist.update({
-      where: { id: dentistId },
-      data: { isActive: true, submittedBySelf: false, approvedAt },
+    // updateMany, not update: update throws when nothing matches, and
+    // re-approving an already-approved clinic has to be a no-op on the stamps
+    // rather than an error. The `approvedAt: null` guard is what makes it one —
+    // a second approval must not re-date a licence check any more than it hands
+    // out a fresh 60 free days.
+    db.dentist.updateMany({
+      where: { id: dentistId, approvedAt: null },
+      data: {
+        isActive: true,
+        submittedBySelf: false,
+        approvedAt,
+        // One decision, two facts. Separate columns because the first is
+        // answered to a regulator and the second to an accountant.
+        licenceVerifiedAt: approvedAt,
+        licenceVerifiedBy: admin.email,
+      },
     }),
     // Only a PENDING subscription enters the trial — re-approving a clinic must
     // not hand an ACTIVE or CANCELED one a fresh 60 free days.
@@ -80,6 +93,10 @@ export async function approveClinic(dentistId: string): Promise<ActionResult> {
       data: { status: "TRIALING", trialEndsAt: trialEndFrom(approvedAt) },
     }),
   ]);
+
+  // The guard above skips the whole row for a clinic approved earlier —
+  // isActive included — so a re-approval still has to restore the listing.
+  await db.dentist.update({ where: { id: dentistId }, data: { isActive: true } });
 
   await sendPaymentSetupEmail({
     email: dentist.email,
