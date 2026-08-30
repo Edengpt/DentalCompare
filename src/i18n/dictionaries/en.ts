@@ -748,6 +748,8 @@ const en: typeof he = {
     signedContract: " ✦ signed the contract",
     years: "{count} years",
     clinicsTitle: "Clinic applications",
+    clinicDocs: "Licence documents",
+    clinicDocsNone: "No documents attached — there is nothing to verify.",
     clinicsSubtitle:
       "Clinics that registered themselves and are awaiting approval. Check their details and contract acceptance, then publish them to the directory — or reject the application.",
     clinicsEmptyTitle: "No applications awaiting approval",

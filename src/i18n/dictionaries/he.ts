@@ -731,6 +731,8 @@ const he = {
     signedContract: " ✦ חתם על החוזה",
     years: "{count} שנים",
     clinicsTitle: "הרשמות מרפאות",
+    clinicDocs: "מסמכי רישיון",
+    clinicDocsNone: "לא צורפו מסמכים — אין מה לאמת.",
     clinicsSubtitle:
       "מרפאות שנרשמו עצמאית וממתינות לאישור. בדקו את הפרטים ואת אישור החוזה, ואשרו לפרסום במאגר — או דחו את ההרשמה.",
     clinicsEmptyTitle: "אין הרשמות שממתינות לאישור",

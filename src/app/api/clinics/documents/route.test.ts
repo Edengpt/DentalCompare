@@ -45,6 +45,18 @@ describe("POST /api/clinics/documents", () => {
     });
   });
 
+  // A licence stored public would be readable by anyone holding the URL, which
+  // would make the admin-only download route beside it pointless. The clinic
+  // logos are public; these are not, and the two live in different stores.
+  it("stores into the private blob store, never the public one", async () => {
+    await POST(postWith(pdf()));
+    expect(put).toHaveBeenCalledWith(
+      expect.stringMatching(/^clinics\/documents\//),
+      expect.any(File),
+      expect.objectContaining({ access: "private" }),
+    );
+  });
+
   // The store this writes to also holds patients' x-rays. An unauthenticated
   // route into it with no rate limit is a write primitive for anyone.
   it("refuses once the IP is over its limit, and never touches storage", async () => {
@@ -98,7 +110,7 @@ describe("DELETE /api/clinics/documents", () => {
   it("deletes an orphan left behind when the clinic changed country", async () => {
     const res = await call(orphan);
     expect(res.status).toBe(200);
-    expect(del).toHaveBeenCalledWith(orphan, { token: "blob_test_token" });
+    expect(del).toHaveBeenCalledWith(orphan);
   });
 
   // This is the whole reason the endpoint is safe to expose. A document already

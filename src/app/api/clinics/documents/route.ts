@@ -50,8 +50,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: t.tooManyDocumentUploads }, { status: 429 });
   }
 
-  const token = process.env.BLOB_READ_WRITE_TOKEN;
-  if (!token) {
+  // Read only as a configuration guard — the blob client picks the token up
+  // from the environment itself. Failing here beats failing mid-upload.
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
     return NextResponse.json({ error: t.documentsUnavailable }, { status: 503 });
   }
 
@@ -91,11 +92,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: t.documentType }, { status: 400 });
   }
 
+  // access: "private", like the patients' medical files and unlike the clinic
+  // logos. A licence stored public would be readable by anyone holding the URL,
+  // which would make the admin-only download route beside it pointless.
   const blob = await put(clinicDocumentBlobPath(file), file, {
-    access: "public",
+    access: "private",
     addRandomSuffix: true,
     contentType: file.type,
-    token,
   });
 
   return NextResponse.json({ url: blob.url });
@@ -122,8 +125,7 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: t.tooManyDocumentUploads }, { status: 429 });
   }
 
-  const token = process.env.BLOB_READ_WRITE_TOKEN;
-  if (!token) {
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
     return NextResponse.json({ error: t.documentsUnavailable }, { status: 503 });
   }
 
@@ -137,6 +139,6 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: t.documentInUse }, { status: 409 });
   }
 
-  await del(url, { token });
+  await del(url);
   return NextResponse.json({ ok: true });
 }

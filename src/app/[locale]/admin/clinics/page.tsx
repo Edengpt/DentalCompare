@@ -1,7 +1,16 @@
 import { getDictionary } from "@/i18n/get-dictionary";
 import { isLocale, defaultLocale } from "@/i18n/config";
 import { format } from "@/i18n/format";
-import { Building2, Mail, Phone, MapPin, Clock, FileSignature, User } from "lucide-react";
+import {
+  Building2,
+  Mail,
+  Phone,
+  MapPin,
+  Clock,
+  FileSignature,
+  ShieldCheck,
+  User,
+} from "lucide-react";
 import { requireAdmin } from "@/server/admin";
 import { db } from "@/lib/db";
 import { translateSpecialty, translateInsurer, translateTreatment } from "@/lib/labels";
@@ -34,6 +43,9 @@ export default async function AdminClinicsPage({
   const pending = await db.dentist.findMany({
     where: { submittedBySelf: true, isActive: false },
     orderBy: { createdAt: "desc" },
+    // The decision this screen exists for is "does this licence look real", so
+    // the documents have to be on the same screen as the approve button.
+    include: { documents: { orderBy: { kind: "asc" } } },
   });
 
   return (
@@ -113,6 +125,37 @@ export default async function AdminClinicsPage({
                   label={t.admin.colInsurers}
                   value={d.insurerAffiliations.map((i) => translateInsurer(t.labels, i)).join(", ") || "—"}
                 />
+              </div>
+
+              <div className="border-border/60 border-t px-6 py-4">
+                <p className="text-foreground inline-flex items-center gap-1.5 text-xs font-semibold">
+                  <ShieldCheck className="text-teal-deep h-4 w-4" />
+                  {t.admin.clinicDocs}
+                </p>
+                {d.documents.length === 0 ? (
+                  // Registration cannot produce this any more, but a clinic
+                  // created before the gate existed can — and approving one
+                  // unseen is exactly what the promise forbids.
+                  <p className="text-coral mt-1.5 text-sm">{t.admin.clinicDocsNone}</p>
+                ) : (
+                  <ul className="mt-1.5 space-y-1">
+                    {d.documents.map((doc) => (
+                      <li key={doc.id} className="text-sm">
+                        <a
+                          href={`/api/clinics/documents/${doc.id}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-teal-deep font-medium hover:underline"
+                        >
+                          {doc.kind}
+                        </a>
+                        <span className="text-muted-foreground ms-2 text-xs">
+                          {dateFmt.format(doc.uploadedAt)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
 
               <div className="border-border/60 flex flex-wrap items-center justify-between gap-4 border-t px-6 py-4">
