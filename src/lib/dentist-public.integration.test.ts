@@ -24,7 +24,7 @@ let db: typeof Db;
 const TEST_COUNTRY = "QW";
 const created = { dentistIds: [] as string[] };
 
-async function seedClinicIn(countryCode: string) {
+async function seedClinicIn(countryCode: string, opts: { verified?: boolean } = {}) {
   const sfx = randomUUID().slice(0, 8);
   const dentist = await db.dentist.create({
     data: {
@@ -37,6 +37,10 @@ async function seedClinicIn(countryCode: string) {
       experienceYears: 10,
       countryCode,
       isActive: true,
+      // Verified by default: every other test in this file is about something
+      // else, and a clinic that reaches a patient is verified by definition now.
+      licenceVerifiedAt: opts.verified === false ? null : new Date(),
+      licenceVerifiedBy: opts.verified === false ? null : "admin@example.com",
     },
   });
   await db.clinicSubscription.create({
@@ -118,5 +122,23 @@ describe.skipIf(!hasDb)("the directory query", () => {
     expect(clinics.map((c) => c.id)).toContain(abroad.id);
 
     await db.dentist.delete({ where: { id: abroad.id } });
+  });
+  // The gate that carries the platform's promise. It is the same failure mode
+  // as the subscription filter: a clinic missing the stamp vanishes with no
+  // error anywhere, so it is asserted against the real database rather than
+  // trusted to the shape of the where clause.
+  it("hides a clinic whose licence was never checked, and shows one whose was", async () => {
+    const unchecked = await seedClinicIn(TEST_COUNTRY, { verified: false });
+    const checked = await seedClinicIn(TEST_COUNTRY);
+
+    const listed = await db.dentist.findMany({
+      where: { ...publicDentistWhere(), id: { in: [unchecked.id, checked.id] } },
+      select: { id: true },
+    });
+
+    expect(listed.map((d) => d.id)).toEqual([checked.id]);
+
+    await db.dentist.delete({ where: { id: unchecked.id } });
+    await db.dentist.delete({ where: { id: checked.id } });
   });
 });

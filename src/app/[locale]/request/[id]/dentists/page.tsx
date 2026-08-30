@@ -1,3 +1,4 @@
+import { ShieldCheck } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
@@ -90,6 +91,13 @@ export default async function RequestDentistsPage({
             </h1>
             <p className="text-muted-foreground mt-4 max-w-2xl text-lg text-pretty">
               {t.requestFlow.dentistsSubtitle}
+            </p>
+            {/* The badge sits on every card, so it cannot explain itself. What
+                it means is a property of the whole directory, and belongs here
+                once rather than repeated on each clinic. */}
+            <p className="text-teal-deep mt-4 inline-flex max-w-2xl items-start gap-2 text-sm">
+              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+              {t.dentists.verifiedExplainer}
             </p>
           </div>
         </section>

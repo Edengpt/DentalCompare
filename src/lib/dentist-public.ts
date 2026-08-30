@@ -37,6 +37,9 @@ export const PUBLIC_DENTIST_SELECT = {
   profileImageUrl: true,
   rating: true,
   reviewCount: true,
+  // Read by the card so the badge is a fact from the row rather than a
+  // constant. See publicDentistWhere below for why that distinction matters.
+  licenceVerifiedAt: true,
 } satisfies Prisma.DentistSelect;
 
 /**
@@ -50,7 +53,23 @@ export type PublicDentist = Prisma.DentistGetPayload<{
   select: typeof PUBLIC_DENTIST_SELECT;
 }>;
 
-/** Clinics a patient may be shown: active, and paid up (or in trial/grace). */
+/**
+ * Clinics a patient may be shown: active, paid up (or in trial/grace), and with
+ * a licence an admin actually looked at.
+ *
+ * **The licence gate is the platform's promise, in one line.** Every clinic in
+ * the directory has had its documents seen — that is the claim on the home page
+ * and beside the directory, and this condition is the only thing enforcing it.
+ *
+ * It is also the same failure mode as visibleSubscriptionFilter: a clinic
+ * missing the stamp vanishes with no error anywhere. Both paths that create a
+ * clinic stamp it — approveClinic and createDentist. If a third is ever added,
+ * it stamps too, or the clinics it creates are invisible and nothing says so.
+ */
 export function publicDentistWhere(): Prisma.DentistWhereInput {
-  return { isActive: true, subscription: visibleSubscriptionFilter() };
+  return {
+    isActive: true,
+    licenceVerifiedAt: { not: null },
+    subscription: visibleSubscriptionFilter(),
+  };
 }

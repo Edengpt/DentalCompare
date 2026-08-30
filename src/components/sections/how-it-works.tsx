@@ -1,4 +1,4 @@
-import { FileUp, Users, Mail } from "lucide-react";
+import { ShieldCheck, FileUp, Users, Mail } from "lucide-react";
 import type { Dictionary } from "@/i18n/get-dictionary";
 
 export function HowItWorks({ t }: { t: Dictionary["howItWorks"] }) {
@@ -69,6 +69,14 @@ export function HowItWorks({ t }: { t: Dictionary["howItWorks"] }) {
             );
           })}
         </div>
+
+        {/* The verified badge appears on every clinic, so on its own it reads as
+            decoration. What it actually means is a property of the directory as
+            a whole, and this is where a patient meets that claim first. */}
+        <p className="border-border/60 bg-card text-muted-foreground mx-auto mt-12 flex max-w-2xl items-start gap-2.5 rounded-2xl border px-5 py-4 text-sm leading-relaxed">
+          <ShieldCheck className="text-teal-deep mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+          {t.verifiedPromise}
+        </p>
       </div>
     </section>
   );

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeAll, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeAll, afterAll, afterEach } from "vitest";
 import { randomUUID } from "node:crypto";
 import type { db as Db } from "@/lib/db";
 
@@ -13,7 +13,11 @@ let db: typeof Db;
 let registerClinic: (fd: FormData) => Promise<{ ok: boolean; error?: string }>;
 
 const created: string[] = [];
-const COUNTRY = "ZZ";
+// Not "ZZ": every integration test shares one database, and travel-actions
+// asserts that "ZZ" is NOT an active country. Creating it here made those tests
+// fail on a country this file left behind rather than on their own subject.
+// The row is removed in afterAll for the same reason.
+const COUNTRY = "QV";
 const DOC_URL = "https://x.blob.vercel-storage.com/clinics/documents/a.pdf";
 
 function baseForm(sfx: string): FormData {
@@ -57,6 +61,10 @@ describe.skipIf(!hasDb)("registerClinic documents (integration, real DB)", () =>
     // The limiter is per IP and every test here shares one — without this the
     // fourth test in the file fails on rate limiting rather than on its subject.
     await db.rateLimit.deleteMany({ where: { bucket: "clinic-join:9.9.9.9" } });
+  }, DB_TIMEOUT);
+
+  afterAll(async () => {
+    await db.country.delete({ where: { code: COUNTRY } }).catch(() => {});
   }, DB_TIMEOUT);
 
   it(

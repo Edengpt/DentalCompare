@@ -31,6 +31,7 @@ describe("what a patient may see about a clinic", () => {
 
   it("still carries everything the card renders", () => {
     for (const field of [
+      "licenceVerifiedAt",
       "clinicName",
       "dentistName",
       "city",
@@ -53,8 +54,16 @@ describe("which clinics a patient may see", () => {
   it("requires an active subscription as well as an active clinic", () => {
     expect(publicDentistWhere()).toEqual({
       isActive: true,
+      licenceVerifiedAt: { not: null },
       subscription: visibleSubscriptionFilter(),
     });
+  });
+
+  // This one line is the whole of "every clinic in the directory has had its
+  // licence seen" — the claim the home page makes. Nothing else enforces it.
+  it("requires a licence an admin actually looked at", () => {
+    expect(publicDentistWhere()).toHaveProperty("licenceVerifiedAt");
+    expect(publicDentistWhere().licenceVerifiedAt).toEqual({ not: null });
   });
 
   it("keeps in lockstep with the shared visibility gate", () => {
@@ -62,5 +71,19 @@ describe("which clinics a patient may see", () => {
       typeof visibleSubscriptionFilter
     >;
     expect(statuses.OR.map((o) => o.status).sort()).toEqual(["ACTIVE", "PAST_DUE", "TRIALING"]);
+  });
+});
+
+/**
+ * The badge is rendered from licenceVerifiedAt rather than as a constant.
+ *
+ * Every listed clinic is verified by construction, which is exactly why: if the
+ * gate in publicDentistWhere ever breaks, a constant badge keeps claiming
+ * "verified" about a clinic nobody checked, while one read from the data simply
+ * disappears. When enforcement breaks, the promise should vanish, not lie.
+ */
+describe("the badge is a fact from the row", () => {
+  it("carries the licence stamp in the public select", () => {
+    expect(PUBLIC_DENTIST_SELECT).toHaveProperty("licenceVerifiedAt", true);
   });
 });

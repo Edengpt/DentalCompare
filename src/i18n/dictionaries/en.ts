@@ -83,6 +83,8 @@ const en: typeof he = {
     step3Description:
       "Each clinic receives your documents and replies with a written quote. Compare them in your own time and choose — with no obligation.",
     step3Detail: "Within 24–48 hours",
+    verifiedPromise:
+      "Every clinic you see here uploaded its licence to practise, and a person on our team looked at it before the clinic appeared. A clinic whose licence was not checked never reaches you.",
   },
 
   benefits: {
@@ -299,6 +301,9 @@ const en: typeof he = {
     yearsExperience: "{count} years' experience",
     reviews: { one: "1 review", other: "{count} reviews" },
     isNew: "New",
+    verifiedBadge: "Licence verified",
+    verifiedExplainer:
+      "Every clinic here uploaded its licence to practise, and a person on our team looked at it before the clinic appeared in the directory.",
     insurersLabel: "Insurers: ",
     languagesLabel: "Languages: ",
     selected: "Selected",

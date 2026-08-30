@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, MapPin, Star } from "lucide-react";
+import { Check, MapPin, ShieldCheck, Star } from "lucide-react";
 import type { PublicDentist } from "@/lib/dentist-public";
 import { cn } from "@/lib/utils";
 import { translateInsurer, translateLanguage, translateSpecialty } from "@/lib/labels";
@@ -70,6 +70,16 @@ export function DentistCard({
             {dentist.dentistName}
           </h3>
           <p className="text-muted-foreground mt-0.5 truncate text-sm">{dentist.clinicName}</p>
+          {/* Rendered from the row, never as a constant. Every listed clinic is
+              verified by construction — which is exactly why: if that gate ever
+              breaks, a constant badge would keep claiming "verified" about a
+              clinic nobody checked, while this one simply disappears. */}
+          {dentist.licenceVerifiedAt && (
+            <span className="bg-teal-deep/10 text-teal-deep mt-1.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium">
+              <ShieldCheck className="h-3 w-3" aria-hidden="true" />
+              {t.dentists.verifiedBadge}
+            </span>
+          )}
           <p className="text-muted-foreground/80 mt-2 inline-flex items-center gap-1 text-xs">
             <MapPin className="h-3 w-3" aria-hidden="true" />
             {/* Country before city: "Tel Aviv" beside "Budapest" with no country
