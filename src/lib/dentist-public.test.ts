@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { PUBLIC_DENTIST_SELECT, publicDentistWhere } from "./dentist-public";
 import { visibleSubscriptionFilter } from "./subscription";
 
@@ -49,6 +49,17 @@ describe("what a patient may see about a clinic", () => {
 });
 
 describe("which clinics a patient may see", () => {
+  // Both sides of the comparison below call new Date() independently, and the
+  // grace cutoff is derived from it. One millisecond between the two calls made
+  // this test fail at random — it did so on CI, which is worse than useless: a
+  // suite that fails for no reason teaches everyone to ignore it. Freezing the
+  // clock is the fix, not widening the assertion.
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-09-01T12:00:00Z"));
+  });
+  afterEach(() => vi.useRealTimers());
+
   // The directory is the product a clinic subscribes to. isActive alone lists
   // clinics that never set up a subscription or whose subscription lapsed.
   it("requires an active subscription as well as an active clinic", () => {
