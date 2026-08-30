@@ -431,6 +431,13 @@ const he = {
     subjectTrialSetupNeeded: "תקופת ההתנסות מסתיימת — נותר להשלים את פרטי התשלום",
     subjectTrialDaysLeft: "נותרו {days} ימי התנסות ב-DentalCompare",
     subjectPaymentFailed: "חיוב המנוי נכשל — DentalCompare",
+    subjectDocumentsRejected: "נדרש מסמך נוסף כדי לאשר את המרפאה — DentalCompare",
+    docsRejectedHeading: "צריך מסמך אחד נוסף כדי להשלים את האישור",
+    docsRejectedBody:
+      "בדקנו את המסמכים ש-{clinic} העלתה, ולא הצלחנו לאשר את כולם. אין צורך להירשם מחדש — הקישור למטה פותח את הטופס בדיוק במקום שבו עצרנו.",
+    docsRejectedWhat: "מה צריך לשלוח שוב:",
+    docsRejectedCta: "העלאת המסמך",
+    docsRejectedExpiry: "הקישור תקף {days} ימים. אם פג — השיבו למייל הזה ונשלח חדש.",
     planMonthly: "חודשי",
     planYearly: "שנתי",
     autoFooter: "מייל זה נשלח אוטומטית על ידי DentalCompare.",

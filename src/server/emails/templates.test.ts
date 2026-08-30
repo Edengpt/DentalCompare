@@ -4,6 +4,7 @@ import {
   quoteRequestEmailHtml,
   newQuoteEmailHtml,
   trialEndingEmailHtml,
+  documentsRejectedEmailHtml,
 } from "./templates";
 import he from "@/i18n/dictionaries/he";
 import en from "@/i18n/dictionaries/en";
@@ -149,5 +150,37 @@ describe("the trial-ending email tells the truth about the card", () => {
     });
     expect(html).toContain(en.emails.trialSetupCta);
     expect(html).not.toContain(en.emails.trialNoAction);
+  });
+});
+
+describe("the rejected-documents email", () => {
+  const base = {
+    locale: "he" as const,
+    t: he.emails,
+    clinicName: "מרפאת בדיקה",
+    link: "https://example.com/he/clinics/documents/tok_1",
+  };
+
+  it("names each document and why it was refused", () => {
+    const html = documentsRejectedEmailHtml({
+      ...base,
+      items: [{ kind: "Licence", reason: "התמונה מטושטשת" }],
+    });
+    expect(html).toContain("Licence");
+    expect(html).toContain("התמונה מטושטשת");
+    expect(html).toContain(base.link);
+  });
+
+  // The reason is free text an admin typed, and the kind came from a country
+  // row an admin typed. Both reach an email as markup.
+  it("escapes the admin's reason, the document kind and the clinic's name", () => {
+    const html = documentsRejectedEmailHtml({
+      ...base,
+      clinicName: "<b>Clinic</b>",
+      items: [{ kind: "<img src=x onerror=alert(1)>", reason: "<script>bad()</script>" }],
+    });
+    expect(html).not.toContain("<img src=x");
+    expect(html).not.toContain("<script>bad()");
+    expect(html).not.toContain("<b>Clinic</b>");
   });
 });

@@ -5,6 +5,7 @@ import {
   paymentFailedEmailHtml,
   trialEndingEmailHtml,
   trialUnbilledAdminEmailHtml,
+  documentsRejectedEmailHtml,
 } from "@/server/emails/templates";
 import { appUrl } from "@/lib/app-url";
 import { getDictionary } from "@/i18n/get-dictionary";
@@ -178,6 +179,45 @@ export async function sendTrialUnbilledAdminEmail(args: {
     return true;
   } catch (err) {
     console.error("Failed to send trial-unbilled admin alert:", err);
+    return false;
+  }
+}
+
+/**
+ * Asks a clinic for a better copy of a document an admin could not accept.
+ *
+ * Deliberately not framed as a rejection: the clinic has already filled in the
+ * whole form and is waiting, and one readable photograph away from approval.
+ */
+export async function sendDocumentsRejectedEmail(args: {
+  email: string;
+  clinicName: string;
+  locale: Locale;
+  token: string;
+  items: { kind: string; reason: string }[];
+}): Promise<boolean> {
+  const t = (await getDictionary(args.locale)).emails;
+  const link = `${appUrl()}/${args.locale}/clinics/documents/${args.token}`;
+  try {
+    const { error } = await getResend().emails.send({
+      from: fromAddress(),
+      to: args.email,
+      subject: t.subjectDocumentsRejected,
+      html: documentsRejectedEmailHtml({
+        locale: args.locale,
+        t,
+        clinicName: args.clinicName,
+        items: args.items,
+        link,
+      }),
+    });
+    if (error) {
+      console.error(`Resend error for documents-rejected ${args.email}:`, error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error(`Failed to send documents-rejected email to ${args.email}:`, err);
     return false;
   }
 }

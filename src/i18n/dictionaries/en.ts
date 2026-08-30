@@ -440,6 +440,14 @@ const en: typeof he = {
     subjectTrialSetupNeeded: "Your free trial is ending — payment details still missing",
     subjectTrialDaysLeft: "{days} days left in your DentalCompare trial",
     subjectPaymentFailed: "Subscription charge failed — DentalCompare",
+    subjectDocumentsRejected: "One more document is needed to approve your clinic — DentalCompare",
+    docsRejectedHeading: "One more document and the approval is done",
+    docsRejectedBody:
+      "We looked at the documents {clinic} uploaded and could not accept all of them. There is no need to register again — the link below opens the form exactly where we left it.",
+    docsRejectedWhat: "What to send again:",
+    docsRejectedCta: "Upload the document",
+    docsRejectedExpiry:
+      "The link works for {days} days. If it expires, reply to this email and we will send a new one.",
     planMonthly: "monthly",
     planYearly: "annual",
     autoFooter: "This email was sent automatically by DentalCompare.",

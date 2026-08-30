@@ -1,6 +1,7 @@
 import { formatMoney } from "@/lib/money";
 import { SITE_CONFIG } from "@/lib/constants";
 import { dir, type Locale } from "@/i18n/config";
+import { DOCUMENT_TOKEN_DAYS } from "@/lib/clinic-documents";
 import { format } from "@/i18n/format";
 import type { Dictionary } from "@/i18n/get-dictionary";
 
@@ -254,5 +255,44 @@ export function trialUnbilledAdminEmailHtml(opts: {
     <p>${t.trialUnbilledClinicLabel} <a href="mailto:${escapeHtml(clinicEmail)}">${escapeHtml(clinicEmail)}</a></p>
     ${HR}
     <p style="font-size:12px;color:#777;">${t.trialUnbilledStillVisible}</p>`,
+  );
+}
+
+/**
+ * "We need a better copy of this document" — sent to a clinic whose
+ * registration is otherwise complete.
+ *
+ * Written as one more step rather than a rejection, because that is what it is:
+ * the clinic has already filled in the whole form and is waiting. Every value
+ * is escaped — the reason is free text an admin typed, and it arrives here as
+ * markup.
+ */
+export function documentsRejectedEmailHtml(opts: {
+  locale: Locale;
+  t: EmailStrings;
+  clinicName: string;
+  items: { kind: string; reason: string }[];
+  link: string;
+}): string {
+  const { locale, t, clinicName, items, link } = opts;
+  const list = items
+    .map(
+      (i) =>
+        `<li style="margin-bottom:8px;"><strong>${escapeHtml(i.kind)}</strong>${
+          i.reason ? ` — ${escapeHtml(i.reason)}` : ""
+        }</li>`,
+    )
+    .join("");
+
+  return shell(
+    locale,
+    `    <h2 style="color:#0f4c4c;">${t.docsRejectedHeading}</h2>
+    <p>${format(t.greeting, { name: `<strong>${escapeHtml(clinicName)}</strong>` })}</p>
+    <p>${format(t.docsRejectedBody, { clinic: `<strong>${escapeHtml(clinicName)}</strong>` })}</p>
+    <p style="font-weight:600;">${t.docsRejectedWhat}</p>
+    <ul>${list}</ul>
+    <p style="margin:24px 0;"><a href="${link}" style="background:#0f4c4c;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;">${t.docsRejectedCta}</a></p>
+    ${HR}
+    <p style="font-size:12px;color:#777;">${format(t.docsRejectedExpiry, { days: DOCUMENT_TOKEN_DAYS })}</p>`,
   );
 }
