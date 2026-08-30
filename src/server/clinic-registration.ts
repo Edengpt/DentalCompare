@@ -16,6 +16,11 @@ import {
 } from "@/lib/constants";
 import { rateLimit } from "@/lib/rate-limit";
 import { createPendingSubscription } from "@/server/subscriptions";
+import {
+  requiredDocKinds,
+  missingDocKinds,
+  isClinicDocumentBlobUrl,
+} from "@/lib/clinic-documents";
 
 async function clientIp(): Promise<string> {
   const fwd = (await headers()).get("x-forwarded-for");
@@ -96,10 +101,37 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
   const countryCode = String(formData.get("countryCode") ?? "").trim();
   const country = await db.country.findFirst({
     where: { code: countryCode, isActive: true },
-    select: { code: true, insurers: true, defaultLocale: true },
+    select: { code: true, insurers: true, defaultLocale: true, requiredDocs: true },
   });
   if (!country) {
     return { ok: false, error: e.mustPickCountry };
+  }
+
+  // Documents are read against THIS country's list, exactly like the payer list
+  // below: what a clinic must show is a property of where it operates.
+  const requiredKinds = requiredDocKinds(country.requiredDocs);
+  const docKinds = formData.getAll("documentKind").filter((v): v is string => typeof v === "string");
+  const docUrls = formData.getAll("documentUrl").filter((v): v is string => typeof v === "string");
+  const docTypes = formData.getAll("documentType").filter((v): v is string => typeof v === "string");
+
+  const documents = docKinds
+    .map((kind, i) => ({ kind, url: docUrls[i] ?? "", contentType: docTypes[i] ?? "" }))
+    .filter((d) => d.url !== "" && requiredKinds.includes(d.kind));
+
+  const missing = missingDocKinds(
+    requiredKinds,
+    documents.map((d) => d.kind),
+  );
+  if (missing.length > 0) {
+    return { ok: false, error: format(e.missingDocuments, { kinds: missing.join(", ") }) };
+  }
+
+  // A URL arrives here as a plain string the browser sent. Accepting one we did
+  // not produce would let a clinic name any file on the internet as its licence
+  // — including another clinic's private medical file, which an admin would
+  // then open.
+  if (documents.some((d) => !isClinicDocumentBlobUrl(d.url))) {
+    return { ok: false, error: e.invalidDocument };
   }
 
   // Read the number against the clinic's own country, so a Hungarian clinic can
@@ -147,6 +179,18 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
     });
 
     await createPendingSubscription({ dentistId: dentist.id, plan, setupToken }, tx);
+
+    // In the same transaction as the clinic itself: a clinic row with no
+    // documents can never be approved and can never re-register, because its
+    // email is already taken.
+    await tx.clinicDocument.createMany({
+      data: documents.map((d) => ({
+        dentistId: dentist.id,
+        kind: d.kind,
+        blobUrl: d.url,
+        contentType: d.contentType,
+      })),
+    });
   });
 
   return { ok: true };

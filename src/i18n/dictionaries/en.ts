@@ -825,6 +825,9 @@ const en: typeof he = {
     mustAcceptTerms: "You must accept the subscription terms to register",
     mustPickPlan: "Please choose a subscription plan",
     mustPickCountry: "Please choose a country",
+    missingDocuments: "Missing documents: {kinds}",
+    invalidDocument:
+      "One of the documents was not uploaded through this form. Please upload it again.",
     clinicEmailTaken: "A clinic is already registered with this email",
     dentistEmailTaken: "A dentist with this email already exists",
     dentistNotFound: "Dentist not found",

@@ -807,6 +807,8 @@ const he = {
     mustAcceptTerms: "יש לאשר את תנאי המנוי כדי להירשם",
     mustPickPlan: "יש לבחור מסלול מנוי",
     mustPickCountry: "יש לבחור מדינה",
+    missingDocuments: "חסרים מסמכים: {kinds}",
+    invalidDocument: "אחד המסמכים לא הועלה דרך הטופס הזה. העלו אותו מחדש.",
     clinicEmailTaken: "כבר קיימת מרפאה רשומה עם אימייל זה",
     dentistEmailTaken: "רופא עם אימייל זה כבר קיים",
     dentistNotFound: "הרופא לא נמצא",
