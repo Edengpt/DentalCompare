@@ -146,8 +146,23 @@ model Dentist {
   termsVersion    String? // version of the contract that was accepted
   approvedAt      DateTime? // admin approval — starts the free trial clock (PRD 4.4)
 
+  // When an admin actually looked at this clinic's licence documents, and who.
+  //
+  // Deliberately NOT approvedAt: that column records approval for listing and
+  // starts the 60-day trial clock. One action producing two facts is not one
+  // fact — sharing a column would mean never being able to answer "when was
+  // this licence checked" without also answering "when did the money start".
+  licenceVerifiedAt DateTime?
+  licenceVerifiedBy String? // the admin's email
+
+  // Bearer token emailed to a clinic whose document was rejected, so it can
+  // upload a replacement without an account. P2b issues and consumes it.
+  documentToken          String?   @unique
+  documentTokenExpiresAt DateTime?
+
   requestDentists RequestDentist[]
   subscription    ClinicSubscription?
+  documents       ClinicDocument[]
 
   @@index([city])
   @@index([isActive])
@@ -193,6 +208,33 @@ model Request {
 
   @@index([userId])
   @@index([status])
+}
+
+/// A licence (or insurance, or whatever else a country asks for) document a
+/// clinic handed over at registration.
+///
+/// One row per (clinic, kind): a re-upload REPLACES the row and deletes the old
+/// object from storage, and the history lives in auditLog where it belongs. A
+/// row per upload would make "which document is current" a query instead of a
+/// fact, and every reader would have to get that query right.
+model ClinicDocument {
+  id        String  @id @default(uuid())
+  dentistId String
+  dentist   Dentist @relation(fields: [dentistId], references: [id], onDelete: Cascade)
+  /// As written in Country.requiredDocs, or "licence" when that list is empty.
+  kind      String
+  /// Private blob store — the same one the patients' x-rays live in, never the
+  /// public store the clinic logos use.
+  blobUrl     String
+  contentType String
+  uploadedAt  DateTime @default(now())
+  /// null = fine. A rejected document is waiting for a replacement, and the
+  /// reason is what gets written to the clinic. P2b sets these.
+  rejectedAt      DateTime?
+  rejectionReason String?   @db.Text
+
+  @@unique([dentistId, kind])
+  @@index([dentistId])
 }
 
 model RequestDentist {
