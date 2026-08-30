@@ -5,6 +5,7 @@ import { formatMoney } from "@/lib/money";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/server/admin";
 import { SUBSCRIPTION_PLANS } from "@/lib/constants";
+import type { Dictionary } from "@/i18n/get-dictionary";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -13,11 +14,30 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 export const dynamic = "force-dynamic";
 
-const statusHe: Record<string, string> = {
-  
-};
+// Was a local Hebrew-only map, left empty by the move to two languages — so the
+// status column rendered blank for every row in both languages, silently. The
+// labels live in the dictionary now, like every other string on the site.
+/** The date this subscription is paid up to — the trial's end while it lasts. */
+function validUntil(s: { currentPeriodEnd: Date | null; trialEndsAt: Date | null }): Date | null {
+  return s.currentPeriodEnd ?? s.trialEndsAt;
+}
 
-const dateFmt = new Intl.DateTimeFormat("he-IL", { day: "numeric", month: "short", year: "numeric" });
+function statusLabel(status: string, t: Dictionary["admin"]): string {
+  switch (status) {
+    case "PENDING":
+      return t.subPending;
+    case "TRIALING":
+      return t.subTrialing;
+    case "ACTIVE":
+      return t.subActive;
+    case "PAST_DUE":
+      return t.subPastDue;
+    case "CANCELED":
+      return t.subCanceled;
+    default:
+      return status;
+  }
+}
 
 export default async function AdminSubscriptionsPage({
   params,
@@ -28,6 +48,15 @@ export default async function AdminSubscriptionsPage({
   const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
   await requireAdmin();
 
+  // Was pinned to he/he-IL, so an admin reading the English site got Hebrew
+  // dates and Hebrew number grouping.
+  const pageLocale = isLocale(locale) ? locale : defaultLocale;
+  const dateFmt = new Intl.DateTimeFormat(pageLocale, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+
   const subs = await db.clinicSubscription.findMany({
     orderBy: { createdAt: "desc" },
     select: {
@@ -37,6 +66,11 @@ export default async function AdminSubscriptionsPage({
       priceMinor: true,
       currency: true,
       currentPeriodEnd: true,
+      // A trialing subscription has no currentPeriodEnd — its clock is
+      // trialEndsAt, and showing "—" for every trial hid exactly the date this
+      // screen exists to watch.
+      trialEndsAt: true,
+      trialEndedUnbilledAt: true,
       dentist: { select: { clinicName: true, email: true } },
     },
   });
@@ -74,11 +108,21 @@ export default async function AdminSubscriptionsPage({
                   </td>
                   <td className="text-foreground px-4 py-3">
                     {(s.plan === "MONTHLY" ? t.emails.planMonthly : t.emails.planYearly)} ·{" "}
-                    {formatMoney(s.priceMinor ?? 0, s.currency ?? "ILS", "he")}
+                    {formatMoney(s.priceMinor ?? 0, s.currency ?? "ILS", pageLocale)}
                   </td>
-                  <td className="px-4 py-3">{statusHe[s.status]}</td>
+                  <td className="px-4 py-3">
+                    <p className="text-foreground">{statusLabel(s.status, t.admin)}</p>
+                    {s.trialEndedUnbilledAt && (
+                      <p
+                        className="mt-1 inline-block rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900"
+                        title={t.admin.subTrialUnbilledHint}
+                      >
+                        {t.admin.subTrialUnbilled}
+                      </p>
+                    )}
+                  </td>
                   <td className="text-muted-foreground px-4 py-3">
-                    {s.currentPeriodEnd ? dateFmt.format(s.currentPeriodEnd) : "—"}
+                    {validUntil(s) ? dateFmt.format(validUntil(s)!) : "—"}
                   </td>
                 </tr>
               ))
