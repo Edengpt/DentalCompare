@@ -13,6 +13,7 @@ import { sendPaymentSetupEmail } from "@/server/subscription-notifications";
 import { audit } from "@/lib/audit";
 import { trialEndFrom } from "@/lib/subscription";
 import { SUBSCRIPTION_PLANS } from "@/lib/constants";
+import { isClinicDocumentBlobUrl } from "@/lib/clinic-documents";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -188,6 +189,24 @@ export async function createDentist(formData: FormData): Promise<ActionResult> {
   const existing = await db.dentist.findUnique({ where: { email }, select: { id: true } });
   if (existing) return { ok: false, error: e.dentistEmailTaken };
 
+  // This is the path used for a clinic recruited by phone, so it is the one
+  // that gets used most in the early weeks. Letting it create a live clinic
+  // with no document would make "every listed clinic has had its licence seen"
+  // false on day one — and after publicDentistWhere requires the stamp, it
+  // would create clinics that never appear at all, with no error anywhere.
+  const docKinds = formData.getAll("documentKind").filter((v): v is string => typeof v === "string");
+  const docUrls = formData.getAll("documentUrl").filter((v): v is string => typeof v === "string");
+  const docTypes = formData.getAll("documentType").filter((v): v is string => typeof v === "string");
+  const documents = docKinds
+    .map((kind, i) => ({ kind, url: docUrls[i] ?? "", contentType: docTypes[i] ?? "" }))
+    .filter((d) => d.url !== "");
+
+  if (documents.length === 0) return { ok: false, error: e.documentRequired };
+  if (documents.some((d) => !isClinicDocumentBlobUrl(d.url))) {
+    return { ok: false, error: e.invalidDocument };
+  }
+
+  const now = new Date();
   const dentistId = await db.$transaction(async (tx) => {
     const dentist = await tx.dentist.create({
       data: {
@@ -202,8 +221,22 @@ export async function createDentist(formData: FormData): Promise<ActionResult> {
         treatments: splitCsv(formData.get("treatments")),
         insurerAffiliations: splitCsv(formData.get("insurerAffiliations")),
         isActive: true,
+        // The admin is looking at the document while filling this form, so
+        // approval and verification are the same moment on this path too.
+        approvedAt: now,
+        licenceVerifiedAt: now,
+        licenceVerifiedBy: admin.email,
       },
       select: { id: true },
+    });
+
+    await tx.clinicDocument.createMany({
+      data: documents.map((d) => ({
+        dentistId: dentist.id,
+        kind: d.kind,
+        blobUrl: d.url,
+        contentType: d.contentType,
+      })),
     });
 
     // Complimentary subscription: ACTIVE with no recurringToken or currentPeriodEnd

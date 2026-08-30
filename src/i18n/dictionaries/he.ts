@@ -726,6 +726,7 @@ const he = {
     dentistsPendingNotice:
       "מרפאות נרשמו עצמאית וממתינות לאישור. לחצו על כפתור הסטטוס הכתום כדי לאשר אותן לפרסום במאגר.",
     newRegistration: "הרשמה חדשה",
+    newDentistDoc: "מסמך רישיון",
     contactPerson: "איש קשר",
     signedContract: " ✦ חתם על החוזה",
     years: "{count} שנים",
@@ -809,6 +810,7 @@ const he = {
     mustPickCountry: "יש לבחור מדינה",
     missingDocuments: "חסרים מסמכים: {kinds}",
     invalidDocument: "אחד המסמכים לא הועלה דרך הטופס הזה. העלו אותו מחדש.",
+    documentRequired: "צריך לצרף לפחות מסמך רישיון אחד.",
     clinicEmailTaken: "כבר קיימת מרפאה רשומה עם אימייל זה",
     dentistEmailTaken: "רופא עם אימייל זה כבר קיים",
     dentistNotFound: "הרופא לא נמצא",

@@ -107,4 +107,59 @@ describe.skipIf(!hasDb)("approveClinic (integration, real DB)", () => {
     },
     DB_TIMEOUT,
   );
+  it(
+    "refuses to create a clinic by hand with no document, and creates nothing",
+    async () => {
+      const { createDentist } = await import("./admin-actions");
+      const sfx = randomUUID().slice(0, 8);
+      const fd = new FormData();
+      fd.append("clinicName", `Manual ${sfx}`);
+      fd.append("dentistName", `Dr ${sfx}`);
+      fd.append("email", `manual_${sfx}@example.com`);
+      fd.append("phone", "0500000000");
+      fd.append("city", "חיפה");
+      fd.append("address", "רחוב 2");
+      fd.append("experienceYears", "5");
+
+      const result = await createDentist(fd);
+      expect(result.ok).toBe(false);
+      expect(
+        await db.dentist.findUnique({ where: { email: `manual_${sfx}@example.com` } }),
+      ).toBeNull();
+    },
+    DB_TIMEOUT,
+  );
+
+  // The admin is looking at the document while filling the form, so there is no
+  // second decision to make — but the promise "every listed clinic has had its
+  // licence seen" has to hold on this path too, or it is false on day one.
+  it(
+    "creates a hand-added clinic verified, with its document attached",
+    async () => {
+      const { createDentist } = await import("./admin-actions");
+      const sfx = randomUUID().slice(0, 8);
+      const email = `manual_${sfx}@example.com`;
+      const fd = new FormData();
+      fd.append("clinicName", `Manual ${sfx}`);
+      fd.append("dentistName", `Dr ${sfx}`);
+      fd.append("email", email);
+      fd.append("phone", "0500000000");
+      fd.append("city", "חיפה");
+      fd.append("address", "רחוב 2");
+      fd.append("experienceYears", "5");
+      fd.append("documentKind", "licence");
+      fd.append("documentUrl", "https://x.blob.vercel-storage.com/clinics/documents/m.pdf");
+      fd.append("documentType", "application/pdf");
+
+      const result = await createDentist(fd);
+      expect(result.ok).toBe(true);
+
+      const d = await db.dentist.findUnique({ where: { email }, include: { documents: true } });
+      created.push(d!.id);
+      expect(d!.licenceVerifiedAt).not.toBeNull();
+      expect(d!.licenceVerifiedBy).toBe("admin@example.com");
+      expect(d!.documents).toHaveLength(1);
+    },
+    DB_TIMEOUT,
+  );
 });

@@ -3,6 +3,8 @@
 import { useT } from "@/i18n/provider";
 import { useRef, useState, useTransition } from "react";
 import { Plus } from "lucide-react";
+import { format } from "@/i18n/format";
+import { DOC_ACCEPT_ATTRIBUTE, DOC_MAX_FILE_SIZE_MB } from "@/lib/clinic-documents";
 import { toast } from "sonner";
 import { createDentist } from "@/server/admin-actions";
 import { cn } from "@/lib/utils";
@@ -41,6 +43,39 @@ export function NewDentistForm() {
   const [isPending, startTransition] = useTransition();
   const formRef = useRef<HTMLFormElement>(null);
 
+  // A clinic added by hand goes through the same gate as one that registers
+  // itself. This is the path used for a clinic recruited by phone, so skipping
+  // it would break the promise on the busiest path first.
+  const [doc, setDoc] = useState<{ url: string; contentType: string } | null>(null);
+  const [docUploading, setDocUploading] = useState(false);
+
+  const handleDoc = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > DOC_MAX_FILE_SIZE_MB * 1024 * 1024) {
+      toast.error(format(t.validation.documentSize, { mb: DOC_MAX_FILE_SIZE_MB }));
+      e.target.value = "";
+      return;
+    }
+    setDocUploading(true);
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      const res = await fetch("/api/clinics/documents", { method: "POST", body });
+      const data = (await res.json().catch(() => null)) as { url?: string; error?: string } | null;
+      if (!res.ok || !data?.url) {
+        toast.error(data?.error ?? t.clinics.regDocFailed);
+        return;
+      }
+      setDoc({ url: data.url, contentType: file.type });
+    } catch {
+      toast.error(t.clinics.regDocFailed);
+    } finally {
+      setDocUploading(false);
+      e.target.value = "";
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -52,6 +87,7 @@ export function NewDentistForm() {
       }
       toast.success(t.admin.newRegistration);
       formRef.current?.reset();
+      setDoc(null);
       setOpen(false);
     });
   };
@@ -95,10 +131,28 @@ export function NewDentistForm() {
         </label>
       ))}
 
+      <div className="sm:col-span-2">
+        <span className="text-foreground text-sm font-medium">
+          {t.admin.newDentistDoc}
+          <span className="text-coral"> *</span>
+        </span>
+        <input type="hidden" name="documentKind" value="licence" />
+        <input type="hidden" name="documentUrl" value={doc?.url ?? ""} />
+        <input type="hidden" name="documentType" value={doc?.contentType ?? ""} />
+        <input
+          type="file"
+          accept={DOC_ACCEPT_ATTRIBUTE}
+          onChange={handleDoc}
+          disabled={docUploading}
+          className="text-muted-foreground mt-1.5 block w-full text-sm"
+        />
+        {doc && <p className="text-teal-deep mt-1 text-xs">{t.clinics.regDocUploaded}</p>}
+      </div>
+
       <div className="flex items-center gap-3 sm:col-span-2">
         <button
           type="submit"
-          disabled={isPending}
+          disabled={isPending || docUploading || !doc}
           className={cn(
             buttonVariants(),
             "bg-teal-deep hover:bg-teal-deep/90 text-cream inline-flex h-10 items-center rounded-full px-5 text-sm font-semibold disabled:opacity-60",

@@ -743,6 +743,7 @@ const en: typeof he = {
     dentistsPendingNotice:
       "clinics registered themselves and are awaiting approval. Click the orange status button to publish them to the directory.",
     newRegistration: "New application",
+    newDentistDoc: "Licence document",
     contactPerson: "Contact",
     signedContract: " ✦ signed the contract",
     years: "{count} years",
@@ -828,6 +829,7 @@ const en: typeof he = {
     missingDocuments: "Missing documents: {kinds}",
     invalidDocument:
       "One of the documents was not uploaded through this form. Please upload it again.",
+    documentRequired: "At least one licence document is required.",
     clinicEmailTaken: "A clinic is already registered with this email",
     dentistEmailTaken: "A dentist with this email already exists",
     dentistNotFound: "Dentist not found",
