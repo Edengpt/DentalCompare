@@ -605,6 +605,13 @@ const en: typeof he = {
     regLogo: "Logo / clinic photo",
     regOptional: " (optional)",
     regLogoAlt: "Logo preview",
+    regDocs: "Licence and documents",
+    regDocsHint:
+      "We need to see the licence before a clinic is listed. A phone photo is enough — PDF, JPG or PNG, up to {mb}MB.",
+    regDocUpload: "Upload",
+    regDocUploaded: "Uploaded",
+    regDocRemove: "Remove document",
+    regDocFailed: "That upload failed. Please try again.",
     regLogoRemove: "Remove logo",
     regLogoUpload: "Upload",
     regLogoHint: "Accepted files: JPG, PNG or WEBP ✦ maximum size: {mb}MB",

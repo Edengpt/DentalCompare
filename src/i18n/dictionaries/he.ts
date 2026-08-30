@@ -592,6 +592,13 @@ const he = {
     regLogo: "לוגו / תמונת מרפאה",
     regOptional: " (אופציונלי)",
     regLogoAlt: "תצוגת לוגו",
+    regDocs: "רישיון ומסמכים",
+    regDocsHint:
+      "כדי להופיע במאגר אנחנו צריכים לראות את הרישיון. צילום מהטלפון מספיק — PDF, JPG או PNG, עד {mb}MB.",
+    regDocUpload: "העלאה",
+    regDocUploaded: "הועלה",
+    regDocRemove: "הסרת המסמך",
+    regDocFailed: "העלאת המסמך נכשלה. נסו שוב.",
     regLogoRemove: "הסרת הלוגו",
     regLogoUpload: "העלאה",
     regLogoHint: "קבצים מותרים: JPG, PNG או WEBP ✦ גודל מרבי: {mb}MB",

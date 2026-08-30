@@ -6,6 +6,11 @@ import { toast } from "sonner";
 import { registerClinic } from "@/server/clinic-registration";
 import { LOGO_ACCEPT_ATTRIBUTE, LOGO_MAX_FILE_SIZE_MB } from "@/lib/storage";
 import {
+  DOC_ACCEPT_ATTRIBUTE,
+  DOC_MAX_FILE_SIZE_MB,
+  requiredDocKinds,
+} from "@/lib/clinic-documents";
+import {
   SPECIALTIES,
   SPOKEN_LANGUAGES,
   TREATMENTS,
@@ -34,6 +39,8 @@ export type RegistrationCountry = {
   code: string;
   nameEn: string;
   insurers: string[];
+  /** Which licence documents this country asks for. Empty means one generic. */
+  requiredDocs: string[];
 };
 
 function ChipGroup({
@@ -160,6 +167,13 @@ export function RegistrationForm({ countries }: { countries: RegistrationCountry
   const [agreed, setAgreed] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [logoUploading, setLogoUploading] = useState(false);
+  // Keyed by kind rather than by index, so changing country cannot leave a URL
+  // sitting under a slot that now means something else.
+  const [docs, setDocs] = useState<Record<string, { url: string; contentType: string }>>({});
+  const [uploadingKind, setUploadingKind] = useState<string | null>(null);
+  const docKinds = requiredDocKinds(
+    countries.find((c) => c.code === countryCode)?.requiredDocs ?? [],
+  );
   const logoInputRef = useRef<HTMLInputElement>(null);
 
   const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -205,6 +219,81 @@ export function RegistrationForm({ countries }: { countries: RegistrationCountry
       setLogoUploading(false);
       if (logoInputRef.current) logoInputRef.current.value = "";
     }
+  };
+
+  const handleDocChange = async (kind: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Checked here as well as on the server: a file over the platform's request
+    // limit never reaches the server at all — the edge rejects it, and the
+    // clinic is left with an error that retrying cannot fix.
+    if (file.size > DOC_MAX_FILE_SIZE_MB * 1024 * 1024) {
+      toast.error(format(t.validation.documentSize, { mb: DOC_MAX_FILE_SIZE_MB }));
+      e.target.value = "";
+      return;
+    }
+
+    setUploadingKind(kind);
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      const res = await fetch("/api/clinics/documents", { method: "POST", body });
+      // A rejection at the edge comes back as plain text, and parsing it as
+      // JSON throws — which would surface as advice that can never work.
+      const data = (await res.json().catch(() => null)) as {
+        url?: string;
+        error?: string;
+      } | null;
+      if (!res.ok || !data?.url) {
+        toast.error(
+          data?.error ??
+            (res.status === 413
+              ? format(t.validation.documentSize, { mb: DOC_MAX_FILE_SIZE_MB })
+              : t.clinics.regDocFailed),
+        );
+        return;
+      }
+      setDocs((prev) => ({ ...prev, [kind]: { url: data.url as string, contentType: file.type } }));
+    } catch {
+      toast.error(t.clinics.regDocFailed);
+    } finally {
+      setUploadingKind(null);
+      e.target.value = "";
+    }
+  };
+
+  /**
+   * Drops a document that is no longer attached to any slot.
+   *
+   * Best-effort on purpose: the endpoint refuses anything already attached to a
+   * clinic, so the worst case here is an orphan rather than a deletion that
+   * should not have happened.
+   */
+  const discardDoc = (url: string) => {
+    void fetch("/api/clinics/documents", {
+      method: "DELETE",
+      body: JSON.stringify({ url }),
+    }).catch(() => {});
+  };
+
+  const handleCountryChange = (code: string) => {
+    // The new country asks for different documents, so what was uploaded no
+    // longer belongs to any slot. Keeping the files "just in case" is exactly
+    // how a private store fills with documents nobody can attribute to anyone.
+    for (const doc of Object.values(docs)) discardDoc(doc.url);
+    setDocs({});
+    setCountryCode(code);
+  };
+
+  const removeDoc = (kind: string) => {
+    const doc = docs[kind];
+    if (doc) discardDoc(doc.url);
+    setDocs((prev) => {
+      const next = { ...prev };
+      delete next[kind];
+      return next;
+    });
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -279,7 +368,7 @@ export function RegistrationForm({ countries }: { countries: RegistrationCountry
               name="countryCode"
               required
               value={countryCode}
-              onChange={(e) => setCountryCode(e.target.value)}
+              onChange={(e) => handleCountryChange(e.target.value)}
               className={inputClass}
             >
               {countries.map((c) => (
@@ -366,6 +455,63 @@ export function RegistrationForm({ countries }: { countries: RegistrationCountry
               className="hidden"
             />
           </div>
+
+          {/* Licence documents (required) */}
+          <div className="sm:col-span-2">
+            <p className="text-foreground text-sm font-medium">{t.clinics.regDocs}</p>
+            {/* Above the slots, not beside them: what is allowed has to be read
+                before the file picker opens — afterwards it is a complaint. */}
+            <p className="text-muted-foreground mt-1 text-xs">
+              {format(t.clinics.regDocsHint, { mb: DOC_MAX_FILE_SIZE_MB })}
+            </p>
+            <div className="mt-3 space-y-2">
+              {docKinds.map((kind) => (
+                <div
+                  key={kind}
+                  className="border-border/60 flex items-center justify-between gap-3 rounded-xl border px-3.5 py-2.5"
+                >
+                  <span className="text-foreground min-w-0 truncate text-sm">{kind}</span>
+                  <input type="hidden" name="documentKind" value={kind} />
+                  <input type="hidden" name="documentUrl" value={docs[kind]?.url ?? ""} />
+                  <input type="hidden" name="documentType" value={docs[kind]?.contentType ?? ""} />
+                  {docs[kind] ? (
+                    <span className="text-teal-deep inline-flex shrink-0 items-center gap-1.5 text-sm font-medium">
+                      <CheckCircle2 className="h-4 w-4" />
+                      {t.clinics.regDocUploaded}
+                      <button
+                        type="button"
+                        onClick={() => removeDoc(kind)}
+                        aria-label={t.clinics.regDocRemove}
+                        className="text-muted-foreground hover:text-coral ms-1"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </span>
+                  ) : (
+                    <label
+                      className={cn(
+                        "border-border/60 text-muted-foreground hover:border-teal-deep/40 hover:text-teal-deep inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-dashed px-3.5 py-1.5 text-xs transition-colors",
+                        uploadingKind === kind && "pointer-events-none opacity-60",
+                      )}
+                    >
+                      {uploadingKind === kind ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <ImagePlus className="h-3.5 w-3.5" />
+                      )}
+                      {t.clinics.regDocUpload}
+                      <input
+                        type="file"
+                        accept={DOC_ACCEPT_ATTRIBUTE}
+                        onChange={(e) => handleDocChange(kind, e)}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -422,7 +568,7 @@ export function RegistrationForm({ countries }: { countries: RegistrationCountry
 
       <button
         type="submit"
-        disabled={isPending || !agreed}
+        disabled={isPending || !agreed || docKinds.some((k) => !docs[k])}
         className={cn(
           buttonVariants(),
           "bg-teal-deep hover:bg-teal-deep/90 text-cream inline-flex h-12 w-full items-center justify-center rounded-full px-7 text-base font-semibold disabled:cursor-not-allowed disabled:opacity-50",
