@@ -5,6 +5,7 @@ import { LayoutGrid, Stethoscope, Building2, Users, FileText, Repeat, Globe } fr
 import { ForwardArrow } from "@/components/ui/forward-arrow";
 import { requireAdmin } from "@/server/admin";
 import { db } from "@/lib/db";
+import { needsOperatorAttentionWhere } from "@/lib/subscription-alerts";
 
 export const dynamic = "force-dynamic";
 
@@ -31,14 +32,24 @@ export default async function AdminLayout({
     { href: "/admin/dentists", label: t.admin.navDentists, icon: Stethoscope },
     { href: "/admin/users", label: t.admin.navUsers, icon: Users },
     { href: "/admin/requests", label: t.admin.navRequests, icon: FileText },
-    { href: "/admin/subscriptions", label: t.admin.navSubscriptions, icon: Repeat },
+    {
+      href: "/admin/subscriptions",
+      label: t.admin.navSubscriptions,
+      icon: Repeat,
+      badgeKey: "subsNeedingAttention",
+    },
     { href: "/admin/countries", label: t.admin.navCountries, icon: Globe },
   ] as const;
 
-  const pendingClinics = await db.dentist.count({
-    where: { submittedBySelf: true, isActive: false },
-  });
-  const badges: Record<string, number> = { pendingClinics };
+  // A trial that ended unbilled is stuck until a person acts, and until now the
+  // only way to learn about it was to browse to the subscriptions screen and
+  // notice a chip on a row. The badge is the second channel beside the email,
+  // and unlike the email it needs no configuration to work.
+  const [pendingClinics, subsNeedingAttention] = await Promise.all([
+    db.dentist.count({ where: { submittedBySelf: true, isActive: false } }),
+    db.clinicSubscription.count({ where: needsOperatorAttentionWhere() }),
+  ]);
+  const badges: Record<string, number> = { pendingClinics, subsNeedingAttention };
 
   return (
     <div className="bg-muted/20 flex min-h-screen flex-col lg:flex-row">
