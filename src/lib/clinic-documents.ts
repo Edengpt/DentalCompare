@@ -19,13 +19,17 @@ import type { FileValidationError } from "./storage";
 export const GENERIC_DOC_KIND = "licence";
 
 /**
- * The ceiling is not ours. Vercel refuses a request body over roughly 4.5MB at
- * the edge, before any route code runs, and answers with plain text rather than
- * JSON — so a larger limit would be a promise the platform silently breaks.
- * See LOGO_MAX_FILE_SIZE_MB in ./storage for the same ceiling and the same
- * reasoning. A phone photo of a framed licence lands well inside it.
+ * This used to be 4MB, and the 4 was not ours: the document travelled through a
+ * route, which meant it travelled through Vercel's edge, and the edge refuses a
+ * request body over roughly 4.5MB before any route code runs. The limit was set
+ * below the ceiling so the site would not promise what the platform breaks.
+ *
+ * The upload now goes from the browser straight to storage, so the ceiling is
+ * gone and the number can be about licences instead of about infrastructure. A
+ * phone photo of a framed licence is routinely 5-8MB on a recent handset, which
+ * is exactly the file the 4MB limit was turning away.
  */
-export const DOC_MAX_FILE_SIZE_MB = 4;
+export const DOC_MAX_FILE_SIZE_MB = 20;
 export const DOC_MAX_FILE_SIZE_BYTES = DOC_MAX_FILE_SIZE_MB * 1024 * 1024;
 
 /**
@@ -63,11 +67,27 @@ function docExtension(file: File): string {
   return "jpg";
 }
 
-const DOC_PREFIX = "clinics/documents/";
+export const DOC_PREFIX = "clinics/documents/";
 
 /** Unique per upload, so two clinics uploading "licence.pdf" never collide. */
 export function clinicDocumentBlobPath(file: File): string {
   return `${DOC_PREFIX}${crypto.randomUUID()}.${docExtension(file)}`;
+}
+
+/**
+ * Whether a pathname is one a document upload may write to.
+ *
+ * The browser now names the file it uploads, and this route is unauthenticated
+ * — the registration form is public, and the document exists before the clinic
+ * row does. So this is the only thing standing between a stranger and a chosen
+ * write path into the private store that also holds patients' x-rays. The name
+ * must sit directly in the documents folder: a slash in it would let
+ * `..%2F..%2Frequests` climb out.
+ */
+export function isClinicDocumentBlobPath(pathname: string): boolean {
+  if (!pathname.startsWith(DOC_PREFIX)) return false;
+  const name = pathname.slice(DOC_PREFIX.length);
+  return name.length > 0 && !name.includes("/");
 }
 
 /**
@@ -78,9 +98,11 @@ export function clinicDocumentBlobPath(file: File): string {
  * another clinic's private medical file and have an admin open it.
  */
 export function isClinicDocumentBlobUrl(url: string): boolean {
-  return new RegExp(`^https://[a-z0-9.-]*\.blob\.vercel-storage\.com/${DOC_PREFIX}`, "i").test(
-    url,
-  );
+  // Built by hand rather than with a template literal: inside one, `\.` is just
+  // `.` again by the time RegExp sees it, and the dots would match any
+  // character — `xblobyvercel-storagezcom` would pass.
+  const host = String.raw`[a-z0-9.-]*\.blob\.vercel-storage\.com`;
+  return new RegExp(`^https://${host}/${DOC_PREFIX}`, "i").test(url);
 }
 
 /**

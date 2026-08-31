@@ -9,6 +9,7 @@ import {
   DOC_MAX_FILE_SIZE_BYTES,
   documentTokenExpiry,
   isDocumentTokenLive,
+  isClinicDocumentBlobPath,
 } from "./clinic-documents";
 
 function fileOf(name: string, type: string, bytes: number): File {
@@ -123,5 +124,51 @@ describe("the replacement-document token", () => {
   // because null compares loosely somewhere downstream.
   it("is not live when there is no expiry, meaning no token was ever issued", () => {
     expect(isDocumentTokenLive(null, now)).toBe(false);
+  });
+});
+
+describe("isClinicDocumentBlobPath", () => {
+  // The browser names the file it uploads and this route is unauthenticated:
+  // the registration form is public and the clinic row does not exist yet. This
+  // rule is the only thing between a stranger and a chosen write path into the
+  // private store that also holds patients' x-rays.
+  it("accepts a plain name in the documents folder", () => {
+    expect(isClinicDocumentBlobPath("clinics/documents/abc-123.pdf")).toBe(true);
+  });
+
+  it("rejects any other folder", () => {
+    expect(isClinicDocumentBlobPath("requests/req_1/xray.jpg")).toBe(false);
+    expect(isClinicDocumentBlobPath("clinics/logos/a.png")).toBe(false);
+  });
+
+  it("rejects a name that climbs out of the folder", () => {
+    expect(isClinicDocumentBlobPath("clinics/documents/../../requests/x.jpg")).toBe(false);
+    expect(isClinicDocumentBlobPath("clinics/documents/sub/a.pdf")).toBe(false);
+  });
+
+  it("rejects the bare folder with no name", () => {
+    expect(isClinicDocumentBlobPath("clinics/documents/")).toBe(false);
+  });
+});
+
+describe("isClinicDocumentBlobUrl", () => {
+  it("accepts a url from our own store", () => {
+    expect(isClinicDocumentBlobUrl("https://x.blob.vercel-storage.com/clinics/documents/a.pdf")).toBe(
+      true,
+    );
+  });
+
+  // The dots have to be literal. Written as a template literal they were not,
+  // and a lookalike host would have passed a check that guards a delete.
+  it("rejects a lookalike host", () => {
+    expect(isClinicDocumentBlobUrl("https://xblobyvercel-storagezcom/clinics/documents/a.pdf")).toBe(
+      false,
+    );
+  });
+
+  it("rejects our store outside the documents folder", () => {
+    expect(isClinicDocumentBlobUrl("https://x.blob.vercel-storage.com/requests/r1/xray.jpg")).toBe(
+      false,
+    );
   });
 });

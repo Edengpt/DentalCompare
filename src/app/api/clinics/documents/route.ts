@@ -1,43 +1,37 @@
 import { NextResponse } from "next/server";
-import { put, del } from "@vercel/blob";
+import { get, del } from "@vercel/blob";
 import { headers } from "next/headers";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { getRequestLocale } from "@/i18n/request-locale";
-import { format } from "@/i18n/format";
 import { db } from "@/lib/db";
 import { rateLimit } from "@/lib/rate-limit";
 import { RATE_LIMITS } from "@/lib/constants";
-import { fileSignatureMatches } from "@/lib/storage";
-import {
-  clinicDocumentBlobPath,
-  isClinicDocumentBlobUrl,
-  validateClinicDocument,
-  DOC_MAX_FILE_SIZE_BYTES,
-  DOC_MAX_FILE_SIZE_MB,
-} from "@/lib/clinic-documents";
+import { headMatchesType, SIGNATURE_BYTES } from "@/lib/storage";
+import { isClinicDocumentBlobUrl } from "@/lib/clinic-documents";
 
 export const runtime = "nodejs";
 
-/**
- * Licence-document upload for the clinic intake form, which is itself
- * unauthenticated — so this route cannot be either.
- *
- * Three boundaries stand in for authentication, because this writes into the
- * PRIVATE blob store, the same one the patients' x-rays live in:
- *
- *  1. a per-IP rate limit,
- *  2. a check of the file's leading bytes, not just its declared type,
- *  3. a delete that refuses any object already attached to a clinic.
- *
- * Files are uploaded before the clinic row exists — the same shape as the logo
- * upload — because the whole registration cannot travel in one request body:
- * Vercel refuses anything over roughly 4.5MB at the edge.
- */
 async function clientIp(): Promise<string> {
   const fwd = (await headers()).get("x-forwarded-for");
   return fwd?.split(",")[0]?.trim() || "unknown";
 }
 
+/**
+ * Confirms a licence document the browser has already uploaded.
+ *
+ * This route used to receive the file itself, which capped the document at 4MB:
+ * anything travelling through a route travels through Vercel's edge, and the
+ * edge refuses a body over roughly 4.5MB before route code runs. A phone photo
+ * of a framed licence is routinely larger than that. The browser now writes
+ * straight to storage (see ./token) and confirms here.
+ *
+ * The route is unauthenticated, because the registration form it serves is —
+ * the document exists before the clinic row does. Three boundaries stand in for
+ * authentication, and this step still carries the one that matters most here:
+ * the file's leading bytes are read back out of the store and checked against
+ * the type recorded for it. A renamed executable is deleted rather than handed
+ * on to the form as a usable URL.
+ */
 export async function POST(request: Request) {
   const t = (await getDictionary(await getRequestLocale())).validation;
 
@@ -50,58 +44,62 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: t.tooManyDocumentUploads }, { status: 429 });
   }
 
-  // Read only as a configuration guard — the blob client picks the token up
-  // from the environment itself. Failing here beats failing mid-upload.
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
     return NextResponse.json({ error: t.documentsUnavailable }, { status: 503 });
   }
 
-  // Rejected from the header before formData() buffers the whole body into
-  // memory. validateClinicDocument still checks the exact size afterwards:
-  // Content-Length can be absent or wrong.
-  const declared = Number(request.headers.get("content-length") ?? 0);
-  if (declared > DOC_MAX_FILE_SIZE_BYTES + 1024 * 1024) {
-    return NextResponse.json(
-      { error: format(t.documentSize, { mb: DOC_MAX_FILE_SIZE_MB }) },
-      { status: 413 },
-    );
-  }
+  const body = (await request.json().catch(() => null)) as { url?: unknown } | null;
+  const url = typeof body?.url === "string" ? body.url : "";
 
-  const formData = await request.formData();
-  const file = formData.get("file");
-  if (!(file instanceof File)) {
-    return NextResponse.json({ error: t.noFile }, { status: 400 });
-  }
-
-  const invalid = validateClinicDocument(file);
-  if (invalid) {
-    return NextResponse.json(
-      {
-        error:
-          invalid === "SIZE"
-            ? format(t.documentSize, { mb: DOC_MAX_FILE_SIZE_MB })
-            : t.documentType,
-      },
-      { status: 400 },
-    );
-  }
-
-  // Defense in depth: a renamed executable with a spoofed MIME type and
-  // extension passes every check that trusts the browser. The bytes do not lie.
-  if (!(await fileSignatureMatches(file))) {
+  // Confines what the byte check — and the delete below it — can be pointed at.
+  // Without it a caller could name a patient's x-ray and have it deleted.
+  if (!isClinicDocumentBlobUrl(url)) {
     return NextResponse.json({ error: t.documentType }, { status: 400 });
   }
 
-  // access: "private", like the patients' medical files and unlike the clinic
-  // logos. A licence stored public would be readable by anyone holding the URL,
-  // which would make the admin-only download route beside it pointless.
-  const blob = await put(clinicDocumentBlobPath(file), file, {
-    access: "private",
-    addRandomSuffix: true,
-    contentType: file.type,
-  });
+  // Defence in depth, unchanged in substance and moved in place: a renamed
+  // executable with a spoofed MIME type and extension passes every check that
+  // trusts the browser. The bytes do not lie. The type they are checked against
+  // is the one the store recorded, since that is what an admin will be served.
+  const stored = await readHead(url);
+  if (!stored || !headMatchesType(stored.head, stored.contentType)) {
+    // Refused, so nothing may point at it — and an unattached object in the
+    // private store is exactly what the DELETE below exists to prevent.
+    void del(url).catch(() => {});
+    return NextResponse.json({ error: t.documentType }, { status: 400 });
+  }
 
-  return NextResponse.json({ url: blob.url });
+  return NextResponse.json({ url });
+}
+
+/**
+ * First bytes of a stored private blob and the type the store has on record,
+ * or null when it cannot be read.
+ */
+async function readHead(url: string): Promise<{ head: Uint8Array; contentType: string } | null> {
+  try {
+    const result = await get(url, { access: "private" });
+    if (!result || result.statusCode !== 200) return null;
+    const reader = result.stream.getReader();
+    const head = new Uint8Array(SIGNATURE_BYTES);
+    let filled = 0;
+    // Read until the signature is covered rather than trusting one chunk to
+    // carry it: a short first chunk would otherwise look like a bad signature
+    // and get a real document deleted.
+    while (filled < SIGNATURE_BYTES) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      if (!value) continue;
+      const take = value.subarray(0, SIGNATURE_BYTES - filled);
+      head.set(take, filled);
+      filled += take.length;
+    }
+    await reader.cancel().catch(() => {});
+    if (filled < SIGNATURE_BYTES) return null;
+    return { head, contentType: result.blob.contentType };
+  } catch {
+    return null;
+  }
 }
 
 /**

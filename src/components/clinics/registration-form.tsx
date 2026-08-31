@@ -10,6 +10,7 @@ import {
   DOC_MAX_FILE_SIZE_MB,
   requiredDocKinds,
 } from "@/lib/clinic-documents";
+import { uploadClinicDocument } from "@/lib/upload-clinic-document";
 import {
   SPECIALTIES,
   SPOKEN_LANGUAGES,
@@ -225,9 +226,8 @@ export function RegistrationForm({ countries }: { countries: RegistrationCountry
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Checked here as well as on the server: a file over the platform's request
-    // limit never reaches the server at all — the edge rejects it, and the
-    // clinic is left with an error that retrying cannot fix.
+    // Checked here as well as at the store, so an oversized file is refused
+    // instantly instead of after the clinic has waited for it to upload.
     if (file.size > DOC_MAX_FILE_SIZE_MB * 1024 * 1024) {
       toast.error(format(t.validation.documentSize, { mb: DOC_MAX_FILE_SIZE_MB }));
       e.target.value = "";
@@ -236,27 +236,12 @@ export function RegistrationForm({ countries }: { countries: RegistrationCountry
 
     setUploadingKind(kind);
     try {
-      const body = new FormData();
-      body.append("file", file);
-      const res = await fetch("/api/clinics/documents", { method: "POST", body });
-      // A rejection at the edge comes back as plain text, and parsing it as
-      // JSON throws — which would surface as advice that can never work.
-      const data = (await res.json().catch(() => null)) as {
-        url?: string;
-        error?: string;
-      } | null;
-      if (!res.ok || !data?.url) {
-        toast.error(
-          data?.error ??
-            (res.status === 413
-              ? format(t.validation.documentSize, { mb: DOC_MAX_FILE_SIZE_MB })
-              : t.clinics.regDocFailed),
-        );
+      const result = await uploadClinicDocument(file);
+      if (!result.ok) {
+        toast.error(result.message ?? t.clinics.regDocFailed);
         return;
       }
-      setDocs((prev) => ({ ...prev, [kind]: { url: data.url as string, contentType: file.type } }));
-    } catch {
-      toast.error(t.clinics.regDocFailed);
+      setDocs((prev) => ({ ...prev, [kind]: { url: result.url, contentType: file.type } }));
     } finally {
       setUploadingKind(null);
       e.target.value = "";
