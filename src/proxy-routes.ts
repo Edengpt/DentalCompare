@@ -17,6 +17,11 @@ export const PROTECTED_PATTERNS = [
   "/(he|en)?/request(.*)",
   "/(he|en)?/verify-phone(.*)",
   "/(he|en)?/admin(.*)",
+  // The clinic's own area. Deliberately narrow: /clinics/join, /clinics/billing
+  // and /clinics/documents are reached by clinics that have no account at all,
+  // and protecting /clinics(.*) would lock out the very clinic being asked to
+  // set up payment or replace a document.
+  "/(he|en)?/clinics/dashboard(.*)",
   // API routes are never locale-prefixed — they live outside src/app/[locale]/.
   "/api/requests(.*)",
   "/api/admin(.*)",

@@ -139,8 +139,9 @@ export function paymentSetupEmailHtml(opts: {
   contactName: string;
   clinicName: string;
   link: string;
+  areaLink: string;
 }): string {
-  const { locale, t, contactName, clinicName, link } = opts;
+  const { locale, t, contactName, clinicName, link, areaLink } = opts;
 
   return shell(
     locale,
@@ -154,6 +155,9 @@ export function paymentSetupEmailHtml(opts: {
       </a>
     </p>
     ${HR}
+    <p style="font-size: 13px;">
+      ${format(t.setupAreaLine, { link: `<a href="${areaLink}">${t.setupAreaCta}</a>` })}
+    </p>
     <p style="font-size: 12px; color: #777;">
       ${t.questionsPrefix} <a href="mailto:${SITE_CONFIG.supportEmail}">${SITE_CONFIG.supportEmail}</a>
     </p>`,

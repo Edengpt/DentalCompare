@@ -465,6 +465,8 @@ const he = {
     setupApproved: "המרפאה {clinic} אושרה על ידי צוות DentalCompare.",
     setupInstruction: "כדי שהמרפאה תופיע במאגר ותתחילו לקבל פניות, השלימו את הגדרת המנוי והתשלום:",
     setupCta: "הפעלת המנוי והתשלום",
+    setupAreaLine: "יש לכם גם אזור אישי שבו תוכלו לראות את מצב המרפאה ואת הפניות שהתקבלו: {link}",
+    setupAreaCta: "כניסה לאזור המרפאה",
     trialToday: "היום",
     trialTomorrow: "מחר",
     trialInDays: "בעוד {days} ימים",
@@ -672,6 +674,50 @@ const he = {
     returnSuccessBody: "המנוי הופעל. המרפאה מופיעה במאגר ותתחילו לקבל פניות ממטופלים.",
     returnFailedBody: "לא הצלחנו לאשר את התשלום. ניתן לנסות שוב מקישור ההפעלה שנשלח במייל.",
     returnHome: "חזרה לדף הבית",
+
+    // --- אזור המרפאה ---
+    dashMetaTitle: "האזור שלי",
+    dashTitle: "האזור של המרפאה",
+    dashNoClinicTitle: "לא מצאנו מרפאה לחשבון הזה",
+    dashNoClinicBody:
+      "החשבון הזה ({email}) אינו מקושר לאף מרפאה. התחברו עם כתובת האימייל שאיתה נרשמתם, או הירשמו כמרפאה.",
+    dashNoClinicJoin: "הרשמת מרפאה",
+    dashStatusHeading: "מצב המרפאה",
+    dashApproved: "אושרה",
+    dashPendingApproval: "ממתינה לאישור",
+    dashPendingApprovalHint:
+      "אנחנו עוברים על הפרטים והמסמכים. נעדכן אתכם במייל — בדרך כלל תוך יום עסקים.",
+    dashLicenceVerified: "רישיון אומת",
+    dashLicencePending: "רישיון בבדיקה",
+    dashInDirectory: "מופיעה במאגר",
+    dashNotInDirectory: "לא מופיעה במאגר",
+    dashNotInDirectoryHint: "מטופלים לא רואים את המרפאה כרגע.",
+
+    dashSubHeading: "מנוי",
+    dashSubTrialing: "בתקופת התנסות",
+    dashTrialEnds: "ההתנסות נגמרת ב-{date}",
+    dashTrialEndedUnbilled: "ההתנסות הסתיימה ולא הצלחנו לגבות",
+    dashTrialEndedNoCard:
+      "לא נשמר אצלנו אמצעי תשלום. המרפאה עדיין מופיעה במאגר — כדי שתישאר, השלימו את הגדרת התשלום.",
+    dashTrialEndedNoProvider:
+      "ההתנסות הסתיימה. אנחנו עוד לא פתחנו את הגבייה — אין מה לעשות מצדכם, ניצור קשר.",
+    dashSetupPayment: "הגדרת אמצעי תשלום",
+    dashSubNone: "אין עדיין מנוי",
+    dashSubValidUntil: "בתוקף עד {date}",
+
+    dashDocsHeading: "מסמכי רישיון",
+    dashDocsNone: "לא הועלו מסמכים.",
+    dashDocOk: "אושר",
+    dashDocRejected: "דרוש מסמך אחר",
+    dashDocPending: "בבדיקה",
+    dashDocReplace: "העלאת מסמך מתוקן",
+
+    dashLeadsHeading: "פניות שהתקבלו",
+    dashLeadsNone: "עדיין לא התקבלו פניות. ברגע שמטופל יבחר בכם, הפנייה תופיע כאן ותישלח גם במייל.",
+    dashLeadReceived: "התקבלה ב-{date}",
+    dashLeadQuoted: "נשלחה הצעה",
+    dashLeadAwaiting: "ממתינה לתמחור",
+    dashLeadOpen: "פתיחת הפנייה",
   },
 
   admin: {
@@ -882,6 +928,7 @@ const he = {
     about: "אודות",
     contact: "צרו קשר",
     clinicsJoin: "הצטרפות מרפאות",
+    clinicsArea: "אזור המרפאה",
     terms: "תנאי שימוש",
     privacy: "מדיניות פרטיות",
     cookies: "מדיניות עוגיות",

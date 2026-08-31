@@ -23,6 +23,10 @@ export function Footer() {
         { href: "/about", label: t.footer.about },
         { href: "/contact", label: t.footer.contact },
         { href: "/clinics/join", label: t.footer.clinicsJoin },
+        // The way back in for a clinic that already registered. The route is
+        // protected, so a signed-out clinic is sent through sign-in and lands
+        // here — which is the whole of "a clinic has a login" from its side.
+        { href: "/clinics/dashboard", label: t.footer.clinicsArea },
       ],
     },
     {

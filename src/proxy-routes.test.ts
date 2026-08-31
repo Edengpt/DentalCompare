@@ -28,9 +28,22 @@ const PROTECTED = [
   "/verify-phone",
   "/admin",
   "/admin/clinics",
+  "/clinics/dashboard",
 ];
 
-const PUBLIC = ["/", "/dentists", "/terms", "/privacy", "/clinics/join", "/quote/tok123", "/sign-in"];
+const PUBLIC = [
+  "/",
+  "/dentists",
+  "/terms",
+  "/privacy",
+  "/clinics/join",
+  "/quote/tok123",
+  "/sign-in",
+  // The magic-link pages exist for a clinic that has no account at all. Pulling
+  // them behind auth would lock out the clinic being asked to fix a document.
+  "/clinics/billing/tok123",
+  "/clinics/documents/tok123",
+];
 
 describe("protected route patterns", () => {
   for (const path of PROTECTED) {

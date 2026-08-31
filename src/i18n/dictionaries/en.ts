@@ -476,6 +476,8 @@ const en: typeof he = {
     setupInstruction:
       "To appear in the directory and start receiving enquiries, complete your subscription and payment setup:",
     setupCta: "Activate subscription and payment",
+    setupAreaLine: "You also have your own area, showing your clinic's status and the requests you've received: {link}",
+    setupAreaCta: "Go to your clinic area",
     trialToday: "today",
     trialTomorrow: "tomorrow",
     trialInDays: "in {days} days",
@@ -690,7 +692,52 @@ const en: typeof he = {
       "Your subscription is active. The clinic is listed and will start receiving patient enquiries.",
     returnFailedBody:
       "We couldn't confirm the payment. You can try again from the activation link we emailed you.",
-    returnHome: "Back to the home page",
+    returnHome: "Back to home",
+
+    // --- Clinic area ---
+    dashMetaTitle: "My area",
+    dashTitle: "Clinic area",
+    dashNoClinicTitle: "No clinic found for this account",
+    dashNoClinicBody:
+      "This account ({email}) isn't linked to any clinic. Sign in with the email address you registered with, or register a clinic.",
+    dashNoClinicJoin: "Register a clinic",
+    dashStatusHeading: "Clinic status",
+    dashApproved: "Approved",
+    dashPendingApproval: "Awaiting approval",
+    dashPendingApprovalHint:
+      "We're reviewing your details and documents. We'll email you — usually within one business day.",
+    dashLicenceVerified: "Licence verified",
+    dashLicencePending: "Licence under review",
+    dashInDirectory: "Listed in the directory",
+    dashNotInDirectory: "Not listed",
+    dashNotInDirectoryHint: "Patients cannot see your clinic right now.",
+
+    dashSubHeading: "Subscription",
+    dashSubTrialing: "Free trial",
+    dashTrialEnds: "Trial ends {date}",
+    dashTrialEndedUnbilled: "Your trial ended and we could not charge it",
+    dashTrialEndedNoCard:
+      "We have no payment method on file. Your clinic is still listed — to keep it that way, finish setting up payment.",
+    dashTrialEndedNoProvider:
+      "Your trial has ended. Billing isn't open on our side yet — nothing for you to do, we'll be in touch.",
+    dashSetupPayment: "Set up payment",
+    dashSubNone: "No subscription yet",
+    dashSubValidUntil: "Valid until {date}",
+
+    dashDocsHeading: "Licence documents",
+    dashDocsNone: "No documents uploaded.",
+    dashDocOk: "Accepted",
+    dashDocRejected: "Replacement needed",
+    dashDocPending: "Under review",
+    dashDocReplace: "Upload a replacement",
+
+    dashLeadsHeading: "Requests received",
+    dashLeadsNone:
+      "No requests yet. The moment a patient picks you, it appears here and we email you too.",
+    dashLeadReceived: "Received {date}",
+    dashLeadQuoted: "Quote sent",
+    dashLeadAwaiting: "Awaiting your price",
+    dashLeadOpen: "Open request",
   },
 
   admin: {
@@ -906,6 +953,7 @@ const en: typeof he = {
     about: "About",
     contact: "Contact",
     clinicsJoin: "For clinics",
+    clinicsArea: "Clinic area",
     terms: "Terms of use",
     privacy: "Privacy policy",
     cookies: "Cookie policy",
