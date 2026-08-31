@@ -28,17 +28,25 @@ export function validateFile(file: File): FileValidationError | null {
 // the site is bilingual — the codes it returns ("TYPE" / "SIZE") are the API,
 // and t.validation.* turns them into text at the call site.
 
+/** How many leading bytes headMatchesType needs to decide. */
+export const SIGNATURE_BYTES = 8;
+
 /**
- * Verifies the file's leading "magic" bytes match its declared MIME type. The
- * browser-supplied `file.type`/extension can be spoofed by simply renaming a
- * file, so validateFile() alone isn't enough for uploads that come straight from
- * the public. Returns true only when the real content matches one of the allowed
- * types. Async because it reads the first bytes of the blob.
+ * Whether these leading "magic" bytes really belong to the declared MIME type.
+ *
+ * A browser-supplied type or extension can be spoofed by renaming a file, so
+ * validateFile() alone is not enough for anything the public can send.
+ *
+ * Split out from fileSignatureMatches because the browser now uploads straight
+ * to storage: the bytes never pass through a route on the way in, and the only
+ * place left to check them is a short read back out of the stored blob. Both
+ * callers have to apply the same rule, so the rule lives in one place.
  */
-export async function fileSignatureMatches(file: File): Promise<boolean> {
-  const header = new Uint8Array(await file.slice(0, 8).arrayBuffer());
-  const startsWith = (sig: number[]) => sig.every((b, i) => header[i] === b);
-  switch (file.type) {
+export function headMatchesType(head: Uint8Array, contentType: string): boolean {
+  // A short read is an unknown file, not a matching one.
+  const startsWith = (sig: number[]) =>
+    head.length >= sig.length && sig.every((b, i) => head[i] === b);
+  switch (contentType) {
     case "application/pdf":
       return startsWith([0x25, 0x50, 0x44, 0x46]); // "%PDF"
     case "image/png":
@@ -50,6 +58,12 @@ export async function fileSignatureMatches(file: File): Promise<boolean> {
   }
 }
 
+/** headMatchesType for a File we are still holding. */
+export async function fileSignatureMatches(file: File): Promise<boolean> {
+  const head = new Uint8Array(await file.slice(0, SIGNATURE_BYTES).arrayBuffer());
+  return headMatchesType(head, file.type);
+}
+
 export function fileExtension(file: File): string {
   const fromName = file.name.split(".").pop()?.toLowerCase();
   if (fromName && ["pdf", "jpg", "jpeg", "png"].includes(fromName)) return fromName;
@@ -59,9 +73,39 @@ export function fileExtension(file: File): string {
   return "bin";
 }
 
+/** The folder this request's files live in, with its trailing slash. */
+export function requestBlobDir(requestId: string): string {
+  return `requests/${requestId}/`;
+}
+
 export function blobPath(requestId: string, kind: UploadKind, file: File): string {
-  const ext = fileExtension(file);
-  return `requests/${requestId}/${kind}.${ext}`;
+  return `${requestBlobDir(requestId)}${kind}.${fileExtension(file)}`;
+}
+
+/**
+ * Whether a pathname belongs to this request and this kind, and nothing else.
+ *
+ * The browser chooses the pathname it uploads to, and the token route is the
+ * only place that sees it before the write happens. Without this check a
+ * patient could write into another patient's folder, or overwrite their own
+ * treatment plan with an x-ray.
+ *
+ * The store appends a random suffix to the name it was given, so the stored
+ * file is `xray-Xy7Kq2.jpg` rather than `xray.jpg` — the kind is matched as the
+ * name's leading segment rather than the whole of it. The name must still be a
+ * plain filename: a slash anywhere in it would let `xray/../../other` through.
+ */
+export function isOwnRequestBlobPath(
+  pathname: string,
+  requestId: string,
+  kind: UploadKind,
+): boolean {
+  const dir = requestBlobDir(requestId);
+  if (!pathname.startsWith(dir)) return false;
+  const name = pathname.slice(dir.length);
+  if (!name || name.includes("/")) return false;
+  const base = name.split(".")[0];
+  return base === kind || base.startsWith(`${kind}-`);
 }
 
 // --- Clinic logo upload (public, image-only) ---
