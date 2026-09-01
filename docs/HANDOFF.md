@@ -172,33 +172,37 @@ P0 (התשתית הבינלאומית) הושלם ונמצא בפרודקשן. �
 
 ---
 
-## 1א. חשבון Clerk — היגיינה
+## 1א. חשבון Clerk ✅ **נוקה ב-2026-09-01**
 
-בחשבון קיימות **חמש אפליקציות**, וארבע מהן זבל שנוצר בטעות בהתקנות חוזרות:
+בחשבון היו **חמש** אפליקציות; נשארה **אחת**:
 
-| אפליקציה | מזהה | מצב |
-|---|---|---|
-| **Dentalcompare** | `app_3FRgZdeSWVYQzdkEepmq4ZeeBkT` | ✅ **האמיתית** — prod + dev |
-| dentalcompare (אות קטנה) | `app_3GOncnOdJJot09hEv9dI6o6rWsY` | זבל — dev בלבד |
-| My Application | `app_3FRiDWwIVH7zoKkllUB0XLYdKU4` | זבל — dev בלבד |
-| My Application | `app_3FRho8V3jpsydReHsCctF2Mc9Gs` | זבל — dev בלבד |
-| My Application | `app_3FRgmYfY2UK4ls12QAVqKjynnW0` | זבל — dev בלבד |
+**`Dentalcompare` — `app_3FRgZdeSWVYQzdkEepmq4ZeeBkT`** · dev
+(`oriented-whippet-84`) + production (`clerk.dentalcompare.co.il`).
 
-**ה-CLI קושר מחדש ל-Dentalcompare ב-2026-09-01** (`clerk link --app
-app_3FRgZdeSWVYQzdkEepmq4ZeeBkT`). קודם הוא הצביע על אחת מאפליקציות
-„My Application", מה שהופך כל `clerk config patch` להרצה על המופע הלא נכון
-בלי שום שגיאה.
+ארבע האחרות — שלוש בשם „My Application" ואחת בשם „dentalcompare" באות
+קטנה — נמחקו. כולן dev בלבד. ארבעת מופעי ה-`*.clerk.accounts.dev` שלהן
+מחזירים 404, `oriented-whippet-84` מחזיר 200, והאתר החי לא זז.
 
-**לפני מחיקת הארבע — יש סייג אחד ואסור לדלג עליו.** סביבת ה-Preview
-ב-Vercel מחזיקה `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` ו-`CLERK_SECRET_KEY`
-משלה, בני 53 יום, ולא ידוע לאיזה מופע הם מצביעים: הם מסומנים **Sensitive**,
-כלומר Vercel לא מציג אותם שוב לאף אחד, וה-Preview עצמו חסום מאחורי הגנת
-הפריסה. אם אחת מהארבע מפעילה את ה-Preview, מחיקתה תשבור את פריסות ה-Preview
-של כל PR — **בשקט**, בדיוק כמו כל שאר המלכודות במסמך הזה.
+**ה-CLI קושר מחדש** (`clerk link --app app_3FRgZ…`). קודם הצביע על אחת
+מ„My Application", מה שהופך כל `clerk config patch` להרצה על המופע הלא נכון
+בלי שום שגיאה. פרופיל ישן ב-`%APPDATA%\clerk-cli\Config\config.json`
+שהצביע על אפליקציה מחוקה — הוסר.
 
-הסדר הבטוח: קודם להצביע את ה-Preview על מופע ה-**dev של Dentalcompare**
-(`oriented-whippet-84`), ורק אז למחוק. ה-CLI של Clerk יודע `list` ו-`create`
-בלבד — **אין בו מחיקה**, אז המחיקה עצמה היא בדשבורד.
+### שלוש מלכודות מהניקוי הזה
+
+- **`clerk apps` מציג רק `list` ו-`create`, אבל `clerk api` קיים ואינו
+  ברשימת הפקודות.** דרכו מגיעים לכל Platform API, כולל
+  `DELETE /platform/applications/{id}`. הקטלוג המלא נמצא מקומית ב-
+  `%LOCALAPPDATA%\clerk-cli\Cache\plapi-catalog.json`.
+- **ב-Git Bash חובה `MSYS_NO_PATHCONV=1` לפני `clerk api`.** בלעדיו
+  `/platform/applications` הופך ל-`C:/Program Files/Git/applications`,
+  והשגיאה החוזרת היא „The provided Clerk Secret Key is invalid" — הודעה
+  ששולחת אותך לחפש בעיית הרשאות שאינה קיימת.
+- **סביבת ה-Preview הוצבעה למופע ה-dev של Dentalcompare** לפני המחיקה,
+  כי לא היה ידוע לאיזה מופע היא הצביעה: המפתחות היו בני 53 יום ומסומנים
+  **Sensitive**, כלומר Vercel לא מציג אותם שוב לאף אחד. `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+  הפך ל-**Non-sensitive** בכוונה — הוא נשלח ממילא בכל דף HTML, וסימונו
+  כרגיש הוא בדיוק מה שיצר את המבוי הסתום. `CLERK_SECRET_KEY` נשאר רגיש.
 
 ---
 
