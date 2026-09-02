@@ -4,9 +4,17 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@clerk/nextjs/server";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { getRequestLocale } from "@/i18n/request-locale";
+import { asLocale } from "@/i18n/config";
 import { db } from "@/lib/db";
 import { audit } from "@/lib/audit";
 import { getClinicForCurrentUser } from "@/server/clinic-account";
+import {
+  sendQuoteApprovedEmail,
+  sendQuoteRejectedEmail,
+  sendTreatmentStartedEmail,
+  sendCompletionRequestedEmail,
+  sendTreatmentCompletedEmail,
+} from "@/server/quote-decision-notifications";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -30,7 +38,8 @@ async function loadOwnedRequestDentist(requestDentistId: string) {
     select: {
       id: true,
       requestId: true,
-      request: { select: { userId: true } },
+      request: { select: { userId: true, user: { select: { fullName: true, locale: true } } } },
+      dentist: { select: { id: true, email: true, locale: true, clinicName: true } },
       quote: { select: { id: true, status: true } },
     },
   });
@@ -91,6 +100,39 @@ export async function approveQuote(requestDentistId: string): Promise<ActionResu
     metadata: { rejectedSiblings: siblingQuoteIds },
   });
 
+  const rejectedDentists =
+    siblingQuoteIds.length > 0
+      ? await db.requestDentist.findMany({
+          where: { quote: { id: { in: siblingQuoteIds } } },
+          select: {
+            quote: { select: { id: true } },
+            dentist: { select: { email: true, locale: true, clinicName: true } },
+          },
+        })
+      : [];
+
+  if (
+    await sendQuoteApprovedEmail({
+      to: rd.dentist.email,
+      clinicName: rd.dentist.clinicName,
+      locale: asLocale(rd.dentist.locale),
+    })
+  ) {
+    await db.quote.update({ where: { id: rd.quote!.id }, data: { decisionNotifiedAt: new Date() } });
+  }
+
+  for (const sibling of rejectedDentists) {
+    if (!sibling.quote) continue;
+    const sent = await sendQuoteRejectedEmail({
+      to: sibling.dentist.email,
+      clinicName: sibling.dentist.clinicName,
+      locale: asLocale(sibling.dentist.locale),
+    });
+    if (sent) {
+      await db.quote.update({ where: { id: sibling.quote.id }, data: { decisionNotifiedAt: new Date() } });
+    }
+  }
+
   revalidatePath(`/request/${rd.requestId}`);
   return { ok: true };
 }
@@ -109,6 +151,17 @@ export async function rejectQuote(requestDentistId: string): Promise<ActionResul
   if (result.count === 0) return { ok: false, error: e.quoteAlreadyDecided };
 
   await audit({ actor: "patient", action: "quote.rejected", entity: "Quote", entityId: rd.quote!.id });
+
+  if (
+    await sendQuoteRejectedEmail({
+      to: rd.dentist.email,
+      clinicName: rd.dentist.clinicName,
+      locale: asLocale(rd.dentist.locale),
+    })
+  ) {
+    await db.quote.update({ where: { id: rd.quote!.id }, data: { decisionNotifiedAt: new Date() } });
+  }
+
   revalidatePath(`/request/${rd.requestId}`);
   return { ok: true };
 }
@@ -128,6 +181,10 @@ async function loadOwnedByClinic(requestDentistId: string) {
       id: true,
       requestId: true,
       dentistId: true,
+      dentist: { select: { clinicName: true } },
+      request: {
+        select: { id: true, user: { select: { fullName: true, email: true, locale: true } } },
+      },
       quote: { select: { id: true, status: true } },
     },
   });
@@ -152,6 +209,20 @@ export async function markTreatmentStarted(requestDentistId: string): Promise<Ac
   if (result.count === 0) return { ok: false, error: e.invalidQuoteTransition };
 
   await audit({ actor: "clinic", action: "quote.treatment_started", entity: "Quote", entityId: rd.quote!.id });
+
+  if (rd.request.user) {
+    const sent = await sendTreatmentStartedEmail({
+      to: rd.request.user.email,
+      patientName: rd.request.user.fullName,
+      clinicName: rd.dentist.clinicName,
+      requestId: rd.requestId,
+      locale: asLocale(rd.request.user.locale),
+    });
+    if (sent) {
+      await db.quote.update({ where: { id: rd.quote!.id }, data: { treatmentStartedNotifiedAt: new Date() } });
+    }
+  }
+
   revalidatePath("/clinics/dashboard");
   return { ok: true };
 }
@@ -175,6 +246,23 @@ export async function requestCompletionConfirmation(requestDentistId: string): P
     entity: "Quote",
     entityId: rd.quote!.id,
   });
+
+  if (rd.request.user) {
+    const sent = await sendCompletionRequestedEmail({
+      to: rd.request.user.email,
+      patientName: rd.request.user.fullName,
+      clinicName: rd.dentist.clinicName,
+      requestId: rd.requestId,
+      locale: asLocale(rd.request.user.locale),
+    });
+    if (sent) {
+      await db.quote.update({
+        where: { id: rd.quote!.id },
+        data: { completionRequestedNotifiedAt: new Date() },
+      });
+    }
+  }
+
   revalidatePath("/clinics/dashboard");
   return { ok: true };
 }
@@ -197,6 +285,17 @@ export async function confirmCompletion(requestDentistId: string): Promise<Actio
   if (result.count === 0) return { ok: false, error: e.invalidQuoteTransition };
 
   await audit({ actor: "patient", action: "quote.completed", entity: "Quote", entityId: rd.quote!.id });
+
+  if (
+    await sendTreatmentCompletedEmail({
+      to: rd.dentist.email,
+      clinicName: rd.dentist.clinicName,
+      locale: asLocale(rd.dentist.locale),
+    })
+  ) {
+    await db.quote.update({ where: { id: rd.quote!.id }, data: { completedNotifiedAt: new Date() } });
+  }
+
   revalidatePath(`/request/${rd.requestId}`);
   return { ok: true };
 }

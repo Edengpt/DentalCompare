@@ -13,6 +13,32 @@ const authState = { clerkUserId: "" };
 vi.mock("@clerk/nextjs/server", () => ({ auth: async () => ({ userId: authState.clerkUserId }) }));
 vi.mock("next/cache", () => ({ revalidatePath: () => {} }));
 
+// The notification senders hit Resend for real; this suite is about the state
+// transitions and who gets notified, not about the sending itself.
+const notified: string[] = [];
+vi.mock("@/server/quote-decision-notifications", () => ({
+  sendQuoteApprovedEmail: async () => {
+    notified.push("approved");
+    return true;
+  },
+  sendQuoteRejectedEmail: async () => {
+    notified.push("rejected");
+    return true;
+  },
+  sendTreatmentStartedEmail: async () => {
+    notified.push("started");
+    return true;
+  },
+  sendCompletionRequestedEmail: async () => {
+    notified.push("completion_requested");
+    return true;
+  },
+  sendTreatmentCompletedEmail: async () => {
+    notified.push("completed");
+    return true;
+  },
+}));
+
 const hasDb = Boolean(process.env.DATABASE_URL);
 let db: typeof Db;
 let approveQuote: typeof ApproveFn;
@@ -74,6 +100,7 @@ describe.skipIf(!hasDb)("patient quote decisions", () => {
   }, DB_TIMEOUT);
 
   afterEach(async () => {
+    notified.length = 0;
     for (const id of created.requestIds) await db.request.delete({ where: { id } }).catch(() => {});
     for (const id of created.dentistIds) await db.dentist.delete({ where: { id } }).catch(() => {});
     for (const id of created.userIds) await db.user.delete({ where: { id } }).catch(() => {});
@@ -180,5 +207,25 @@ describe.skipIf(!hasDb)("patient quote decisions", () => {
     const result = await confirmCompletion(rdA.id);
 
     expect(result.ok).toBe(false);
+  });
+
+  it("notifies the clinic on approval and stamps decisionNotifiedAt", async () => {
+    const { rdA } = await seedRequestWithTwoQuotes();
+
+    await approveQuote(rdA.id);
+
+    expect(notified).toContain("approved");
+    const a = await db.quote.findUniqueOrThrow({ where: { requestDentistId: rdA.id } });
+    expect(a.decisionNotifiedAt).not.toBeNull();
+  });
+
+  it("notifies every auto-rejected clinic too", async () => {
+    const { rdA, rdB } = await seedRequestWithTwoQuotes();
+
+    await approveQuote(rdA.id);
+
+    expect(notified.filter((n) => n === "rejected")).toHaveLength(1);
+    const b = await db.quote.findUniqueOrThrow({ where: { requestDentistId: rdB.id } });
+    expect(b.decisionNotifiedAt).not.toBeNull();
   });
 });
