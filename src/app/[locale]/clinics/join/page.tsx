@@ -7,6 +7,8 @@ import { RegistrationForm } from "@/components/clinics/registration-form";
 import { getActiveCountries } from "@/lib/countries";
 import { getSubscriptionPricing } from "@/lib/subscription-pricing";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);

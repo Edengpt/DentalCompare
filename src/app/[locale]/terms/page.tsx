@@ -5,6 +5,8 @@ import { isLocale } from "@/i18n/config";
 import TermsContentHe, { termsTitleHe } from "./content.he";
 import TermsContentEn, { termsTitleEn } from "./content.en";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
