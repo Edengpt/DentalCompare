@@ -34,14 +34,19 @@ export type ParseResult = { ok: true; value: ParsedPricing } | { ok: false; fiel
  * imports (aside from the currency-aware `toMinor` conversion), mirroring
  * `src/lib/country-input.ts` so it can be unit-tested without a database.
  */
+// A generous ceiling that would never reject a real price, but catches a
+// fat-fingered extra zero (e.g. "2990" instead of "299") before it gets
+// audited and charged to every clinic that registers after it.
+const MAX_PRICE_MAJOR = 100_000;
+
 export function parsePricingInput(raw: RawPricingInput, currency: string): ParseResult {
   const monthlyMajor = Number(raw.monthlyPriceMajor);
-  if (!Number.isFinite(monthlyMajor) || monthlyMajor <= 0) {
+  if (!Number.isFinite(monthlyMajor) || monthlyMajor <= 0 || monthlyMajor > MAX_PRICE_MAJOR) {
     return { ok: false, field: "monthlyPriceMajor" };
   }
 
   const yearlyMajor = Number(raw.yearlyPriceMajor);
-  if (!Number.isFinite(yearlyMajor) || yearlyMajor <= 0) {
+  if (!Number.isFinite(yearlyMajor) || yearlyMajor <= 0 || yearlyMajor > MAX_PRICE_MAJOR) {
     return { ok: false, field: "yearlyPriceMajor" };
   }
 
