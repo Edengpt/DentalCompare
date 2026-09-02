@@ -54,6 +54,38 @@ async function main() {
   console.log(
     "ℹ️  No clinic seed data. Clinics are added via the intake form + admin approval (or admin manual-add).",
   );
+
+  // Mirrors the INSERT in the subscription_pricing migration. `getSubscriptionPricing`
+  // uses findUniqueOrThrow by design (a missing row should crash loudly, not
+  // silently grant a free subscription) — so a database set up via `prisma db
+  // push` (which skips migration files entirely) needs this table seeded here
+  // too, not just by the migration.
+  await db.subscriptionPricing.upsert({
+    where: { provider: "PAYPLUS" },
+    update: {},
+    create: {
+      provider: "PAYPLUS",
+      currency: "ILS",
+      monthlyPriceMinor: 29900,
+      yearlyPriceMinor: 199000,
+      trialDays: 60,
+    },
+  });
+  console.log("✅ Seeded subscription pricing: PAYPLUS");
+
+  // STRIPE is a placeholder default, unused until the Stripe integration exists.
+  await db.subscriptionPricing.upsert({
+    where: { provider: "STRIPE" },
+    update: {},
+    create: {
+      provider: "STRIPE",
+      currency: "USD",
+      monthlyPriceMinor: 7900,
+      yearlyPriceMinor: 53000,
+      trialDays: 60,
+    },
+  });
+  console.log("✅ Seeded subscription pricing: STRIPE");
 }
 
 main()
