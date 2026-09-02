@@ -894,6 +894,9 @@ const he = {
     fieldDefaultLocale: "שפת ברירת מחדל",
     fieldInsurers: "קופות חולים / מבטחים (מופרד בפסיקים)",
     fieldRequiredDocs: "מסמכים נדרשים לאישור (מופרד בפסיקים)",
+    fieldMonthlyPrice: "מחיר חודשי",
+    fieldYearlyPrice: "מחיר שנתי",
+    fieldTrialDays: "ימי ניסיון",
   },
 
   errors: {
@@ -953,6 +956,8 @@ const he = {
     consentRequired: "יש לאשר את ההסכמה לפני שליחת הבקשה",
     deleteFailed: "מחיקת הקבצים נכשלה — נסו שוב",
     countryLastActive: "זו המדינה הפעילה היחידה — כיבוי שלה ירוקן את בורר המדינות בטופס ההרשמה",
+    pricingInvalidField: "ערך לא תקין בשדה: {field}",
+    pricingNotFound: "ספק תשלומים לא נמצא",
   },
 
   legal: {

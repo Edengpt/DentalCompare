@@ -914,6 +914,9 @@ const en: typeof he = {
     fieldDefaultLocale: "Default language",
     fieldRequiredDocs: "Documents required for approval (comma separated)",
     fieldInsurers: "Insurers / payers (comma separated)",
+    fieldMonthlyPrice: "Monthly price",
+    fieldYearlyPrice: "Yearly price",
+    fieldTrialDays: "Trial days",
   },
 
   errors: {
@@ -977,6 +980,8 @@ const en: typeof he = {
     deleteFailed: "We couldn't delete the files — please try again",
     countryLastActive:
       "This is the only active country — switching it off would empty the country picker on the clinic registration form",
+    pricingInvalidField: "Invalid value in field: {field}",
+    pricingNotFound: "Payment provider not found",
   },
 
   legal: {
