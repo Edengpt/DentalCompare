@@ -897,6 +897,12 @@ const he = {
     fieldMonthlyPrice: "מחיר חודשי",
     fieldYearlyPrice: "מחיר שנתי",
     fieldTrialDays: "ימי ניסיון",
+    pricingHeading: "מחיר וניסיון חינם",
+    pricingProviderPayPlus: "PayPlus (ישראל)",
+    pricingProviderStripe: "Stripe (בינלאומי)",
+    pricingSave: "שמירה",
+    pricingUpdated: "העדכון נשמר",
+    pricingLastUpdated: "עודכן לאחרונה על ידי {email} · {date}",
   },
 
   errors: {

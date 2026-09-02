@@ -3,6 +3,7 @@ import { isLocale, defaultLocale } from "@/i18n/config";
 import { formatMoney } from "@/lib/money";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/server/admin";
+import { PricingSettingsForm } from "@/components/admin/pricing-settings-form";
 import type { Dictionary } from "@/i18n/get-dictionary";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
@@ -46,6 +47,8 @@ export default async function AdminSubscriptionsPage({
   const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
   await requireAdmin();
 
+  const pricingRows = await db.subscriptionPricing.findMany({ orderBy: { provider: "asc" } });
+
   // Was pinned to he/he-IL, so an admin reading the English site got Hebrew
   // dates and Hebrew number grouping.
   const pageLocale = isLocale(locale) ? locale : defaultLocale;
@@ -82,6 +85,8 @@ export default async function AdminSubscriptionsPage({
         <h1 className="font-display text-foreground text-3xl font-bold tracking-tight">{t.admin.subscriptionsTitle}</h1>
         <p className="text-muted-foreground mt-1.5 text-sm">{t.admin.subscriptionsSubtitle}</p>
       </header>
+
+      <PricingSettingsForm rows={pricingRows} />
 
       <div className="border-border/60 bg-card overflow-hidden rounded-2xl border">
         <table className="w-full text-sm">

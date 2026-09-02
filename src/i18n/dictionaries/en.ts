@@ -917,6 +917,12 @@ const en: typeof he = {
     fieldMonthlyPrice: "Monthly price",
     fieldYearlyPrice: "Yearly price",
     fieldTrialDays: "Trial days",
+    pricingHeading: "Price & free trial",
+    pricingProviderPayPlus: "PayPlus (Israel)",
+    pricingProviderStripe: "Stripe (international)",
+    pricingSave: "Save",
+    pricingUpdated: "Update saved",
+    pricingLastUpdated: "Last updated by {email} · {date}",
   },
 
   errors: {
