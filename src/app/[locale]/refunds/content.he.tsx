@@ -1,10 +1,12 @@
 import { formatMoney } from "@/lib/money";
-import { SITE_CONFIG, SUBSCRIPTION_PLANS, TRIAL_DAYS } from "@/lib/constants";
+import { SITE_CONFIG } from "@/lib/constants";
+import { getSubscriptionPricing } from "@/lib/subscription-pricing";
 import { Section, P, List } from "@/components/legal/legal-layout";
 
 export const refundsTitleHe = "מדיניות ביטולים והחזרים";
 
-export default function RefundsContentHe() {
+export default async function RefundsContentHe() {
+  const pricing = await getSubscriptionPricing("PAYPLUS");
   return (
     <>
       <P>
@@ -28,8 +30,8 @@ export default function RefundsContentHe() {
       <Section heading="2. מנוי מרפאה">
         <List
           items={[
-            `כל מרפאה חדשה מקבלת תקופת התנסות חינם של ${TRIAL_DAYS} יום. ביטול במהלך תקופה זו אינו כרוך בחיוב כלשהו.`,
-            `בתום תקופת ההתנסות מתחיל החיוב: מסלול חודשי (${formatMoney(SUBSCRIPTION_PLANS.MONTHLY.priceMinor, SUBSCRIPTION_PLANS.MONTHLY.currency, "he")}) או שנתי (${formatMoney(SUBSCRIPTION_PLANS.YEARLY.priceMinor, SUBSCRIPTION_PLANS.YEARLY.currency, "he")}), המתחדש אוטומטית בתום כל תקופה.`,
+            `כל מרפאה חדשה מקבלת תקופת התנסות חינם של ${pricing.trialDays} יום. ביטול במהלך תקופה זו אינו כרוך בחיוב כלשהו.`,
+            `בתום תקופת ההתנסות מתחיל החיוב: מסלול חודשי (${formatMoney(pricing.monthlyPriceMinor, pricing.currency, "he")}) או שנתי (${formatMoney(pricing.yearlyPriceMinor, pricing.currency, "he")}), המתחדש אוטומטית בתום כל תקופה.`,
             "ניתן לבטל את המנוי בכל עת. הביטול ייכנס לתוקף בתום התקופה ששולמה, והמרפאה לא תחויב בתקופה הבאה.",
             "לא יינתן החזר יחסי עבור תקופה ששולמה ולא נוצלה במלואה.",
           ]}

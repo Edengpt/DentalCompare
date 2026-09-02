@@ -1,10 +1,12 @@
 import { formatMoney } from "@/lib/money";
-import { SITE_CONFIG, SUBSCRIPTION_PLANS, TRIAL_DAYS } from "@/lib/constants";
+import { SITE_CONFIG } from "@/lib/constants";
+import { getSubscriptionPricing } from "@/lib/subscription-pricing";
 import { Section, P, List } from "@/components/legal/legal-layout";
 
 export const refundsTitleEn = "Cancellations & Refunds";
 
-export default function RefundsContentEn() {
+export default async function RefundsContentEn() {
+  const pricing = await getSubscriptionPricing("PAYPLUS");
   return (
     <>
       <P>
@@ -29,8 +31,8 @@ export default function RefundsContentEn() {
       <Section heading="2. Clinic subscriptions">
         <List
           items={[
-            `Every new clinic receives a free ${TRIAL_DAYS}-day trial. Cancelling during that period incurs no charge at all.`,
-            `Billing begins when the trial ends: a monthly plan (${formatMoney(SUBSCRIPTION_PLANS.MONTHLY.priceMinor, SUBSCRIPTION_PLANS.MONTHLY.currency, "en")}) or an annual plan (${formatMoney(SUBSCRIPTION_PLANS.YEARLY.priceMinor, SUBSCRIPTION_PLANS.YEARLY.currency, "en")}), renewing automatically at the end of each period.`,
+            `Every new clinic receives a free ${pricing.trialDays}-day trial. Cancelling during that period incurs no charge at all.`,
+            `Billing begins when the trial ends: a monthly plan (${formatMoney(pricing.monthlyPriceMinor, pricing.currency, "en")}) or an annual plan (${formatMoney(pricing.yearlyPriceMinor, pricing.currency, "en")}), renewing automatically at the end of each period.`,
             "A subscription can be cancelled at any time. Cancellation takes effect at the end of the period already paid for, and the clinic is not charged for the following one.",
             "No pro-rata refund is given for a paid period that was not used in full.",
           ]}

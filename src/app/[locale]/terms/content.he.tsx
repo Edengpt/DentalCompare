@@ -1,10 +1,12 @@
 import { formatMoney } from "@/lib/money";
-import { SITE_CONFIG, SUBSCRIPTION_PLANS, TRIAL_DAYS, REQUEST_LIMITS } from "@/lib/constants";
+import { SITE_CONFIG, REQUEST_LIMITS } from "@/lib/constants";
+import { getSubscriptionPricing } from "@/lib/subscription-pricing";
 import { Section, P, List, Ph } from "@/components/legal/legal-layout";
 
 export const termsTitleHe = "תנאי שימוש (תקנון)";
 
-export default function TermsContentHe() {
+export default async function TermsContentHe() {
+  const pricing = await getSubscriptionPricing("PAYPLUS");
   return (
     <>
       <P>
@@ -67,7 +69,7 @@ export default function TermsContentHe() {
         <List
           items={[
             "מטופל: השירות חינמי לחלוטין. לא נגבה תשלום, ולא יידרשו פרטי אמצעי תשלום בשום שלב — לא עבור שליחת הבקשה ולא עבור קבלת ההצעות.",
-            `מרפאה: מנוי חודשי (${formatMoney(SUBSCRIPTION_PLANS.MONTHLY.priceMinor, SUBSCRIPTION_PLANS.MONTHLY.currency, "he")}) או שנתי (${formatMoney(SUBSCRIPTION_PLANS.YEARLY.priceMinor, SUBSCRIPTION_PLANS.YEARLY.currency, "he")}) עבור הופעה במאגר וקבלת פניות, לאחר תקופת התנסות חינם של ${TRIAL_DAYS} יום.`,
+            `מרפאה: מנוי חודשי (${formatMoney(pricing.monthlyPriceMinor, pricing.currency, "he")}) או שנתי (${formatMoney(pricing.yearlyPriceMinor, pricing.currency, "he")}) עבור הופעה במאגר וקבלת פניות, לאחר תקופת התנסות חינם של ${pricing.trialDays} יום.`,
             "התשלום עבור המנוי הוא עבור נראות ופרסום במאגר בלבד. אין תשלום הנגזר ממספר הפניות שהתקבלו, מזהות המטופל או מביצוע טיפול כלשהו בפועל.",
             "מדיניות הביטולים וההחזרים מפורטת בעמוד ייעודי.",
           ]}
