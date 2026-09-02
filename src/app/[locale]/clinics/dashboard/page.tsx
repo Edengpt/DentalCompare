@@ -8,6 +8,7 @@ import { db } from "@/lib/db";
 import { isClinicVisible, billingBlocker } from "@/lib/subscription";
 import { isPayPlusConfigured } from "@/lib/payplus";
 import { getClinicForCurrentUser } from "@/server/clinic-account";
+import { QuoteStatusActions } from "@/components/clinics/quote-status-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -88,7 +89,7 @@ export default async function ClinicDashboardPage({
         id: true,
         sentAt: true,
         quoteToken: true,
-        quote: { select: { id: true } },
+        quote: { select: { id: true, status: true } },
       },
     }),
   ]);
@@ -249,15 +250,7 @@ export default async function ClinicDashboardPage({
                     ? format(t.clinics.dashLeadReceived, { date: dateFmt.format(lead.sentAt) })
                     : ""}
                 </span>
-                <span
-                  className={
-                    lead.quote
-                      ? "text-teal-deep text-xs font-medium"
-                      : "text-xs font-medium text-amber-700"
-                  }
-                >
-                  {lead.quote ? t.clinics.dashLeadQuoted : t.clinics.dashLeadAwaiting}
-                </span>
+                <QuoteStatusActions requestDentistId={lead.id} status={lead.quote?.status ?? null} />
                 {lead.quoteToken && (
                   <Link
                     href={`/quote/${lead.quoteToken}`}
