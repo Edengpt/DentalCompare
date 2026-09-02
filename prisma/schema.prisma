@@ -41,6 +41,11 @@ enum SubscriptionStatus {
   CANCELED
 }
 
+enum SubscriptionProvider {
+  PAYPLUS
+  STRIPE
+}
+
 /// A country the platform operates in.
 ///
 /// This model exists so that no country list is ever hardcoded again. Adding
@@ -332,6 +337,20 @@ model Quote {
 
 // The Payment model (patient flat fee) was removed with the free-patient pivot.
 // Clinic money lives in ClinicSubscription + SubscriptionCharge only.
+
+/// One row per payment provider. Eden edits monthlyPriceMinor, yearlyPriceMinor
+/// and trialDays from the admin panel — currency is fixed per provider and never
+/// exposed for editing. A price change here affects only a subscription created
+/// AFTER the change; ClinicSubscription snapshots its own price at creation.
+model SubscriptionPricing {
+  provider          SubscriptionProvider @id
+  currency          String
+  monthlyPriceMinor Int
+  yearlyPriceMinor  Int
+  trialDays         Int
+  updatedAt         DateTime             @updatedAt
+  updatedBy         String?
+}
 
 model ClinicSubscription {
   id                      String             @id @default(uuid())
