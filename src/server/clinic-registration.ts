@@ -16,6 +16,7 @@ import {
 } from "@/lib/constants";
 import { rateLimit } from "@/lib/rate-limit";
 import { createPendingSubscription } from "@/server/subscriptions";
+import { getSubscriptionPricing } from "@/lib/subscription-pricing";
 import {
   requiredDocKinds,
   missingDocKinds,
@@ -146,6 +147,7 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
   }
 
   const setupToken = randomUUID();
+  const pricing = await getSubscriptionPricing("PAYPLUS");
 
   // Both writes must succeed or fail together: an orphaned Dentist with no
   // subscription would prevent the clinic from ever re-registering.
@@ -178,7 +180,11 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
       select: { id: true },
     });
 
-    await createPendingSubscription({ dentistId: dentist.id, plan, setupToken }, tx);
+    const priceMinor = plan === "MONTHLY" ? pricing.monthlyPriceMinor : pricing.yearlyPriceMinor;
+    await createPendingSubscription(
+      { dentistId: dentist.id, plan, setupToken, priceMinor, currency: pricing.currency },
+      tx,
+    );
 
     // In the same transaction as the clinic itself: a clinic row with no
     // documents can never be approved and can never re-register, because its
