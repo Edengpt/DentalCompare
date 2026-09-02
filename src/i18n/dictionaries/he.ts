@@ -903,6 +903,7 @@ const he = {
     clinicNotFound: "המרפאה לא נמצאה",
     clinicNoSubscription: "למרפאה אין מנוי משויך — לא ניתן לאשר",
     quoteAlreadyDecided: "המטופל כבר הכריע לגבי הצעה זו — לא ניתן לערוך אותה יותר",
+    quoteNotFound: "לא מצאנו את ההצעה הזו",
     onlyPendingCanBeRejected: "ניתן לדחות רק הרשמות שטרם אושרו",
     paymentsNotConfigured: "התשלומים אינם מוגדרים עדיין. פנו לתמיכה.",
     invalidLink: "קישור לא תקין",
