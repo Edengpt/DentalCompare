@@ -300,3 +300,126 @@ export function documentsRejectedEmailHtml(opts: {
     <p style="font-size:12px;color:#777;">${format(t.docsRejectedExpiry, { days: DOCUMENT_TOKEN_DAYS })}</p>`,
   );
 }
+
+/** Clinic "the patient approved your quote" email. */
+export function quoteApprovedEmailHtml(opts: {
+  locale: Locale;
+  t: EmailStrings;
+  clinicName: string;
+  link: string;
+}): string {
+  const { locale, t, clinicName, link } = opts;
+  return shell(
+    locale,
+    `    <h2 style="color: #0f4c4c;">${t.quoteApprovedHeading}</h2>
+    <p>${format(t.greeting, { name: escapeHtml(clinicName) })}</p>
+    <p>${format(t.quoteApprovedBody, { patient: t.patientFallback })}</p>
+    <div style="text-align: center; margin: 28px 0;">
+      <a href="${link}"
+         style="display: inline-block; background: #0f4c4c; color: #fff; text-decoration: none;
+                font-size: 16px; font-weight: bold; padding: 14px 30px; border-radius: 999px;">
+        ${t.quoteApprovedCta}
+      </a>
+    </div>`,
+  );
+}
+
+/** Clinic "the patient rejected your quote" email. */
+export function quoteRejectedEmailHtml(opts: {
+  locale: Locale;
+  t: EmailStrings;
+  clinicName: string;
+  link: string;
+}): string {
+  const { locale, t, clinicName, link } = opts;
+  return shell(
+    locale,
+    `    <h2 style="color: #0f4c4c;">${t.quoteRejectedHeading}</h2>
+    <p>${format(t.greeting, { name: escapeHtml(clinicName) })}</p>
+    <p>${format(t.quoteRejectedBody, { patient: t.patientFallback })}</p>
+    <div style="text-align: center; margin: 28px 0;">
+      <a href="${link}"
+         style="display: inline-block; background: #0f4c4c; color: #fff; text-decoration: none;
+                font-size: 16px; font-weight: bold; padding: 14px 30px; border-radius: 999px;">
+        ${t.quoteRejectedCta}
+      </a>
+    </div>`,
+  );
+}
+
+/** Patient "your treatment has started" email. */
+export function treatmentStartedEmailHtml(opts: {
+  locale: Locale;
+  t: EmailStrings;
+  patientName: string | null;
+  clinicName: string;
+  link: string;
+}): string {
+  const { locale, t, patientName, clinicName, link } = opts;
+  const greeting = patientName
+    ? format(t.greeting, { name: escapeHtml(patientName) })
+    : t.greetingNoName;
+  return shell(
+    locale,
+    `    <h2 style="color: #0f4c4c;">${t.treatmentStartedHeading}</h2>
+    <p>${greeting}</p>
+    <p>${format(t.treatmentStartedBody, { clinic: escapeHtml(clinicName) })}</p>
+    <div style="text-align: center; margin: 28px 0;">
+      <a href="${link}"
+         style="display: inline-block; background: #0f4c4c; color: #fff; text-decoration: none;
+                font-size: 16px; font-weight: bold; padding: 14px 30px; border-radius: 999px;">
+        ${t.treatmentStartedCta}
+      </a>
+    </div>`,
+  );
+}
+
+/** Patient "please confirm the treatment is complete" email. */
+export function completionRequestedEmailHtml(opts: {
+  locale: Locale;
+  t: EmailStrings;
+  patientName: string | null;
+  clinicName: string;
+  link: string;
+}): string {
+  const { locale, t, patientName, clinicName, link } = opts;
+  const greeting = patientName
+    ? format(t.greeting, { name: escapeHtml(patientName) })
+    : t.greetingNoName;
+  return shell(
+    locale,
+    `    <h2 style="color: #0f4c4c;">${t.completionRequestedHeading}</h2>
+    <p>${greeting}</p>
+    <p>${format(t.completionRequestedBody, { clinic: escapeHtml(clinicName) })}</p>
+    <div style="text-align: center; margin: 28px 0;">
+      <a href="${link}"
+         style="display: inline-block; background: #0f4c4c; color: #fff; text-decoration: none;
+                font-size: 16px; font-weight: bold; padding: 14px 30px; border-radius: 999px;">
+        ${t.completionRequestedCta}
+      </a>
+    </div>`,
+  );
+}
+
+/** Clinic "the patient confirmed treatment is complete" email. */
+export function treatmentCompletedEmailHtml(opts: {
+  locale: Locale;
+  t: EmailStrings;
+  clinicName: string;
+  link: string;
+}): string {
+  const { locale, t, clinicName, link } = opts;
+  return shell(
+    locale,
+    `    <h2 style="color: #0f4c4c;">${t.treatmentCompletedHeading}</h2>
+    <p>${format(t.greeting, { name: escapeHtml(clinicName) })}</p>
+    <p>${format(t.treatmentCompletedBody, { patient: t.patientFallback, clinic: escapeHtml(clinicName) })}</p>
+    <div style="text-align: center; margin: 28px 0;">
+      <a href="${link}"
+         style="display: inline-block; background: #0f4c4c; color: #fff; text-decoration: none;
+                font-size: 16px; font-weight: bold; padding: 14px 30px; border-radius: 999px;">
+        ${t.treatmentCompletedCta}
+      </a>
+    </div>`,
+  );
+}

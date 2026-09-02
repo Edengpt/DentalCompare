@@ -5,9 +5,15 @@ import {
   newQuoteEmailHtml,
   trialEndingEmailHtml,
   documentsRejectedEmailHtml,
+  quoteApprovedEmailHtml,
+  quoteRejectedEmailHtml,
+  treatmentStartedEmailHtml,
+  completionRequestedEmailHtml,
+  treatmentCompletedEmailHtml,
 } from "./templates";
 import he from "@/i18n/dictionaries/he";
 import en from "@/i18n/dictionaries/en";
+import { getDictionary } from "@/i18n/get-dictionary";
 
 describe("escapeHtml", () => {
   it("escapes all HTML-special characters", () => {
@@ -182,5 +188,74 @@ describe("the rejected-documents email", () => {
     expect(html).not.toContain("<img src=x");
     expect(html).not.toContain("<script>bad()");
     expect(html).not.toContain("<b>Clinic</b>");
+  });
+});
+
+describe("quote lifecycle email templates", () => {
+  it("renders the clinic's name into the approval email", async () => {
+    const t = (await getDictionary("he")).emails;
+    const html = quoteApprovedEmailHtml({
+      locale: "he",
+      t,
+      clinicName: "מרפאת בדיקה",
+      link: "https://example.com/clinics/dashboard",
+    });
+    expect(html).toContain("מרפאת בדיקה");
+    expect(html).toContain("https://example.com/clinics/dashboard");
+  });
+
+  it("renders the rejection email without claiming approval", async () => {
+    const t = (await getDictionary("he")).emails;
+    const html = quoteRejectedEmailHtml({
+      locale: "he",
+      t,
+      clinicName: "מרפאת בדיקה",
+      link: "https://example.com/clinics/dashboard",
+    });
+    expect(html).toContain("מרפאת בדיקה");
+  });
+
+  it("greets the patient by name when one is on file, and omits it otherwise", async () => {
+    const t = (await getDictionary("he")).emails;
+    const withName = treatmentStartedEmailHtml({
+      locale: "he",
+      t,
+      patientName: "דנה",
+      clinicName: "מרפאת בדיקה",
+      link: "https://example.com/request/abc",
+    });
+    expect(withName).toContain("דנה");
+
+    const withoutName = treatmentStartedEmailHtml({
+      locale: "he",
+      t,
+      patientName: null,
+      clinicName: "מרפאת בדיקה",
+      link: "https://example.com/request/abc",
+    });
+    expect(withoutName).not.toContain("null");
+  });
+
+  it("asks the patient to confirm completion with a working link", async () => {
+    const t = (await getDictionary("he")).emails;
+    const html = completionRequestedEmailHtml({
+      locale: "he",
+      t,
+      patientName: "דנה",
+      clinicName: "מרפאת בדיקה",
+      link: "https://example.com/request/abc",
+    });
+    expect(html).toContain("https://example.com/request/abc");
+  });
+
+  it("tells the clinic the patient confirmed completion", async () => {
+    const t = (await getDictionary("he")).emails;
+    const html = treatmentCompletedEmailHtml({
+      locale: "he",
+      t,
+      clinicName: "מרפאת בדיקה",
+      link: "https://example.com/clinics/dashboard",
+    });
+    expect(html).toContain("מרפאת בדיקה");
   });
 });
