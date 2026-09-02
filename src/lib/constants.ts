@@ -105,23 +105,11 @@ export type Treatment = (typeof TREATMENTS)[number];
 export const PLAN_INTERVAL_MONTHS = { MONTHLY: 1, YEARLY: 12 } as const;
 export type SubscriptionPlanType = keyof typeof PLAN_INTERVAL_MONTHS;
 
-// Prices are minor units + currency, never a bare number: once clinics exist
-// outside Israel a plan price has to say which currency it is in. 29900 is
-// 299.00 ILS.
-export const SUBSCRIPTION_PLANS = {
-  MONTHLY: { priceMinor: 29900, currency: "ILS", intervalMonths: 1 },
-  YEARLY: { priceMinor: 199000, currency: "ILS", intervalMonths: 12 },
-} as const;
-
 // Charge this many days before currentPeriodEnd; allow this many days of grace
 // after a failed charge before the clinic is treated as lapsed.
 export const RENEWAL_LEAD_DAYS = 1;
 export const PAST_DUE_GRACE_DAYS = 3;
 
-// Free trial (PRD 4.4). Starts on admin approval, not on registration — the
-// clinic can't evaluate lead quality before it's live in the directory. The card
-// is collected up front, so the trial converts by non-cancellation.
-export const TRIAL_DAYS = 60;
 // Days-remaining marks at which the "your trial is ending" email goes out.
 export const TRIAL_WARNING_DAYS_BEFORE = [15, 2] as const;
 
