@@ -64,6 +64,7 @@ async function seedClinic(opts: { verified: boolean }) {
       status: "ACTIVE",
       priceMinor: 29900,
       currency: "ILS",
+      trialDays: 60,
       setupToken: randomUUID(),
     },
   });

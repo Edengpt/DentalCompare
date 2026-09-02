@@ -50,6 +50,7 @@ async function seedClinicIn(countryCode: string, opts: { verified?: boolean } = 
       status: "ACTIVE",
       priceMinor: 29900,
       currency: "ILS",
+      trialDays: 60,
       setupToken: randomUUID(),
     },
   });

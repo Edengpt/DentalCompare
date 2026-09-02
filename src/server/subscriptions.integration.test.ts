@@ -42,10 +42,39 @@ describe.skipIf(!hasDb)("createPendingSubscription", () => {
       setupToken: randomUUID(),
       priceMinor: 12345,
       currency: "USD",
+      trialDays: 45,
     });
 
     const sub = await db.clinicSubscription.findUniqueOrThrow({ where: { dentistId: dentist.id } });
     expect(sub.priceMinor).toBe(12345);
     expect(sub.currency).toBe("USD");
+  });
+
+  it("stores the exact trialDays it was given, not a hardcoded value", async () => {
+    const sfx = randomUUID().slice(0, 8);
+    const dentist = await db.dentist.create({
+      data: {
+        clinicName: `Clinic ${sfx}`,
+        dentistName: `Dr ${sfx}`,
+        email: `pend_${sfx}@example.com`,
+        phone: `+9725${Math.floor(Math.random() * 1e8).toString().padStart(8, "0")}`,
+        city: "Tel Aviv",
+        address: "1 Main St",
+        experienceYears: 5,
+      },
+    });
+    created.dentistIds.push(dentist.id);
+
+    await createPendingSubscription({
+      dentistId: dentist.id,
+      plan: "MONTHLY",
+      setupToken: randomUUID(),
+      priceMinor: 29900,
+      currency: "ILS",
+      trialDays: 45,
+    });
+
+    const sub = await db.clinicSubscription.findUniqueOrThrow({ where: { dentistId: dentist.id } });
+    expect(sub.trialDays).toBe(45);
   });
 });

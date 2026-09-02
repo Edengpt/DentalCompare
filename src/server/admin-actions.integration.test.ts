@@ -28,7 +28,7 @@ let approveClinic: (id: string) => Promise<{ ok: boolean; error?: string }>;
 
 const created: string[] = [];
 
-async function seedPendingClinic() {
+async function seedPendingClinic(trialDays = 60) {
   const sfx = randomUUID().slice(0, 8);
   const dentist = await db.dentist.create({
     data: {
@@ -49,6 +49,7 @@ async function seedPendingClinic() {
           plan: "MONTHLY",
           priceMinor: 29900,
           currency: "ILS",
+          trialDays,
           setupToken: `stk_${sfx}`,
           status: "PENDING",
         },
@@ -121,6 +122,41 @@ describe.skipIf(!hasDb)("approveClinic (integration, real DB)", () => {
     },
     DB_TIMEOUT,
   );
+
+  // The whole point of freezing trialDays onto the subscription row: an admin
+  // changing the live setting between registration and approval must not
+  // silently change what a clinic that already registered gets.
+  it(
+    "gives the trial length the clinic saw at registration, not whatever the live setting says now",
+    async () => {
+      const dentistId = await seedPendingClinic(60);
+
+      const original = await db.subscriptionPricing.findUniqueOrThrow({
+        where: { provider: "PAYPLUS" },
+      });
+      await db.subscriptionPricing.update({
+        where: { provider: "PAYPLUS" },
+        data: { trialDays: 30 },
+      });
+      try {
+        const result = await approveClinic(dentistId);
+        expect(result.ok).toBe(true);
+
+        const sub = await db.clinicSubscription.findUniqueOrThrow({ where: { dentistId } });
+        const dentist = await db.dentist.findUniqueOrThrow({ where: { id: dentistId } });
+        const expectedMs =
+          dentist.approvedAt!.getTime() + 60 * 24 * 60 * 60 * 1000; // 60 days, not 30
+        expect(sub.trialEndsAt!.getTime()).toBe(expectedMs);
+      } finally {
+        await db.subscriptionPricing.update({
+          where: { provider: "PAYPLUS" },
+          data: { trialDays: original.trialDays },
+        });
+      }
+    },
+    DB_TIMEOUT,
+  );
+
   it(
     "refuses to create a clinic by hand with no document, and creates nothing",
     async () => {

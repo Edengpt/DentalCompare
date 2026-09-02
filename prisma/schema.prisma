@@ -362,6 +362,12 @@ model ClinicSubscription {
   // the unit — a bare number is meaningless once more than one currency exists.
   priceMinor              Int
   currency                String
+  // The trial length in effect when this clinic registered, frozen the same way
+  // priceMinor/currency are. Without this, approveClinic would read whatever
+  // SubscriptionPricing.trialDays says *at approval time* — which could differ
+  // from what the clinic actually saw and agreed to at registration, with
+  // nothing recording which one it was.
+  trialDays               Int
   setupToken              String             @unique
   recurringToken          String? // PayPlus stored-card token uid (set after first paid charge)
   payplusCustomerUid      String?

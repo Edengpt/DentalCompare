@@ -182,7 +182,14 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
 
     const priceMinor = plan === "MONTHLY" ? pricing.monthlyPriceMinor : pricing.yearlyPriceMinor;
     await createPendingSubscription(
-      { dentistId: dentist.id, plan, setupToken, priceMinor, currency: pricing.currency },
+      {
+        dentistId: dentist.id,
+        plan,
+        setupToken,
+        priceMinor,
+        currency: pricing.currency,
+        trialDays: pricing.trialDays,
+      },
       tx,
     );
 

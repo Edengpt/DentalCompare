@@ -60,7 +60,7 @@ export async function approveClinic(dentistId: string): Promise<ActionResult> {
       contactName: true,
       clinicName: true,
       locale: true,
-      subscription: { select: { id: true, setupToken: true, status: true } },
+      subscription: { select: { id: true, setupToken: true, status: true, trialDays: true } },
     },
   });
   if (!dentist) return { ok: false, error: e.clinicNotFound };
@@ -68,8 +68,11 @@ export async function approveClinic(dentistId: string): Promise<ActionResult> {
     return { ok: false, error: e.clinicNoSubscription };
   }
 
-  const pricing = await getSubscriptionPricing("PAYPLUS");
-
+  // The trial length the clinic actually agreed to at registration — not
+  // whatever SubscriptionPricing.trialDays says right now. An admin changing
+  // the setting after this clinic registered must not silently change what it
+  // gets: it saw and agreed to dentist.subscription.trialDays, not today's value.
+  //
   // Approval starts the free trial (PRD 4.4). The clock starts here, not at
   // registration: the clinic can't evaluate lead quality until it's actually
   // live in the directory, so trial days before approval would be worthless.
@@ -96,7 +99,7 @@ export async function approveClinic(dentistId: string): Promise<ActionResult> {
     // not hand an ACTIVE or CANCELED one a fresh 60 free days.
     db.clinicSubscription.updateMany({
       where: { id: dentist.subscription.id, status: "PENDING" },
-      data: { status: "TRIALING", trialEndsAt: trialEndFrom(approvedAt, pricing.trialDays) },
+      data: { status: "TRIALING", trialEndsAt: trialEndFrom(approvedAt, dentist.subscription.trialDays) },
     }),
   ]);
 
@@ -119,7 +122,7 @@ export async function approveClinic(dentistId: string): Promise<ActionResult> {
     entityId: dentistId,
     metadata: {
       clinicName: dentist.clinicName,
-      trialEndsAt: trialEndFrom(approvedAt, pricing.trialDays).toISOString(),
+      trialEndsAt: trialEndFrom(approvedAt, dentist.subscription.trialDays).toISOString(),
     },
   });
 
@@ -328,6 +331,7 @@ export async function createDentist(formData: FormData): Promise<ActionResult> {
         plan: "MONTHLY",
         priceMinor: pricing.monthlyPriceMinor,
         currency: pricing.currency,
+        trialDays: pricing.trialDays,
         setupToken: randomUUID(),
         status: "ACTIVE",
         currentPeriodEnd: null,

@@ -13,6 +13,7 @@ export async function createPendingSubscription(
     setupToken: string;
     priceMinor: number;
     currency: string;
+    trialDays: number;
   },
   client: Prisma.TransactionClient | typeof db = db,
 ): Promise<void> {
@@ -22,6 +23,7 @@ export async function createPendingSubscription(
       plan: args.plan,
       priceMinor: args.priceMinor,
       currency: args.currency,
+      trialDays: args.trialDays,
       setupToken: args.setupToken,
       status: "PENDING",
     },

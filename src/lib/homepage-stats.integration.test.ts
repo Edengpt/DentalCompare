@@ -70,6 +70,7 @@ async function addVisibleClinic(tx: typeof Db, i: number, opts: { verified?: boo
       status: "ACTIVE",
       priceMinor: 29900,
       currency: "ILS",
+      trialDays: 60,
       setupToken: randomUUID(),
     },
   });
