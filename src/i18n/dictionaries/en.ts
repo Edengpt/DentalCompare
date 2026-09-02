@@ -927,6 +927,7 @@ const en: typeof he = {
     clinicNoSubscription: "This clinic has no subscription attached — it can't be approved",
     quoteAlreadyDecided: "The patient has already decided on this quote — it can no longer be edited",
     quoteNotFound: "We couldn't find this quote",
+    invalidQuoteTransition: "This action isn't available for the quote's current status",
     onlyPendingCanBeRejected: "Only applications that haven't been approved can be rejected",
     paymentsNotConfigured: "Payments aren't configured yet. Please contact support.",
     invalidLink: "That link isn't valid",

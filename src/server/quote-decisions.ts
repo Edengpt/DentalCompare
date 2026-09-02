@@ -6,6 +6,7 @@ import { getDictionary } from "@/i18n/get-dictionary";
 import { getRequestLocale } from "@/i18n/request-locale";
 import { db } from "@/lib/db";
 import { audit } from "@/lib/audit";
+import { getClinicForCurrentUser } from "@/server/clinic-account";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -108,6 +109,94 @@ export async function rejectQuote(requestDentistId: string): Promise<ActionResul
   if (result.count === 0) return { ok: false, error: e.quoteAlreadyDecided };
 
   await audit({ actor: "patient", action: "quote.rejected", entity: "Quote", entityId: rd.quote!.id });
+  revalidatePath(`/request/${rd.requestId}`);
+  return { ok: true };
+}
+
+/**
+ * Loads the requestDentist row and confirms the signed-in account is the
+ * clinic it belongs to. Same discriminated-union shape as
+ * `loadOwnedRequestDentist` above, for the same reason.
+ */
+async function loadOwnedByClinic(requestDentistId: string) {
+  const clinic = await getClinicForCurrentUser();
+  if (!clinic) return { ok: false as const, error: "quoteNotFound" as const };
+
+  const rd = await db.requestDentist.findUnique({
+    where: { id: requestDentistId },
+    select: {
+      id: true,
+      requestId: true,
+      dentistId: true,
+      quote: { select: { id: true, status: true } },
+    },
+  });
+  if (!rd || rd.dentistId !== clinic.id || !rd.quote) {
+    return { ok: false as const, error: "quoteNotFound" as const };
+  }
+
+  return { ok: true as const, rd };
+}
+
+/** The clinic marks that the patient has begun treatment. Only after APPROVED. */
+export async function markTreatmentStarted(requestDentistId: string): Promise<ActionResult> {
+  const e = (await getDictionary(await getRequestLocale())).errors;
+  const loaded = await loadOwnedByClinic(requestDentistId);
+  if (!loaded.ok) return { ok: false, error: e[loaded.error] };
+  const { rd } = loaded;
+
+  const result = await db.quote.updateMany({
+    where: { id: rd.quote!.id, status: "APPROVED" },
+    data: { status: "IN_TREATMENT", treatmentStartedAt: new Date() },
+  });
+  if (result.count === 0) return { ok: false, error: e.invalidQuoteTransition };
+
+  await audit({ actor: "clinic", action: "quote.treatment_started", entity: "Quote", entityId: rd.quote!.id });
+  revalidatePath("/clinics/dashboard");
+  return { ok: true };
+}
+
+/** The clinic asks the patient to confirm the treatment is done. Only after IN_TREATMENT. */
+export async function requestCompletionConfirmation(requestDentistId: string): Promise<ActionResult> {
+  const e = (await getDictionary(await getRequestLocale())).errors;
+  const loaded = await loadOwnedByClinic(requestDentistId);
+  if (!loaded.ok) return { ok: false, error: e[loaded.error] };
+  const { rd } = loaded;
+
+  const result = await db.quote.updateMany({
+    where: { id: rd.quote!.id, status: "IN_TREATMENT" },
+    data: { status: "COMPLETION_REQUESTED", completionRequestedAt: new Date() },
+  });
+  if (result.count === 0) return { ok: false, error: e.invalidQuoteTransition };
+
+  await audit({
+    actor: "clinic",
+    action: "quote.completion_requested",
+    entity: "Quote",
+    entityId: rd.quote!.id,
+  });
+  revalidatePath("/clinics/dashboard");
+  return { ok: true };
+}
+
+/**
+ * The patient confirms treatment is actually done — a one-sided "completed"
+ * from the clinic is not enough, because the clinic is the party whose
+ * completion rate benefits from saying so.
+ */
+export async function confirmCompletion(requestDentistId: string): Promise<ActionResult> {
+  const e = (await getDictionary(await getRequestLocale())).errors;
+  const loaded = await loadOwnedRequestDentist(requestDentistId);
+  if (!loaded.ok) return { ok: false, error: e[loaded.error] };
+  const { rd } = loaded;
+
+  const result = await db.quote.updateMany({
+    where: { id: rd.quote!.id, status: "COMPLETION_REQUESTED" },
+    data: { status: "COMPLETED", completedAt: new Date() },
+  });
+  if (result.count === 0) return { ok: false, error: e.invalidQuoteTransition };
+
+  await audit({ actor: "patient", action: "quote.completed", entity: "Quote", entityId: rd.quote!.id });
   revalidatePath(`/request/${rd.requestId}`);
   return { ok: true };
 }
