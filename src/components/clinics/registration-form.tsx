@@ -11,13 +11,7 @@ import {
   requiredDocKinds,
 } from "@/lib/clinic-documents";
 import { uploadClinicDocument } from "@/lib/upload-clinic-document";
-import {
-  SPECIALTIES,
-  SPOKEN_LANGUAGES,
-  TREATMENTS,
-  SUBSCRIPTION_PLANS,
-  TRIAL_DAYS,
-} from "@/lib/constants";
+import { SPECIALTIES, SPOKEN_LANGUAGES, TREATMENTS } from "@/lib/constants";
 import { formatMoney } from "@/lib/money";
 import { useLocale } from "@/i18n/provider";
 import {
@@ -70,7 +64,17 @@ function ChipGroup({
   );
 }
 
-export function RegistrationForm({ countries }: { countries: RegistrationCountry[] }) {
+export function RegistrationForm({
+  countries,
+  pricing,
+}: {
+  countries: RegistrationCountry[];
+  pricing: {
+    monthly: { priceMinor: number; currency: string };
+    yearly: { priceMinor: number; currency: string };
+    trialDays: number;
+  };
+}) {
   const t = useT();
   const locale = useLocale();
   const [isPending, startTransition] = useTransition();
@@ -511,7 +515,7 @@ export function RegistrationForm({ countries }: { countries: RegistrationCountry
         <p className="text-muted-foreground mt-2 text-sm">{t.clinics.regPlanIntro}</p>
 
         <div className="mt-5">
-          <PlanPicker />
+          <PlanPicker monthly={pricing.monthly} yearly={pricing.yearly} />
         </div>
 
         <ol className="text-foreground/90 mt-6 space-y-3 text-sm">
@@ -522,17 +526,9 @@ export function RegistrationForm({ countries }: { countries: RegistrationCountry
               </span>
               <span className="text-pretty">
                 {format(clause, {
-                  monthly: formatMoney(
-                    SUBSCRIPTION_PLANS.MONTHLY.priceMinor,
-                    SUBSCRIPTION_PLANS.MONTHLY.currency,
-                    locale,
-                  ),
-                  yearly: formatMoney(
-                    SUBSCRIPTION_PLANS.YEARLY.priceMinor,
-                    SUBSCRIPTION_PLANS.YEARLY.currency,
-                    locale,
-                  ),
-                  trialDays: TRIAL_DAYS,
+                  monthly: formatMoney(pricing.monthly.priceMinor, pricing.monthly.currency, locale),
+                  yearly: formatMoney(pricing.yearly.priceMinor, pricing.yearly.currency, locale),
+                  trialDays: pricing.trialDays,
                 })}
               </span>
             </li>

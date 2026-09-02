@@ -5,6 +5,7 @@ import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
 import { RegistrationForm } from "@/components/clinics/registration-form";
 import { getActiveCountries } from "@/lib/countries";
+import { getSubscriptionPricing } from "@/lib/subscription-pricing";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -23,6 +24,12 @@ export default async function ClinicJoinPage({
   // Only active countries: a half-configured one has no currency or payer list
   // and must never reach a clinic filling in this form.
   const countries = await getActiveCountries();
+  const pricingRow = await getSubscriptionPricing("PAYPLUS");
+  const pricing = {
+    monthly: { priceMinor: pricingRow.monthlyPriceMinor, currency: pricingRow.currency },
+    yearly: { priceMinor: pricingRow.yearlyPriceMinor, currency: pricingRow.currency },
+    trialDays: pricingRow.trialDays,
+  };
 
   return (
     <>
@@ -41,7 +48,7 @@ export default async function ClinicJoinPage({
         </section>
 
         <div className="mx-auto max-w-3xl px-6 py-10 lg:px-10 lg:py-14">
-          <RegistrationForm countries={countries} />
+          <RegistrationForm countries={countries} pricing={pricing} />
         </div>
       </main>
       <Footer />

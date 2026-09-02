@@ -4,10 +4,17 @@ import { formatMoney } from "@/lib/money";
 import { useT, useLocale } from "@/i18n/provider";
 
 import { useState } from "react";
-import { SUBSCRIPTION_PLANS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
-export function PlanPicker({ defaultValue = "MONTHLY" }: { defaultValue?: "MONTHLY" | "YEARLY" }) {
+export function PlanPicker({
+  defaultValue = "MONTHLY",
+  monthly,
+  yearly,
+}: {
+  defaultValue?: "MONTHLY" | "YEARLY";
+  monthly: { priceMinor: number; currency: string };
+  yearly: { priceMinor: number; currency: string };
+}) {
   const t = useT();
   const locale = useLocale();
   const [selected, setSelected] = useState<"MONTHLY" | "YEARLY">(defaultValue);
@@ -18,22 +25,14 @@ export function PlanPicker({ defaultValue = "MONTHLY" }: { defaultValue?: "MONTH
     {
       value: "MONTHLY" as const,
       title: t.clinics.planMonthlyTitle,
-      price: formatMoney(
-        SUBSCRIPTION_PLANS.MONTHLY.priceMinor,
-        SUBSCRIPTION_PLANS.MONTHLY.currency,
-        locale,
-      ),
+      price: formatMoney(monthly.priceMinor, monthly.currency, locale),
       per: t.clinics.planMonthlyPer,
       note: t.clinics.planMonthlyNote,
     },
     {
       value: "YEARLY" as const,
       title: t.clinics.planYearlyTitle,
-      price: formatMoney(
-        SUBSCRIPTION_PLANS.YEARLY.priceMinor,
-        SUBSCRIPTION_PLANS.YEARLY.currency,
-        locale,
-      ),
+      price: formatMoney(yearly.priceMinor, yearly.currency, locale),
       per: t.clinics.planYearlyPer,
       note: t.clinics.planYearlyNote,
     },

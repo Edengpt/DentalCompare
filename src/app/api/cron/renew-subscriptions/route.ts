@@ -26,7 +26,7 @@ import { logEvent } from "@/lib/log";
 import { asLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { format } from "@/i18n/format";
-import { SUBSCRIPTION_PLANS, type SubscriptionPlanType } from "@/lib/constants";
+import type { SubscriptionPlanType } from "@/lib/constants";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

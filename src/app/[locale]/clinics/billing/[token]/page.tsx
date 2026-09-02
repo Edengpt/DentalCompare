@@ -6,7 +6,6 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
-import { SUBSCRIPTION_PLANS } from "@/lib/constants";
 import { StartPaymentButton } from "@/components/clinics/start-payment-button";
 
 export const dynamic = "force-dynamic";
