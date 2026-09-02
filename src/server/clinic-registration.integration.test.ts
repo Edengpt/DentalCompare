@@ -94,6 +94,40 @@ describe.skipIf(!hasDb)("registerClinic documents (integration, real DB)", () =>
   );
 
   it(
+    "prices a YEARLY registration off the yearly rate, not the monthly one",
+    async () => {
+      const pricing = await db.subscriptionPricing.findUniqueOrThrow({
+        where: { provider: "PAYPLUS" },
+      });
+
+      const sfx = randomUUID().slice(0, 8);
+      const fd = baseForm(sfx);
+      fd.set("plan", "YEARLY");
+      for (const kind of ["Licence", "Insurance"]) {
+        fd.append("documentKind", kind);
+        fd.append("documentUrl", `${DOC_URL}?k=${kind}`);
+        fd.append("documentType", "application/pdf");
+      }
+
+      const result = await registerClinic(fd);
+      expect(result.ok).toBe(true);
+
+      const dentist = await db.dentist.findUnique({
+        where: { email: `reg_${sfx}@example.com` },
+        include: { subscription: true },
+      });
+      created.push(dentist!.id);
+      expect(dentist!.subscription!.plan).toBe("YEARLY");
+      expect(dentist!.subscription!.priceMinor).toBe(pricing.yearlyPriceMinor);
+      expect(dentist!.subscription!.currency).toBe(pricing.currency);
+      // The actual failure mode this guards against: the ternary in
+      // clinic-registration.ts picking the monthly rate regardless of plan.
+      expect(dentist!.subscription!.priceMinor).not.toBe(pricing.monthlyPriceMinor);
+    },
+    DB_TIMEOUT,
+  );
+
+  it(
     "refuses the registration when a required document is missing, and creates nothing",
     async () => {
       const sfx = randomUUID().slice(0, 8);
