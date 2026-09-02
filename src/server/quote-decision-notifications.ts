@@ -38,7 +38,7 @@ export async function sendQuoteApprovedEmail(args: {
     clinicName: args.clinicName,
     link: `${appUrl()}/${args.locale}/clinics/dashboard`,
   });
-  return send(args.to, t.subjectNewQuote, html, "quote-approved");
+  return send(args.to, t.quoteApprovedHeading, html, "quote-approved");
 }
 
 /** Clinic "the patient rejected your quote" notification. */

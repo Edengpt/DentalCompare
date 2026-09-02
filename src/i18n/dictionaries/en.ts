@@ -437,7 +437,6 @@ const en: typeof he = {
     quoteStatusApproved: "Approved",
     quoteStatusRejected: "Rejected",
     quoteStatusInTreatment: "In treatment",
-    quoteStatusCompletionRequested: "Awaiting your confirmation",
     quoteStatusCompleted: "Completed successfully",
     quoteActionFailed: "That didn't work. Please try again.",
   },
@@ -768,7 +767,6 @@ const en: typeof he = {
     dashLeadsNone:
       "No requests yet. The moment a patient picks you, it appears here and we email you too.",
     dashLeadReceived: "Received {date}",
-    dashLeadQuoted: "Quote sent",
     dashLeadAwaiting: "Awaiting your price",
     dashLeadPending: "Sent, awaiting response",
     dashLeadApproved: "Approved ✓",
