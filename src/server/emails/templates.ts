@@ -320,7 +320,9 @@ export function quoteApprovedEmailHtml(opts: {
                 font-size: 16px; font-weight: bold; padding: 14px 30px; border-radius: 999px;">
         ${t.quoteApprovedCta}
       </a>
-    </div>`,
+    </div>
+    ${HR}
+    <p style="font-size: 12px; color: #777;">${t.autoFooter}</p>`,
   );
 }
 
@@ -343,7 +345,9 @@ export function quoteRejectedEmailHtml(opts: {
                 font-size: 16px; font-weight: bold; padding: 14px 30px; border-radius: 999px;">
         ${t.quoteRejectedCta}
       </a>
-    </div>`,
+    </div>
+    ${HR}
+    <p style="font-size: 12px; color: #777;">${t.autoFooter}</p>`,
   );
 }
 
@@ -370,7 +374,9 @@ export function treatmentStartedEmailHtml(opts: {
                 font-size: 16px; font-weight: bold; padding: 14px 30px; border-radius: 999px;">
         ${t.treatmentStartedCta}
       </a>
-    </div>`,
+    </div>
+    ${HR}
+    <p style="font-size: 12px; color: #777;">${t.autoFooter}</p>`,
   );
 }
 
@@ -397,7 +403,9 @@ export function completionRequestedEmailHtml(opts: {
                 font-size: 16px; font-weight: bold; padding: 14px 30px; border-radius: 999px;">
         ${t.completionRequestedCta}
       </a>
-    </div>`,
+    </div>
+    ${HR}
+    <p style="font-size: 12px; color: #777;">${t.autoFooter}</p>`,
   );
 }
 
@@ -420,6 +428,8 @@ export function treatmentCompletedEmailHtml(opts: {
                 font-size: 16px; font-weight: bold; padding: 14px 30px; border-radius: 999px;">
         ${t.treatmentCompletedCta}
       </a>
-    </div>`,
+    </div>
+    ${HR}
+    <p style="font-size: 12px; color: #777;">${t.autoFooter}</p>`,
   );
 }

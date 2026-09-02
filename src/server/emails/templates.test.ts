@@ -258,4 +258,94 @@ describe("quote lifecycle email templates", () => {
     });
     expect(html).toContain("מרפאת בדיקה");
   });
+
+  // Escaping regression tests: ensure HTML-special characters in clinic/patient
+  // names are escaped, not injected as raw markup.
+  it("escapes the clinic name in the approval email", async () => {
+    const t = (await getDictionary("he")).emails;
+    const html = quoteApprovedEmailHtml({
+      locale: "he",
+      t,
+      clinicName: "<script>alert(1)</script>",
+      link: "https://example.com/clinics/dashboard",
+    });
+    expect(html).not.toContain("<script>alert(1)");
+    expect(html).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
+  });
+
+  it("escapes the clinic name in the rejection email", async () => {
+    const t = (await getDictionary("he")).emails;
+    const html = quoteRejectedEmailHtml({
+      locale: "he",
+      t,
+      clinicName: "<img src=x onerror=alert(1)>",
+      link: "https://example.com/clinics/dashboard",
+    });
+    expect(html).not.toContain("<img src=x");
+    expect(html).toContain("&lt;img src=x onerror=alert(1)&gt;");
+  });
+
+  it("escapes the clinic name in the treatment started email", async () => {
+    const t = (await getDictionary("he")).emails;
+    const html = treatmentStartedEmailHtml({
+      locale: "he",
+      t,
+      patientName: "דנה",
+      clinicName: "<b>Clinic</b>",
+      link: "https://example.com/request/abc",
+    });
+    expect(html).not.toContain("<b>Clinic</b>");
+    expect(html).toContain("&lt;b&gt;Clinic&lt;/b&gt;");
+  });
+
+  it("escapes the patient name in the treatment started email", async () => {
+    const t = (await getDictionary("he")).emails;
+    const html = treatmentStartedEmailHtml({
+      locale: "he",
+      t,
+      patientName: "<script>bad()</script>",
+      clinicName: "מרפאת בדיקה",
+      link: "https://example.com/request/abc",
+    });
+    expect(html).not.toContain("<script>bad()");
+    expect(html).toContain("&lt;script&gt;bad()&lt;/script&gt;");
+  });
+
+  it("escapes the clinic name in the completion requested email", async () => {
+    const t = (await getDictionary("he")).emails;
+    const html = completionRequestedEmailHtml({
+      locale: "he",
+      t,
+      patientName: "דנה",
+      clinicName: "<img src=x onerror=alert(1)>",
+      link: "https://example.com/request/abc",
+    });
+    expect(html).not.toContain("<img src=x");
+    expect(html).toContain("&lt;img src=x onerror=alert(1)&gt;");
+  });
+
+  it("escapes the patient name in the completion requested email", async () => {
+    const t = (await getDictionary("he")).emails;
+    const html = completionRequestedEmailHtml({
+      locale: "he",
+      t,
+      patientName: "<b>Patient</b>",
+      clinicName: "מרפאת בדיקה",
+      link: "https://example.com/request/abc",
+    });
+    expect(html).not.toContain("<b>Patient</b>");
+    expect(html).toContain("&lt;b&gt;Patient&lt;/b&gt;");
+  });
+
+  it("escapes the clinic name in the treatment completed email", async () => {
+    const t = (await getDictionary("he")).emails;
+    const html = treatmentCompletedEmailHtml({
+      locale: "he",
+      t,
+      clinicName: "<script>alert(1)</script>",
+      link: "https://example.com/clinics/dashboard",
+    });
+    expect(html).not.toContain("<script>alert(1)");
+    expect(html).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
+  });
 });
