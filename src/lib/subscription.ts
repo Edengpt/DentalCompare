@@ -1,8 +1,7 @@
 import {
-  SUBSCRIPTION_PLANS,
+  PLAN_INTERVAL_MONTHS,
   RENEWAL_LEAD_DAYS,
   PAST_DUE_GRACE_DAYS,
-  TRIAL_DAYS,
   TRIAL_WARNING_DAYS_BEFORE,
   type SubscriptionPlanType,
 } from "./constants";
@@ -10,8 +9,8 @@ import {
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 /** End of the free trial, counted from admin approval (PRD 4.4). */
-export function trialEndFrom(approvedAt: Date): Date {
-  return new Date(approvedAt.getTime() + TRIAL_DAYS * DAY_MS);
+export function trialEndFrom(approvedAt: Date, trialDays: number): Date {
+  return new Date(approvedAt.getTime() + trialDays * DAY_MS);
 }
 
 /** A TRIALING subscription is due for its first real charge once the trial ends. */
@@ -49,12 +48,6 @@ export function dueTrialWarning(
   return due ?? null;
 }
 
-/** A plan's price as the (minor units, currency) pair money is always carried as. */
-export function planPrice(plan: SubscriptionPlanType): { minor: number; currency: string } {
-  const { priceMinor, currency } = SUBSCRIPTION_PLANS[plan];
-  return { minor: priceMinor, currency };
-}
-
 /** Adds whole months, clamping to the last valid day (Jan 31 + 1mo -> Feb 28/29). */
 export function addMonths(date: Date, months: number): Date {
   const d = new Date(date.getTime());
@@ -77,7 +70,7 @@ export function addMonths(date: Date, months: number): Date {
 }
 
 export function nextPeriodEnd(from: Date, plan: SubscriptionPlanType): Date {
-  return addMonths(from, SUBSCRIPTION_PLANS[plan].intervalMonths);
+  return addMonths(from, PLAN_INTERVAL_MONTHS[plan]);
 }
 
 export function isDueForRenewal(currentPeriodEnd: Date, now: Date): boolean {

@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  planPrice,
   addMonths,
   nextPeriodEnd,
   isDueForRenewal,
@@ -16,11 +15,6 @@ import {
 } from "./subscription";
 
 describe("subscription helpers", () => {
-  it("returns the configured price per plan", () => {
-    expect(planPrice("MONTHLY")).toEqual({ minor: 29900, currency: "ILS" });
-    expect(planPrice("YEARLY")).toEqual({ minor: 199000, currency: "ILS" });
-  });
-
   it("adds months and clamps end-of-month overflow", () => {
     expect(addMonths(new Date("2026-01-31T00:00:00Z"), 1).toISOString()).toBe(
       "2026-02-28T00:00:00.000Z",
@@ -84,12 +78,20 @@ describe("subscription helpers", () => {
   });
 });
 
+describe("trialEndFrom", () => {
+  it("adds the given number of trial days, not a hardcoded 60", () => {
+    const approvedAt = new Date("2026-01-01T00:00:00.000Z");
+    const result = trialEndFrom(approvedAt, 45);
+    expect(result.toISOString()).toBe("2026-02-15T00:00:00.000Z");
+  });
+});
+
 describe("free trial helpers", () => {
   const approved = new Date("2026-06-01T00:00:00Z");
   const trialEnd = new Date("2026-07-31T00:00:00Z"); // approved + 60 days
 
   it("ends the trial 60 days after approval, not after registration", () => {
-    expect(trialEndFrom(approved).toISOString()).toBe(trialEnd.toISOString());
+    expect(trialEndFrom(approved, 60).toISOString()).toBe(trialEnd.toISOString());
   });
 
   it("is over only once the end has been reached", () => {

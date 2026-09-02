@@ -15,7 +15,7 @@ import {
 } from "@/server/subscription-notifications";
 import { audit } from "@/lib/audit";
 import { trialEndFrom } from "@/lib/subscription";
-import { SUBSCRIPTION_PLANS } from "@/lib/constants";
+import { getSubscriptionPricing } from "@/lib/subscription-pricing";
 import { documentTokenExpiry, isClinicDocumentBlobUrl } from "@/lib/clinic-documents";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
@@ -68,6 +68,8 @@ export async function approveClinic(dentistId: string): Promise<ActionResult> {
     return { ok: false, error: e.clinicNoSubscription };
   }
 
+  const pricing = await getSubscriptionPricing("PAYPLUS");
+
   // Approval starts the free trial (PRD 4.4). The clock starts here, not at
   // registration: the clinic can't evaluate lead quality until it's actually
   // live in the directory, so trial days before approval would be worthless.
@@ -94,7 +96,7 @@ export async function approveClinic(dentistId: string): Promise<ActionResult> {
     // not hand an ACTIVE or CANCELED one a fresh 60 free days.
     db.clinicSubscription.updateMany({
       where: { id: dentist.subscription.id, status: "PENDING" },
-      data: { status: "TRIALING", trialEndsAt: trialEndFrom(approvedAt) },
+      data: { status: "TRIALING", trialEndsAt: trialEndFrom(approvedAt, pricing.trialDays) },
     }),
   ]);
 
@@ -117,7 +119,7 @@ export async function approveClinic(dentistId: string): Promise<ActionResult> {
     entityId: dentistId,
     metadata: {
       clinicName: dentist.clinicName,
-      trialEndsAt: trialEndFrom(approvedAt).toISOString(),
+      trialEndsAt: trialEndFrom(approvedAt, pricing.trialDays).toISOString(),
     },
   });
 
@@ -283,6 +285,8 @@ export async function createDentist(formData: FormData): Promise<ActionResult> {
     return { ok: false, error: e.invalidDocument };
   }
 
+  const pricing = await getSubscriptionPricing("PAYPLUS");
+
   const now = new Date();
   const dentistId = await db.$transaction(async (tx) => {
     const dentist = await tx.dentist.create({
@@ -322,8 +326,8 @@ export async function createDentist(formData: FormData): Promise<ActionResult> {
       data: {
         dentistId: dentist.id,
         plan: "MONTHLY",
-        priceMinor: SUBSCRIPTION_PLANS.MONTHLY.priceMinor,
-        currency: SUBSCRIPTION_PLANS.MONTHLY.currency,
+        priceMinor: pricing.monthlyPriceMinor,
+        currency: pricing.currency,
         setupToken: randomUUID(),
         status: "ACTIVE",
         currentPeriodEnd: null,

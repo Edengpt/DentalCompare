@@ -100,6 +100,11 @@ export type Treatment = (typeof TREATMENTS)[number];
 
 // --- Clinic subscription billing ---
 
+// How many months one billing period is. Structural, not a price — Eden has
+// never asked to edit what "monthly" or "yearly" means, only what they cost.
+export const PLAN_INTERVAL_MONTHS = { MONTHLY: 1, YEARLY: 12 } as const;
+export type SubscriptionPlanType = keyof typeof PLAN_INTERVAL_MONTHS;
+
 // Prices are minor units + currency, never a bare number: once clinics exist
 // outside Israel a plan price has to say which currency it is in. 29900 is
 // 299.00 ILS.
@@ -107,8 +112,6 @@ export const SUBSCRIPTION_PLANS = {
   MONTHLY: { priceMinor: 29900, currency: "ILS", intervalMonths: 1 },
   YEARLY: { priceMinor: 199000, currency: "ILS", intervalMonths: 12 },
 } as const;
-
-export type SubscriptionPlanType = keyof typeof SUBSCRIPTION_PLANS;
 
 // Charge this many days before currentPeriodEnd; allow this many days of grace
 // after a failed charge before the clinic is treated as lapsed.
