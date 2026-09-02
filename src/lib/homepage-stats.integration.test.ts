@@ -44,7 +44,7 @@ async function inOwnedDatabase<T>(scenario: (tx: StatsClient & typeof Db) => Pro
 }
 
 /** A clinic that is visible in the directory, and so countable. */
-async function addVisibleClinic(tx: typeof Db, i: number) {
+async function addVisibleClinic(tx: typeof Db, i: number, opts: { verified?: boolean } = {}) {
   const sfx = `${randomUUID().slice(0, 8)}_${i}`;
   const dentist = await tx.dentist.create({
     data: {
@@ -56,6 +56,11 @@ async function addVisibleClinic(tx: typeof Db, i: number) {
       address: "1 Main St",
       experienceYears: 10,
       isActive: true,
+      // Visible means verified too, since P2a. Without the stamp the directory
+      // hides the clinic, so counting it would put a number on the home page
+      // that no patient can reach.
+      licenceVerifiedAt: opts.verified === false ? null : new Date(),
+      licenceVerifiedBy: opts.verified === false ? null : "admin@example.com",
     },
   });
   await tx.clinicSubscription.create({
@@ -157,6 +162,19 @@ describe.skipIf(!hasDb)("homepage stats", () => {
           where: { dentistId: lapsed.id },
           data: { status: "CANCELED" },
         });
+        return getHomepageStats(tx);
+      });
+
+      expect(stats.clinics).toBe(25);
+    });
+
+    // The home page says "every clinic here has had its licence seen". A clinic
+    // without the stamp is hidden from the directory, so counting it would make
+    // that sentence describe a set the patient cannot reach.
+    it("ignores a clinic whose licence was never checked", async () => {
+      const stats = await inOwnedDatabase(async (tx) => {
+        for (let i = 0; i < 25; i++) await addVisibleClinic(tx, i);
+        await addVisibleClinic(tx, 99, { verified: false });
         return getHomepageStats(tx);
       });
 

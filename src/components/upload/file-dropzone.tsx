@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { upload } from "@vercel/blob/client";
 import { Check, FileText, Image as ImageIcon, Loader2, UploadCloud, X } from "lucide-react";
 import { toast } from "sonner";
 import { useT } from "@/i18n/provider";
@@ -10,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { REQUEST_LIMITS } from "@/lib/constants";
 import {
   ACCEPT_ATTRIBUTE,
+  blobPath,
   type UploadKind,
   validateFile,
 } from "@/lib/storage";
@@ -52,7 +54,16 @@ export function FileDropzone({
   );
   const [dragOver, setDragOver] = useState(false);
 
-  const handleFile = (file: File) => {
+  /**
+   * Uploads straight to storage, then tells the server where the file landed.
+   *
+   * The file used to be POSTed to /api/files/upload, which meant it passed
+   * through Vercel's edge — and the edge rejects a body over roughly 4.5MB
+   * before any route code runs, with a plain-text error this component could
+   * not read or translate. Since the site offers 20MB, a phone photo of an
+   * x-ray failed here with "upload failed" and no way to explain why.
+   */
+  const handleFile = async (file: File) => {
     const err = validateFile(file);
     if (err) {
       toast.error(fileValidationMessage(t.validation, err));
@@ -61,57 +72,70 @@ export function FileDropzone({
 
     setState({ status: "uploading", progress: 0, fileName: file.name, fileSize: file.size });
 
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("requestId", requestId);
-    formData.append("kind", kind);
+    let blob: { url: string; pathname: string };
+    try {
+      blob = await upload(blobPath(requestId, kind, file), file, {
+        // X-rays and treatment plans: readable only through an authenticated
+        // fetch, never by anyone who happens to have the URL.
+        access: "private",
+        handleUploadUrl: "/api/files/upload/token",
+        clientPayload: JSON.stringify({ requestId, kind }),
+        onUploadProgress: ({ percentage }) => {
+          setState({
+            status: "uploading",
+            progress: Math.round(percentage),
+            fileName: file.name,
+            fileSize: file.size,
+          });
+        },
+      });
+    } catch {
+      // Whatever the token route said, the upload SDK throws away the response
+      // body and raises a fixed English string of its own. There is no server
+      // message to show here, so show ours rather than the library's.
+      toast.error(t.dropzone.uploadFailed);
+      setState({ status: "idle" });
+      return;
+    }
 
-    const xhr = new XMLHttpRequest();
-    xhr.upload.addEventListener("progress", (e) => {
-      if (e.lengthComputable) {
-        setState({
-          status: "uploading",
-          progress: Math.round((e.loaded / e.total) * 100),
-          fileName: file.name,
-          fileSize: file.size,
-        });
-      }
-    });
-    xhr.addEventListener("load", () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        const json = JSON.parse(xhr.responseText);
-        setState({
-          status: "done",
-          url: json.url,
-          fileName: file.name,
-          fileSize: file.size,
-        });
-        onUploaded(json.url);
-        toast.success(format(t.dropzone.uploadSuccess, { label: kindLabel }));
-      } else {
-        let message = t.dropzone.uploadFailed;
-        try {
-          message = JSON.parse(xhr.responseText).error ?? message;
-        } catch {
-          /* swallow parse error */
-        }
-        toast.error(message);
+    // Separate step: the file exists in storage but is attached to nothing
+    // until the server has checked its bytes and recorded the URL. This one is
+    // a plain fetch, so its error text does reach the patient.
+    try {
+      const res = await fetch("/api/files/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          requestId,
+          kind,
+          url: blob.url,
+        }),
+      });
+      if (!res.ok) {
+        const message = await res
+          .json()
+          .then((j: { error?: string }) => j.error)
+          .catch(() => null);
+        toast.error(message ?? t.dropzone.uploadFailed);
         setState({ status: "idle" });
+        return;
       }
-    });
-    xhr.addEventListener("error", () => {
+    } catch {
       toast.error(t.dropzone.networkError);
       setState({ status: "idle" });
-    });
-    xhr.open("POST", "/api/files/upload");
-    xhr.send(formData);
+      return;
+    }
+
+    setState({ status: "done", url: blob.url, fileName: file.name, fileSize: file.size });
+    onUploaded(blob.url);
+    toast.success(format(t.dropzone.uploadSuccess, { label: kindLabel }));
   };
 
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
     const file = e.dataTransfer.files?.[0];
-    if (file) handleFile(file);
+    if (file) void handleFile(file);
   };
 
   const reset = () => {
@@ -140,7 +164,7 @@ export function FileDropzone({
         className="sr-only"
         onChange={(e) => {
           const file = e.target.files?.[0];
-          if (file) handleFile(file);
+          if (file) void handleFile(file);
         }}
       />
 

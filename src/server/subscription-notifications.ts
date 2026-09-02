@@ -24,6 +24,10 @@ export async function sendPaymentSetupEmail(args: {
 }): Promise<boolean> {
   const t = (await getDictionary(args.locale)).emails;
   const link = `${appUrl()}/${args.locale}/clinics/billing/${args.setupToken}`;
+  // The approval email is the one moment the clinic is definitely reading, so
+  // it is where it learns it has an account at all — until now every route back
+  // into the site was a link in an email it had to still be able to find.
+  const areaLink = `${appUrl()}/${args.locale}/clinics/dashboard`;
   try {
     const { error } = await getResend().emails.send({
       from: fromAddress(),
@@ -35,6 +39,7 @@ export async function sendPaymentSetupEmail(args: {
         contactName: args.contactName ?? "",
         clinicName: args.clinicName,
         link,
+        areaLink,
       }),
     });
     if (error) {

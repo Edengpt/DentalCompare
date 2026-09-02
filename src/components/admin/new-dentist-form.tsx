@@ -5,6 +5,7 @@ import { useRef, useState, useTransition } from "react";
 import { Plus } from "lucide-react";
 import { format } from "@/i18n/format";
 import { DOC_ACCEPT_ATTRIBUTE, DOC_MAX_FILE_SIZE_MB } from "@/lib/clinic-documents";
+import { uploadClinicDocument } from "@/lib/upload-clinic-document";
 import { toast } from "sonner";
 import { createDentist } from "@/server/admin-actions";
 import { cn } from "@/lib/utils";
@@ -59,17 +60,12 @@ export function NewDentistForm() {
     }
     setDocUploading(true);
     try {
-      const body = new FormData();
-      body.append("file", file);
-      const res = await fetch("/api/clinics/documents", { method: "POST", body });
-      const data = (await res.json().catch(() => null)) as { url?: string; error?: string } | null;
-      if (!res.ok || !data?.url) {
-        toast.error(data?.error ?? t.clinics.regDocFailed);
+      const result = await uploadClinicDocument(file);
+      if (!result.ok) {
+        toast.error(result.message ?? t.clinics.regDocFailed);
         return;
       }
-      setDoc({ url: data.url, contentType: file.type });
-    } catch {
-      toast.error(t.clinics.regDocFailed);
+      setDoc({ url: result.url, contentType: file.type });
     } finally {
       setDocUploading(false);
       e.target.value = "";

@@ -56,7 +56,10 @@ export default async function AdminSubscriptionsPage({
   });
 
   const subs = await db.clinicSubscription.findMany({
-    orderBy: { createdAt: "desc" },
+    // The rows a person has to act on first. Postgres sorts NULLs last for DESC,
+    // so a stamped trialEndedUnbilledAt floats to the top without a second
+    // query — and the ordering agrees with the sidebar badge by construction.
+    orderBy: [{ trialEndedUnbilledAt: "desc" }, { createdAt: "desc" }],
     select: {
       id: true,
       plan: true,

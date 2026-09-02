@@ -1,6 +1,6 @@
 import "server-only";
 import { db } from "./db";
-import { visibleSubscriptionFilter } from "./subscription";
+import { publicDentistWhere } from "./dentist-public";
 
 /**
  * The numbers the homepage is allowed to show.
@@ -57,14 +57,12 @@ export const STAT_FLOORS = {
 const RESPONSE_WINDOW_HOURS = 48;
 
 async function countClinics(client: StatsClient): Promise<number | null> {
-  // visibleSubscriptionFilter(), not isActive alone. The figure has to count
-  // what a patient can reach, which is the definition the directory itself
-  // uses (api/dentists/route.ts, server/requests.ts). A clinic whose
-  // subscription lapsed keeps isActive = true while disappearing from the
-  // directory, and counting it would turn the measurement back into a claim.
-  const count = await client.dentist.count({
-    where: { isActive: true, subscription: visibleSubscriptionFilter() },
-  });
+  // publicDentistWhere(), not a copy of its parts. The figure has to count what
+  // a patient can reach, which is by definition what the directory shows — and
+  // this used to spell that definition out by hand, so when the licence stamp
+  // joined the gate the number silently kept counting clinics the directory had
+  // stopped showing. Sharing the clause is what stops that happening again.
+  const count = await client.dentist.count({ where: publicDentistWhere() });
   return count >= STAT_FLOORS.clinics ? count : null;
 }
 

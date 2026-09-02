@@ -7,6 +7,7 @@ import { useT } from "@/i18n/provider";
 import { format } from "@/i18n/format";
 import { replaceClinicDocuments } from "@/server/clinic-documents";
 import { DOC_ACCEPT_ATTRIBUTE, DOC_MAX_FILE_SIZE_MB } from "@/lib/clinic-documents";
+import { uploadClinicDocument } from "@/lib/upload-clinic-document";
 import { cn } from "@/lib/utils";
 
 type RejectedDocument = { id: string; kind: string; rejectionReason: string | null };
@@ -34,8 +35,8 @@ export function ReplaceDocumentsForm({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Checked here too: a file over the platform's request limit never reaches
-    // the server at all, and the clinic is left with an error retrying cannot fix.
+    // Checked here too, so an oversized file is refused instantly instead of
+    // after the clinic has waited for it to upload.
     if (file.size > DOC_MAX_FILE_SIZE_MB * 1024 * 1024) {
       toast.error(format(t.validation.documentSize, { mb: DOC_MAX_FILE_SIZE_MB }));
       e.target.value = "";
@@ -44,19 +45,16 @@ export function ReplaceDocumentsForm({
 
     setBusy(doc.id);
     try {
-      const body = new FormData();
-      body.append("file", file);
-      const res = await fetch("/api/clinics/documents", { method: "POST", body });
-      const data = (await res.json().catch(() => null)) as { url?: string; error?: string } | null;
-      if (!res.ok || !data?.url) {
-        toast.error(data?.error ?? t.clinics.regDocFailed);
+      const uploaded = await uploadClinicDocument(file);
+      if (!uploaded.ok) {
+        toast.error(uploaded.message ?? t.clinics.regDocFailed);
         return;
       }
 
       const fd = new FormData();
       fd.append("token", token);
       fd.append("documentId", doc.id);
-      fd.append("documentUrl", data.url);
+      fd.append("documentUrl", uploaded.url);
       fd.append("documentType", file.type);
 
       startTransition(async () => {
@@ -68,8 +66,6 @@ export function ReplaceDocumentsForm({
         setDone((prev) => ({ ...prev, [doc.id]: true }));
         toast.success(t.clinics.replaceDone);
       });
-    } catch {
-      toast.error(t.clinics.regDocFailed);
     } finally {
       setBusy(null);
       e.target.value = "";

@@ -1,72 +1,62 @@
 import { NextResponse } from "next/server";
-import { getDictionary } from "@/i18n/get-dictionary";
-import { format } from "@/i18n/format";
-import { getRequestLocale } from "@/i18n/request-locale";
-import { fileValidationMessage } from "@/i18n/validation-message";
-import { put } from "@vercel/blob";
+import { get, del } from "@vercel/blob";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
+import { getDictionary } from "@/i18n/get-dictionary";
+import { getRequestLocale } from "@/i18n/request-locale";
 import {
-  blobPath,
+  headMatchesType,
+  isOwnRequestBlobPath,
+  SIGNATURE_BYTES,
   type UploadKind,
-  validateFile,
-  fileSignatureMatches,
-  MAX_FILE_SIZE_BYTES,
 } from "@/lib/storage";
-import { rateLimit } from "@/lib/rate-limit";
-import { RATE_LIMITS, REQUEST_LIMITS } from "@/lib/constants";
 
 export const runtime = "nodejs";
 
+/**
+ * Attaches a file the browser has already uploaded to a request.
+ *
+ * This route used to receive the file itself. It cannot any more: Vercel
+ * refuses a request body over roughly 4.5MB at the edge, before route code
+ * runs, while the site advertises 20MB — so a phone photo of an x-ray failed
+ * with a platform error the site could not explain. The browser now writes
+ * straight to storage (see ./token) and reports the result here.
+ *
+ * The URL therefore arrives as a string the browser chose, and is checked
+ * rather than trusted: it must be a blob URL, its path must belong to this
+ * request and kind, and the request must belong to the caller.
+ */
 export async function POST(request: Request) {
   const t = (await getDictionary(await getRequestLocale())).validation;
+
   const { userId: clerkUserId } = await auth();
-  if (!clerkUserId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!clerkUserId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  // Reject oversized uploads from the Content-Length header BEFORE buffering the
-  // whole body into memory via formData(). validateFile() still enforces the
-  // exact byte size later (Content-Length can be absent or spoofed) — this is a
-  // cheap early guard against memory-exhaustion from a huge multipart body.
-  // Allow ~1MB of multipart framing overhead on top of the file-size limit.
-  const declaredLength = Number(request.headers.get("content-length") ?? 0);
-  if (declaredLength > MAX_FILE_SIZE_BYTES + 1024 * 1024) {
-    return NextResponse.json(
-      { error: format(t.fileSize, { mb: REQUEST_LIMITS.maxFileSizeMB }) },
-      { status: 413 },
-    );
-  }
+  const body = (await request.json().catch(() => null)) as {
+    requestId?: unknown;
+    kind?: unknown;
+    url?: unknown;
+  } | null;
 
-  const formData = await request.formData();
-  const file = formData.get("file");
-  const requestId = formData.get("requestId");
-  const kind = formData.get("kind");
+  const requestId = typeof body?.requestId === "string" ? body.requestId : "";
+  const kind: UploadKind | null =
+    body?.kind === "treatment" || body?.kind === "xray" ? body.kind : null;
+  const url = typeof body?.url === "string" ? body.url : "";
 
-  if (!(file instanceof File) || typeof requestId !== "string" || typeof kind !== "string") {
+  if (!requestId || !kind || !url) {
     return NextResponse.json({ error: "Missing or invalid fields" }, { status: 400 });
   }
 
-  if (kind !== "treatment" && kind !== "xray") {
-    return NextResponse.json({ error: "Invalid file kind" }, { status: 400 });
+  // The pathname is read out of the URL rather than accepted as its own field.
+  // Taking both separately would let a caller pair someone else's URL with a
+  // pathname of their own that passes the check below — and the failure branch
+  // deletes what the URL points at.
+  const pathname = blobPathnameOf(url);
+  if (!pathname || !isOwnRequestBlobPath(pathname, requestId, kind)) {
+    return NextResponse.json({ error: "Invalid upload path" }, { status: 400 });
   }
 
-  const validation = validateFile(file);
-  if (validation) {
-    return NextResponse.json({ error: fileValidationMessage(t, validation) }, { status: 400 });
-  }
-
-  // Defense-in-depth: confirm the actual bytes match the declared type — a
-  // renamed executable with a spoofed MIME/extension is rejected here.
-  if (!(await fileSignatureMatches(file))) {
-    return NextResponse.json(
-      { error: t.fileSignature },
-      { status: 400 },
-    );
-  }
-
-  // Verify the request belongs to the current user
-  const user = await db.user.findUnique({ where: { clerkUserId } });
+  const user = await db.user.findUnique({ where: { clerkUserId }, select: { id: true } });
   if (!user) {
     return NextResponse.json(
       { error: "User profile not synced yet — please refresh and retry" },
@@ -74,47 +64,78 @@ export async function POST(request: Request) {
     );
   }
 
-  const existingRequest = await db.request.findUnique({
-    where: { id: requestId },
-    select: { id: true, userId: true, status: true },
+  const owned = await db.request.findFirst({
+    where: { id: requestId, userId: user.id },
+    select: { id: true },
   });
-  if (!existingRequest || existingRequest.userId !== user.id) {
-    return NextResponse.json({ error: "Request not found" }, { status: 404 });
+  if (!owned) return NextResponse.json({ error: "Request not found" }, { status: 404 });
+
+  // The magic-byte check used to run while we held the file. The bytes no
+  // longer pass through here, so it happens as a short read back out of the
+  // stored blob — a renamed executable declaring application/pdf is still
+  // refused, and refused *before* the URL is recorded anywhere.
+  //
+  // The type checked against is the one the store recorded, not one the client
+  // restates here: that stored type is what will be served to the clinic, so
+  // it is the type the bytes have to agree with.
+  const stored = await readHead(url);
+  if (!stored || !headMatchesType(stored.head, stored.contentType)) {
+    // Nothing references this object, and a file we just refused must not be
+    // left sitting in private storage.
+    void del(url).catch(() => {});
+    return NextResponse.json({ error: t.fileSignature }, { status: 400 });
   }
 
-  // Cap uploads per request to curb abuse of the endpoint.
-  const rl = await rateLimit(
-    `upload:${requestId}`,
-    RATE_LIMITS.fileUpload.limit,
-    RATE_LIMITS.fileUpload.windowMs,
-  );
-  if (!rl.allowed) {
-    return NextResponse.json(
-      { error: t.tooManyUploads },
-      { status: 429 },
-    );
-  }
-
-  // Upload to Vercel Blob as PRIVATE — treatment plans and x-rays are medical
-  // records and must not be reachable by URL. Access goes through the
-  // auth-checked /api/files/[requestId]/[kind] route (patient/admin) or as email
-  // attachments to dentists.
-  const blob = await put(blobPath(requestId, kind as UploadKind, file), file, {
-    access: "private",
-    addRandomSuffix: true,
-    contentType: file.type,
-  });
-
-  // Save URL to the appropriate Request column
   const updated = await db.request.update({
     where: { id: requestId },
-    data: kind === "treatment" ? { treatmentFileUrl: blob.url } : { xrayFileUrl: blob.url },
+    data: kind === "treatment" ? { treatmentFileUrl: url } : { xrayFileUrl: url },
     select: { treatmentFileUrl: true, xrayFileUrl: true },
   });
 
-  return NextResponse.json({
-    url: blob.url,
-    kind,
-    request: updated,
-  });
+  return NextResponse.json({ url, kind, request: updated });
+}
+
+/** The stored pathname a blob URL refers to, or null if it is not one of ours. */
+function blobPathnameOf(url: string): string | null {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return null;
+  }
+  if (parsed.protocol !== "https:" || !/\.blob\.vercel-storage\.com$/i.test(parsed.hostname)) {
+    return null;
+  }
+  return decodeURIComponent(parsed.pathname).slice(1) || null;
+}
+
+/**
+ * First bytes of a stored private blob and the type the store has on record,
+ * or null when it cannot be read.
+ */
+async function readHead(url: string): Promise<{ head: Uint8Array; contentType: string } | null> {
+  try {
+    const result = await get(url, { access: "private" });
+    if (!result || result.statusCode !== 200) return null;
+    const reader = result.stream.getReader();
+    const head = new Uint8Array(SIGNATURE_BYTES);
+    let filled = 0;
+    // Read until the signature is covered rather than trusting one chunk to
+    // carry it: a short first chunk would otherwise look like a bad signature
+    // and get a real file deleted.
+    while (filled < SIGNATURE_BYTES) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      if (!value) continue;
+      const take = value.subarray(0, SIGNATURE_BYTES - filled);
+      head.set(take, filled);
+      filled += take.length;
+    }
+    // Stop pulling as soon as the head is in hand — the file may be 20MB.
+    await reader.cancel().catch(() => {});
+    if (filled < SIGNATURE_BYTES) return null;
+    return { head, contentType: result.blob.contentType };
+  } catch {
+    return null;
+  }
 }

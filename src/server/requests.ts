@@ -6,7 +6,7 @@ import { format } from "@/i18n/format";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { REQUEST_LIMITS } from "@/lib/constants";
-import { visibleSubscriptionFilter } from "@/lib/subscription";
+import { publicDentistWhere } from "@/lib/dentist-public";
 import { fulfillRequest } from "@/server/fulfillment";
 
 export type SaveDentistsResult = { ok: true } | { ok: false; error: string };
@@ -67,9 +67,13 @@ export async function saveRequestDentists(
     return { ok: false, error: format(e.tooManyDentists, { max: REQUEST_LIMITS.maxDentists }) };
   }
 
-  // Make sure every chosen dentist actually exists and is active.
+  // Every chosen clinic must be one the directory would have offered — the same
+  // gate, not a looser one. The ids travel from the browser, and `isActive`
+  // alone would accept a clinic whose subscription lapsed or whose licence was
+  // never checked: both are invisible in the picker but nothing re-derives the
+  // selection from it on the way back.
   const validCount = await db.dentist.count({
-    where: { id: { in: uniqueIds }, isActive: true },
+    where: { ...publicDentistWhere(), id: { in: uniqueIds } },
   });
   if (validCount !== uniqueIds.length) {
     return { ok: false, error: e.dentistsUnavailable };
@@ -157,15 +161,13 @@ export async function submitRequest(requestId: string): Promise<SubmitRequestRes
     return { ok: false, error: e.pickAtLeastOne };
   }
 
-  // Re-check eligibility at send time. The directory already filters by the
-  // visibility gate, but a subscription can lapse between picking and sending —
-  // without this an unsubscribed clinic would receive a lead it didn't pay for.
+  // Re-check eligibility at send time against the full directory gate. A
+  // subscription can lapse between picking and sending — and so can a licence
+  // stamp, which an admin can revoke. This is the last point before an x-ray
+  // and a treatment plan leave for a clinic, so it has to ask the same question
+  // the directory asks, not a subset of it.
   const eligible = await db.dentist.findMany({
-    where: {
-      id: { in: selectedIds },
-      isActive: true,
-      subscription: visibleSubscriptionFilter(),
-    },
+    where: { ...publicDentistWhere(), id: { in: selectedIds } },
     select: { id: true },
   });
   const eligibleIds = new Set(eligible.map((d) => d.id));

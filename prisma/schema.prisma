@@ -146,6 +146,16 @@ model Dentist {
   termsVersion    String? // version of the contract that was accepted
   approvedAt      DateTime? // admin approval — starts the free trial clock (PRD 4.4)
 
+  // The Clerk account that signs in as this clinic, stamped the first time
+  // someone signs in holding a VERIFIED address matching `email`.
+  //
+  // Nullable because a clinic exists long before it has an account: it is born
+  // from the public registration form, or from an admin who recruited it by
+  // phone, and only later does a person sign in. Unique because one account
+  // speaks for one clinic — two rows sharing it would make "which clinic am I"
+  // unanswerable.
+  clerkUserId String? @unique
+
   // When an admin actually looked at this clinic's licence documents, and who.
   //
   // Deliberately NOT approvedAt: that column records approval for listing and
@@ -167,6 +177,7 @@ model Dentist {
   @@index([city])
   @@index([isActive])
   @@index([submittedBySelf])
+  @@index([clerkUserId])
 }
 
 /// עד לאן המטופל מוכן לנסוע — עבור הבקשה הזו.
