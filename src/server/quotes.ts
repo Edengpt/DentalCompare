@@ -57,6 +57,7 @@ export async function submitQuote(input: {
     where: { quoteToken: input.token },
     select: {
       id: true,
+      requestId: true,
       quote: { select: { id: true, status: true } },
       // The quote is denominated in the clinic's own country's currency.
       dentist: { select: { country: { select: { currency: true } } } },
@@ -67,6 +68,21 @@ export async function submitQuote(input: {
   });
   if (!rd) return { ok: false, error: e.invalidLink };
   if (rd.quote && rd.quote.status !== "PENDING_DECISION") {
+    return { ok: false, error: e.quoteAlreadyDecided };
+  }
+
+  // A sibling quote on the same request may have already been approved (or
+  // gone further) between the patient's decision and this submit — approval
+  // is exclusive per request, so no other clinic may still create or edit a
+  // quote once that has happened.
+  const decidedSibling = await db.quote.findFirst({
+    where: {
+      requestDentist: { requestId: rd.requestId },
+      status: { in: ["APPROVED", "IN_TREATMENT", "COMPLETION_REQUESTED", "COMPLETED"] },
+    },
+    select: { id: true },
+  });
+  if (decidedSibling) {
     return { ok: false, error: e.quoteAlreadyDecided };
   }
 
@@ -91,33 +107,51 @@ export async function submitQuote(input: {
     input.warrantyYears == null ? null : clampInt(input.warrantyYears, 0, 0, 50);
   const warrantyNote = input.warrantyNote?.trim() || null;
 
-  const quote = await db.quote.upsert({
-    where: { requestDentistId: rd.id },
-    create: {
-      requestDentistId: rd.id,
-      amountMinor,
-      currency,
-      note,
-      includes,
-      tripsRequired,
-      daysPerTrip,
-      weeksBetweenTrips,
-      warrantyYears,
-      warrantyNote,
-    },
-    update: {
-      amountMinor,
-      currency,
-      note,
-      includes,
-      tripsRequired,
-      daysPerTrip,
-      weeksBetweenTrips,
-      warrantyYears,
-      warrantyNote,
-    },
-    select: { id: true },
-  });
+  let quoteId: string;
+  if (isNew) {
+    // No race risk here: a duplicate create would hit the `@unique`
+    // constraint on `requestDentistId` and fail cleanly, which is acceptable
+    // — two concurrent first-submits from the same clinic link is not a
+    // scenario the spec needs to protect against.
+    const quote = await db.quote.create({
+      data: {
+        requestDentistId: rd.id,
+        amountMinor,
+        currency,
+        note,
+        includes,
+        tripsRequired,
+        daysPerTrip,
+        weeksBetweenTrips,
+        warrantyYears,
+        warrantyNote,
+      },
+      select: { id: true },
+    });
+    quoteId = quote.id;
+  } else {
+    // Conditional on the quote's own status, so a clinic's edit landing at
+    // nearly the same instant as the patient's approval can't silently
+    // overwrite the price on a quote that just got decided.
+    const result = await db.quote.updateMany({
+      where: { requestDentistId: rd.id, status: "PENDING_DECISION" },
+      data: {
+        amountMinor,
+        currency,
+        note,
+        includes,
+        tripsRequired,
+        daysPerTrip,
+        weeksBetweenTrips,
+        warrantyYears,
+        warrantyNote,
+      },
+    });
+    if (result.count === 0) {
+      return { ok: false, error: e.quoteAlreadyDecided };
+    }
+    quoteId = rd.quote!.id;
+  }
 
   // Notify the patient — unless their account was deleted (user set to null),
   // in which case there is no address to notify. On a send failure we leave
@@ -131,7 +165,7 @@ export async function submitQuote(input: {
     });
     if (sent) {
       await db.quote.update({
-        where: { id: quote.id },
+        where: { id: quoteId },
         data: { patientNotifiedAt: new Date() },
       });
     }

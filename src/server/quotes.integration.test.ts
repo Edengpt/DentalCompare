@@ -10,16 +10,7 @@ let db: typeof Db;
 let submitQuote: typeof SubmitQuoteFn;
 const created = { dentistIds: [] as string[], userIds: [] as string[], requestIds: [] as string[] };
 
-async function seed() {
-  const sfx = randomUUID().slice(0, 8);
-  const user = await db.user.create({
-    data: { clerkUserId: `sq_${sfx}`, fullName: "T", email: `sq_${sfx}@example.com` },
-  });
-  created.userIds.push(user.id);
-  const request = await db.request.create({
-    data: { userId: user.id, treatmentFileUrl: "https://blob/t", xrayFileUrl: "https://blob/x" },
-  });
-  created.requestIds.push(request.id);
+async function seedDentist(sfx: string) {
   const dentist = await db.dentist.create({
     data: {
       clinicName: `Clinic ${sfx}`,
@@ -32,11 +23,25 @@ async function seed() {
     },
   });
   created.dentistIds.push(dentist.id);
+  return dentist;
+}
+
+async function seed() {
+  const sfx = randomUUID().slice(0, 8);
+  const user = await db.user.create({
+    data: { clerkUserId: `sq_${sfx}`, fullName: "T", email: `sq_${sfx}@example.com` },
+  });
+  created.userIds.push(user.id);
+  const request = await db.request.create({
+    data: { userId: user.id, treatmentFileUrl: "https://blob/t", xrayFileUrl: "https://blob/x" },
+  });
+  created.requestIds.push(request.id);
+  const dentist = await seedDentist(sfx);
   const token = randomUUID();
   const rd = await db.requestDentist.create({
     data: { requestId: request.id, dentistId: dentist.id, quoteToken: token },
   });
-  return { rd, token };
+  return { request, rd, token };
 }
 
 describe.skipIf(!hasDb)("submitQuote locking", () => {
@@ -80,5 +85,48 @@ describe.skipIf(!hasDb)("submitQuote locking", () => {
     expect(result.ok).toBe(true);
     const quote = await db.quote.findUniqueOrThrow({ where: { requestDentistId: rd.id } });
     expect(quote.amountMinor).toBe(200000);
+  });
+
+  // Finding 1 (step 3) + Finding 6: a DIFFERENT clinic's quote on the same
+  // request having already been decided must block this clinic from
+  // submitting or editing its own quote too — approval is exclusive per
+  // request, not just per quote.
+  it("refuses to submit a brand-new quote once a sibling clinic on the same request has already been approved", async () => {
+    const { request, rd, token } = await seed();
+    const sfx = randomUUID().slice(0, 8);
+    const otherDentist = await seedDentist(`${sfx}sibling`);
+    const otherRd = await db.requestDentist.create({
+      data: { requestId: request.id, dentistId: otherDentist.id },
+    });
+    await db.quote.create({
+      data: { requestDentistId: otherRd.id, amountMinor: 100000, currency: "ILS", status: "APPROVED" },
+    });
+
+    const result = await submitQuote({ token, amountMajor: 2000 });
+
+    expect(result).toEqual({ ok: false, error: expect.any(String) });
+    const quote = await db.quote.findUnique({ where: { requestDentistId: rd.id } });
+    expect(quote).toBeNull(); // never created
+  });
+
+  it("refuses to edit an existing PENDING_DECISION quote once a sibling clinic on the same request has already been approved", async () => {
+    const { request, rd, token } = await seed();
+    await db.quote.create({
+      data: { requestDentistId: rd.id, amountMinor: 100000, currency: "ILS" },
+    });
+    const sfx = randomUUID().slice(0, 8);
+    const otherDentist = await seedDentist(`${sfx}sibling2`);
+    const otherRd = await db.requestDentist.create({
+      data: { requestId: request.id, dentistId: otherDentist.id },
+    });
+    await db.quote.create({
+      data: { requestDentistId: otherRd.id, amountMinor: 150000, currency: "ILS", status: "APPROVED" },
+    });
+
+    const result = await submitQuote({ token, amountMajor: 2000 });
+
+    expect(result).toEqual({ ok: false, error: expect.any(String) });
+    const quote = await db.quote.findUniqueOrThrow({ where: { requestDentistId: rd.id } });
+    expect(quote.amountMinor).toBe(100000); // unchanged
   });
 });

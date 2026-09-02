@@ -7,6 +7,7 @@ import { getRequestLocale } from "@/i18n/request-locale";
 import { asLocale } from "@/i18n/config";
 import { db } from "@/lib/db";
 import { audit } from "@/lib/audit";
+import { Prisma } from "@/generated/prisma/client";
 import { getClinicForCurrentUser } from "@/server/clinic-account";
 import {
   sendQuoteApprovedEmail,
@@ -17,6 +18,21 @@ import {
 } from "@/server/quote-decision-notifications";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
+
+/**
+ * Stamps a `*NotifiedAt` column after a successful send. This always runs
+ * after the real status transition has already committed and the email has
+ * already gone out, so a failure here (a transient DB error) must not
+ * surface as an action failure — the only consequence is that the retry
+ * cron may needlessly re-send that one email later, which is harmless.
+ */
+async function stampNotified(quoteId: string, data: Record<string, Date>): Promise<void> {
+  try {
+    await db.quote.update({ where: { id: quoteId }, data });
+  } catch (err) {
+    console.error(`Failed to stamp notified-at (${Object.keys(data).join(",")}) for quote ${quoteId}:`, err);
+  }
+}
 
 /**
  * Loads the requestDentist row and confirms the signed-in user owns its request.
@@ -74,21 +90,49 @@ export async function approveQuote(requestDentistId: string): Promise<ActionResu
     })
   ).map((q) => q.id);
 
-  const approved = await db.$transaction(async (tx) => {
-    const result = await tx.quote.updateMany({
-      where: { id: rd.quote!.id, status: "PENDING_DECISION" },
-      data: { status: "APPROVED", decidedAt: new Date() },
-    });
-    if (result.count === 0) return false;
+  let approved: boolean;
+  try {
+    approved = await db.$transaction(
+      async (tx) => {
+        // Guards against a request that was already decided by SOME OTHER
+        // quote — not just this one's own status — closing the gap where a
+        // late-submitted quote (Finding 1) could still be approved after a
+        // sibling already won.
+        const conflict = await tx.quote.findFirst({
+          where: {
+            requestDentist: { requestId: rd.requestId },
+            status: { in: ["APPROVED", "IN_TREATMENT", "COMPLETION_REQUESTED", "COMPLETED"] },
+          },
+          select: { id: true },
+        });
+        if (conflict) return false;
 
-    if (siblingQuoteIds.length > 0) {
-      await tx.quote.updateMany({
-        where: { id: { in: siblingQuoteIds }, status: "PENDING_DECISION" },
-        data: { status: "REJECTED", rejectedAuto: true, decidedAt: new Date() },
-      });
+        const result = await tx.quote.updateMany({
+          where: { id: rd.quote!.id, status: "PENDING_DECISION" },
+          data: { status: "APPROVED", decidedAt: new Date() },
+        });
+        if (result.count === 0) return false;
+
+        if (siblingQuoteIds.length > 0) {
+          await tx.quote.updateMany({
+            where: { id: { in: siblingQuoteIds }, status: "PENDING_DECISION" },
+            data: { status: "REJECTED", rejectedAuto: true, decidedAt: new Date() },
+          });
+        }
+        return true;
+      },
+      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+    );
+  } catch (err) {
+    // SERIALIZABLE can throw P2034 ("write conflict or deadlock") when this
+    // transaction loses a race against a concurrent approval on the same
+    // request — that is the correct way the loser finds out someone else
+    // already decided, not a real failure to surface as a raw throw.
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2034") {
+      return { ok: false, error: e.quoteAlreadyDecided };
     }
-    return true;
-  });
+    throw err;
+  }
 
   if (!approved) return { ok: false, error: e.quoteAlreadyDecided };
 
@@ -118,7 +162,7 @@ export async function approveQuote(requestDentistId: string): Promise<ActionResu
       locale: asLocale(rd.dentist.locale),
     })
   ) {
-    await db.quote.update({ where: { id: rd.quote!.id }, data: { decisionNotifiedAt: new Date() } });
+    await stampNotified(rd.quote!.id, { decisionNotifiedAt: new Date() });
   }
 
   for (const sibling of rejectedDentists) {
@@ -129,7 +173,7 @@ export async function approveQuote(requestDentistId: string): Promise<ActionResu
       locale: asLocale(sibling.dentist.locale),
     });
     if (sent) {
-      await db.quote.update({ where: { id: sibling.quote.id }, data: { decisionNotifiedAt: new Date() } });
+      await stampNotified(sibling.quote.id, { decisionNotifiedAt: new Date() });
     }
   }
 
@@ -159,7 +203,7 @@ export async function rejectQuote(requestDentistId: string): Promise<ActionResul
       locale: asLocale(rd.dentist.locale),
     })
   ) {
-    await db.quote.update({ where: { id: rd.quote!.id }, data: { decisionNotifiedAt: new Date() } });
+    await stampNotified(rd.quote!.id, { decisionNotifiedAt: new Date() });
   }
 
   revalidatePath(`/request/${rd.requestId}`);
@@ -219,7 +263,7 @@ export async function markTreatmentStarted(requestDentistId: string): Promise<Ac
       locale: asLocale(rd.request.user.locale),
     });
     if (sent) {
-      await db.quote.update({ where: { id: rd.quote!.id }, data: { treatmentStartedNotifiedAt: new Date() } });
+      await stampNotified(rd.quote!.id, { treatmentStartedNotifiedAt: new Date() });
     }
   }
 
@@ -256,10 +300,7 @@ export async function requestCompletionConfirmation(requestDentistId: string): P
       locale: asLocale(rd.request.user.locale),
     });
     if (sent) {
-      await db.quote.update({
-        where: { id: rd.quote!.id },
-        data: { completionRequestedNotifiedAt: new Date() },
-      });
+      await stampNotified(rd.quote!.id, { completionRequestedNotifiedAt: new Date() });
     }
   }
 
@@ -293,7 +334,7 @@ export async function confirmCompletion(requestDentistId: string): Promise<Actio
       locale: asLocale(rd.dentist.locale),
     })
   ) {
-    await db.quote.update({ where: { id: rd.quote!.id }, data: { completedNotifiedAt: new Date() } });
+    await stampNotified(rd.quote!.id, { completedNotifiedAt: new Date() });
   }
 
   revalidatePath(`/request/${rd.requestId}`);
