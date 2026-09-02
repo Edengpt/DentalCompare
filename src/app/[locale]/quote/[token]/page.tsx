@@ -37,6 +37,7 @@ export default async function QuotePage({
           weeksBetweenTrips: true,
           warrantyYears: true,
           warrantyNote: true,
+          status: true,
         },
       },
       // The quote is priced in the clinic's own country's currency, so the form
@@ -89,20 +90,28 @@ export default async function QuotePage({
         )}
 
         <div className="mt-6">
-          <QuoteForm
-            token={token}
-            currencyLabel={currency}
-            initial={{
-              amount: rd.quote ? toMajor(rd.quote.amountMinor ?? 0, currency) : null,
-              note: rd.quote?.note ?? null,
-              includes: rd.quote?.includes ?? [],
-              tripsRequired: rd.quote?.tripsRequired ?? 1,
-              daysPerTrip: rd.quote?.daysPerTrip ?? 1,
-              weeksBetweenTrips: rd.quote?.weeksBetweenTrips ?? null,
-              warrantyYears: rd.quote?.warrantyYears ?? null,
-              warrantyNote: rd.quote?.warrantyNote ?? null,
-            }}
-          />
+          {rd.quote && rd.quote.status !== "PENDING_DECISION" ? (
+            <div className="border-border/60 bg-card rounded-2xl border p-5 text-sm">
+              <p className="text-foreground font-semibold">
+                {t.quoteForm.statusLabel[rd.quote.status]}
+              </p>
+            </div>
+          ) : (
+            <QuoteForm
+              token={token}
+              currencyLabel={currency}
+              initial={{
+                amount: rd.quote ? toMajor(rd.quote.amountMinor ?? 0, currency) : null,
+                note: rd.quote?.note ?? null,
+                includes: rd.quote?.includes ?? [],
+                tripsRequired: rd.quote?.tripsRequired ?? 1,
+                daysPerTrip: rd.quote?.daysPerTrip ?? 1,
+                weeksBetweenTrips: rd.quote?.weeksBetweenTrips ?? null,
+                warrantyYears: rd.quote?.warrantyYears ?? null,
+                warrantyNote: rd.quote?.warrantyNote ?? null,
+              }}
+            />
+          )}
         </div>
       </main>
       <Footer />

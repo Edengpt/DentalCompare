@@ -57,7 +57,7 @@ export async function submitQuote(input: {
     where: { quoteToken: input.token },
     select: {
       id: true,
-      quote: { select: { id: true } },
+      quote: { select: { id: true, status: true } },
       // The quote is denominated in the clinic's own country's currency.
       dentist: { select: { country: { select: { currency: true } } } },
       request: {
@@ -66,6 +66,9 @@ export async function submitQuote(input: {
     },
   });
   if (!rd) return { ok: false, error: e.invalidLink };
+  if (rd.quote && rd.quote.status !== "PENDING_DECISION") {
+    return { ok: false, error: e.quoteAlreadyDecided };
+  }
 
   const isNew = !rd.quote;
   const note = input.note?.trim() || null;

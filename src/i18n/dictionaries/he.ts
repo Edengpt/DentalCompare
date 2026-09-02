@@ -580,6 +580,14 @@ const he = {
     notePlaceholder: "לדוגמה: המחיר תקף 60 יום",
     sending: "שולח...",
     submit: "שליחת הצעת מחיר",
+    statusLabel: {
+      PENDING_DECISION: "ממתין להחלטת המטופל",
+      APPROVED: "אושרה — המטופל בחר בכם",
+      REJECTED: "המטופל בחר במרפאה אחרת",
+      IN_TREATMENT: "בטיפול",
+      COMPLETION_REQUESTED: "ממתין לאישור המטופל שהטיפול הסתיים",
+      COMPLETED: "הושלם בהצלחה",
+    },
   },
 
   clinics: {
@@ -894,6 +902,7 @@ const he = {
     dentistNotFound: "הרופא לא נמצא",
     clinicNotFound: "המרפאה לא נמצאה",
     clinicNoSubscription: "למרפאה אין מנוי משויך — לא ניתן לאשר",
+    quoteAlreadyDecided: "המטופל כבר הכריע לגבי הצעה זו — לא ניתן לערוך אותה יותר",
     onlyPendingCanBeRejected: "ניתן לדחות רק הרשמות שטרם אושרו",
     paymentsNotConfigured: "התשלומים אינם מוגדרים עדיין. פנו לתמיכה.",
     invalidLink: "קישור לא תקין",

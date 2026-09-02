@@ -594,6 +594,14 @@ const en: typeof he = {
     notePlaceholder: "e.g. this price is valid for 60 days",
     sending: "Sending...",
     submit: "Submit quote",
+    statusLabel: {
+      PENDING_DECISION: "Awaiting the patient's decision",
+      APPROVED: "Approved — the patient chose your clinic",
+      REJECTED: "The patient chose another clinic",
+      IN_TREATMENT: "In treatment",
+      COMPLETION_REQUESTED: "Awaiting confirmation that treatment is complete",
+      COMPLETED: "Completed successfully",
+    },
   },
 
   clinics: {
@@ -917,6 +925,7 @@ const en: typeof he = {
     dentistNotFound: "Dentist not found",
     clinicNotFound: "Clinic not found",
     clinicNoSubscription: "This clinic has no subscription attached — it can't be approved",
+    quoteAlreadyDecided: "The patient has already decided on this quote — it can no longer be edited",
     onlyPendingCanBeRejected: "Only applications that haven't been approved can be rejected",
     paymentsNotConfigured: "Payments aren't configured yet. Please contact support.",
     invalidLink: "That link isn't valid",
