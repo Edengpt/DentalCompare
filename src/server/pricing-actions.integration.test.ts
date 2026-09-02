@@ -63,8 +63,17 @@ describe.skipIf(!hasDb)("updatePricing", () => {
   });
 
   it("leaves currency untouched — it is never taken from the form", async () => {
+    // Submit a currency different from the row's real one (ILS): if
+    // updatePricing ever started reading `currency` from the form, this
+    // would flip the row to USD and the assertion below would catch it.
     await updatePricing(
-      formData({ provider: "PAYPLUS", monthlyPriceMajor: "350", yearlyPriceMajor: "2200", trialDays: "45" }),
+      formData({
+        provider: "PAYPLUS",
+        monthlyPriceMajor: "350",
+        yearlyPriceMajor: "2200",
+        trialDays: "45",
+        currency: "USD",
+      }),
     );
     const row = await db.subscriptionPricing.findUniqueOrThrow({ where: { provider: "PAYPLUS" } });
     expect(row.currency).toBe("ILS");
