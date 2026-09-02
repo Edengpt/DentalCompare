@@ -200,18 +200,18 @@ enum QuoteStatus {
 }
 
 model Request {
-  id               String        @id @default(uuid())
+  id                   String        @id @default(uuid())
   // Nullable so deleting a user (Clerk user.deleted) preserves the request as a
   // financial/audit record instead of cascading it away. Readers must treat a
   // null user as "deleted patient".
-  userId           String?
-  user             User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
-  treatmentFileUrl String
-  xrayFileUrl      String
-  patientNotes     String?       @db.Text
-  status           RequestStatus @default(DRAFT)
-  sentAt           DateTime?
-  travelScope          TravelScope @default(LOCAL)
+  userId               String?
+  user                 User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  treatmentFileUrl     String
+  xrayFileUrl          String
+  patientNotes         String?       @db.Text
+  status               RequestStatus @default(DRAFT)
+  sentAt               DateTime?
+  travelScope          TravelScope   @default(LOCAL)
   /// In use only when travelScope = SELECTED; empty otherwise.
   destinationCountries String[]
   /// Explicit consent to send health data to the chosen clinics and to store it
@@ -221,8 +221,8 @@ model Request {
   /// agreedToTermsAt / termsVersion.
   consentAt            DateTime?
   consentVersion       String?
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
 
   requestDentists RequestDentist[]
 
@@ -238,16 +238,16 @@ model Request {
 /// row per upload would make "which document is current" a query instead of a
 /// fact, and every reader would have to get that query right.
 model ClinicDocument {
-  id        String  @id @default(uuid())
-  dentistId String
-  dentist   Dentist @relation(fields: [dentistId], references: [id], onDelete: Cascade)
+  id              String    @id @default(uuid())
+  dentistId       String
+  dentist         Dentist   @relation(fields: [dentistId], references: [id], onDelete: Cascade)
   /// As written in Country.requiredDocs, or "licence" when that list is empty.
-  kind      String
+  kind            String
   /// Private blob store — the same one the patients' x-rays live in, never the
   /// public store the clinic logos use.
-  blobUrl     String
-  contentType String
-  uploadedAt  DateTime @default(now())
+  blobUrl         String
+  contentType     String
+  uploadedAt      DateTime  @default(now())
   /// null = fine. A rejected document is waiting for a replacement, and the
   /// reason is what gets written to the clinic. P2b sets these.
   rejectedAt      DateTime?
@@ -299,20 +299,20 @@ model Quote {
 
   /// What the price covers. Canonical keys (QUOTE_INCLUSIONS); labels live in
   /// the i18n layer so they translate with the rest of the site.
-  includes          String[]
+  includes                      String[]
   /// How many separate trips abroad the treatment needs. Implants routinely
   /// need two, months apart — the single biggest hidden cost.
-  tripsRequired     Int       @default(1)
-  daysPerTrip       Int       @default(1)
+  tripsRequired                 Int         @default(1)
+  daysPerTrip                   Int         @default(1)
   /// Null when one trip is enough.
-  weeksBetweenTrips Int?
+  weeksBetweenTrips             Int?
   /// The dominant fear for a dental-tourism patient: what happens when
   /// something goes wrong after they have flown home.
-  warrantyYears     Int?
-  warrantyNote      String?   @db.Text
+  warrantyYears                 Int?
+  warrantyNote                  String?     @db.Text
   // When the patient "you got a new quote" email was successfully sent. Null =
   // not yet notified (first send failed) — the retry cron picks these up.
-  patientNotifiedAt DateTime?
+  patientNotifiedAt             DateTime?
   status                        QuoteStatus @default(PENDING_DECISION)
   decidedAt                     DateTime?
   rejectedAuto                  Boolean     @default(false)
@@ -323,10 +323,11 @@ model Quote {
   treatmentStartedNotifiedAt    DateTime?
   completionRequestedNotifiedAt DateTime?
   completedNotifiedAt           DateTime?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  createdAt                     DateTime    @default(now())
+  updatedAt                     DateTime    @updatedAt
 
   @@index([requestDentistId])
+  @@index([status])
 }
 
 // The Payment model (patient flat fee) was removed with the free-patient pivot.
