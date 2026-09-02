@@ -4,6 +4,7 @@ import type { QuoteRow } from "@/lib/quotes";
 import { formatMoney } from "@/lib/money";
 import { translateInclusion, translateLanguage } from "@/lib/labels";
 import { format } from "@/i18n/format";
+import { QuoteDecisionButtons } from "./quote-decision-buttons";
 
 /**
  * Three quotes side by side, one dimension per row.
@@ -81,6 +82,15 @@ export function QuoteComparison({
   };
 
   const rows: Array<{ label: string; cell: (q: QuoteRow) => React.ReactNode }> = [
+    {
+      label: d.rowStatus,
+      cell: (q) =>
+        q.status ? (
+          <QuoteDecisionButtons requestDentistId={q.requestDentistId} status={q.status} />
+        ) : (
+          <span className="text-muted-foreground text-xs">{d.awaitingQuote}</span>
+        ),
+    },
     { label: d.rowPrice, cell: priceCell },
     {
       label: d.rowLocation,

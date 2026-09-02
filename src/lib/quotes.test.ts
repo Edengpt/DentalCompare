@@ -3,6 +3,8 @@ import { sortByPrice, cheapestDentistId, responseCounts, quotePath, type QuoteRo
 
 const row = (dentistId: string, amountMinor: number | null): QuoteRow => ({
   dentistId,
+  requestDentistId: `rd-${dentistId}`,
+  status: null,
   dentistName: `Dr ${dentistId}`,
   clinicName: `Clinic ${dentistId}`,
   city: "תל אביב",
@@ -51,6 +53,8 @@ describe("comparing across currencies", () => {
   const row = (dentistId: string, amountMinor: number | null, currency: string | null): QuoteRow =>
     ({
       dentistId,
+      requestDentistId: `rd-${dentistId}`,
+      status: null,
       dentistName: dentistId,
       clinicName: dentistId,
       city: "",

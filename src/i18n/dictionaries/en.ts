@@ -404,6 +404,7 @@ const en: typeof he = {
     noneYet: "Your request went to {total} clinics. Quotes will appear here as they reply.",
     cheapest: "Lowest price",
     rowClinic: "Clinic",
+    rowStatus: "Status",
     rowPrice: "Price",
     rowLocation: "Where",
     rowIncludes: "What's included",
@@ -430,6 +431,15 @@ const en: typeof he = {
     sent: "Sent",
     treatmentPlan: "Treatment plan",
     xray: "Dental x-ray",
+    quoteActionApprove: "Approve this quote",
+    quoteActionReject: "Reject",
+    quoteActionConfirmComplete: "Confirm treatment is complete",
+    quoteStatusApproved: "Approved",
+    quoteStatusRejected: "Rejected",
+    quoteStatusInTreatment: "In treatment",
+    quoteStatusCompletionRequested: "Awaiting your confirmation",
+    quoteStatusCompleted: "Completed successfully",
+    quoteActionFailed: "That didn't work. Please try again.",
   },
 
   emails: {

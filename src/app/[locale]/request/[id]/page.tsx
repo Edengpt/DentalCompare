@@ -59,6 +59,7 @@ export default async function RequestDetailPage({
       patientNotes: true,
       requestDentists: {
         select: {
+          id: true,
           emailSent: true,
           sentAt: true,
           quote: {
@@ -72,6 +73,7 @@ export default async function RequestDetailPage({
               weeksBetweenTrips: true,
               warrantyYears: true,
               warrantyNote: true,
+              status: true,
             },
           },
           dentist: {
@@ -98,6 +100,8 @@ export default async function RequestDetailPage({
 
   const quoteRows: QuoteRow[] = dentists.map((rd) => ({
     dentistId: rd.dentist.id,
+    requestDentistId: rd.id,
+    status: rd.quote?.status ?? null,
     dentistName: rd.dentist.dentistName,
     clinicName: rd.dentist.clinicName,
     city: rd.dentist.city,

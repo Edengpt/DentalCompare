@@ -1,5 +1,9 @@
+import type { QuoteStatus } from "@/generated/prisma/enums";
+
 export type QuoteRow = {
   dentistId: string;
+  requestDentistId: string;
+  status: QuoteStatus | null; // null when no Quote exists yet
   dentistName: string;
   clinicName: string;
   city: string;

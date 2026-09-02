@@ -393,6 +393,7 @@ const he = {
     noneYet: "הבקשה נשלחה ל-{total} רופאים. ההצעות יופיעו כאן ברגע שיגיבו.",
     cheapest: "המחיר הזול ביותר",
     rowClinic: "מרפאה",
+    rowStatus: "סטטוס",
     rowPrice: "מחיר",
     rowLocation: "היכן",
     rowIncludes: "מה כלול",
@@ -421,6 +422,15 @@ const he = {
     sent: "נשלח",
     treatmentPlan: "תוכנית הטיפול",
     xray: "צילום שיניים",
+    quoteActionApprove: "אשר הצעה זו",
+    quoteActionReject: "דחה",
+    quoteActionConfirmComplete: "אשר שהטיפול הסתיים",
+    quoteStatusApproved: "אישרת",
+    quoteStatusRejected: "נדחתה",
+    quoteStatusInTreatment: "בטיפול",
+    quoteStatusCompletionRequested: "ממתין לאישורך",
+    quoteStatusCompleted: "הסתיים בהצלחה",
+    quoteActionFailed: "הפעולה נכשלה. נסו שוב.",
   },
 
   emails: {
