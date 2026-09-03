@@ -210,8 +210,8 @@ export async function syncStripeSubscription(args: {
   stripeSubscriptionId: string;
   stripeCustomerId: string;
   status: Stripe.Subscription.Status;
-  currentPeriodEnd: Date | null;
-  trialEndsAt: Date | null;
+  currentPeriodEnd?: Date | null;
+  trialEndsAt?: Date | null;
   setupToken?: string;
 }): Promise<{ ok: true; subscriptionId: string } | { ok: false; error: string }> {
   const existing = await db.clinicSubscription.findUnique({
@@ -236,8 +236,8 @@ export async function syncStripeSubscription(args: {
       status: mapStripeSubscriptionStatus(args.status),
       stripeSubscriptionId: args.stripeSubscriptionId,
       stripeCustomerId: args.stripeCustomerId,
-      currentPeriodEnd: args.currentPeriodEnd,
-      trialEndsAt: args.trialEndsAt,
+      ...(args.currentPeriodEnd !== undefined ? { currentPeriodEnd: args.currentPeriodEnd } : {}),
+      ...(args.trialEndsAt !== undefined ? { trialEndsAt: args.trialEndsAt } : {}),
     },
   });
   return { ok: true, subscriptionId: target.id };

@@ -5,6 +5,7 @@ import {
   TRIAL_WARNING_DAYS_BEFORE,
   type SubscriptionPlanType,
 } from "./constants";
+import type { SubscriptionProvider } from "@/generated/prisma/enums";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -152,4 +153,22 @@ export function billingBlocker(args: {
   if (!args.payplusConfigured) return "no_provider";
   if (!args.recurringToken) return "no_card";
   return null;
+}
+
+/**
+ * Has this clinic actually completed payment setup with its provider — as
+ * opposed to merely being approved (which sets TRIALING before any payment
+ * attempt exists)? Unlike status, this is unambiguous for both providers:
+ * PayPlus only ever stores a recurringToken after a real completed charge;
+ * Stripe only ever links stripeSubscriptionId after a real completed
+ * Checkout session. Use this — never `status` alone — anywhere that needs
+ * to tell "approved, nothing attempted yet" apart from "trial genuinely
+ * started."
+ */
+export function hasCompletedPaymentSetup(sub: {
+  provider: SubscriptionProvider;
+  recurringToken: string | null;
+  stripeSubscriptionId: string | null;
+}): boolean {
+  return sub.provider === "STRIPE" ? sub.stripeSubscriptionId !== null : sub.recurringToken !== null;
 }

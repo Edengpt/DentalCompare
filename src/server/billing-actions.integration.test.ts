@@ -29,7 +29,10 @@ let db: typeof Db;
 let startPayment: typeof StartPaymentFn;
 const created = { dentistIds: [] as string[] };
 
-async function seedPendingSubscription(provider: "PAYPLUS" | "STRIPE") {
+async function seedPendingSubscription(
+  provider: "PAYPLUS" | "STRIPE",
+  overrides: { status?: "PENDING" | "TRIALING"; stripeSubscriptionId?: string } = {},
+) {
   const sfx = randomUUID().slice(0, 8);
   const dentist = await db.dentist.create({
     data: {
@@ -53,7 +56,8 @@ async function seedPendingSubscription(provider: "PAYPLUS" | "STRIPE") {
       trialDays: 60,
       provider,
       setupToken,
-      status: "PENDING",
+      status: overrides.status ?? "PENDING",
+      stripeSubscriptionId: overrides.stripeSubscriptionId,
     },
   });
   return setupToken;
@@ -92,5 +96,19 @@ describe.skipIf(!hasDb)("startPayment provider branching", () => {
 
     const sub = await db.clinicSubscription.findUnique({ where: { setupToken } });
     expect(sub?.pageRequestUid).toBe("test-page-request-uid");
+  });
+
+  // Root-cause regression: TRIALING is reached both by mere admin approval
+  // (nothing attempted) and by a completed Stripe Checkout (trial genuinely
+  // started) — status alone can't tell them apart. A STRIPE row that already
+  // has a stripeSubscriptionId has completed payment setup and must be
+  // refused, even though its status is TRIALING, not ACTIVE.
+  it("refuses a STRIPE subscription that already completed Checkout (TRIALING with stripeSubscriptionId set), not just ACTIVE ones", async () => {
+    const setupToken = await seedPendingSubscription("STRIPE", {
+      status: "TRIALING",
+      stripeSubscriptionId: "sub_already_completed",
+    });
+    const result = await startPayment(setupToken);
+    expect(result.ok).toBe(false);
   });
 });

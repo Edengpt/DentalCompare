@@ -100,6 +100,16 @@ export async function createSubscriptionCheckoutSession(args: {
 }
 
 /**
+ * stripe@22.6.1 moved Subscription.current_period_end onto the subscription's
+ * line items (multi-item-subscription support). Every subscription this app
+ * creates has exactly one item (see createSubscriptionCheckoutSession above),
+ * so the first item's period is the subscription's period.
+ */
+export function subscriptionCurrentPeriodEnd(sub: Stripe.Subscription): number | null {
+  return sub.items.data[0]?.current_period_end ?? null;
+}
+
+/**
  * Verifies and parses a Stripe webhook payload. Returns null on any failure
  * (missing secret, missing signature header, bad signature) — the caller
  * treats null exactly like an invalid PayPlus IPN signature: a 401, nothing
@@ -113,11 +123,6 @@ export function verifyStripeWebhookSignature(rawBody: string, signature: string 
   } catch {
     return null;
   }
-}
-
-/** Fetches the live Stripe Subscription for a given id — used by the return-page fallback and the webhook handler alike, so both read the exact same shape. */
-export async function retrieveStripeSubscription(stripeSubscriptionId: string): Promise<Stripe.Subscription> {
-  return getStripeClient().subscriptions.retrieve(stripeSubscriptionId);
 }
 
 /** Fetches a Checkout Session, expanding its subscription — used by the return-page fallback when the webhook hasn't landed yet. */

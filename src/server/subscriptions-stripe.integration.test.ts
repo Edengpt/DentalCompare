@@ -102,6 +102,37 @@ describe.skipIf(!hasDb)("syncStripeSubscription / recordStripeCharge", () => {
     expect(row.currentPeriodEnd?.getTime()).toBe(periodEnd.getTime());
   });
 
+  // Out-of-order-webhook regression (I4/3b): omitting currentPeriodEnd/trialEndsAt
+  // entirely must leave the row's existing values untouched, not null them out.
+  // This is what lets checkout.session.completed sync safely even if
+  // customer.subscription.updated (which carries the real values) already ran.
+  it("omitting currentPeriodEnd/trialEndsAt on a later sync leaves the existing values untouched", async () => {
+    const { sub, setupToken } = await seedStripePendingSubscription();
+    const currentPeriodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    const trialEndsAt = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000);
+
+    await syncStripeSubscription({
+      stripeSubscriptionId: `sub_${setupToken}`,
+      stripeCustomerId: `cus_${setupToken}`,
+      status: "trialing",
+      currentPeriodEnd,
+      trialEndsAt,
+      setupToken,
+    });
+
+    const result = await syncStripeSubscription({
+      stripeSubscriptionId: `sub_${setupToken}`,
+      stripeCustomerId: `cus_${setupToken}`,
+      status: "trialing",
+      // currentPeriodEnd/trialEndsAt intentionally omitted.
+    });
+
+    expect(result.ok).toBe(true);
+    const row = await db.clinicSubscription.findUniqueOrThrow({ where: { id: sub.id } });
+    expect(row.currentPeriodEnd?.getTime()).toBe(currentPeriodEnd.getTime());
+    expect(row.trialEndsAt?.getTime()).toBe(trialEndsAt.getTime());
+  });
+
   it("returns ok:false when neither stripeSubscriptionId nor setupToken matches a row", async () => {
     const result = await syncStripeSubscription({
       stripeSubscriptionId: "sub_does_not_exist",

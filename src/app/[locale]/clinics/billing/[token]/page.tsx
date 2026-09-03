@@ -4,6 +4,7 @@ import { format } from "@/i18n/format";
 import { formatMoney } from "@/lib/money";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
+import { hasCompletedPaymentSetup } from "@/lib/subscription";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
 import { StartPaymentButton } from "@/components/clinics/start-payment-button";
@@ -29,6 +30,9 @@ export default async function BillingSetupPage({
       priceMinor: true,
       currency: true,
       status: true,
+      provider: true,
+      recurringToken: true,
+      stripeSubscriptionId: true,
       dentist: { select: { clinicName: true } },
     },
   });
@@ -43,7 +47,7 @@ export default async function BillingSetupPage({
         <h1 className="font-display text-foreground text-3xl font-bold">{t.clinics.billingTitle}</h1>
         <p className="text-muted-foreground mt-2">{sub.dentist.clinicName}</p>
 
-        {sub.status === "ACTIVE" ? (
+        {hasCompletedPaymentSetup(sub) ? (
           <p className="border-border/60 bg-card mt-8 rounded-2xl border p-6 text-sm">
             {t.clinics.billingAlreadyActive}
           </p>

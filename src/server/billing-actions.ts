@@ -6,6 +6,7 @@ import { format } from "@/i18n/format";
 import { db } from "@/lib/db";
 import { createSubscriptionPaymentPage, isPayPlusConfigured } from "@/lib/payplus";
 import { createSubscriptionCheckoutSession, isStripeConfigured } from "@/lib/stripe";
+import { hasCompletedPaymentSetup } from "@/lib/subscription";
 import { asLocale } from "@/i18n/config";
 
 export async function startPayment(
@@ -24,11 +25,13 @@ export async function startPayment(
       status: true,
       provider: true,
       trialDays: true,
+      recurringToken: true,
+      stripeSubscriptionId: true,
       dentist: { select: { clinicName: true, email: true, locale: true } },
     },
   });
   if (!sub) return { ok: false, error: e.invalidLink };
-  if (sub.status === "ACTIVE") return { ok: false, error: e.subscriptionAlreadyActive };
+  if (hasCompletedPaymentSetup(sub)) return { ok: false, error: e.subscriptionAlreadyActive };
   // Never open a payment page for an amount we can't read. Defaulting to 0
   // would present the clinic a free checkout and mark the setup complete.
   if (sub.priceMinor === null || sub.currency === null) {

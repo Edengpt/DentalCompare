@@ -12,6 +12,7 @@ import {
   dueTrialWarning,
   visibleSubscriptionFilter,
   billingBlocker,
+  hasCompletedPaymentSetup,
 } from "./subscription";
 
 describe("subscription helpers", () => {
@@ -147,5 +148,51 @@ describe("billingBlocker", () => {
   // provider is down would be the wrong action.
   it("reports the provider first when both are missing", () => {
     expect(billingBlocker({ payplusConfigured: false, recurringToken: null })).toBe("no_provider");
+  });
+});
+
+describe("hasCompletedPaymentSetup", () => {
+  it("is true for STRIPE once stripeSubscriptionId is set", () => {
+    expect(
+      hasCompletedPaymentSetup({
+        provider: "STRIPE",
+        recurringToken: null,
+        stripeSubscriptionId: "sub_123",
+      }),
+    ).toBe(true);
+  });
+
+  it("is false for STRIPE with no stripeSubscriptionId, even if recurringToken is set", () => {
+    // recurringToken is always null for STRIPE rows in practice, but a STRIPE
+    // row must never be considered "set up" via the PayPlus field.
+    expect(
+      hasCompletedPaymentSetup({
+        provider: "STRIPE",
+        recurringToken: "rtok_1",
+        stripeSubscriptionId: null,
+      }),
+    ).toBe(false);
+  });
+
+  it("is true for PAYPLUS once recurringToken is set", () => {
+    expect(
+      hasCompletedPaymentSetup({
+        provider: "PAYPLUS",
+        recurringToken: "rtok_1",
+        stripeSubscriptionId: null,
+      }),
+    ).toBe(true);
+  });
+
+  it("is false for PAYPLUS with no recurringToken, even if stripeSubscriptionId is set", () => {
+    // stripeSubscriptionId is always null for PAYPLUS rows in practice, but a
+    // PAYPLUS row must never be considered "set up" via the Stripe field.
+    expect(
+      hasCompletedPaymentSetup({
+        provider: "PAYPLUS",
+        recurringToken: null,
+        stripeSubscriptionId: "sub_123",
+      }),
+    ).toBe(false);
   });
 });
