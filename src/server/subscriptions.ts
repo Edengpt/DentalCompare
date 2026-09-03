@@ -3,8 +3,11 @@ import { getRequestLocale } from "@/i18n/request-locale";
 import "server-only";
 import { db } from "@/lib/db";
 import { Prisma } from "@/generated/prisma/client";
+import type { SubscriptionProvider } from "@/generated/prisma/enums";
 import type { SubscriptionPlanType } from "@/lib/constants";
 import { nextPeriodEnd } from "@/lib/subscription";
+import { mapStripeSubscriptionStatus } from "@/lib/stripe";
+import type Stripe from "stripe";
 
 export async function createPendingSubscription(
   args: {
@@ -14,6 +17,7 @@ export async function createPendingSubscription(
     priceMinor: number;
     currency: string;
     trialDays: number;
+    provider: SubscriptionProvider;
   },
   client: Prisma.TransactionClient | typeof db = db,
 ): Promise<void> {
@@ -26,6 +30,7 @@ export async function createPendingSubscription(
       trialDays: args.trialDays,
       setupToken: args.setupToken,
       status: "PENDING",
+      provider: args.provider,
     },
   });
 }
@@ -192,4 +197,89 @@ export async function cancelSubscription(subscriptionId: string): Promise<void> 
     where: { id: subscriptionId },
     data: { status: "CANCELED", canceledAt: new Date() },
   });
+}
+
+/**
+ * The single write path for everything a Stripe webhook learns about a
+ * subscription's status. Finds the row by stripeSubscriptionId once it's
+ * linked; falls back to setupToken for the very first sync (checkout.session.
+ * completed), before the link exists yet. Links stripeSubscriptionId/
+ * stripeCustomerId on that first call and leaves them alone afterward.
+ */
+export async function syncStripeSubscription(args: {
+  stripeSubscriptionId: string;
+  stripeCustomerId: string;
+  status: Stripe.Subscription.Status;
+  currentPeriodEnd: Date | null;
+  trialEndsAt: Date | null;
+  setupToken?: string;
+}): Promise<{ ok: true; subscriptionId: string } | { ok: false; error: string }> {
+  const existing = await db.clinicSubscription.findUnique({
+    where: { stripeSubscriptionId: args.stripeSubscriptionId },
+    select: { id: true },
+  });
+
+  const target =
+    existing ??
+    (args.setupToken
+      ? await db.clinicSubscription.findUnique({
+          where: { setupToken: args.setupToken },
+          select: { id: true },
+        })
+      : null);
+
+  if (!target) return { ok: false, error: "subscription not found for Stripe sync" };
+
+  await db.clinicSubscription.update({
+    where: { id: target.id },
+    data: {
+      status: mapStripeSubscriptionStatus(args.status),
+      stripeSubscriptionId: args.stripeSubscriptionId,
+      stripeCustomerId: args.stripeCustomerId,
+      currentPeriodEnd: args.currentPeriodEnd,
+      trialEndsAt: args.trialEndsAt,
+    },
+  });
+  return { ok: true, subscriptionId: target.id };
+}
+
+/** Records a Stripe invoice as a PAID charge. Idempotent on stripeInvoiceId — a webhook Stripe retries must not double-record the same invoice. */
+export async function recordStripeCharge(args: {
+  subscriptionId: string;
+  stripeInvoiceId: string;
+  amountMinor: number;
+  currency: string;
+  periodStart: Date;
+  periodEnd: Date;
+}): Promise<void> {
+  const existing = await db.subscriptionCharge.findUnique({
+    where: { stripeInvoiceId: args.stripeInvoiceId },
+    select: { id: true },
+  });
+  if (existing) return;
+
+  const now = new Date();
+  await db.$transaction([
+    db.clinicSubscription.update({
+      where: { id: args.subscriptionId },
+      data: {
+        status: "ACTIVE",
+        currentPeriodEnd: args.periodEnd,
+        lastChargeAt: now,
+        paymentFailedNotifiedAt: null,
+      },
+    }),
+    db.subscriptionCharge.create({
+      data: {
+        subscriptionId: args.subscriptionId,
+        amountMinor: args.amountMinor,
+        currency: args.currency,
+        status: "PAID",
+        stripeInvoiceId: args.stripeInvoiceId,
+        periodStart: args.periodStart,
+        periodEnd: args.periodEnd,
+        paidAt: now,
+      },
+    }),
+  ]);
 }

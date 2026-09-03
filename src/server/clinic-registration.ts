@@ -189,6 +189,8 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
         priceMinor,
         currency: pricing.currency,
         trialDays: pricing.trialDays,
+        // TODO(Task 4): resolve by country instead of hardcoding PAYPLUS.
+        provider: "PAYPLUS",
       },
       tx,
     );
