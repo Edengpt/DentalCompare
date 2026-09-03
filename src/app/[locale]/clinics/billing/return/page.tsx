@@ -5,7 +5,8 @@ import { LocaleLink as Link } from "@/i18n/locale-link";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { db } from "@/lib/db";
 import { getPageRequestStatus } from "@/lib/payplus";
-import { activateSubscriptionBySetupToken } from "@/server/subscriptions";
+import { retrieveCheckoutSessionWithSubscription } from "@/lib/stripe";
+import { activateSubscriptionBySetupToken, syncStripeSubscription } from "@/server/subscriptions";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
 
@@ -21,23 +22,23 @@ export default async function BillingReturnPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ token?: string; status?: string }>;
+  searchParams: Promise<{ token?: string; status?: string; session_id?: string }>;
 }) {
   const { locale } = await params;
   const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
-  const { token } = await searchParams;
+  const { token, session_id } = await searchParams;
 
   const sub = token
     ? await db.clinicSubscription.findUnique({
         where: { setupToken: token },
-        select: { status: true, pageRequestUid: true },
+        select: { status: true, pageRequestUid: true, provider: true },
       })
     : null;
 
   // Webhook-fallback activation: if PayPlus confirms the charge but we're still
   // PENDING (the IPN hasn't landed), activate now. We NEVER show success from the
   // URL status param — only from the DB state after a verified activation.
-  if (token && sub?.status === "PENDING" && sub.pageRequestUid) {
+  if (token && sub?.status === "PENDING" && sub.provider === "PAYPLUS" && sub.pageRequestUid) {
     try {
       const { approved, transactionUid } = await getPageRequestStatus(sub.pageRequestUid);
       if (approved) {
@@ -48,6 +49,40 @@ export default async function BillingReturnPage({
     }
   }
 
+  // Same idea for Stripe: if the checkout session's subscription exists but the
+  // webhook (checkout.session.completed) hasn't landed yet, sync now from the
+  // Checkout Session id Stripe appended to the redirect URL.
+  if (token && sub?.status === "PENDING" && sub.provider === "STRIPE" && session_id) {
+    try {
+      const session = await retrieveCheckoutSessionWithSubscription(session_id);
+      if (session.subscription) {
+        await syncStripeSubscription({
+          stripeSubscriptionId: session.subscription.id,
+          stripeCustomerId:
+            typeof session.subscription.customer === "string"
+              ? session.subscription.customer
+              : session.subscription.customer.id,
+          status: session.subscription.status,
+          // stripe@22.6.1 (the version actually installed) no longer exposes
+          // Subscription.current_period_end at the top level; it moved to the
+          // first line item. Every subscription this app creates has exactly
+          // one item (see createSubscriptionCheckoutSession in src/lib/stripe.ts),
+          // so items.data[0] is safe. Mirrors the webhook route's
+          // subscriptionCurrentPeriodEnd helper (src/app/api/webhooks/stripe/route.ts).
+          currentPeriodEnd: session.subscription.items.data[0]?.current_period_end
+            ? new Date(session.subscription.items.data[0].current_period_end * 1000)
+            : null,
+          trialEndsAt: session.subscription.trial_end
+            ? new Date(session.subscription.trial_end * 1000)
+            : null,
+          setupToken: token,
+        });
+      }
+    } catch (err) {
+      console.error("Billing return Stripe verification failed:", err);
+    }
+  }
+
   const fresh = token
     ? await db.clinicSubscription.findUnique({
         where: { setupToken: token },
@@ -55,7 +90,10 @@ export default async function BillingReturnPage({
       })
     : null;
 
-  const success = fresh?.status === "ACTIVE";
+  // A Stripe subscription with a trial is correctly TRIALING right after
+  // checkout — "ACTIVE only" was true for PayPlus (which charges immediately
+  // on setup) but would show every successful Stripe signup as a failure.
+  const success = fresh?.status === "ACTIVE" || fresh?.status === "TRIALING";
 
   return (
     <>

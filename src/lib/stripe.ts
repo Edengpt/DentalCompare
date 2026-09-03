@@ -92,7 +92,7 @@ export async function createSubscriptionCheckoutSession(args: {
       metadata: { setupToken: args.setupToken },
     },
     metadata: { setupToken: args.setupToken },
-    success_url: `${base}/clinics/billing/return?token=${args.setupToken}&status=success`,
+    success_url: `${base}/clinics/billing/return?token=${args.setupToken}&status=success&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${base}/clinics/billing/return?token=${args.setupToken}&status=failure`,
   });
   if (!session.url) throw new Error("Stripe checkout session has no url");
