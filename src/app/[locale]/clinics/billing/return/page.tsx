@@ -81,7 +81,7 @@ export default async function BillingReturnPage({
           setupToken: token,
         });
       } else if (session.subscription) {
-        console.error("Billing return: session_id does not belong to this token", { token });
+        console.error("Billing return: session_id does not belong to this token", { sessionId: session_id });
       }
     } catch (err) {
       console.error("Billing return Stripe verification failed:", err);
@@ -100,8 +100,11 @@ export default async function BillingReturnPage({
   // on setup) but would show every successful Stripe signup as a failure. And
   // status alone can no longer distinguish "approved, nothing attempted" from
   // "trial genuinely started" (both are TRIALING) — hasCompletedPaymentSetup
-  // checks the provider's actual payment-setup token instead.
-  const success = fresh !== null && hasCompletedPaymentSetup(fresh);
+  // checks the provider's actual payment-setup token instead. But the ACTIVE
+  // check must stay too: this page's own fallback-activation block above sets
+  // status to ACTIVE without ever receiving a recurringToken (the IPN carries
+  // it later), so a genuinely-paid PayPlus clinic must still read as success.
+  const success = fresh !== null && (hasCompletedPaymentSetup(fresh) || fresh.status === "ACTIVE");
 
   return (
     <>

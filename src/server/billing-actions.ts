@@ -31,7 +31,14 @@ export async function startPayment(
     },
   });
   if (!sub) return { ok: false, error: e.invalidLink };
-  if (hasCompletedPaymentSetup(sub)) return { ok: false, error: e.subscriptionAlreadyActive };
+  // hasCompletedPaymentSetup alone would miss an ACTIVE PayPlus row whose
+  // recurringToken is null (the return page's own fallback-activation path
+  // never receives one, and an admin-created complimentary subscription is
+  // created this way directly) — OR the plain ACTIVE check back in so such a
+  // clinic can't be charged a second time.
+  if (hasCompletedPaymentSetup(sub) || sub.status === "ACTIVE") {
+    return { ok: false, error: e.subscriptionAlreadyActive };
+  }
   // Never open a payment page for an amount we can't read. Defaulting to 0
   // would present the clinic a free checkout and mark the setup complete.
   if (sub.priceMinor === null || sub.currency === null) {

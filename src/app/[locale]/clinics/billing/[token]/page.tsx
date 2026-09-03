@@ -47,7 +47,7 @@ export default async function BillingSetupPage({
         <h1 className="font-display text-foreground text-3xl font-bold">{t.clinics.billingTitle}</h1>
         <p className="text-muted-foreground mt-2">{sub.dentist.clinicName}</p>
 
-        {hasCompletedPaymentSetup(sub) ? (
+        {hasCompletedPaymentSetup(sub) || sub.status === "ACTIVE" ? (
           <p className="border-border/60 bg-card mt-8 rounded-2xl border p-6 text-sm">
             {t.clinics.billingAlreadyActive}
           </p>

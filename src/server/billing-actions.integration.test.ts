@@ -31,7 +31,11 @@ const created = { dentistIds: [] as string[] };
 
 async function seedPendingSubscription(
   provider: "PAYPLUS" | "STRIPE",
-  overrides: { status?: "PENDING" | "TRIALING"; stripeSubscriptionId?: string } = {},
+  overrides: {
+    status?: "PENDING" | "TRIALING" | "ACTIVE";
+    stripeSubscriptionId?: string;
+    recurringToken?: string | null;
+  } = {},
 ) {
   const sfx = randomUUID().slice(0, 8);
   const dentist = await db.dentist.create({
@@ -58,6 +62,7 @@ async function seedPendingSubscription(
       setupToken,
       status: overrides.status ?? "PENDING",
       stripeSubscriptionId: overrides.stripeSubscriptionId,
+      recurringToken: overrides.recurringToken,
     },
   });
   return setupToken;
@@ -107,6 +112,21 @@ describe.skipIf(!hasDb)("startPayment provider branching", () => {
     const setupToken = await seedPendingSubscription("STRIPE", {
       status: "TRIALING",
       stripeSubscriptionId: "sub_already_completed",
+    });
+    const result = await startPayment(setupToken);
+    expect(result.ok).toBe(false);
+  });
+
+  // Regression (fix wave 2): an ACTIVE PayPlus row can have a null
+  // recurringToken — the return page's own fallback-activation path never
+  // receives one, and an admin-created complimentary subscription is created
+  // this way directly (see src/server/admin-actions.ts). hasCompletedPaymentSetup
+  // alone would say "not set up" here and let the clinic be charged again;
+  // status === "ACTIVE" alone must still be sufficient to refuse re-payment.
+  it("refuses a PAYPLUS subscription that is ACTIVE with no recurringToken (complimentary/fallback-activated)", async () => {
+    const setupToken = await seedPendingSubscription("PAYPLUS", {
+      status: "ACTIVE",
+      recurringToken: null,
     });
     const result = await startPayment(setupToken);
     expect(result.ok).toBe(false);

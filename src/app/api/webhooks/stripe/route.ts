@@ -140,7 +140,14 @@ export async function POST(req: Request) {
       // "subscription_create") is not a real charge — let
       // customer.subscription.updated own the trialing state instead of
       // flipping this row to ACTIVE with a phantom $0 "paid" charge.
-      if (invoice.billing_reason === "subscription_create" || invoice.amount_paid === 0) break;
+      // billing_reason === "subscription_create" is unambiguous here
+      // specifically because every Stripe subscription this app creates has
+      // a mandatory trial (trialDays >= 1, enforced in
+      // subscription-pricing.ts's parsePricingInput), so this can never
+      // accidentally be a real first-invoice-with-a-genuine-0-amount case —
+      // require both conditions rather than either, so a real charge is
+      // never skipped.
+      if (invoice.billing_reason === "subscription_create" && invoice.amount_paid === 0) break;
       const row = await db.clinicSubscription.findUnique({
         where: { stripeSubscriptionId },
         select: { id: true },
