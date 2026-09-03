@@ -6,6 +6,7 @@ import { format } from "@/i18n/format";
 import { db } from "@/lib/db";
 import { createSubscriptionPaymentPage, isPayPlusConfigured } from "@/lib/payplus";
 import { createSubscriptionCheckoutSession, isStripeConfigured } from "@/lib/stripe";
+import { asLocale } from "@/i18n/config";
 
 export async function startPayment(
   setupToken: string,
@@ -35,8 +36,13 @@ export async function startPayment(
     return { ok: false, error: e.subscriptionMisconfigured };
   }
 
-  const itemName = format(t.clinics.itemSubscription, {
-    plan: sub.plan === "MONTHLY" ? t.emails.planMonthly : t.emails.planYearly,
+  // The payment line item is built from the CLINIC's own saved locale, not
+  // the ambient request locale — a Hebrew clinic must always see a Hebrew
+  // line item on its checkout, even if this action is ever reached from a
+  // different locale segment than the one the clinic registered under.
+  const clinicT = await getDictionary(asLocale(sub.dentist.locale));
+  const itemName = format(clinicT.clinics.itemSubscription, {
+    plan: sub.plan === "MONTHLY" ? clinicT.emails.planMonthly : clinicT.emails.planYearly,
   });
 
   if (sub.provider === "STRIPE") {
