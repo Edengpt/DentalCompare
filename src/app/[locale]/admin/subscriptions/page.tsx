@@ -67,6 +67,7 @@ export default async function AdminSubscriptionsPage({
       id: true,
       plan: true,
       status: true,
+      provider: true,
       priceMinor: true,
       currency: true,
       currentPeriodEnd: true,
@@ -95,13 +96,14 @@ export default async function AdminSubscriptionsPage({
               <th className="px-4 py-3 text-start font-medium">{t.admin.colClinic}</th>
               <th className="px-4 py-3 text-start font-medium">{t.admin.colPlan}</th>
               <th className="px-4 py-3 text-start font-medium">{t.admin.colStatus}</th>
+              <th className="px-4 py-3 text-start font-medium">{t.admin.colProvider}</th>
               <th className="px-4 py-3 text-start font-medium">{t.admin.colValidUntil}</th>
             </tr>
           </thead>
           <tbody className="divide-border/60 divide-y">
             {subs.length === 0 ? (
               <tr>
-                <td colSpan={4} className="text-muted-foreground px-4 py-8 text-center">
+                <td colSpan={5} className="text-muted-foreground px-4 py-8 text-center">
                   {t.admin.emptySubscriptions}
                 </td>
               </tr>
@@ -126,6 +128,9 @@ export default async function AdminSubscriptionsPage({
                         {t.admin.subTrialUnbilled}
                       </p>
                     )}
+                  </td>
+                  <td className="text-muted-foreground px-4 py-3 text-xs">
+                    {s.provider === "STRIPE" ? t.admin.providerStripe : t.admin.providerPayPlus}
                   </td>
                   <td className="text-muted-foreground px-4 py-3">
                     {validUntil(s) ? dateFmt.format(validUntil(s)!) : "—"}
