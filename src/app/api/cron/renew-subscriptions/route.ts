@@ -75,7 +75,7 @@ export async function GET(req: Request) {
   // Handled separately from renewals because a trialing subscription has no
   // currentPeriodEnd yet — its clock is trialEndsAt.
   const trials = await db.clinicSubscription.findMany({
-    where: { status: "TRIALING", trialEndsAt: { not: null } },
+    where: { status: "TRIALING", trialEndsAt: { not: null }, provider: "PAYPLUS" },
     select: {
       id: true,
       plan: true,
@@ -237,6 +237,7 @@ export async function GET(req: Request) {
           status: { in: ["ACTIVE", "PAST_DUE"] },
           recurringToken: { not: null },
           currentPeriodEnd: { not: null },
+          provider: "PAYPLUS",
         },
         select: {
           id: true,

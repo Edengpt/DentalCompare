@@ -45,6 +45,7 @@ async function seedSub(opts: {
   status: "ACTIVE" | "PAST_DUE";
   periodEndOffsetMs: number; // relative to now (negative = past)
   notified?: boolean;
+  provider?: "PAYPLUS" | "STRIPE";
 }) {
   const sfx = randomUUID().slice(0, 8);
   const dentist = await db.dentist.create({
@@ -70,6 +71,7 @@ async function seedSub(opts: {
       currency: "ILS",
       trialDays: 60,
       status: opts.status,
+      provider: opts.provider ?? "PAYPLUS",
       setupToken: `stk_${sfx}`,
       recurringToken: `rtok_${sfx}`,
       currentPeriodEnd: new Date(Date.now() + opts.periodEndOffsetMs),
@@ -90,6 +92,7 @@ async function seedTrialSub(opts: {
   withCard?: boolean; // did the clinic ever complete payment setup?
   warningSentDays?: number | null;
   endedUnbilled?: boolean;
+  provider?: "PAYPLUS" | "STRIPE";
 }) {
   const sfx = randomUUID().slice(0, 8);
   const dentist = await db.dentist.create({
@@ -115,6 +118,7 @@ async function seedTrialSub(opts: {
       currency: "ILS",
       trialDays: 60,
       status: "TRIALING",
+      provider: opts.provider ?? "PAYPLUS",
       setupToken: `stk_${sfx}`,
       recurringToken: opts.withCard === false ? null : `rtok_${sfx}`,
       trialEndsAt: new Date(Date.now() + opts.trialEndsAtOffsetMs),
@@ -344,6 +348,40 @@ describe.skipIf(!hasDb)("renew-subscriptions cron (integration, real DB)", () =>
 
       expect(sendTrialEndingEmail).toHaveBeenCalledTimes(1);
       expect(sendTrialEndingEmail.mock.calls[0][0].setupToken).toMatch(/^stk_/);
+    },
+    DB_TIMEOUT,
+  );
+
+  it(
+    "never charges or cancels a STRIPE-provider subscription in the renewal pass, even with a currentPeriodEnd in the past",
+    async () => {
+      const { subId } = await seedSub({
+        provider: "STRIPE",
+        status: "PAST_DUE",
+        periodEndOffsetMs: -60 * DAY, // long past its grace window if this were PayPlus
+      });
+
+      const res = await GET(cronReq());
+      expect(res.status).toBe(200);
+      expect(chargeByToken).not.toHaveBeenCalled();
+
+      const row = await db.clinicSubscription.findUniqueOrThrow({ where: { id: subId } });
+      expect(row.status).toBe("PAST_DUE"); // untouched — not canceled, not renewed
+    },
+    DB_TIMEOUT,
+  );
+
+  it(
+    "never charges a STRIPE-provider trial, even one whose trialEndsAt is already past",
+    async () => {
+      const { subId } = await seedTrialSub({ provider: "STRIPE", trialEndsAtOffsetMs: -1 * DAY });
+
+      const res = await GET(cronReq());
+      expect(res.status).toBe(200);
+      expect(chargeByToken).not.toHaveBeenCalled();
+
+      const row = await db.clinicSubscription.findUniqueOrThrow({ where: { id: subId } });
+      expect(row.status).toBe("TRIALING"); // untouched
     },
     DB_TIMEOUT,
   );
