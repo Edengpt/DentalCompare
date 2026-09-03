@@ -17,6 +17,7 @@ import {
 import { rateLimit } from "@/lib/rate-limit";
 import { createPendingSubscription } from "@/server/subscriptions";
 import { getSubscriptionPricing } from "@/lib/subscription-pricing";
+import type { SubscriptionProvider } from "@/generated/prisma/enums";
 import {
   requiredDocKinds,
   missingDocKinds,
@@ -147,7 +148,8 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
   }
 
   const setupToken = randomUUID();
-  const pricing = await getSubscriptionPricing("PAYPLUS");
+  const provider: SubscriptionProvider = country.code === "IL" ? "PAYPLUS" : "STRIPE";
+  const pricing = await getSubscriptionPricing(provider);
 
   // Both writes must succeed or fail together: an orphaned Dentist with no
   // subscription would prevent the clinic from ever re-registering.
@@ -189,8 +191,7 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
         priceMinor,
         currency: pricing.currency,
         trialDays: pricing.trialDays,
-        // TODO(Task 4): resolve by country instead of hardcoding PAYPLUS.
-        provider: "PAYPLUS",
+        provider,
       },
       tx,
     );

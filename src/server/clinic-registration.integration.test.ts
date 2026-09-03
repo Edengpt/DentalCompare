@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeAll, afterAll, afterEach } from "vitest";
 import { randomUUID } from "node:crypto";
 import type { db as Db } from "@/lib/db";
+import { requiredDocKinds } from "@/lib/clinic-documents";
 
 vi.mock("next/headers", () => ({
   headers: async () => new Headers({ "x-forwarded-for": "9.9.9.9" }),
@@ -97,7 +98,7 @@ describe.skipIf(!hasDb)("registerClinic documents (integration, real DB)", () =>
     "prices a YEARLY registration off the yearly rate, not the monthly one",
     async () => {
       const pricing = await db.subscriptionPricing.findUniqueOrThrow({
-        where: { provider: "PAYPLUS" },
+        where: { provider: "STRIPE" },
       });
 
       const sfx = randomUUID().slice(0, 8);
@@ -123,6 +124,69 @@ describe.skipIf(!hasDb)("registerClinic documents (integration, real DB)", () =>
       // The actual failure mode this guards against: the ternary in
       // clinic-registration.ts picking the monthly rate regardless of plan.
       expect(dentist!.subscription!.priceMinor).not.toBe(pricing.monthlyPriceMinor);
+    },
+    DB_TIMEOUT,
+  );
+
+  it(
+    "tags a non-Israeli registration STRIPE and an Israeli one PAYPLUS, each priced off its own provider row",
+    async () => {
+      const stripePricing = await db.subscriptionPricing.findUniqueOrThrow({ where: { provider: "STRIPE" } });
+      const payplusPricing = await db.subscriptionPricing.findUniqueOrThrow({ where: { provider: "PAYPLUS" } });
+
+      const ilCountry = await db.country.upsert({
+        where: { code: "IL" },
+        update: { isActive: true },
+        create: {
+          code: "IL",
+          nameEn: "Israel",
+          currency: "ILS",
+          callingCode: "972",
+          insurers: [],
+          requiredDocs: [],
+          isActive: true,
+        },
+      });
+      const qvCountry = await db.country.findUniqueOrThrow({ where: { code: COUNTRY } });
+
+      const nonIlSfx = randomUUID().slice(0, 8);
+      const nonIlForm = baseForm(nonIlSfx); // COUNTRY = "QV", already non-Israel
+      // registerClinic requires one document per kind the clinic's country
+      // configures — not this test's own subject, but required to reach the
+      // provider-resolution logic this test actually checks.
+      for (const kind of requiredDocKinds(qvCountry.requiredDocs)) {
+        nonIlForm.append("documentKind", kind);
+        nonIlForm.append("documentUrl", `${DOC_URL}?k=${kind}`);
+        nonIlForm.append("documentType", "application/pdf");
+      }
+      const nonIlResult = await registerClinic(nonIlForm);
+      expect(nonIlResult.ok).toBe(true);
+      const nonIlDentist = await db.dentist.findUnique({
+        where: { email: `reg_${nonIlSfx}@example.com` },
+        include: { subscription: true },
+      });
+      created.push(nonIlDentist!.id);
+      expect(nonIlDentist!.subscription!.provider).toBe("STRIPE");
+      expect(nonIlDentist!.subscription!.currency).toBe(stripePricing.currency);
+      expect(nonIlDentist!.subscription!.trialDays).toBe(stripePricing.trialDays);
+
+      const ilSfx = randomUUID().slice(0, 8);
+      const ilForm = baseForm(ilSfx);
+      ilForm.set("countryCode", "IL");
+      for (const kind of requiredDocKinds(ilCountry.requiredDocs)) {
+        ilForm.append("documentKind", kind);
+        ilForm.append("documentUrl", `${DOC_URL}?k=${kind}`);
+        ilForm.append("documentType", "application/pdf");
+      }
+      const ilResult = await registerClinic(ilForm);
+      expect(ilResult.ok).toBe(true);
+      const ilDentist = await db.dentist.findUnique({
+        where: { email: `reg_${ilSfx}@example.com` },
+        include: { subscription: true },
+      });
+      created.push(ilDentist!.id);
+      expect(ilDentist!.subscription!.provider).toBe("PAYPLUS");
+      expect(ilDentist!.subscription!.currency).toBe(payplusPricing.currency);
     },
     DB_TIMEOUT,
   );
