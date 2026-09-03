@@ -362,6 +362,22 @@ model ClinicSubscription {
   // the unit — a bare number is meaningless once more than one currency exists.
   priceMinor              Int
   currency                String
+  // Which payment provider this clinic is billed through, decided once at
+  // registration from Dentist.countryCode (IL -> PAYPLUS, else STRIPE) and
+  // never re-derived. PayPlus's cron-driven renewal engine and Stripe's own
+  // webhook-driven one are completely separate — this field is how every
+  // query and cron tells them apart.
+  //
+  // Unlike priceMinor/currency/trialDays (which dropped their defaults so a
+  // missing value fails loudly), this keeps @default(PAYPLUS) permanently:
+  // every one of this codebase's dozens of existing ClinicSubscription test
+  // fixtures genuinely IS a PayPlus subscription (Israeli test data,
+  // ILS pricing) — the default states that historical fact rather than
+  // papering over an unknown one, and every real write path this plan adds
+  // (Task 3's createPendingSubscription, Task 4's registerClinic) always
+  // passes provider explicitly regardless, so production code never leans
+  // on the default at all.
+  provider                SubscriptionProvider @default(PAYPLUS)
   // The trial length in effect when this clinic registered, frozen the same way
   // priceMinor/currency are. Without this, approveClinic would read whatever
   // SubscriptionPricing.trialDays says *at approval time* — which could differ
@@ -372,6 +388,10 @@ model ClinicSubscription {
   recurringToken          String? // PayPlus stored-card token uid (set after first paid charge)
   payplusCustomerUid      String?
   pageRequestUid          String? // PayPlus page_request_uid of the setup charge, for return-page verification
+  // Stripe's own identifiers for this subscription. Set once, from the first
+  // webhook event (checkout.session.completed) that confirms Checkout finished.
+  stripeCustomerId        String?
+  stripeSubscriptionId    String?              @unique
   // End of the free trial (approvedAt + TRIAL_DAYS). While TRIALING the clinic is
   // fully visible and receives leads; the renewal cron runs the first real charge
   // once this passes.
@@ -449,6 +469,7 @@ model SubscriptionCharge {
   currency              String
   status                PaymentStatus      @default(PENDING)
   payplusTransactionUid String?            @unique
+  stripeInvoiceId       String?            @unique
   periodStart           DateTime
   periodEnd             DateTime
   paidAt                DateTime?
