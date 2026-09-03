@@ -5,15 +5,13 @@ import { getRequestLocale } from "@/i18n/request-locale";
 import { format } from "@/i18n/format";
 import { db } from "@/lib/db";
 import { createSubscriptionPaymentPage, isPayPlusConfigured } from "@/lib/payplus";
-import { asLocale } from "@/i18n/config";
+import { createSubscriptionCheckoutSession, isStripeConfigured } from "@/lib/stripe";
 
 export async function startPayment(
   setupToken: string,
 ): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
-  const e = (await getDictionary(await getRequestLocale())).errors;
-  if (!isPayPlusConfigured()) {
-    return { ok: false, error: e.paymentsNotConfigured };
-  }
+  const t = await getDictionary(await getRequestLocale());
+  const e = t.errors;
 
   const sub = await db.clinicSubscription.findUnique({
     where: { setupToken },
@@ -23,6 +21,8 @@ export async function startPayment(
       priceMinor: true,
       currency: true,
       status: true,
+      provider: true,
+      trialDays: true,
       dentist: { select: { clinicName: true, email: true, locale: true } },
     },
   });
@@ -35,8 +35,36 @@ export async function startPayment(
     return { ok: false, error: e.subscriptionMisconfigured };
   }
 
-  const t = await getDictionary(asLocale(sub.dentist.locale));
+  const itemName = format(t.clinics.itemSubscription, {
+    plan: sub.plan === "MONTHLY" ? t.emails.planMonthly : t.emails.planYearly,
+  });
 
+  if (sub.provider === "STRIPE") {
+    if (!isStripeConfigured()) {
+      return { ok: false, error: e.paymentsNotConfigured };
+    }
+    try {
+      const { url } = await createSubscriptionCheckoutSession({
+        setupToken,
+        amountMinor: sub.priceMinor,
+        currency: sub.currency,
+        trialDays: sub.trialDays,
+        intervalMonths: sub.plan === "MONTHLY" ? 1 : 12,
+        clinicName: sub.dentist.clinicName,
+        email: sub.dentist.email,
+        itemName,
+      });
+      return { ok: true, url };
+    } catch (err) {
+      console.error("startPayment (Stripe) failed:", err);
+      return { ok: false, error: e.paymentPageFailed };
+    }
+  }
+
+  // provider === "PAYPLUS" — existing behavior, unchanged.
+  if (!isPayPlusConfigured()) {
+    return { ok: false, error: e.paymentsNotConfigured };
+  }
   try {
     const { url, pageRequestUid } = await createSubscriptionPaymentPage({
       subscriptionId: sub.id,
@@ -45,16 +73,11 @@ export async function startPayment(
       currency: sub.currency,
       clinicName: sub.dentist.clinicName,
       email: sub.dentist.email,
-      itemName: format(t.clinics.itemSubscription, {
-        plan: sub.plan === "MONTHLY" ? t.emails.planMonthly : t.emails.planYearly,
-      }),
+      itemName,
     });
     // Persist the page_request_uid so the return page can actively verify the
     // charge with PayPlus (getPageRequestStatus) instead of trusting the URL.
-    await db.clinicSubscription.update({
-      where: { id: sub.id },
-      data: { pageRequestUid },
-    });
+    await db.clinicSubscription.update({ where: { id: sub.id }, data: { pageRequestUid } });
     return { ok: true, url };
   } catch (err) {
     console.error("startPayment failed:", err);
