@@ -1468,8 +1468,16 @@ export default async function BillingReturnPage({
               ? session.subscription.customer
               : session.subscription.customer.id,
           status: session.subscription.status,
-          currentPeriodEnd: session.subscription.current_period_end
-            ? new Date(session.subscription.current_period_end * 1000)
+          // stripe@22.6.1 (the version actually installed — Task 6 discovered this
+          // against real types) no longer exposes Subscription.current_period_end at
+          // the top level; it moved to the first line item. Every subscription this
+          // app creates has exactly one item (see createSubscriptionCheckoutSession
+          // in src/lib/stripe.ts), so items.data[0] is safe. Task 6's route.ts has a
+          // subscriptionCurrentPeriodEnd(sub) helper doing exactly this — check what
+          // it actually named/exported and reuse or mirror it here rather than
+          // reinventing it, since both call sites need the identical fix.
+          currentPeriodEnd: session.subscription.items.data[0]?.current_period_end
+            ? new Date(session.subscription.items.data[0].current_period_end * 1000)
             : null,
           trialEndsAt: session.subscription.trial_end
             ? new Date(session.subscription.trial_end * 1000)
