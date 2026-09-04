@@ -8,6 +8,7 @@ import { db } from "@/lib/db";
 import { requireAdmin } from "@/server/admin";
 import { audit } from "@/lib/audit";
 import { parseCountryInput, type CountryField, type RawCountryInput } from "@/lib/country-input";
+import { POPULAR_COUNTRIES, type PopularCountry } from "@/lib/popular-countries";
 
 /**
  * Admin management of the Country table.
@@ -167,4 +168,84 @@ export async function toggleCountryActive(code: string): Promise<ActionResult> {
 
   revalidatePath("/admin/countries");
   return { ok: true };
+}
+
+export type SeedPopularCountriesResult =
+  | { ok: true; created: string[]; activated: string[] }
+  | { ok: false; error: string };
+
+/**
+ * One-click bootstrap for /admin/countries: creates-and-activates any country
+ * from the curated list (src/lib/popular-countries.ts) that isn't already in
+ * the table, and activates any that exist only as an untouched draft.
+ *
+ * Deliberately narrow about what counts as "untouched": a country that
+ * already exists gets activated (same re-validate-the-stored-row guard as
+ * toggleCountryActive) but its stored fields are never overwritten — an admin
+ * who already edited that row's currency, insurers or documents keeps their
+ * edits. A country that is already active is left alone entirely.
+ */
+export async function seedPopularCountries(
+  list: PopularCountry[] = POPULAR_COUNTRIES,
+): Promise<SeedPopularCountriesResult> {
+  const t = await getDictionary(await getRequestLocale());
+  const admin = await requireAdmin();
+
+  const existing = await db.country.findMany({
+    where: { code: { in: list.map((c) => c.code) } },
+  });
+  const existingByCode = new Map(existing.map((c) => [c.code, c]));
+
+  const created: string[] = [];
+  const activated: string[] = [];
+
+  for (const entry of list) {
+    const row = existingByCode.get(entry.code);
+
+    if (!row) {
+      const parsed = parseCountryInput({
+        code: entry.code,
+        nameEn: entry.nameEn,
+        currency: entry.currency,
+        callingCode: entry.callingCode,
+        defaultLocale: "en",
+        insurers: "",
+        requiredDocs: "dental_licence",
+      });
+      if (!parsed.ok) continue; // A malformed list entry costs one country, not the whole run.
+      await db.country.create({ data: { ...parsed.value, isActive: true } });
+      created.push(entry.code);
+      continue;
+    }
+
+    if (row.isActive) continue;
+
+    const parsed = parseCountryInput({
+      code: row.code,
+      nameEn: row.nameEn,
+      currency: row.currency,
+      callingCode: row.callingCode,
+      defaultLocale: row.defaultLocale,
+      insurers: row.insurers.join(","),
+      requiredDocs: row.requiredDocs.join(","),
+    });
+    if (!parsed.ok) continue; // Same "don't let one bad row break activation" rule as above.
+    await db.country.update({ where: { code: row.code }, data: { isActive: true } });
+    activated.push(entry.code);
+  }
+
+  if (created.length === 0 && activated.length === 0) {
+    return { ok: false, error: t.errors.countryNothingToSeed };
+  }
+
+  await audit({
+    actor: admin.email,
+    action: "country.bulk_seed",
+    entity: "Country",
+    entityId: "bulk",
+    metadata: { created, activated },
+  });
+
+  revalidatePath("/admin/countries");
+  return { ok: true, created, activated };
 }

@@ -4,6 +4,7 @@ import type {
   createCountry as CreateFn,
   updateCountry as UpdateFn,
   toggleCountryActive as ToggleFn,
+  seedPopularCountries as SeedFn,
 } from "@/server/country-actions";
 
 vi.mock("@/server/admin", () => ({
@@ -19,6 +20,7 @@ let db: typeof Db;
 let createCountry: typeof CreateFn;
 let updateCountry: typeof UpdateFn;
 let toggleCountryActive: typeof ToggleFn;
+let seedPopularCountries: typeof SeedFn;
 
 // Codes outside the ISO 3166-1 assigned range, so a test row can never collide
 // with a country an admin actually added.
@@ -45,12 +47,14 @@ const draft = (code: string, overrides: Record<string, string> = {}) =>
 describe.skipIf(!hasDb)("country admin actions", () => {
   beforeAll(async () => {
     ({ db } = await import("@/lib/db"));
-    ({ createCountry, updateCountry, toggleCountryActive } =
+    ({ createCountry, updateCountry, toggleCountryActive, seedPopularCountries } =
       await import("@/server/country-actions"));
   });
 
   afterEach(async () => {
-    await db.auditLog.deleteMany({ where: { entity: "Country", entityId: { in: TEST_CODES } } });
+    await db.auditLog.deleteMany({
+      where: { entity: "Country", entityId: { in: [...TEST_CODES, "bulk"] } },
+    });
     await db.country.deleteMany({ where: { code: { in: TEST_CODES } } });
   });
 
@@ -168,5 +172,60 @@ describe.skipIf(!hasDb)("country admin actions", () => {
 
     expect(await toggleCountryActive("QY")).toEqual({ ok: true });
     expect((await db.country.findUnique({ where: { code: "QY" } }))?.isActive).toBe(false);
+  });
+
+  describe("seedPopularCountries", () => {
+    // Never the real POPULAR_COUNTRIES list here — that would touch live ISO
+    // codes on a database every other test file shares.
+    const fakeList = [
+      { code: "QX", nameEn: "Testland", currency: "EUR", callingCode: "99" },
+      { code: "QY", nameEn: "Otherland", currency: "USD", callingCode: "1" },
+    ];
+
+    it("creates and activates every country missing from the table", async () => {
+      const result = await seedPopularCountries(fakeList);
+      expect(result).toEqual({ ok: true, created: ["QX", "QY"], activated: [] });
+
+      const rows = await db.country.findMany({ where: { code: { in: ["QX", "QY"] } } });
+      expect(rows.every((r) => r.isActive)).toBe(true);
+    });
+
+    it("activates an existing draft without overwriting fields an admin already edited", async () => {
+      await createCountry(draft("QX", { nameEn: "Admin-edited name", currency: "GBP" }));
+
+      const result = await seedPopularCountries(fakeList);
+      expect(result).toEqual({ ok: true, created: ["QY"], activated: ["QX"] });
+
+      const row = await db.country.findUnique({ where: { code: "QX" } });
+      expect(row?.isActive).toBe(true);
+      expect(row?.nameEn).toBe("Admin-edited name");
+      expect(row?.currency).toBe("GBP");
+    });
+
+    it("leaves an already-active country untouched and unreported", async () => {
+      await createCountry(draft("QX"));
+      await toggleCountryActive("QX");
+
+      const result = await seedPopularCountries(fakeList);
+      expect(result).toEqual({ ok: true, created: ["QY"], activated: [] });
+    });
+
+    it("reports nothing to seed when the whole list is already active", async () => {
+      await createCountry(draft("QX"));
+      await createCountry(draft("QY"));
+      await toggleCountryActive("QX");
+      await toggleCountryActive("QY");
+
+      expect((await seedPopularCountries(fakeList)).ok).toBe(false);
+    });
+
+    it("records one audit entry summarising the whole run", async () => {
+      await seedPopularCountries(fakeList);
+
+      const entry = await db.auditLog.findFirst({
+        where: { entity: "Country", entityId: "bulk", action: "country.bulk_seed" },
+      });
+      expect(entry?.actor).toBe("admin@dentalcompare.co.il");
+    });
   });
 });

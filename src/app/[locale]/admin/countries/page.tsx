@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { requireAdmin } from "@/server/admin";
 import { NewCountryForm } from "@/components/admin/country-form";
 import { ToggleCountry } from "@/components/admin/toggle-country";
+import { SeedPopularCountries } from "@/components/admin/seed-popular-countries";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -39,7 +40,10 @@ export default async function AdminCountriesPage({
             {format(t.admin.countriesSubtitle, { count: countries.length })}
           </p>
         </div>
-        <NewCountryForm />
+        <div className="flex flex-wrap items-center gap-3">
+          <SeedPopularCountries />
+          <NewCountryForm />
+        </div>
       </header>
 
       <div className="border-border/60 bg-card overflow-x-auto rounded-2xl border">

@@ -917,6 +917,10 @@ const en: typeof he = {
     fieldDefaultLocale: "Default language",
     fieldRequiredDocs: "Documents required for approval (comma separated)",
     fieldInsurers: "Insurers / payers (comma separated)",
+    seedPopularCountries: "Add popular countries",
+    seedPopularCountriesHint:
+      "Creates and activates a curated list of common dental-tourism markets in one click — treatment destinations and patient-origin countries alike. Any of them can be edited or switched off afterward like any other country.",
+    seedPopularCountriesDone: "{created} added, {activated} activated",
     fieldMonthlyPrice: "Monthly price",
     fieldYearlyPrice: "Yearly price",
     fieldTrialDays: "Trial days",
@@ -985,6 +989,7 @@ const en: typeof he = {
     countryCodeTaken: "A country with this code already exists",
     countryNotFound: "Country not found",
     countryIncomplete: "A country can't be activated without a name, a currency and a calling code",
+    countryNothingToSeed: "All popular countries are already active",
     consentRequired: "Please give your consent before sending the request",
     deleteFailed: "We couldn't delete the files — please try again",
     countryLastActive:

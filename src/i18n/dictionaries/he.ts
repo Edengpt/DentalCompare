@@ -897,6 +897,10 @@ const he = {
     fieldDefaultLocale: "שפת ברירת מחדל",
     fieldInsurers: "קופות חולים / מבטחים (מופרד בפסיקים)",
     fieldRequiredDocs: "מסמכים נדרשים לאישור (מופרד בפסיקים)",
+    seedPopularCountries: "הוספת מדינות פופולריות",
+    seedPopularCountriesHint:
+      "יוצר ומפעיל בלחיצה אחת רשימה נבחרת של יעדי תיירות שיניים ומדינות מוצא של מטופלים. כל מדינה כזו ניתנת לעריכה או כיבוי אחר כך בדיוק כמו כל מדינה אחרת.",
+    seedPopularCountriesDone: "{created} נוספו, {activated} הופעלו",
     fieldMonthlyPrice: "מחיר חודשי",
     fieldYearlyPrice: "מחיר שנתי",
     fieldTrialDays: "ימי ניסיון",
@@ -962,6 +966,7 @@ const he = {
     countryCodeTaken: "כבר קיימת מדינה עם קוד זה",
     countryNotFound: "המדינה לא נמצאה",
     countryIncomplete: "לא ניתן להפעיל מדינה שחסרים בה מטבע, קידומת חיוג או שם",
+    countryNothingToSeed: "כל המדינות הפופולריות כבר פעילות",
     consentRequired: "יש לאשר את ההסכמה לפני שליחת הבקשה",
     deleteFailed: "מחיקת הקבצים נכשלה — נסו שוב",
     countryLastActive: "זו המדינה הפעילה היחידה — כיבוי שלה ירוקן את בורר המדינות בטופס ההרשמה",
