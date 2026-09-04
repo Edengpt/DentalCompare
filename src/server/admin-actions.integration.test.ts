@@ -318,6 +318,59 @@ describe.skipIf(!hasDb)("approveClinic (integration, real DB)", () => {
     DB_TIMEOUT,
   );
 
+  // A clinic approved before the licence-verification gate existed is
+  // isActive: true but licenceVerifiedAt: null — publicDentistWhere() has
+  // excluded it from the directory ever since, silently. It has to surface
+  // in the same queue as a fresh registration, and approveClinic has to be
+  // able to stamp it without ever flipping it inactive first.
+  it(
+    "treats an already-active clinic missing its licence stamp as pending too",
+    async () => {
+      const { pendingClinicsWhere } = await import("@/lib/clinic-approval");
+      const sfx = randomUUID().slice(0, 8);
+      const dentist = await db.dentist.create({
+        data: {
+          clinicName: `Clinic ${sfx}`,
+          dentistName: `Dr ${sfx}`,
+          email: `orphan_${sfx}@example.com`,
+          phone: "0500000000",
+          city: "חיפה",
+          address: "רחוב 2",
+          experienceYears: 3,
+          specialties: [],
+          treatments: [],
+          insurerAffiliations: [],
+          isActive: true,
+          submittedBySelf: true,
+          subscription: {
+            create: {
+              plan: "MONTHLY",
+              priceMinor: 29900,
+              currency: "ILS",
+              trialDays: 60,
+              setupToken: `stk_${sfx}`,
+              status: "PENDING",
+            },
+          },
+        },
+      });
+      created.push(dentist.id);
+
+      const listed = await db.dentist.findMany({ where: pendingClinicsWhere() });
+      expect(listed.map((d) => d.id)).toContain(dentist.id);
+
+      const approval = await approveClinic(dentist.id);
+      expect(approval.ok).toBe(true);
+
+      const after = await db.dentist.findUnique({ where: { id: dentist.id } });
+      expect(after!.isActive).toBe(true);
+      expect(after!.licenceVerifiedAt).not.toBeNull();
+      const sub = await db.clinicSubscription.findUnique({ where: { dentistId: dentist.id } });
+      expect(sub!.status).toBe("TRIALING");
+    },
+    DB_TIMEOUT,
+  );
+
   describe("rejectClinic", () => {
     it(
       "deletes a pending self-registration",

@@ -870,6 +870,7 @@ const en: typeof he = {
     docRejectedOn: "Rejected {date}",
     clinicsSubtitle:
       "Clinics that registered themselves and are awaiting approval. Check their details and contract acceptance, then publish them to the directory — or reject the application.",
+    missingLicenceStamp: "Active, but missing a licence stamp",
     clinicsEmptyTitle: "No applications awaiting approval",
     clinicsEmptyBody: "New clinic applications appear here for review and approval.",
     clinicsPendingCount: "applications awaiting approval.",

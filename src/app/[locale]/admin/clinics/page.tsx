@@ -91,6 +91,11 @@ export default async function AdminClinicsPage({
                     <div>
                       <h2 className="font-display text-foreground text-xl font-bold">
                         {d.clinicName}
+                        {d.isActive && (
+                          <span className="bg-coral/15 text-coral ms-2 rounded-full px-2 py-0.5 text-[10px] font-semibold align-middle">
+                            {t.admin.missingLicenceStamp}
+                          </span>
+                        )}
                       </h2>
                       <p className="text-muted-foreground text-sm">{d.dentistName}</p>
                     </div>
@@ -183,7 +188,11 @@ export default async function AdminClinicsPage({
                     <span className="text-coral">{t.admin.contractMissing}</span>
                   )}
                 </p>
-                <ClinicReviewActions dentistId={d.id} clinicName={d.clinicName} />
+                <ClinicReviewActions
+                  dentistId={d.id}
+                  clinicName={d.clinicName}
+                  isActive={d.isActive}
+                />
               </div>
 
               <div className="border-border/60 border-t px-6 py-4">

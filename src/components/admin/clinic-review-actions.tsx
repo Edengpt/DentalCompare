@@ -12,9 +12,11 @@ import { buttonVariants } from "@/components/ui/button";
 export function ClinicReviewActions({
   dentistId,
   clinicName,
+  isActive,
 }: {
   dentistId: string;
   clinicName: string;
+  isActive: boolean;
 }) {
   const t = useT();
   const [isPending, startTransition] = useTransition();
@@ -56,15 +58,20 @@ export function ClinicReviewActions({
         <Check className="h-4 w-4" />
         {t.admin.approve}
       </button>
-      <button
-        type="button"
-        onClick={handleReject}
-        disabled={isPending}
-        className="border-border/60 text-muted-foreground hover:border-coral/50 hover:text-coral inline-flex h-10 items-center gap-1.5 rounded-full border px-4 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        <X className="h-4 w-4" />
-        {t.admin.reject}
-      </button>
+      {/* Reject deletes the row — refused server-side for an already-live
+          clinic, but hiding the button here means an admin re-stamping a
+          pre-licence-gate clinic never sees a button that can only error. */}
+      {!isActive && (
+        <button
+          type="button"
+          onClick={handleReject}
+          disabled={isPending}
+          className="border-border/60 text-muted-foreground hover:border-coral/50 hover:text-coral inline-flex h-10 items-center gap-1.5 rounded-full border px-4 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <X className="h-4 w-4" />
+          {t.admin.reject}
+        </button>
+      )}
     </div>
   );
 }

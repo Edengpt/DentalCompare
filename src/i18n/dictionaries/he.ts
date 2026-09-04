@@ -850,6 +850,7 @@ const he = {
     docRejectedOn: "נפסל ב-{date}",
     clinicsSubtitle:
       "מרפאות שנרשמו עצמאית וממתינות לאישור. בדקו את הפרטים ואת אישור החוזה, ואשרו לפרסום במאגר — או דחו את ההרשמה.",
+    missingLicenceStamp: "פעילה, אך חסר אישור רישיון",
     clinicsEmptyTitle: "אין הרשמות שממתינות לאישור",
     clinicsEmptyBody: "כל ההרשמות החדשות של מרפאות יופיעו כאן לבדיקה ואישור.",
     clinicsPendingCount: "הרשמות ממתינות לאישור.",
