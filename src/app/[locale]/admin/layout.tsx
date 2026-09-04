@@ -6,6 +6,7 @@ import { ForwardArrow } from "@/components/ui/forward-arrow";
 import { requireAdmin } from "@/server/admin";
 import { db } from "@/lib/db";
 import { needsOperatorAttentionWhere } from "@/lib/subscription-alerts";
+import { pendingClinicsWhere } from "@/lib/clinic-approval";
 
 export const dynamic = "force-dynamic";
 
@@ -46,7 +47,7 @@ export default async function AdminLayout({
   // notice a chip on a row. The badge is the second channel beside the email,
   // and unlike the email it needs no configuration to work.
   const [pendingClinics, subsNeedingAttention] = await Promise.all([
-    db.dentist.count({ where: { submittedBySelf: true, isActive: false } }),
+    db.dentist.count({ where: pendingClinicsWhere() }),
     db.clinicSubscription.count({ where: needsOperatorAttentionWhere() }),
   ]);
   const badges: Record<string, number> = { pendingClinics, subsNeedingAttention };

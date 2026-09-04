@@ -16,6 +16,7 @@ import { db } from "@/lib/db";
 import { translateSpecialty, translateInsurer, translateTreatment } from "@/lib/labels";
 import { ClinicReviewActions } from "@/components/admin/clinic-review-actions";
 import { RequestDocumentsForm } from "@/components/admin/request-documents-form";
+import { pendingClinicsWhere } from "@/lib/clinic-approval";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -42,7 +43,7 @@ export default async function AdminClinicsPage({
   await requireAdmin();
 
   const pending = await db.dentist.findMany({
-    where: { submittedBySelf: true, isActive: false },
+    where: pendingClinicsWhere(),
     orderBy: { createdAt: "desc" },
     // The decision this screen exists for is "does this licence look real", so
     // the documents have to be on the same screen as the approve button.

@@ -6,6 +6,7 @@ import { LocaleLink as Link } from "@/i18n/locale-link";
 import { requireAdmin } from "@/server/admin";
 import { Users, Stethoscope, FileText, Banknote, Building2, ArrowLeft } from "lucide-react";
 import { db } from "@/lib/db";
+import { pendingClinicsWhere } from "@/lib/clinic-approval";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -54,7 +55,7 @@ export default async function AdminOverviewPage({
         _count: { select: { requestDentists: true } },
       },
     }),
-    db.dentist.count({ where: { submittedBySelf: true, isActive: false } }),
+    db.dentist.count({ where: pendingClinicsWhere() }),
   ]);
 
   // Revenue can't be one number any more: summing across currencies would be

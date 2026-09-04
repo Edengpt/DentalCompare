@@ -28,7 +28,7 @@ let approveClinic: (id: string) => Promise<{ ok: boolean; error?: string }>;
 
 const created: string[] = [];
 
-async function seedPendingClinic(trialDays = 60) {
+async function seedPendingClinic(trialDays = 60, submittedBySelf = true) {
   const sfx = randomUUID().slice(0, 8);
   const dentist = await db.dentist.create({
     data: {
@@ -43,7 +43,7 @@ async function seedPendingClinic(trialDays = 60) {
       treatments: [],
       insurerAffiliations: [],
       isActive: false,
-      submittedBySelf: true,
+      submittedBySelf,
       subscription: {
         create: {
           plan: "MONTHLY",
@@ -295,4 +295,72 @@ describe.skipIf(!hasDb)("approveClinic (integration, real DB)", () => {
     },
     DB_TIMEOUT,
   );
+
+  // A clinic that predates the submittedBySelf column (added in migration
+  // 20260623070455_clinic_self_registration, no backfill) is still pending —
+  // still isActive: false — but submittedBySelf reads false, its column
+  // default. Both actions have to treat it exactly like an ordinary pending
+  // self-registration, or it is stuck forever: invisible to the queue that
+  // approves it, and unrejectable even if found by other means.
+  it(
+    "treats a legacy pending clinic (submittedBySelf: false) as pending too",
+    async () => {
+      const { pendingClinicsWhere } = await import("@/lib/clinic-approval");
+      const legacyId = await seedPendingClinic(60, false);
+
+      const listed = await db.dentist.findMany({ where: pendingClinicsWhere() });
+      expect(listed.map((d) => d.id)).toContain(legacyId);
+
+      const approval = await approveClinic(legacyId);
+      expect(approval.ok).toBe(true);
+      expect((await db.dentist.findUnique({ where: { id: legacyId } }))!.isActive).toBe(true);
+    },
+    DB_TIMEOUT,
+  );
+
+  describe("rejectClinic", () => {
+    it(
+      "deletes a pending self-registration",
+      async () => {
+        const { rejectClinic } = await import("./admin-actions");
+        const dentistId = await seedPendingClinic();
+
+        const result = await rejectClinic(dentistId);
+        expect(result.ok).toBe(true);
+        expect(await db.dentist.findUnique({ where: { id: dentistId } })).toBeNull();
+
+        created.splice(created.indexOf(dentistId), 1); // already deleted
+      },
+      DB_TIMEOUT,
+    );
+
+    it(
+      "deletes a legacy pending clinic even though submittedBySelf is false",
+      async () => {
+        const { rejectClinic } = await import("./admin-actions");
+        const legacyId = await seedPendingClinic(60, false);
+
+        const result = await rejectClinic(legacyId);
+        expect(result.ok).toBe(true);
+        expect(await db.dentist.findUnique({ where: { id: legacyId } })).toBeNull();
+
+        created.splice(created.indexOf(legacyId), 1); // already deleted
+      },
+      DB_TIMEOUT,
+    );
+
+    it(
+      "refuses to delete a clinic that is already live",
+      async () => {
+        const { rejectClinic } = await import("./admin-actions");
+        const dentistId = await seedPendingClinic();
+        await approveClinic(dentistId);
+
+        const result = await rejectClinic(dentistId);
+        expect(result.ok).toBe(false);
+        expect(await db.dentist.findUnique({ where: { id: dentistId } })).not.toBeNull();
+      },
+      DB_TIMEOUT,
+    );
+  });
 });

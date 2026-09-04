@@ -206,18 +206,20 @@ export async function requestBetterDocuments(
   return { ok: true };
 }
 
-/** Reject (delete) a self-registered clinic that has not yet been approved. */
+/** Reject (delete) any clinic that has not yet been approved. */
 export async function rejectClinic(dentistId: string): Promise<ActionResult> {
   const e = (await getDictionary(await getRequestLocale())).errors;
   const admin = await requireAdmin();
 
   const dentist = await db.dentist.findUnique({
     where: { id: dentistId },
-    select: { isActive: true, submittedBySelf: true },
+    select: { isActive: true },
   });
   if (!dentist) return { ok: false, error: e.clinicNotFound };
-  // Guard: only delete still-pending self-registrations, never a live dentist.
-  if (dentist.isActive || !dentist.submittedBySelf) {
+  // Guard: never delete a live (isActive) dentist. Deliberately not gated on
+  // submittedBySelf too — see pendingClinicsWhere in lib/clinic-approval.ts
+  // for why that flag isn't a reliable signal of what's pending.
+  if (dentist.isActive) {
     return { ok: false, error: e.onlyPendingCanBeRejected };
   }
 
