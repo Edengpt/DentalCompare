@@ -68,7 +68,16 @@ export async function recordVerifiedRequest(dentistId: string): Promise<void> {
     }),
   ]);
 
-  if (sub.status !== "TRIALING" || sub.verifiedRequestCount < sub.trialRequestCap) return;
+  // Strict equality, not >=: verifiedRequestCount's increments are serialized
+  // by Postgres's row lock and only ever move by 1, so exactly one concurrent
+  // caller ever observes the count landing exactly on trialRequestCap — this
+  // is what makes the immediate-conversion trigger safe to call from multiple
+  // concurrent fulfillments of the same clinic without double-charging it. A
+  // subscription whose count somehow starts above its cap will not convert
+  // immediately (falls back to the calendar safety net instead) — an
+  // acceptable, safe failure direction for an edge case that should not occur
+  // in practice.
+  if (sub.status !== "TRIALING" || sub.verifiedRequestCount !== sub.trialRequestCap) return;
 
   await attemptImmediateConversion(sub as TrialSubscriptionAfterIncrement);
 }

@@ -146,4 +146,32 @@ describe.skipIf(!hasDb)("recordVerifiedRequest", () => {
     await expect(recordVerifiedRequest(dentistId)).resolves.toBeUndefined();
     expect(endStripeTrialNow).not.toHaveBeenCalled();
   });
+
+  it("PayPlus: a declined immediate charge leaves the clinic retryable, not stuck", async () => {
+    chargeByToken.mockResolvedValue({ ok: false, error: "declined" });
+    const dentistId = await seedTrialing({ provider: "PAYPLUS", trialRequestCap: 1, recurringToken: "tok_1" });
+    const before = new Date();
+    await recordVerifiedRequest(dentistId);
+    const sub = await db.clinicSubscription.findUniqueOrThrow({ where: { dentistId } });
+    expect(sub.status).toBe("PAST_DUE");
+    expect(sub.currentPeriodEnd).not.toBeNull();
+    expect(sub.currentPeriodEnd!.getTime()).toBeGreaterThanOrEqual(before.getTime() - 1000);
+  });
+
+  it("PayPlus: two concurrent calls at the threshold charge exactly once, not twice", async () => {
+    chargeByToken.mockImplementation(
+      () =>
+        new Promise((resolve) =>
+          setTimeout(() => resolve({ ok: true, transactionUid: `txn_${randomUUID().slice(0, 8)}` }), 20),
+        ),
+    );
+    const dentistId = await seedTrialing({ provider: "PAYPLUS", trialRequestCap: 1, recurringToken: "tok_1" });
+    // Two "different requests to the same clinic, fulfilled around the same
+    // moment" — the exact scenario that raced before this fix.
+    await Promise.all([recordVerifiedRequest(dentistId), recordVerifiedRequest(dentistId)]);
+    expect(chargeByToken).toHaveBeenCalledTimes(1);
+    const sub = await db.clinicSubscription.findUniqueOrThrow({ where: { dentistId } });
+    expect(sub.verifiedRequestCount).toBe(2);
+    expect(sub.status).toBe("ACTIVE");
+  });
 });

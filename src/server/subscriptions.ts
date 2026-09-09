@@ -308,6 +308,17 @@ export async function convertPayPlusTrialToPaid(args: {
       subscriptionId: args.subscriptionId,
       error: result.error,
     });
+    // A trialing subscription has no currentPeriodEnd yet — without setting one
+    // here, a declined first charge leaves the row invisible to both the grace
+    // window (isWithinGrace requires a non-null currentPeriodEnd) and the
+    // renewal pass's retry query (which requires the same). Treat the failed
+    // attempt as if the period had just ended at periodStart, so the clinic
+    // keeps its grace window and the daily cron can retry it — the safety net
+    // spec section 7 of the tiered-pricing design promises.
+    await db.clinicSubscription.update({
+      where: { id: args.subscriptionId },
+      data: { currentPeriodEnd: args.periodStart },
+    });
     const firstFailure = await markPastDue(args.subscriptionId);
     if (firstFailure) {
       await sendPaymentFailedEmail({
