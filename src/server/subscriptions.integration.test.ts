@@ -44,6 +44,7 @@ describe.skipIf(!hasDb)("createPendingSubscription", () => {
       currency: "USD",
       trialDays: 45,
       provider: "PAYPLUS",
+      tier: "BASIC",
     });
 
     const sub = await db.clinicSubscription.findUniqueOrThrow({ where: { dentistId: dentist.id } });
@@ -74,6 +75,7 @@ describe.skipIf(!hasDb)("createPendingSubscription", () => {
       currency: "ILS",
       trialDays: 45,
       provider: "PAYPLUS",
+      tier: "BASIC",
     });
 
     const sub = await db.clinicSubscription.findUniqueOrThrow({ where: { dentistId: dentist.id } });

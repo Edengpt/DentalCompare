@@ -132,10 +132,10 @@ describe.skipIf(!hasDb)("approveClinic (integration, real DB)", () => {
       const dentistId = await seedPendingClinic(60);
 
       const original = await db.subscriptionPricing.findUniqueOrThrow({
-        where: { provider: "PAYPLUS" },
+        where: { provider_tier: { provider: "PAYPLUS", tier: "BASIC" } },
       });
       await db.subscriptionPricing.update({
-        where: { provider: "PAYPLUS" },
+        where: { provider_tier: { provider: "PAYPLUS", tier: "BASIC" } },
         data: { trialDays: 30 },
       });
       try {
@@ -149,7 +149,7 @@ describe.skipIf(!hasDb)("approveClinic (integration, real DB)", () => {
         expect(sub.trialEndsAt!.getTime()).toBe(expectedMs);
       } finally {
         await db.subscriptionPricing.update({
-          where: { provider: "PAYPLUS" },
+          where: { provider_tier: { provider: "PAYPLUS", tier: "BASIC" } },
           data: { trialDays: original.trialDays },
         });
       }

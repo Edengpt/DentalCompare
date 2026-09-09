@@ -149,7 +149,7 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
 
   const setupToken = randomUUID();
   const provider: SubscriptionProvider = country.code === "IL" ? "PAYPLUS" : "STRIPE";
-  const pricing = await getSubscriptionPricing(provider);
+  const pricing = await getSubscriptionPricing(provider, "BASIC");
 
   // Both writes must succeed or fail together: an orphaned Dentist with no
   // subscription would prevent the clinic from ever re-registering.
@@ -192,6 +192,7 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
         currency: pricing.currency,
         trialDays: pricing.trialDays,
         provider,
+        tier: "BASIC",
       },
       tx,
     );

@@ -3,7 +3,7 @@ import { getRequestLocale } from "@/i18n/request-locale";
 import "server-only";
 import { db } from "@/lib/db";
 import { Prisma } from "@/generated/prisma/client";
-import type { SubscriptionProvider } from "@/generated/prisma/enums";
+import type { SubscriptionProvider, SubscriptionTier } from "@/generated/prisma/enums";
 import type { SubscriptionPlanType } from "@/lib/constants";
 import { nextPeriodEnd } from "@/lib/subscription";
 import { mapStripeSubscriptionStatus } from "@/lib/stripe";
@@ -18,6 +18,7 @@ export async function createPendingSubscription(
     currency: string;
     trialDays: number;
     provider: SubscriptionProvider;
+    tier: SubscriptionTier;
   },
   client: Prisma.TransactionClient | typeof db = db,
 ): Promise<void> {
@@ -31,6 +32,7 @@ export async function createPendingSubscription(
       setupToken: args.setupToken,
       status: "PENDING",
       provider: args.provider,
+      tier: args.tier,
     },
   });
 }

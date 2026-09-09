@@ -98,7 +98,7 @@ describe.skipIf(!hasDb)("registerClinic documents (integration, real DB)", () =>
     "prices a YEARLY registration off the yearly rate, not the monthly one",
     async () => {
       const pricing = await db.subscriptionPricing.findUniqueOrThrow({
-        where: { provider: "STRIPE" },
+        where: { provider_tier: { provider: "STRIPE", tier: "BASIC" } },
       });
 
       const sfx = randomUUID().slice(0, 8);
@@ -131,8 +131,12 @@ describe.skipIf(!hasDb)("registerClinic documents (integration, real DB)", () =>
   it(
     "tags a non-Israeli registration STRIPE and an Israeli one PAYPLUS, each priced off its own provider row",
     async () => {
-      const stripePricing = await db.subscriptionPricing.findUniqueOrThrow({ where: { provider: "STRIPE" } });
-      const payplusPricing = await db.subscriptionPricing.findUniqueOrThrow({ where: { provider: "PAYPLUS" } });
+      const stripePricing = await db.subscriptionPricing.findUniqueOrThrow({
+        where: { provider_tier: { provider: "STRIPE", tier: "BASIC" } },
+      });
+      const payplusPricing = await db.subscriptionPricing.findUniqueOrThrow({
+        where: { provider_tier: { provider: "PAYPLUS", tier: "BASIC" } },
+      });
 
       const ilCountry = await db.country.upsert({
         where: { code: "IL" },

@@ -6,7 +6,7 @@ import { Section, P, List } from "@/components/legal/legal-layout";
 export const refundsTitleEn = "Cancellations & Refunds";
 
 export default async function RefundsContentEn() {
-  const pricing = await getSubscriptionPricing("PAYPLUS");
+  const pricing = await getSubscriptionPricing("PAYPLUS", "BASIC");
   return (
     <>
       <P>

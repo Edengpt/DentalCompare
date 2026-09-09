@@ -26,7 +26,7 @@ export default async function ClinicJoinPage({
   // Only active countries: a half-configured one has no currency or payer list
   // and must never reach a clinic filling in this form.
   const countries = await getActiveCountries();
-  const pricingRow = await getSubscriptionPricing("PAYPLUS");
+  const pricingRow = await getSubscriptionPricing("PAYPLUS", "BASIC");
   const pricing = {
     monthly: { priceMinor: pricingRow.monthlyPriceMinor, currency: pricingRow.currency },
     yearly: { priceMinor: pricingRow.yearlyPriceMinor, currency: pricingRow.currency },

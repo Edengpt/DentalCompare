@@ -290,7 +290,7 @@ export async function createDentist(formData: FormData): Promise<ActionResult> {
     return { ok: false, error: e.invalidDocument };
   }
 
-  const pricing = await getSubscriptionPricing("PAYPLUS");
+  const pricing = await getSubscriptionPricing("PAYPLUS", "BASIC");
 
   const now = new Date();
   const dentistId = await db.$transaction(async (tx) => {
@@ -334,6 +334,7 @@ export async function createDentist(formData: FormData): Promise<ActionResult> {
         priceMinor: pricing.monthlyPriceMinor,
         currency: pricing.currency,
         trialDays: pricing.trialDays,
+        tier: "BASIC",
         setupToken: randomUUID(),
         status: "ACTIVE",
         currentPeriodEnd: null,

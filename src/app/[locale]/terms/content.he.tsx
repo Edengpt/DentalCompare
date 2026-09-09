@@ -6,7 +6,7 @@ import { Section, P, List, Ph } from "@/components/legal/legal-layout";
 export const termsTitleHe = "תנאי שימוש (תקנון)";
 
 export default async function TermsContentHe() {
-  const pricing = await getSubscriptionPricing("PAYPLUS");
+  const pricing = await getSubscriptionPricing("PAYPLUS", "BASIC");
   return (
     <>
       <P>
