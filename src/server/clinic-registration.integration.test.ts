@@ -171,6 +171,7 @@ describe.skipIf(!hasDb)("registerClinic documents (integration, real DB)", () =>
       });
       created.push(nonIlDentist!.id);
       expect(nonIlDentist!.subscription!.provider).toBe("STRIPE");
+      expect(nonIlDentist!.subscription!.tier).toBe("BASIC");
       expect(nonIlDentist!.subscription!.currency).toBe(stripePricing.currency);
       expect(nonIlDentist!.subscription!.trialDays).toBe(stripePricing.trialDays);
 
@@ -190,6 +191,7 @@ describe.skipIf(!hasDb)("registerClinic documents (integration, real DB)", () =>
       });
       created.push(ilDentist!.id);
       expect(ilDentist!.subscription!.provider).toBe("PAYPLUS");
+      expect(ilDentist!.subscription!.tier).toBe("BASIC");
       expect(ilDentist!.subscription!.currency).toBe(payplusPricing.currency);
     },
     DB_TIMEOUT,

@@ -345,10 +345,11 @@ model Quote {
 // The Payment model (patient flat fee) was removed with the free-patient pivot.
 // Clinic money lives in ClinicSubscription + SubscriptionCharge only.
 
-/// One row per payment provider. Eden edits monthlyPriceMinor, yearlyPriceMinor
-/// and trialDays from the admin panel — currency is fixed per provider and never
-/// exposed for editing. A price change here affects only a subscription created
-/// AFTER the change; ClinicSubscription snapshots its own price at creation.
+/// One row per (payment provider, tier) pair. Eden edits monthlyPriceMinor,
+/// yearlyPriceMinor, monthlyRequestCap and trialRequestCap from the admin
+/// panel — currency is fixed per provider and never exposed for editing. A
+/// price change here affects only a subscription created AFTER the change;
+/// ClinicSubscription snapshots its own price at creation.
 model SubscriptionPricing {
   provider          SubscriptionProvider
   // The tier this row prices. FREE is locked to 0/0 by parsePricingInput

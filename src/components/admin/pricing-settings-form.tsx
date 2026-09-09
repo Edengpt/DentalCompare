@@ -112,7 +112,7 @@ function PricingRowForm({ row }: { row: PricingRow }) {
           name="monthlyPriceMajor"
           type="number"
           step="0.01"
-          min="0"
+          min={isFree ? "0" : "0.01"}
           required
           readOnly={isFree}
           defaultValue={isFree ? 0 : toMajor(row.monthlyPriceMinor, row.currency)}
@@ -127,7 +127,7 @@ function PricingRowForm({ row }: { row: PricingRow }) {
           name="yearlyPriceMajor"
           type="number"
           step="0.01"
-          min="0"
+          min={isFree ? "0" : "0.01"}
           required
           readOnly={isFree}
           defaultValue={isFree ? 0 : toMajor(row.yearlyPriceMinor, row.currency)}
@@ -157,6 +157,7 @@ function PricingRowForm({ row }: { row: PricingRow }) {
           type="number"
           step="1"
           min="1"
+          max="10000"
           placeholder={t.admin.requestCapUnlimited}
           defaultValue={row.monthlyRequestCap ?? ""}
           className={inputClass}

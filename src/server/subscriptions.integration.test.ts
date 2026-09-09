@@ -49,6 +49,7 @@ describe.skipIf(!hasDb)("createPendingSubscription", () => {
 
     const sub = await db.clinicSubscription.findUniqueOrThrow({ where: { dentistId: dentist.id } });
     expect(sub.priceMinor).toBe(12345);
+    expect(sub.tier).toBe("BASIC");
     expect(sub.currency).toBe("USD");
   });
 
@@ -80,5 +81,6 @@ describe.skipIf(!hasDb)("createPendingSubscription", () => {
 
     const sub = await db.clinicSubscription.findUniqueOrThrow({ where: { dentistId: dentist.id } });
     expect(sub.trialDays).toBe(45);
+    expect(sub.tier).toBe("BASIC");
   });
 });
