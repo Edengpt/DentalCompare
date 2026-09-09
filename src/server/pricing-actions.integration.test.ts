@@ -82,6 +82,15 @@ describe.skipIf(!hasDb)("updatePricing", () => {
     expect(row.trialRequestCap).toBe(6);
   });
 
+  it("saves an empty monthlyRequestCap as null (unlimited), not 0", async () => {
+    const result = await updatePricing(formData({ ...BASIC_FIELDS, monthlyRequestCap: "" }));
+    expect(result.ok).toBe(true);
+    const row = await db.subscriptionPricing.findUniqueOrThrow({
+      where: { provider_tier: { provider: "PAYPLUS", tier: "BASIC" } },
+    });
+    expect(row.monthlyRequestCap).toBeNull();
+  });
+
   it("leaves currency untouched — it is never taken from the form", async () => {
     // Submit a currency different from the row's real one (ILS): if
     // updatePricing ever started reading `currency` from the form, this

@@ -23,22 +23,6 @@ export type ActionResult = { ok: true } | { ok: false; error: string };
 
 const TIERS = ["FREE", "BASIC", "PRO", "FEATURED"] as const;
 
-// NOTE for the implementer: this file references t.admin.fieldMonthlyRequestCap
-// and t.admin.fieldTrialRequestCap below. Add those two keys to BOTH
-// src/i18n/dictionaries/he.ts and src/i18n/dictionaries/en.ts as part of THIS
-// task (immediately after the existing fieldTrialDays key in each file's
-// admin section) — do not wait for Task 5, or `tsc --noEmit` fails between
-// this task and the next:
-//
-// he.ts:   fieldMonthlyRequestCap: "תקרת בקשות חודשית",
-//          fieldTrialRequestCap: "סף בקשות לטריאל",
-// en.ts:   fieldMonthlyRequestCap: "Monthly request cap",
-//          fieldTrialRequestCap: "Trial request threshold",
-//
-// Task 5 adds the remaining UI-only dictionary keys (tier labels, the
-// "unlimited" placeholder, the FREE-tier lock hint) — it does not repeat
-// these two.
-
 function fieldLabel(t: Dictionary, field: PricingField): string {
   const labels: Record<PricingField, string> = {
     monthlyPriceMajor: t.admin.fieldMonthlyPrice,
