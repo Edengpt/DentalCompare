@@ -60,32 +60,25 @@ async function main() {
   // silently grant a free subscription) — so a database set up via `prisma db
   // push` (which skips migration files entirely) needs this table seeded here
   // too, not just by the migration.
-  await db.subscriptionPricing.upsert({
-    where: { provider: "PAYPLUS" },
-    update: {},
-    create: {
-      provider: "PAYPLUS",
-      currency: "ILS",
-      monthlyPriceMinor: 29900,
-      yearlyPriceMinor: 199000,
-      trialDays: 60,
-    },
-  });
-  console.log("✅ Seeded subscription pricing: PAYPLUS");
+  const PRICING_SEED = [
+    { provider: "PAYPLUS", tier: "FREE", currency: "ILS", monthlyPriceMinor: 0, yearlyPriceMinor: 0, monthlyRequestCap: 3, trialDays: 60, trialRequestCap: 5 },
+    { provider: "PAYPLUS", tier: "BASIC", currency: "ILS", monthlyPriceMinor: 29900, yearlyPriceMinor: 199000, monthlyRequestCap: 10, trialDays: 60, trialRequestCap: 5 },
+    { provider: "PAYPLUS", tier: "PRO", currency: "ILS", monthlyPriceMinor: 44900, yearlyPriceMinor: 449000, monthlyRequestCap: 30, trialDays: 60, trialRequestCap: 5 },
+    { provider: "PAYPLUS", tier: "FEATURED", currency: "ILS", monthlyPriceMinor: 89900, yearlyPriceMinor: 899000, monthlyRequestCap: null, trialDays: 60, trialRequestCap: 5 },
+    { provider: "STRIPE", tier: "FREE", currency: "USD", monthlyPriceMinor: 0, yearlyPriceMinor: 0, monthlyRequestCap: 3, trialDays: 60, trialRequestCap: 5 },
+    { provider: "STRIPE", tier: "BASIC", currency: "USD", monthlyPriceMinor: 7900, yearlyPriceMinor: 53000, monthlyRequestCap: 10, trialDays: 60, trialRequestCap: 5 },
+    { provider: "STRIPE", tier: "PRO", currency: "USD", monthlyPriceMinor: 17900, yearlyPriceMinor: 149000, monthlyRequestCap: 30, trialDays: 60, trialRequestCap: 5 },
+    { provider: "STRIPE", tier: "FEATURED", currency: "USD", monthlyPriceMinor: 35900, yearlyPriceMinor: 299000, monthlyRequestCap: null, trialDays: 60, trialRequestCap: 5 },
+  ] as const;
 
-  // STRIPE is a placeholder default, unused until the Stripe integration exists.
-  await db.subscriptionPricing.upsert({
-    where: { provider: "STRIPE" },
-    update: {},
-    create: {
-      provider: "STRIPE",
-      currency: "USD",
-      monthlyPriceMinor: 7900,
-      yearlyPriceMinor: 53000,
-      trialDays: 60,
-    },
-  });
-  console.log("✅ Seeded subscription pricing: STRIPE");
+  for (const row of PRICING_SEED) {
+    await db.subscriptionPricing.upsert({
+      where: { provider_tier: { provider: row.provider, tier: row.tier } },
+      update: {},
+      create: row,
+    });
+    console.log(`✅ Seeded subscription pricing: ${row.provider}/${row.tier}`);
+  }
 }
 
 main()

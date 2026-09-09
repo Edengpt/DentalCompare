@@ -46,6 +46,13 @@ enum SubscriptionProvider {
   STRIPE
 }
 
+enum SubscriptionTier {
+  FREE
+  BASIC
+  PRO
+  FEATURED
+}
+
 /// A country the platform operates in.
 ///
 /// This model exists so that no country list is ever hardcoded again. Adding
@@ -343,13 +350,24 @@ model Quote {
 /// exposed for editing. A price change here affects only a subscription created
 /// AFTER the change; ClinicSubscription snapshots its own price at creation.
 model SubscriptionPricing {
-  provider          SubscriptionProvider @id
+  provider          SubscriptionProvider
+  // The tier this row prices. FREE is locked to 0/0 by parsePricingInput
+  // (Task 2), not just convention. trialDays stays the live calendar-trial
+  // source for every tier until the outcome-based-trial plan replaces it;
+  // trialRequestCap is present and editable now but unread until then.
+  tier              SubscriptionTier
   currency          String
   monthlyPriceMinor Int
   yearlyPriceMinor  Int
+  // null = unlimited (FEATURED). Unread by any query until the request-cap
+  // enforcement plan.
+  monthlyRequestCap Int?
   trialDays         Int
+  trialRequestCap   Int
   updatedAt         DateTime             @updatedAt
   updatedBy         String?
+
+  @@id([provider, tier])
 }
 
 model ClinicSubscription {
@@ -378,6 +396,11 @@ model ClinicSubscription {
   // passes provider explicitly regardless, so production code never leans
   // on the default at all.
   provider                SubscriptionProvider @default(PAYPLUS)
+  // Which pricing tier this clinic is on. Defaulted to BASIC, not FREE, for
+  // the exact reason `provider` above defaults to PAYPLUS: every row created
+  // before this field existed — and every write path this plan doesn't touch
+  // yet — genuinely IS the one paid plan that existed before tiers did.
+  tier                    SubscriptionTier     @default(BASIC)
   // The trial length in effect when this clinic registered, frozen the same way
   // priceMinor/currency are. Without this, approveClinic would read whatever
   // SubscriptionPricing.trialDays says *at approval time* — which could differ
