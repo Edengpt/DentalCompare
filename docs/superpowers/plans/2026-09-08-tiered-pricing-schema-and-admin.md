@@ -544,6 +544,12 @@ git commit -m "feat: make parsePricingInput and getSubscriptionPricing tier-awar
 - Modify: `src/server/admin-actions.ts:293` and the `tx.clinicSubscription.create` a few lines below it
 - Modify: `src/server/clinic-registration.integration.test.ts:100-102,134-135`
 - Modify: `src/server/admin-actions.integration.test.ts:134-138,151-153`
+- Modify: `src/app/[locale]/clinics/join/page.tsx:29`
+- Modify: `src/app/[locale]/refunds/content.en.tsx:9`
+- Modify: `src/app/[locale]/refunds/content.he.tsx:9`
+- Modify: `src/app/[locale]/terms/content.en.tsx:9`
+- Modify: `src/app/[locale]/terms/content.he.tsx:9`
+- Modify: `src/server/subscriptions.integration.test.ts:46,76` (two `createPendingSubscription` calls)
 
 **Interfaces:**
 - Consumes: `getSubscriptionPricing(provider, tier)` (Task 2).
@@ -720,18 +726,51 @@ with:
         });
 ```
 
+- [ ] **Step 5b: Fix the five read-only pricing-display pages and `subscriptions.integration.test.ts`**
+
+Five server components call `getSubscriptionPricing("PAYPLUS")` to display the current price/trial length (join form, refunds policy, terms of service, in both languages). Each needs the same one-argument addition. In each of these five files, change:
+
+```ts
+  const pricing = await getSubscriptionPricing("PAYPLUS");
+```
+
+(in `src/app/[locale]/clinics/join/page.tsx` the variable is named `pricingRow`, not `pricing` — change that call by name, same fix) to:
+
+```ts
+  const pricing = await getSubscriptionPricing("PAYPLUS", "BASIC");
+```
+
+Apply this to: `src/app/[locale]/clinics/join/page.tsx` (`pricingRow`), `src/app/[locale]/refunds/content.en.tsx`, `src/app/[locale]/refunds/content.he.tsx`, `src/app/[locale]/terms/content.en.tsx`, `src/app/[locale]/terms/content.he.tsx`.
+
+Separately, `src/server/subscriptions.integration.test.ts` has two `createPendingSubscription({...})` calls (Task 3's Step 1 added a required `tier` field to that function). In both call objects, add `tier: "BASIC",` immediately after the existing `provider: "PAYPLUS",` line:
+
+```ts
+    await createPendingSubscription({
+      dentistId: dentist.id,
+      plan: "MONTHLY",
+      setupToken: randomUUID(),
+      priceMinor: 12345,
+      currency: "USD",
+      trialDays: 45,
+      provider: "PAYPLUS",
+      tier: "BASIC",
+    });
+```
+
+(second occurrence has `priceMinor: 29900, currency: "ILS"` instead — same one-line addition, nothing else changes.)
+
 - [ ] **Step 6: Type-check and run the full integration suite**
 
 Run: `npx tsc --noEmit`
-Expected: **exactly one** remaining error, in `src/server/pricing-actions.ts`, about `parsePricingInput` being called with 2 arguments where 3 are expected. That file is deliberately untouched until Task 4 — this task's job is every *other* call site. If you see any error in a file other than `src/server/pricing-actions.ts`, that is a real regression this task introduced — fix it before proceeding. (This double-checks that this task's grep-driven edits caught every stale call site: `getSubscriptionPricing` and every `provider:`-keyed `SubscriptionPricing` query now require the extra argument/composite key, so a stale call site fails to compile rather than fails at runtime.)
+Expected: errors **only** in `src/server/pricing-actions.ts` and/or `src/server/pricing-actions.integration.test.ts` — both are deliberately untouched until Task 4 fully rewrites them. Every error you see should trace back to one of those two files (calls into the old 2-argument `parsePricingInput`, or the old single-provider `SubscriptionPricing` shape). If you see an error in ANY other file, that is a real regression this task introduced — fix it before proceeding. (This double-checks that this task's edits caught every other stale call site: `getSubscriptionPricing`, `createPendingSubscription`, and every `provider:`-keyed `SubscriptionPricing` query now require the extra argument/composite key, so a stale call site fails to compile rather than fails at runtime.)
 
-Run: `npx vitest run src/server/clinic-registration.integration.test.ts src/server/admin-actions.integration.test.ts`
+Run: `npx vitest run src/server/clinic-registration.integration.test.ts src/server/admin-actions.integration.test.ts src/server/subscriptions.integration.test.ts`
 Expected: PASS (requires the local DB running — `docker start dentalcompare-db`).
 
 - [ ] **Step 7: Commit**
 
 ```bash
-git add src/server/subscriptions.ts src/server/clinic-registration.ts src/server/admin-actions.ts src/server/clinic-registration.integration.test.ts src/server/admin-actions.integration.test.ts
+git add src/server/subscriptions.ts src/server/clinic-registration.ts src/server/admin-actions.ts src/server/clinic-registration.integration.test.ts src/server/admin-actions.integration.test.ts src/server/subscriptions.integration.test.ts "src/app/[locale]/clinics/join/page.tsx" "src/app/[locale]/refunds/content.en.tsx" "src/app/[locale]/refunds/content.he.tsx" "src/app/[locale]/terms/content.en.tsx" "src/app/[locale]/terms/content.he.tsx"
 git commit -m "fix: stamp tier on every ClinicSubscription write path"
 ```
 
