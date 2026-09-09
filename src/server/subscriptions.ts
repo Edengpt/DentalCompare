@@ -8,6 +8,13 @@ import type { SubscriptionPlanType } from "@/lib/constants";
 import { nextPeriodEnd } from "@/lib/subscription";
 import { mapStripeSubscriptionStatus } from "@/lib/stripe";
 import type Stripe from "stripe";
+import { billingBlocker } from "@/lib/subscription";
+import { chargeByToken } from "@/lib/payplus";
+import { audit } from "@/lib/audit";
+import { logEvent } from "@/lib/log";
+import { asLocale } from "@/i18n/config";
+import { format } from "@/i18n/format";
+import { sendPaymentFailedEmail, sendTrialUnbilledAdminEmail } from "@/server/subscription-notifications";
 
 export async function createPendingSubscription(
   args: {
@@ -194,6 +201,129 @@ export async function markTrialEndedUnbilled(subscriptionId: string): Promise<bo
     data: { trialEndedUnbilledAt: new Date() },
   });
   return firstTime.count === 1;
+}
+
+export type PayPlusTrialConversionOutcome = "converted" | "unbilled" | "failed";
+
+/**
+ * Attempts the first real charge for a PayPlus clinic whose trial is over —
+ * whether "over" means the calendar date passed (the daily cron's own check,
+ * kept exactly as it was) or the clinic just crossed its outcome-based
+ * request threshold (an immediate call from request-usage.ts, no calendar
+ * check at all). Both callers share this one body so the two triggers can
+ * never drift into different billing behavior.
+ *
+ * periodStart is the caller's decision, not derived here: the cron passes
+ * the trial's calendar end (so a clinic never pays for days it already had
+ * free), while an immediate conversion passes "now" — an outcome-based trial
+ * has no scheduled end to anchor to; this moment IS when it ended.
+ */
+export async function convertPayPlusTrialToPaid(args: {
+  subscriptionId: string;
+  plan: SubscriptionPlanType;
+  priceMinor: number | null;
+  currency: string | null;
+  recurringToken: string | null;
+  payplusCustomerUid: string | null;
+  periodStart: Date;
+  dentistEmail: string;
+  dentistLocale: string;
+  clinicName: string;
+  payplusConfigured: boolean;
+}): Promise<PayPlusTrialConversionOutcome> {
+  if (args.priceMinor === null || args.currency === null) {
+    logEvent("error", "subscription.missing_price", {
+      subscriptionId: args.subscriptionId,
+      priceMinor: args.priceMinor,
+      currency: args.currency,
+    });
+    return "failed";
+  }
+  const price = { minor: args.priceMinor, currency: args.currency };
+
+  const blocker = billingBlocker({
+    payplusConfigured: args.payplusConfigured,
+    recurringToken: args.recurringToken,
+  });
+  if (blocker) {
+    const firstTime = await markTrialEndedUnbilled(args.subscriptionId);
+    if (firstTime) {
+      logEvent("error", "subscription.trial_ended_unbilled", {
+        subscriptionId: args.subscriptionId,
+        reason: blocker,
+      });
+      await audit({
+        actor: "system",
+        action: "subscription.trial_ended_unbilled",
+        entity: "ClinicSubscription",
+        entityId: args.subscriptionId,
+        metadata: { reason: blocker },
+      });
+      await sendTrialUnbilledAdminEmail({
+        clinicName: args.clinicName,
+        clinicEmail: args.dentistEmail,
+        reason: blocker,
+      });
+    }
+    return "unbilled";
+  }
+
+  const clinicT = await getDictionary(asLocale(args.dentistLocale));
+
+  try {
+    const result = await chargeByToken({
+      // Non-null past the blocker check above; billingBlocker returns
+      // "no_card" for exactly this case.
+      recurringToken: args.recurringToken!,
+      payplusCustomerUid: args.payplusCustomerUid,
+      amountMinor: price.minor,
+      currency: price.currency,
+      description: format(clinicT.clinics.chargeDescription, { clinic: args.clinicName }),
+    });
+
+    if (result.ok) {
+      await recordRenewalCharge({
+        subscriptionId: args.subscriptionId,
+        transactionUid: result.transactionUid,
+        amountMinor: price.minor,
+        currency: price.currency,
+        periodStart: args.periodStart,
+        periodEnd: nextPeriodEnd(args.periodStart, args.plan),
+      });
+      await audit({
+        actor: "system",
+        action: "subscription.trial_converted",
+        entity: "ClinicSubscription",
+        entityId: args.subscriptionId,
+        metadata: {
+          transactionUid: result.transactionUid,
+          amountMinor: price.minor,
+          currency: price.currency,
+        },
+      });
+      return "converted";
+    }
+
+    logEvent("error", "subscription.trial_charge_failed", {
+      subscriptionId: args.subscriptionId,
+      error: result.error,
+    });
+    const firstFailure = await markPastDue(args.subscriptionId);
+    if (firstFailure) {
+      await sendPaymentFailedEmail({
+        email: args.dentistEmail,
+        clinicName: args.clinicName,
+        locale: asLocale(args.dentistLocale),
+      });
+    }
+    return "failed";
+  } catch (err) {
+    logEvent("error", "subscription.trial_convert_error", {
+      subscriptionId: args.subscriptionId,
+      error: err instanceof Error ? err.message : String(err),
+    });
+    return "failed";
+  }
 }
 
 export async function cancelSubscription(subscriptionId: string): Promise<void> {

@@ -7,19 +7,17 @@ import {
   isTrialOver,
   dueTrialWarning,
   trialDaysRemaining,
-  billingBlocker,
 } from "@/lib/subscription";
 import { chargeByToken, isPayPlusConfigured } from "@/lib/payplus";
 import {
   recordRenewalCharge,
   markPastDue,
   cancelSubscription,
-  markTrialEndedUnbilled,
+  convertPayPlusTrialToPaid,
 } from "@/server/subscriptions";
 import {
   sendPaymentFailedEmail,
   sendTrialEndingEmail,
-  sendTrialUnbilledAdminEmail,
 } from "@/server/subscription-notifications";
 import { audit } from "@/lib/audit";
 import { logEvent } from "@/lib/log";
@@ -103,7 +101,6 @@ export async function GET(req: Request) {
       trialsFailed += 1;
       continue;
     }
-    const clinicT = await getDictionary(asLocale(sub.dentist.locale));
 
     // Still inside the trial → only consider a heads-up email.
     if (!isTrialOver(sub.trialEndsAt, now)) {
@@ -134,94 +131,25 @@ export async function GET(req: Request) {
       continue;
     }
 
-    // Trial is over. Before charging, ask whether charging is even possible —
-    // and if it is not, say so once rather than retry into silence every day.
-    const blocker = billingBlocker({ payplusConfigured, recurringToken: sub.recurringToken });
-    if (blocker) {
-      // Status stays TRIALING on purpose: the clinic keeps its listing and keeps
-      // receiving leads. Losing a clinic over a billing gap that is usually ours
-      // would cost more than the month it did not pay for.
-      const firstTime = await markTrialEndedUnbilled(sub.id);
-      if (firstTime) {
-        logEvent("error", "subscription.trial_ended_unbilled", {
-          subscriptionId: sub.id,
-          reason: blocker,
-        });
-        await audit({
-          actor: "system",
-          action: "subscription.trial_ended_unbilled",
-          entity: "ClinicSubscription",
-          entityId: sub.id,
-          metadata: { reason: blocker },
-        });
-        await sendTrialUnbilledAdminEmail({
-          clinicName: sub.dentist.clinicName,
-          clinicEmail: sub.dentist.email,
-          reason: blocker,
-        });
-      }
-      trialsUnbilled += 1;
-      continue;
-    }
-
-    try {
-      const result = await chargeByToken({
-        // Non-null past the blocker check above; billingBlocker returns
-        // "no_card" for exactly this case.
-        recurringToken: sub.recurringToken!,
-        payplusCustomerUid: sub.payplusCustomerUid,
-        amountMinor: price.minor,
-        currency: price.currency,
-        description: format(clinicT.clinics.chargeDescription, { clinic: sub.dentist.clinicName }),
-      });
-
-      if (result.ok) {
-        // The paid period starts where the trial ended, so a clinic never pays
-        // for days it already had free.
-        await recordRenewalCharge({
-          subscriptionId: sub.id,
-          transactionUid: result.transactionUid,
-          amountMinor: price.minor,
-          currency: price.currency,
-          periodStart: sub.trialEndsAt,
-          periodEnd: nextPeriodEnd(sub.trialEndsAt, sub.plan as SubscriptionPlanType),
-        });
-        await audit({
-          actor: "system",
-          action: "subscription.trial_converted",
-          entity: "ClinicSubscription",
-          entityId: sub.id,
-          metadata: {
-            transactionUid: result.transactionUid,
-            amountMinor: price.minor,
-            currency: price.currency,
-          },
-        });
-        trialsConverted += 1;
-      } else {
-        logEvent("error", "subscription.trial_charge_failed", {
-          subscriptionId: sub.id,
-          error: result.error,
-        });
-        // PAST_DUE keeps the clinic visible through the grace window and lets the
-        // existing retry path pick it up on subsequent runs.
-        const firstFailure = await markPastDue(sub.id);
-        if (firstFailure) {
-          await sendPaymentFailedEmail({
-            email: sub.dentist.email,
-            clinicName: sub.dentist.clinicName,
-            locale: asLocale(sub.dentist.locale),
-          });
-        }
-        trialsFailed += 1;
-      }
-    } catch (err) {
-      logEvent("error", "subscription.trial_convert_error", {
-        subscriptionId: sub.id,
-        error: err instanceof Error ? err.message : String(err),
-      });
-      trialsFailed += 1;
-    }
+    // Trial is over. Delegate to the shared conversion path so the cron and
+    // the immediate outcome-based trigger (src/server/request-usage.ts) can
+    // never diverge in billing behavior.
+    const outcome = await convertPayPlusTrialToPaid({
+      subscriptionId: sub.id,
+      plan: sub.plan as SubscriptionPlanType,
+      priceMinor: sub.priceMinor,
+      currency: sub.currency,
+      recurringToken: sub.recurringToken,
+      payplusCustomerUid: sub.payplusCustomerUid,
+      periodStart: sub.trialEndsAt,
+      dentistEmail: sub.dentist.email,
+      dentistLocale: sub.dentist.locale,
+      clinicName: sub.dentist.clinicName,
+      payplusConfigured,
+    });
+    if (outcome === "converted") trialsConverted += 1;
+    else if (outcome === "unbilled") trialsUnbilled += 1;
+    else trialsFailed += 1;
   }
 
   // ── Pass 2: renewals ───────────────────────────────────────────────────────
