@@ -47,7 +47,7 @@ export default async function AdminSubscriptionsPage({
   const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
   await requireAdmin();
 
-  const pricingRows = await db.subscriptionPricing.findMany({ orderBy: { provider: "asc" } });
+  const pricingRows = await db.subscriptionPricing.findMany({ orderBy: [{ provider: "asc" }, { tier: "asc" }] });
 
   // Was pinned to he/he-IL, so an admin reading the English site got Hebrew
   // dates and Hebrew number grouping.
