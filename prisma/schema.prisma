@@ -182,9 +182,10 @@ model Dentist {
   documentToken          String?   @unique
   documentTokenExpiresAt DateTime?
 
-  requestDentists RequestDentist[]
-  subscription    ClinicSubscription?
-  documents       ClinicDocument[]
+  requestDentists     RequestDentist[]
+  subscription        ClinicSubscription?
+  documents           ClinicDocument[]
+  monthlyRequestUsage MonthlyRequestUsage[]
 
   @@index([city])
   @@index([isActive])
@@ -372,11 +373,11 @@ model SubscriptionPricing {
 }
 
 model ClinicSubscription {
-  id                      String             @id @default(uuid())
-  dentistId               String             @unique
-  dentist                 Dentist            @relation(fields: [dentistId], references: [id], onDelete: Cascade)
+  id                      String               @id @default(uuid())
+  dentistId               String               @unique
+  dentist                 Dentist              @relation(fields: [dentistId], references: [id], onDelete: Cascade)
   plan                    SubscriptionPlan
-  status                  SubscriptionStatus @default(PENDING)
+  status                  SubscriptionStatus   @default(PENDING)
   // Money is an integer count of minor units plus an ISO 4217 code. The pair is
   // the unit — a bare number is meaningless once more than one currency exists.
   priceMinor              Int
@@ -402,13 +403,26 @@ model ClinicSubscription {
   // before this field existed — and every write path this plan doesn't touch
   // yet — genuinely IS the one paid plan that existed before tiers did.
   tier                    SubscriptionTier     @default(BASIC)
+  // The lifetime request threshold that converts this trial to a paid
+  // subscription, frozen at registration from SubscriptionPricing.trialRequestCap
+  // the same way priceMinor/currency/trialDays already are. Defaulted to 5 (not
+  // dropped) because unrelated test fixtures across the repo construct
+  // ClinicSubscription rows directly and have no reason to know about this —
+  // the two real write paths (clinic-registration.ts, admin-actions.ts) pass it
+  // explicitly regardless, so production code never leans on the default.
+  trialRequestCap         Int                  @default(5)
+  // Lifetime count of requests actually delivered to this clinic — the trigger
+  // for the outcome-based trial. Distinct from MonthlyRequestUsage below, which
+  // resets every calendar month and exists for the request-cap plan, not this
+  // one; both counters grow on the same event (see request-usage.ts, Task 3).
+  verifiedRequestCount    Int                  @default(0)
   // The trial length in effect when this clinic registered, frozen the same way
   // priceMinor/currency are. Without this, approveClinic would read whatever
   // SubscriptionPricing.trialDays says *at approval time* — which could differ
   // from what the clinic actually saw and agreed to at registration, with
   // nothing recording which one it was.
   trialDays               Int
-  setupToken              String             @unique
+  setupToken              String               @unique
   recurringToken          String? // PayPlus stored-card token uid (set after first paid charge)
   payplusCustomerUid      String?
   pageRequestUid          String? // PayPlus page_request_uid of the setup charge, for return-page verification
@@ -437,14 +451,29 @@ model ClinicSubscription {
   // visibleSubscriptionFilter or isClinicVisible drops a clinic from the
   // directory with no error anywhere.
   trialEndedUnbilledAt    DateTime?
-  createdAt               DateTime           @default(now())
-  updatedAt               DateTime           @updatedAt
+  createdAt               DateTime             @default(now())
+  updatedAt               DateTime             @updatedAt
 
   charges SubscriptionCharge[]
 
   @@index([status])
   @@index([currentPeriodEnd])
   @@index([trialEndsAt])
+}
+
+/// How many requests a clinic has actually received in one calendar month.
+/// Unread by any query until the request-cap-enforcement plan — this table
+/// exists now only so the counter isn't lost between when it starts being
+/// collected (this plan) and when it starts being enforced (a later one).
+model MonthlyRequestUsage {
+  dentistId String
+  dentist   Dentist @relation(fields: [dentistId], references: [id], onDelete: Cascade)
+  // "2026-09" — a natural key that resets the count every month without a
+  // separate cron job to zero it out.
+  yearMonth String
+  count     Int     @default(0)
+
+  @@id([dentistId, yearMonth])
 }
 
 /// Daily FX snapshot, for DISPLAY conversion only.

@@ -191,6 +191,7 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
         priceMinor,
         currency: pricing.currency,
         trialDays: pricing.trialDays,
+        trialRequestCap: pricing.trialRequestCap,
         provider,
         tier: "BASIC",
       },

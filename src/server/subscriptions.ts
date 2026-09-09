@@ -17,6 +17,7 @@ export async function createPendingSubscription(
     priceMinor: number;
     currency: string;
     trialDays: number;
+    trialRequestCap: number;
     provider: SubscriptionProvider;
     tier: SubscriptionTier;
   },
@@ -29,6 +30,7 @@ export async function createPendingSubscription(
       priceMinor: args.priceMinor,
       currency: args.currency,
       trialDays: args.trialDays,
+      trialRequestCap: args.trialRequestCap,
       setupToken: args.setupToken,
       status: "PENDING",
       provider: args.provider,

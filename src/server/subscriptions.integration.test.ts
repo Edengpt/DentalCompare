@@ -43,6 +43,7 @@ describe.skipIf(!hasDb)("createPendingSubscription", () => {
       priceMinor: 12345,
       currency: "USD",
       trialDays: 45,
+      trialRequestCap: 5,
       provider: "PAYPLUS",
       tier: "BASIC",
     });
@@ -75,6 +76,7 @@ describe.skipIf(!hasDb)("createPendingSubscription", () => {
       priceMinor: 29900,
       currency: "ILS",
       trialDays: 45,
+      trialRequestCap: 5,
       provider: "PAYPLUS",
       tier: "BASIC",
     });
