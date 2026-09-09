@@ -275,7 +275,7 @@ git commit -m "feat: add tier dimension to SubscriptionPricing schema"
 
 **Interfaces:**
 - Consumes: `SubscriptionTier` from `@/generated/prisma/enums` (Task 1).
-- Produces: `parsePricingInput(raw: RawPricingInput, currency: string, tier: SubscriptionTier): ParseResult`, where `RawPricingInput` now has `monthlyPriceMajor`, `yearlyPriceMajor`, `trialDays`, `monthlyRequestCap` (empty string = unlimited), `trialRequestCap`; `ParsedPricing` has `monthlyPriceMinor`, `yearlyPriceMinor`, `trialDays`, `monthlyRequestCap: number | null`, `trialRequestCap`. `PricingField` is the widened key union — Task 4 depends on this exact type name.
+- Produces: `parsePricingInput(raw: RawPricingInput, currency: string, tier: SubscriptionTier): ParseResult`, where `RawPricingInput` now has `monthlyPriceMajor`, `yearlyPriceMajor`, `trialDays`, `monthlyRequestCap` (empty string = unlimited), `trialRequestCap`; `ParsedPricing` has `monthlyPriceMinor`, `yearlyPriceMinor`, `trialDays`, `monthlyRequestCap: number | null`, `trialRequestCap`. `PricingField` is the widened key union — Task 4 depends on this exact type name. Also produces the updated `getSubscriptionPricing(provider: SubscriptionProvider, tier: SubscriptionTier)` signature (same file) — Task 3 depends on this exact signature.
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -723,7 +723,7 @@ with:
 - [ ] **Step 6: Type-check and run the full integration suite**
 
 Run: `npx tsc --noEmit`
-Expected: no errors. This is the step that catches any other call site this task's grep missed — `getSubscriptionPricing` and every `provider:` -keyed `SubscriptionPricing` query now require the extra argument/composite key, so a stale call site fails to compile rather than fails at runtime.
+Expected: **exactly one** remaining error, in `src/server/pricing-actions.ts`, about `parsePricingInput` being called with 2 arguments where 3 are expected. That file is deliberately untouched until Task 4 — this task's job is every *other* call site. If you see any error in a file other than `src/server/pricing-actions.ts`, that is a real regression this task introduced — fix it before proceeding. (This double-checks that this task's grep-driven edits caught every stale call site: `getSubscriptionPricing` and every `provider:`-keyed `SubscriptionPricing` query now require the extra argument/composite key, so a stale call site fails to compile rather than fails at runtime.)
 
 Run: `npx vitest run src/server/clinic-registration.integration.test.ts src/server/admin-actions.integration.test.ts`
 Expected: PASS (requires the local DB running — `docker start dentalcompare-db`).
@@ -742,10 +742,12 @@ git commit -m "fix: stamp tier on every ClinicSubscription write path"
 **Files:**
 - Modify: `src/server/pricing-actions.ts`
 - Modify: `src/server/pricing-actions.integration.test.ts`
+- Modify: `src/i18n/dictionaries/he.ts` (two keys only — see Step 1's note)
+- Modify: `src/i18n/dictionaries/en.ts` (two keys only — see Step 1's note)
 
 **Interfaces:**
 - Consumes: `parsePricingInput(raw, currency, tier)` (Task 2), `PricingField` type (Task 2).
-- Produces: `updatePricing(formData: FormData): Promise<ActionResult>` now reads a `tier` field from the form in addition to `provider`; `ActionResult` type is unchanged (`{ ok: true } | { ok: false; error: string }`) — Task 5's form component relies on this exact shape.
+- Produces: `updatePricing(formData: FormData): Promise<ActionResult>` now reads a `tier` field from the form in addition to `provider`; `ActionResult` type is unchanged (`{ ok: true } | { ok: false; error: string }`) — Task 5's form component relies on this exact shape. Also produces the `t.admin.fieldMonthlyRequestCap`/`t.admin.fieldTrialRequestCap` dictionary keys (both languages) — Task 5 consumes the dictionary type these keys become part of, but does not redeclare them.
 
 - [ ] **Step 1: Rewrite `pricing-actions.ts`**
 
@@ -776,6 +778,22 @@ import type { SubscriptionProvider, SubscriptionTier } from "@/generated/prisma/
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
 const TIERS = ["FREE", "BASIC", "PRO", "FEATURED"] as const;
+
+// NOTE for the implementer: this file references t.admin.fieldMonthlyRequestCap
+// and t.admin.fieldTrialRequestCap below. Add those two keys to BOTH
+// src/i18n/dictionaries/he.ts and src/i18n/dictionaries/en.ts as part of THIS
+// task (immediately after the existing fieldTrialDays key in each file's
+// admin section) — do not wait for Task 5, or `tsc --noEmit` fails between
+// this task and the next:
+//
+// he.ts:   fieldMonthlyRequestCap: "תקרת בקשות חודשית",
+//          fieldTrialRequestCap: "סף בקשות לטריאל",
+// en.ts:   fieldMonthlyRequestCap: "Monthly request cap",
+//          fieldTrialRequestCap: "Trial request threshold",
+//
+// Task 5 adds the remaining UI-only dictionary keys (tier labels, the
+// "unlimited" placeholder, the FREE-tier lock hint) — it does not repeat
+// these two.
 
 function fieldLabel(t: Dictionary, field: PricingField): string {
   const labels: Record<PricingField, string> = {
@@ -857,57 +875,83 @@ export async function updatePricing(formData: FormData): Promise<ActionResult> {
 }
 ```
 
-- [ ] **Step 2: Update the integration test**
+- [ ] **Step 2: Replace the integration test file**
 
-In `src/server/pricing-actions.integration.test.ts`:
-
-Replace the `formData` helper's callers and the `beforeAll`/`afterEach` hooks to target `PAYPLUS/BASIC` by composite key. Replace:
+Replace the full contents of `src/server/pricing-actions.integration.test.ts` with:
 
 ```ts
-    originalPayplusRow = await db.subscriptionPricing.findUniqueOrThrow({ where: { provider: "PAYPLUS" } });
-```
+import { describe, it, expect, vi, beforeAll, afterEach } from "vitest";
+import type { db as Db } from "@/lib/db";
+import type { updatePricing as UpdatePricingFn } from "@/server/pricing-actions";
 
-with:
+const authState = { clerkUserId: "" };
+vi.mock("@clerk/nextjs/server", () => ({ auth: async () => ({ userId: authState.clerkUserId }) }));
+vi.mock("next/cache", () => ({ revalidatePath: () => {} }));
 
-```ts
-    originalPayplusRow = await db.subscriptionPricing.findUniqueOrThrow({
+const hasDb = Boolean(process.env.DATABASE_URL);
+let db: typeof Db;
+let updatePricing: typeof UpdatePricingFn;
+
+function formData(fields: Record<string, string>): FormData {
+  const fd = new FormData();
+  for (const [k, v] of Object.entries(fields)) fd.set(k, v);
+  return fd;
+}
+
+const BASIC_FIELDS = {
+  provider: "PAYPLUS",
+  tier: "BASIC",
+  monthlyPriceMajor: "350",
+  yearlyPriceMajor: "2200",
+  trialDays: "45",
+  monthlyRequestCap: "12",
+  trialRequestCap: "6",
+};
+
+describe.skipIf(!hasDb)("updatePricing", () => {
+  const DB_TIMEOUT = 60_000;
+  let originalPayplusBasicRow: {
+    monthlyPriceMinor: number;
+    yearlyPriceMinor: number;
+    trialDays: number;
+    monthlyRequestCap: number | null;
+    trialRequestCap: number;
+  };
+
+  beforeAll(async () => {
+    ({ db } = await import("@/lib/db"));
+    ({ updatePricing } = await import("@/server/pricing-actions"));
+    // ADMIN_EMAILS must include this address locally for requireAdmin to pass —
+    // reuse whatever the existing admin-actions integration tests rely on by
+    // reading it the same way; if none is configured, check
+    // src/server/admin-actions.integration.test.ts for the convention this repo
+    // already uses to authenticate as an admin in a test.
+    const admin = await db.user.upsert({
+      where: { clerkUserId: "pricing_admin_test" },
+      create: {
+        clerkUserId: "pricing_admin_test",
+        fullName: "Admin",
+        email: process.env.ADMIN_EMAILS?.split(",")[0]?.trim() ?? "admin@example.com",
+      },
+      update: {},
+    });
+    authState.clerkUserId = admin.clerkUserId;
+    originalPayplusBasicRow = await db.subscriptionPricing.findUniqueOrThrow({
       where: { provider_tier: { provider: "PAYPLUS", tier: "BASIC" } },
     });
-```
+  }, DB_TIMEOUT);
 
-Replace:
-
-```ts
-    await db.subscriptionPricing.update({
-      where: { provider: "PAYPLUS" },
-      data: originalPayplusRow,
-    });
-```
-
-with:
-
-```ts
+  afterEach(async () => {
+    // Restore PAYPLUS/BASIC to its seeded values so other suites (and this
+    // file's own next test) are never left reading a mutated row.
     await db.subscriptionPricing.update({
       where: { provider_tier: { provider: "PAYPLUS", tier: "BASIC" } },
-      data: originalPayplusRow,
+      data: originalPayplusBasicRow,
     });
-```
+  }, DB_TIMEOUT);
 
-Add `tier: "BASIC"` and the two new form fields to every `formData({...})` call in this file's existing tests (there are four). For example, the first test becomes:
-
-```ts
-  it("updates a provider's price and trial days, converting major to minor", async () => {
-    const result = await updatePricing(
-      formData({
-        provider: "PAYPLUS",
-        tier: "BASIC",
-        monthlyPriceMajor: "350",
-        yearlyPriceMajor: "2200",
-        trialDays: "45",
-        monthlyRequestCap: "12",
-        trialRequestCap: "6",
-      }),
-    );
+  it("updates a tier's price, trial days, and request caps, converting major to minor", async () => {
+    const result = await updatePricing(formData(BASIC_FIELDS));
 
     expect(result.ok).toBe(true);
     const row = await db.subscriptionPricing.findUniqueOrThrow({
@@ -919,31 +963,39 @@ Add `tier: "BASIC"` and the two new form fields to every `formData({...})` call 
     expect(row.monthlyRequestCap).toBe(12);
     expect(row.trialRequestCap).toBe(6);
   });
-```
 
-Apply the same `tier: "BASIC"` + `monthlyRequestCap`/`trialRequestCap` additions to the "leaves currency untouched" and "refuses invalid input" tests (keep their existing assertions, just add the two new required form fields so `parsePricingInput` doesn't reject the submission on an unrelated field). Update their `findUniqueOrThrow` lookups to the composite `provider_tier` key too.
+  it("leaves currency untouched — it is never taken from the form", async () => {
+    // Submit a currency different from the row's real one (ILS): if
+    // updatePricing ever started reading `currency` from the form, this
+    // would flip the row to USD and the assertion below would catch it.
+    await updatePricing(formData({ ...BASIC_FIELDS, currency: "USD" }));
+    const row = await db.subscriptionPricing.findUniqueOrThrow({
+      where: { provider_tier: { provider: "PAYPLUS", tier: "BASIC" } },
+    });
+    expect(row.currency).toBe("ILS");
+  });
 
-For "refuses an unknown provider", also add `tier: "BASIC"` to its `formData` call — the provider check runs before the tier check, so this test's assertion is unaffected, but the field is required by the type this file's helper is testing against.
+  it("refuses invalid input and leaves the row unchanged", async () => {
+    const result = await updatePricing(formData({ ...BASIC_FIELDS, monthlyPriceMajor: "-1" }));
 
-Add one new test:
+    expect(result.ok).toBe(false);
+    const row = await db.subscriptionPricing.findUniqueOrThrow({
+      where: { provider_tier: { provider: "PAYPLUS", tier: "BASIC" } },
+    });
+    expect(row.monthlyPriceMinor).toBe(originalPayplusBasicRow.monthlyPriceMinor);
+  });
 
-```ts
-  it("refuses an unknown tier", async () => {
-    const result = await updatePricing(
-      formData({
-        provider: "PAYPLUS",
-        tier: "NOT_A_TIER",
-        monthlyPriceMajor: "350",
-        yearlyPriceMajor: "2200",
-        trialDays: "45",
-        monthlyRequestCap: "12",
-        trialRequestCap: "6",
-      }),
-    );
+  it("refuses an unknown provider", async () => {
+    const result = await updatePricing(formData({ ...BASIC_FIELDS, provider: "NOT_A_PROVIDER" }));
     expect(result.ok).toBe(false);
   });
 
-  it("refuses a non-zero price on the FREE tier", async () => {
+  it("refuses an unknown tier", async () => {
+    const result = await updatePricing(formData({ ...BASIC_FIELDS, tier: "NOT_A_TIER" }));
+    expect(result.ok).toBe(false);
+  });
+
+  it("refuses a non-zero price on the FREE tier and leaves it at 0", async () => {
     const result = await updatePricing(
       formData({
         provider: "PAYPLUS",
@@ -961,17 +1013,25 @@ Add one new test:
     });
     expect(row.monthlyPriceMinor).toBe(0);
   });
+});
 ```
 
 - [ ] **Step 3: Run the integration test**
 
 Run: `npx vitest run src/server/pricing-actions.integration.test.ts`
-Expected: PASS, 8 tests (requires the local DB running).
+Expected: PASS, 6 tests (requires the local DB running).
+
+- [ ] **Step 3b: Full type-check — this is the first clean-compile checkpoint since Task 2**
+
+Task 2 changed `parsePricingInput`'s and `getSubscriptionPricing`'s signatures; Task 3 fixed every consumer except this file. This step's file is that last consumer, so this is the point where the whole repository should compile clean again.
+
+Run: `npx tsc --noEmit`
+Expected: no errors, anywhere in the repository.
 
 - [ ] **Step 4: Commit**
 
 ```bash
-git add src/server/pricing-actions.ts src/server/pricing-actions.integration.test.ts
+git add src/server/pricing-actions.ts src/server/pricing-actions.integration.test.ts src/i18n/dictionaries/he.ts src/i18n/dictionaries/en.ts
 git commit -m "feat: make updatePricing tier-aware"
 ```
 
@@ -989,13 +1049,13 @@ git commit -m "feat: make updatePricing tier-aware"
 - Consumes: `updatePricing(formData)` (Task 4), `ActionResult` type (Task 4).
 - Produces: `PricingSettingsForm({ rows: PricingRow[] })` where `PricingRow` now includes `tier`, `monthlyRequestCap`, `trialRequestCap` alongside the existing fields.
 
-- [ ] **Step 1: Add dictionary keys**
+- [ ] **Step 1: Add the remaining dictionary keys**
 
-In `src/i18n/dictionaries/he.ts`, inside the `admin` section, immediately after the existing `pricingLastUpdated: "עודכן לאחרונה על ידי {email} · {date}",` line, add:
+Task 4 already added `fieldMonthlyRequestCap` and `fieldTrialRequestCap` to both dictionaries (they were needed to compile that task's `pricing-actions.ts`). This step adds the rest — the UI-only keys this task's form component needs.
+
+In `src/i18n/dictionaries/he.ts`, inside the `admin` section, immediately after the `fieldTrialRequestCap: "סף בקשות לטריאל",` line Task 4 added, add:
 
 ```ts
-    fieldMonthlyRequestCap: "תקרת בקשות חודשית",
-    fieldTrialRequestCap: "סף בקשות לטריאל",
     requestCapUnlimited: "ללא הגבלה",
     tierFree: "רשומה (חינם)",
     tierBasic: "Basic",
@@ -1004,11 +1064,9 @@ In `src/i18n/dictionaries/he.ts`, inside the `admin` section, immediately after 
     pricingFreeLocked: "מדרגת הרשומה נעולה למחיר 0",
 ```
 
-In `src/i18n/dictionaries/en.ts`, inside the `admin` section, immediately after the existing `pricingLastUpdated: "Last updated by {email} · {date}",` line, add:
+In `src/i18n/dictionaries/en.ts`, inside the `admin` section, immediately after the `fieldTrialRequestCap: "Trial request threshold",` line Task 4 added, add:
 
 ```ts
-    fieldMonthlyRequestCap: "Monthly request cap",
-    fieldTrialRequestCap: "Trial request threshold",
     requestCapUnlimited: "Unlimited",
     tierFree: "Free listing",
     tierBasic: "Basic",
