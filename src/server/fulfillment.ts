@@ -9,6 +9,7 @@ import { appUrl } from "@/lib/app-url";
 import { logEvent } from "@/lib/log";
 import { formatPhoneForDisplay } from "@/lib/phone";
 import { quoteRequestEmailHtml } from "@/server/emails/templates";
+import { recordVerifiedRequest } from "@/server/request-usage";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { getRequestLocale } from "@/i18n/request-locale";
 import { asLocale } from "@/i18n/config";
@@ -71,6 +72,7 @@ export async function fulfillRequest(requestId: string): Promise<FulfillResult> 
         where: { emailSent: false },
         select: {
           id: true,
+          dentistId: true,
           dentist: { select: { dentistName: true, email: true, locale: true } },
         },
       },
@@ -169,6 +171,15 @@ export async function fulfillRequest(requestId: string): Promise<FulfillResult> 
 
       if (error) throw new Error(error.message ?? "Resend error");
       sent += 1;
+      try {
+        await recordVerifiedRequest(rd.dentistId);
+      } catch (err) {
+        logEvent("error", "fulfillment.record_verified_request_failed", {
+          requestId: request.id,
+          dentistId: rd.dentistId,
+          error: err instanceof Error ? err.message : String(err),
+        });
+      }
     } catch (err) {
       logEvent("error", "fulfillment.email_send_failed", {
         requestId: request.id,

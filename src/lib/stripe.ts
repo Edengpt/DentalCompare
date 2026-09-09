@@ -134,3 +134,18 @@ export async function retrieveCheckoutSessionWithSubscription(
   });
   return session as Stripe.Checkout.Session & { subscription: Stripe.Subscription | null };
 }
+
+/**
+ * Ends a Stripe subscription's trial immediately instead of waiting for its
+ * scheduled trial_period_days to elapse. Stripe then invoices right away —
+ * the existing webhook handler (customer.subscription.updated, invoice.paid)
+ * picks up the resulting state change exactly as it would for a trial that
+ * ran its full calendar length, so nothing else needs to change to make this
+ * work.
+ */
+export async function endStripeTrialNow(stripeSubscriptionId: string): Promise<void> {
+  await getStripeClient().subscriptions.update(stripeSubscriptionId, {
+    trial_end: "now",
+    proration_behavior: "none",
+  });
+}

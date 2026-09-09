@@ -189,4 +189,37 @@ describe.skipIf(!hasDb)("fulfillRequest (integration, real DB)", () => {
     },
     DB_TIMEOUT,
   );
+
+  it(
+    "increments the clinic's verifiedRequestCount and MonthlyRequestUsage after a successful send",
+    async () => {
+      const { requestId } = await seed({ dentistCount: 1 });
+      const dentistId = created.dentistIds[created.dentistIds.length - 1];
+      await db.clinicSubscription.create({
+        data: {
+          dentistId,
+          plan: "MONTHLY",
+          priceMinor: 29900,
+          currency: "ILS",
+          trialDays: 60,
+          setupToken: randomUUID(),
+          status: "TRIALING",
+          trialEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        },
+      });
+
+      const result = await fulfillRequest(requestId);
+      expect(result.ok).toBe(true);
+
+      const sub = await db.clinicSubscription.findUniqueOrThrow({ where: { dentistId } });
+      expect(sub.verifiedRequestCount).toBe(1);
+
+      const yearMonth = new Date().toISOString().slice(0, 7);
+      const usage = await db.monthlyRequestUsage.findUniqueOrThrow({
+        where: { dentistId_yearMonth: { dentistId, yearMonth } },
+      });
+      expect(usage.count).toBe(1);
+    },
+    DB_TIMEOUT,
+  );
 });
