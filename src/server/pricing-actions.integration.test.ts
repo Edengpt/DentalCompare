@@ -16,9 +16,25 @@ function formData(fields: Record<string, string>): FormData {
   return fd;
 }
 
+const BASIC_FIELDS = {
+  provider: "PAYPLUS",
+  tier: "BASIC",
+  monthlyPriceMajor: "350",
+  yearlyPriceMajor: "2200",
+  trialDays: "45",
+  monthlyRequestCap: "12",
+  trialRequestCap: "6",
+};
+
 describe.skipIf(!hasDb)("updatePricing", () => {
   const DB_TIMEOUT = 60_000;
-  let originalPayplusRow: { monthlyPriceMinor: number; yearlyPriceMinor: number; trialDays: number };
+  let originalPayplusBasicRow: {
+    monthlyPriceMinor: number;
+    yearlyPriceMinor: number;
+    trialDays: number;
+    monthlyRequestCap: number | null;
+    trialRequestCap: number;
+  };
 
   beforeAll(async () => {
     ({ db } = await import("@/lib/db"));
@@ -38,61 +54,81 @@ describe.skipIf(!hasDb)("updatePricing", () => {
       update: {},
     });
     authState.clerkUserId = admin.clerkUserId;
-    originalPayplusRow = await db.subscriptionPricing.findUniqueOrThrow({ where: { provider: "PAYPLUS" } });
-  }, DB_TIMEOUT);
-
-  afterEach(async () => {
-    // Restore PAYPLUS to its seeded values so other suites (and this file's
-    // schema test) are never left reading a mutated row.
-    await db.subscriptionPricing.update({
-      where: { provider: "PAYPLUS" },
-      data: originalPayplusRow,
+    originalPayplusBasicRow = await db.subscriptionPricing.findUniqueOrThrow({
+      where: { provider_tier: { provider: "PAYPLUS", tier: "BASIC" } },
     });
   }, DB_TIMEOUT);
 
-  it("updates a provider's price and trial days, converting major to minor", async () => {
-    const result = await updatePricing(
-      formData({ provider: "PAYPLUS", monthlyPriceMajor: "350", yearlyPriceMajor: "2200", trialDays: "45" }),
-    );
+  afterEach(async () => {
+    // Restore PAYPLUS/BASIC to its seeded values so other suites (and this
+    // file's own next test) are never left reading a mutated row.
+    await db.subscriptionPricing.update({
+      where: { provider_tier: { provider: "PAYPLUS", tier: "BASIC" } },
+      data: originalPayplusBasicRow,
+    });
+  }, DB_TIMEOUT);
+
+  it("updates a tier's price, trial days, and request caps, converting major to minor", async () => {
+    const result = await updatePricing(formData(BASIC_FIELDS));
 
     expect(result.ok).toBe(true);
-    const row = await db.subscriptionPricing.findUniqueOrThrow({ where: { provider: "PAYPLUS" } });
+    const row = await db.subscriptionPricing.findUniqueOrThrow({
+      where: { provider_tier: { provider: "PAYPLUS", tier: "BASIC" } },
+    });
     expect(row.monthlyPriceMinor).toBe(35000);
     expect(row.yearlyPriceMinor).toBe(220000);
     expect(row.trialDays).toBe(45);
+    expect(row.monthlyRequestCap).toBe(12);
+    expect(row.trialRequestCap).toBe(6);
   });
 
   it("leaves currency untouched — it is never taken from the form", async () => {
     // Submit a currency different from the row's real one (ILS): if
     // updatePricing ever started reading `currency` from the form, this
     // would flip the row to USD and the assertion below would catch it.
-    await updatePricing(
-      formData({
-        provider: "PAYPLUS",
-        monthlyPriceMajor: "350",
-        yearlyPriceMajor: "2200",
-        trialDays: "45",
-        currency: "USD",
-      }),
-    );
-    const row = await db.subscriptionPricing.findUniqueOrThrow({ where: { provider: "PAYPLUS" } });
+    await updatePricing(formData({ ...BASIC_FIELDS, currency: "USD" }));
+    const row = await db.subscriptionPricing.findUniqueOrThrow({
+      where: { provider_tier: { provider: "PAYPLUS", tier: "BASIC" } },
+    });
     expect(row.currency).toBe("ILS");
   });
 
   it("refuses invalid input and leaves the row unchanged", async () => {
-    const result = await updatePricing(
-      formData({ provider: "PAYPLUS", monthlyPriceMajor: "-1", yearlyPriceMajor: "2200", trialDays: "45" }),
-    );
+    const result = await updatePricing(formData({ ...BASIC_FIELDS, monthlyPriceMajor: "-1" }));
 
     expect(result.ok).toBe(false);
-    const row = await db.subscriptionPricing.findUniqueOrThrow({ where: { provider: "PAYPLUS" } });
-    expect(row.monthlyPriceMinor).toBe(originalPayplusRow.monthlyPriceMinor);
+    const row = await db.subscriptionPricing.findUniqueOrThrow({
+      where: { provider_tier: { provider: "PAYPLUS", tier: "BASIC" } },
+    });
+    expect(row.monthlyPriceMinor).toBe(originalPayplusBasicRow.monthlyPriceMinor);
   });
 
   it("refuses an unknown provider", async () => {
+    const result = await updatePricing(formData({ ...BASIC_FIELDS, provider: "NOT_A_PROVIDER" }));
+    expect(result.ok).toBe(false);
+  });
+
+  it("refuses an unknown tier", async () => {
+    const result = await updatePricing(formData({ ...BASIC_FIELDS, tier: "NOT_A_TIER" }));
+    expect(result.ok).toBe(false);
+  });
+
+  it("refuses a non-zero price on the FREE tier and leaves it at 0", async () => {
     const result = await updatePricing(
-      formData({ provider: "NOT_A_PROVIDER", monthlyPriceMajor: "350", yearlyPriceMajor: "2200", trialDays: "45" }),
+      formData({
+        provider: "PAYPLUS",
+        tier: "FREE",
+        monthlyPriceMajor: "1",
+        yearlyPriceMajor: "0",
+        trialDays: "45",
+        monthlyRequestCap: "3",
+        trialRequestCap: "5",
+      }),
     );
     expect(result.ok).toBe(false);
+    const row = await db.subscriptionPricing.findUniqueOrThrow({
+      where: { provider_tier: { provider: "PAYPLUS", tier: "FREE" } },
+    });
+    expect(row.monthlyPriceMinor).toBe(0);
   });
 });

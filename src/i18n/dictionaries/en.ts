@@ -925,6 +925,8 @@ const en: typeof he = {
     fieldMonthlyPrice: "Monthly price",
     fieldYearlyPrice: "Yearly price",
     fieldTrialDays: "Trial days",
+    fieldMonthlyRequestCap: "Monthly request cap",
+    fieldTrialRequestCap: "Trial request threshold",
     pricingHeading: "Price & free trial",
     pricingProviderPayPlus: "PayPlus (Israel)",
     pricingProviderStripe: "Stripe (international)",

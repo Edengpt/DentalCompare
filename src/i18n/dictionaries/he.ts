@@ -905,6 +905,8 @@ const he = {
     fieldMonthlyPrice: "מחיר חודשי",
     fieldYearlyPrice: "מחיר שנתי",
     fieldTrialDays: "ימי ניסיון",
+    fieldMonthlyRequestCap: "תקרת בקשות חודשית",
+    fieldTrialRequestCap: "סף בקשות לטריאל",
     pricingHeading: "מחיר וניסיון חינם",
     pricingProviderPayPlus: "PayPlus (ישראל)",
     pricingProviderStripe: "Stripe (בינלאומי)",
