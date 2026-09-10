@@ -411,6 +411,15 @@ model ClinicSubscription {
   // the two real write paths (clinic-registration.ts, admin-actions.ts) pass it
   // explicitly regardless, so production code never leans on the default.
   trialRequestCap         Int                  @default(5)
+  // Frozen at registration from SubscriptionPricing.monthlyRequestCap for the
+  // clinic's (provider, tier) — never re-read live. null = unlimited
+  // (FEATURED). Unlike trialRequestCap this needs no @default: it's
+  // genuinely, correctly nullable (not a "fail loud if missing" field), so
+  // the unrelated test fixtures across the repo that construct
+  // ClinicSubscription directly simply get null, which every check this
+  // plan adds already treats as "never at cap" — the same safe value
+  // FEATURED clinics get on purpose.
+  monthlyRequestCap       Int?
   // Lifetime count of requests actually delivered to this clinic — the trigger
   // for the outcome-based trial. Distinct from MonthlyRequestUsage below, which
   // resets every calendar month and exists for the request-cap plan, not this

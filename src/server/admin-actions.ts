@@ -335,6 +335,7 @@ export async function createDentist(formData: FormData): Promise<ActionResult> {
         currency: pricing.currency,
         trialDays: pricing.trialDays,
         trialRequestCap: pricing.trialRequestCap,
+        monthlyRequestCap: pricing.monthlyRequestCap,
         tier: "BASIC",
         setupToken: randomUUID(),
         status: "ACTIVE",
