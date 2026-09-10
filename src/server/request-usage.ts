@@ -1,14 +1,11 @@
 import "server-only";
 import { db } from "@/lib/db";
+import { currentYearMonth } from "@/lib/date";
 import { logEvent } from "@/lib/log";
 import { isPayPlusConfigured } from "@/lib/payplus";
 import { endStripeTrialNow } from "@/lib/stripe";
 import { convertPayPlusTrialToPaid } from "@/server/subscriptions";
 import type { SubscriptionPlanType } from "@/lib/constants";
-
-function currentYearMonth(now: Date = new Date()): string {
-  return now.toISOString().slice(0, 7); // "2026-09"
-}
 
 type TrialSubscriptionAfterIncrement = {
   id: string;
