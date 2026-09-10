@@ -1,4 +1,4 @@
-import type { PublicDentistWithCapStatus } from "@/lib/dentist-public";
+import type { PublicDentistWithCapStatus } from "@/server/dentist-cap";
 
 const REQUEST_CAP_FLOOR = 5;
 

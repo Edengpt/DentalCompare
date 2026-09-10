@@ -3,7 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import type { PublicDentistWithCapStatus } from "@/lib/dentist-public";
+import type { PublicDentistWithCapStatus } from "@/server/dentist-cap";
 import { applyRequestCapFloor } from "./request-cap-filter";
 import { REQUEST_LIMITS } from "@/lib/constants";
 import { useT } from "@/i18n/provider";

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { applyRequestCapFloor } from "./request-cap-filter";
-import type { PublicDentistWithCapStatus } from "@/lib/dentist-public";
+import type { PublicDentistWithCapStatus } from "@/server/dentist-cap";
 
 // Minimal fixture — only `id` and `isAtCap` matter to this function; the rest
 // of PublicDentistWithCapStatus's fields are irrelevant to its logic, so a
