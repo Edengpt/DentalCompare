@@ -3,7 +3,8 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import type { PublicDentist } from "@/lib/dentist-public";
+import type { PublicDentistWithCapStatus } from "@/lib/dentist-public";
+import { applyRequestCapFloor } from "./request-cap-filter";
 import { REQUEST_LIMITS } from "@/lib/constants";
 import { useT } from "@/i18n/provider";
 import { format, plural } from "@/i18n/format";
@@ -13,7 +14,7 @@ import { FilterBar, type DentistFilters, EMPTY_FILTERS } from "./filter-bar";
 import { SelectionCounter } from "./selection-counter";
 
 type DentistDirectoryProps = {
-  dentists: PublicDentist[];
+  dentists: PublicDentistWithCapStatus[];
   /** When set, the picker is bound to a request: continuing persists the
    * selection and advances to the confirmation step. When omitted, the
    * directory is in standalone browse mode. */
@@ -71,6 +72,12 @@ export function DentistDirectory({
     });
   }, [dentists, filters]);
 
+  // Cap-plus-floor runs after the patient's own filters, not instead of them
+  // — it only ever removes or restores clinics within whatever set filters
+  // already produced. See request-cap-filter.ts for why the floor is
+  // computed this way rather than per city×specialty.
+  const visible = useMemo(() => applyRequestCapFloor(filtered), [filtered]);
+
   const toggle = (id: string) => {
     setSelected((prev) => {
       const next = new Set(prev);
@@ -123,11 +130,11 @@ export function DentistDirectory({
         languages={languages}
         countryNames={countryNames}
         totalCount={dentists.length}
-        filteredCount={filtered.length}
+        filteredCount={visible.length}
       />
 
       <div className="mx-auto max-w-7xl px-6 py-10 pb-32 lg:px-10">
-        {filtered.length === 0 ? (
+        {visible.length === 0 ? (
           <div className="text-muted-foreground border-border/60 mx-auto max-w-md rounded-3xl border border-dashed p-12 text-center">
             <p className="text-base">{t.dentists.noResults}</p>
             <button
@@ -140,7 +147,7 @@ export function DentistDirectory({
           </div>
         ) : (
           <ul className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((d) => (
+            {visible.map((d) => (
               <li key={d.id}>
                 <DentistCard
                   dentist={d}

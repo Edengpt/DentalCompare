@@ -7,7 +7,7 @@ import { Footer } from "@/components/shared/footer";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { isLocale, defaultLocale } from "@/i18n/config";
 import { DentistDirectory } from "@/components/dentists/dentist-directory";
-import { PUBLIC_DENTIST_SELECT, publicDentistWhere } from "@/lib/dentist-public";
+import { PUBLIC_DENTIST_SELECT, publicDentistWhere, attachCapStatus } from "@/lib/dentist-public";
 import { destinationCountryCodes } from "@/lib/travel-scope";
 import { getActiveCountries } from "@/lib/countries";
 
@@ -64,7 +64,7 @@ export default async function RequestDentistsPage({
     user.countryCode,
   );
 
-  const dentists = await db.dentist.findMany({
+  const dentistsWithoutCapStatus = await db.dentist.findMany({
     where: {
       ...publicDentistWhere(),
       ...(codes ? { countryCode: { in: codes } } : {}),
@@ -72,6 +72,7 @@ export default async function RequestDentistsPage({
     select: PUBLIC_DENTIST_SELECT,
     orderBy: [{ rating: "desc" }, { reviewCount: "desc" }],
   });
+  const dentists = await attachCapStatus(dentistsWithoutCapStatus);
 
   // Names, not codes: the filter and the card both read "Israel" rather than "IL".
   const countries = await getActiveCountries();
