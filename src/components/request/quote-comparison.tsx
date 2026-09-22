@@ -53,6 +53,17 @@ export function QuoteComparison({
     );
   };
 
+  const sessionsCell = (q: QuoteRow) => {
+    if (q.sessionsRequired === null) return notStated;
+    if (q.sessionsRequired === 1) return d.oneSession;
+    return (
+      format(d.manySessions, { sessions: q.sessionsRequired }) +
+      (q.weeksBetweenSessions
+        ? format(d.weeksBetweenSessions, { weeks: q.weeksBetweenSessions })
+        : "")
+    );
+  };
+
   const priceCell = (q: QuoteRow) => {
     if (q.amountMinor === null || !q.currency) {
       return <span className="text-muted-foreground text-xs">{d.awaitingQuote}</span>;
@@ -107,6 +118,9 @@ export function QuoteComparison({
                 className="bg-teal-deep/10 text-teal-deep rounded-full px-2 py-0.5 text-xs"
               >
                 {translateInclusion(t.labels, key)}
+                {key === "ACCOMMODATION" && q.accommodationNights
+                  ? format(d.accommodationNights, { nights: q.accommodationNights })
+                  : ""}
               </span>
             ))}
           </span>
@@ -115,6 +129,7 @@ export function QuoteComparison({
         ),
     },
     { label: d.rowTrips, cell: tripsCell },
+    { label: d.rowSessions, cell: sessionsCell },
     {
       label: d.rowWarranty,
       cell: (q) =>

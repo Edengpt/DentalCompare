@@ -398,6 +398,7 @@ const he = {
     rowLocation: "היכן",
     rowIncludes: "מה כלול",
     rowTrips: "נסיעות",
+    rowSessions: "מפגשים",
     rowWarranty: "אחריות",
     rowLanguages: "שפות",
     rowNote: "הערת המרפאה",
@@ -406,6 +407,10 @@ const he = {
     oneTrip: "נסיעה אחת · {days} ימים",
     manyTrips: "{trips} נסיעות · {days} ימים כל אחת",
     weeksBetween: " · {weeks} שבועות ביניהן",
+    accommodationNights: " · {nights} לילות",
+    oneSession: "מפגש אחד",
+    manySessions: "{sessions} מפגשים",
+    weeksBetweenSessions: " · {weeks} שבועות ביניהם",
     warranty: "אחריות {years} שנים",
     awaitingQuote: "ממתין להצעה",
     // Was "the payment was not completed" — a leftover from the removed patient
