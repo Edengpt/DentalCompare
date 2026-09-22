@@ -20,9 +20,15 @@ export type QuoteRow = {
    * a patient who cannot be understood will not travel, whatever the price. */
   spokenLanguages: string[];
   includes: string[];
+  /** Only meaningful when `includes` contains "ACCOMMODATION". */
+  accommodationNights: number | null;
   tripsRequired: number | null;
   daysPerTrip: number | null;
   weeksBetweenTrips: number | null;
+  /** How many separate clinic visits the treatment needs — independent of
+   * tripsRequired; relevant even when the patient never travels. */
+  sessionsRequired: number | null;
+  weeksBetweenSessions: number | null;
   warrantyYears: number | null;
   warrantyNote: string | null;
 };
