@@ -33,6 +33,9 @@ export async function submitQuote(input: {
   tripsRequired?: number;
   daysPerTrip?: number;
   weeksBetweenTrips?: number | null;
+  accommodationNights?: number | null;
+  sessionsRequired?: number;
+  weeksBetweenSessions?: number | null;
   warrantyYears?: number | null;
   warrantyNote?: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
@@ -103,6 +106,17 @@ export async function submitQuote(input: {
   // fields can never contradict each other.
   const weeksBetweenTrips =
     tripsRequired > 1 ? clampInt(input.weeksBetweenTrips, 1, 1, 104) : null;
+  // Only meaningful once the clinic has checked ACCOMMODATION itself; forced
+  // null otherwise, same rule as weeksBetweenTrips above.
+  const accommodationNights = includes.includes("ACCOMMODATION")
+    ? clampInt(input.accommodationNights, 1, 1, 60)
+    : null;
+  // A treatment-visit count, independent of tripsRequired: a local patient
+  // has sessions with zero trips, and a traveling patient's sessions don't
+  // have to equal their trip count.
+  const sessionsRequired = clampInt(input.sessionsRequired, 1, 1, 10);
+  const weeksBetweenSessions =
+    sessionsRequired > 1 ? clampInt(input.weeksBetweenSessions, 1, 1, 104) : null;
   const warrantyYears =
     input.warrantyYears == null ? null : clampInt(input.warrantyYears, 0, 0, 50);
   const warrantyNote = input.warrantyNote?.trim() || null;
@@ -123,6 +137,9 @@ export async function submitQuote(input: {
         tripsRequired,
         daysPerTrip,
         weeksBetweenTrips,
+        accommodationNights,
+        sessionsRequired,
+        weeksBetweenSessions,
         warrantyYears,
         warrantyNote,
       },
@@ -143,6 +160,9 @@ export async function submitQuote(input: {
         tripsRequired,
         daysPerTrip,
         weeksBetweenTrips,
+        accommodationNights,
+        sessionsRequired,
+        weeksBetweenSessions,
         warrantyYears,
         warrantyNote,
       },

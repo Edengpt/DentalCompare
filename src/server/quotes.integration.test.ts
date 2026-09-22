@@ -130,3 +130,92 @@ describe.skipIf(!hasDb)("submitQuote locking", () => {
     expect(quote.amountMinor).toBe(100000); // unchanged
   });
 });
+
+describe.skipIf(!hasDb)("submitQuote package fields", () => {
+  const DB_TIMEOUT = 60_000;
+
+  beforeAll(async () => {
+    ({ db } = await import("@/lib/db"));
+    ({ submitQuote } = await import("@/server/quotes"));
+  }, DB_TIMEOUT);
+
+  afterEach(async () => {
+    for (const id of created.requestIds) await db.request.delete({ where: { id } }).catch(() => {});
+    for (const id of created.dentistIds) await db.dentist.delete({ where: { id } }).catch(() => {});
+    for (const id of created.userIds) await db.user.delete({ where: { id } }).catch(() => {});
+    created.requestIds = [];
+    created.dentistIds = [];
+    created.userIds = [];
+  }, DB_TIMEOUT);
+
+  it("forces accommodationNights to null when ACCOMMODATION is not included", async () => {
+    const { rd, token } = await seed();
+
+    const result = await submitQuote({
+      token,
+      amountMajor: 2000,
+      includes: ["XRAYS"],
+      accommodationNights: 5,
+    });
+
+    expect(result.ok).toBe(true);
+    const quote = await db.quote.findUniqueOrThrow({ where: { requestDentistId: rd.id } });
+    expect(quote.accommodationNights).toBeNull();
+  });
+
+  it("saves accommodationNights, clamped to 1-60, when ACCOMMODATION is included", async () => {
+    const { rd, token } = await seed();
+
+    const result = await submitQuote({
+      token,
+      amountMajor: 2000,
+      includes: ["ACCOMMODATION"],
+      accommodationNights: 500,
+    });
+
+    expect(result.ok).toBe(true);
+    const quote = await db.quote.findUniqueOrThrow({ where: { requestDentistId: rd.id } });
+    expect(quote.accommodationNights).toBe(60);
+  });
+
+  it("defaults accommodationNights to 1 when ACCOMMODATION is included but no count was sent", async () => {
+    const { rd, token } = await seed();
+
+    const result = await submitQuote({
+      token,
+      amountMajor: 2000,
+      includes: ["ACCOMMODATION"],
+    });
+
+    expect(result.ok).toBe(true);
+    const quote = await db.quote.findUniqueOrThrow({ where: { requestDentistId: rd.id } });
+    expect(quote.accommodationNights).toBe(1);
+  });
+
+  it("defaults sessionsRequired to 1 and forces weeksBetweenSessions to null for a single session", async () => {
+    const { rd, token } = await seed();
+
+    const result = await submitQuote({ token, amountMajor: 2000 });
+
+    expect(result.ok).toBe(true);
+    const quote = await db.quote.findUniqueOrThrow({ where: { requestDentistId: rd.id } });
+    expect(quote.sessionsRequired).toBe(1);
+    expect(quote.weeksBetweenSessions).toBeNull();
+  });
+
+  it("saves sessionsRequired and weeksBetweenSessions, both clamped, for a multi-session quote", async () => {
+    const { rd, token } = await seed();
+
+    const result = await submitQuote({
+      token,
+      amountMajor: 2000,
+      sessionsRequired: 99,
+      weeksBetweenSessions: 999,
+    });
+
+    expect(result.ok).toBe(true);
+    const quote = await db.quote.findUniqueOrThrow({ where: { requestDentistId: rd.id } });
+    expect(quote.sessionsRequired).toBe(10);
+    expect(quote.weeksBetweenSessions).toBe(104);
+  });
+});
