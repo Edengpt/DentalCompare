@@ -15,9 +15,12 @@ export type QuoteFormInitial = {
   amount: number | null;
   note: string | null;
   includes: string[];
+  accommodationNights: number | null;
   tripsRequired: number;
   daysPerTrip: number;
   weeksBetweenTrips: number | null;
+  sessionsRequired: number;
+  weeksBetweenSessions: number | null;
   warrantyYears: number | null;
   warrantyNote: string | null;
 };
@@ -36,10 +39,17 @@ export function QuoteForm({
   const [amount, setAmount] = useState(initial.amount ? String(initial.amount) : "");
   const [note, setNote] = useState(initial.note ?? "");
   const [includes, setIncludes] = useState<string[]>(initial.includes);
+  const [accommodationNights, setAccommodationNights] = useState(
+    initial.accommodationNights ? String(initial.accommodationNights) : "",
+  );
   const [trips, setTrips] = useState(String(initial.tripsRequired));
   const [daysPerTrip, setDaysPerTrip] = useState(String(initial.daysPerTrip));
   const [weeksBetween, setWeeksBetween] = useState(
     initial.weeksBetweenTrips ? String(initial.weeksBetweenTrips) : "",
+  );
+  const [sessions, setSessions] = useState(String(initial.sessionsRequired));
+  const [weeksBetweenSessions, setWeeksBetweenSessions] = useState(
+    initial.weeksBetweenSessions ? String(initial.weeksBetweenSessions) : "",
   );
   const [warrantyYears, setWarrantyYears] = useState(
     initial.warrantyYears === null ? "" : String(initial.warrantyYears),
@@ -51,6 +61,8 @@ export function QuoteForm({
 
   const tripCount = Number(trips) || 1;
   const multiTrip = tripCount > 1;
+  const sessionCount = Number(sessions) || 1;
+  const multiSession = sessionCount > 1;
 
   const toggleInclusion = (key: string) =>
     setIncludes((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
@@ -69,9 +81,14 @@ export function QuoteForm({
       amountMajor: parsed,
       note,
       includes,
+      accommodationNights: includes.includes("ACCOMMODATION")
+        ? Number(accommodationNights) || 1
+        : null,
       tripsRequired: tripCount,
       daysPerTrip: Number(daysPerTrip) || 1,
       weeksBetweenTrips: multiTrip ? Number(weeksBetween) || null : null,
+      sessionsRequired: sessionCount,
+      weeksBetweenSessions: multiSession ? Number(weeksBetweenSessions) || null : null,
       warrantyYears: warrantyYears === "" ? null : Number(warrantyYears),
       warrantyNote,
     });
@@ -132,6 +149,21 @@ export function QuoteForm({
             );
           })}
         </div>
+        {/* Only meaningful once accommodation itself is checked above. */}
+        {includes.includes("ACCOMMODATION") && (
+          <label className="mt-3 flex flex-col gap-1.5 text-sm">
+            <span className="text-muted-foreground">{t.quoteForm.accommodationNights}</span>
+            <input
+              type="number"
+              min={1}
+              max={60}
+              value={accommodationNights}
+              onChange={(e) => setAccommodationNights(e.target.value)}
+              className={fieldClass}
+              placeholder={t.quoteForm.accommodationNightsPlaceholder}
+            />
+          </label>
+        )}
       </fieldset>
 
       {/* Trips — the number that moves the patient's real cost most. */}
@@ -174,6 +206,40 @@ export function QuoteForm({
               onChange={(e) => setWeeksBetween(e.target.value)}
               className={fieldClass}
               placeholder={t.quoteForm.weeksPlaceholder}
+            />
+          </label>
+        )}
+      </fieldset>
+
+      {/* Sessions — how many times the patient must physically return to the
+          clinic. Independent of trips: a local patient has sessions with no
+          travel at all. */}
+      <fieldset className="grid gap-4 sm:grid-cols-2">
+        <legend className="text-foreground mb-2 text-sm font-semibold">
+          {t.quoteForm.sessionsLegend}
+        </legend>
+        <label className="flex flex-col gap-1.5 text-sm">
+          <span className="text-muted-foreground">{t.quoteForm.sessionsCount}</span>
+          <input
+            type="number"
+            min={1}
+            max={10}
+            value={sessions}
+            onChange={(e) => setSessions(e.target.value)}
+            className={fieldClass}
+          />
+        </label>
+        {multiSession && (
+          <label className="flex flex-col gap-1.5 text-sm">
+            <span className="text-muted-foreground">{t.quoteForm.weeksBetweenSessions}</span>
+            <input
+              type="number"
+              min={1}
+              max={104}
+              value={weeksBetweenSessions}
+              onChange={(e) => setWeeksBetweenSessions(e.target.value)}
+              className={fieldClass}
+              placeholder={t.quoteForm.weeksBetweenSessionsPlaceholder}
             />
           </label>
         )}
