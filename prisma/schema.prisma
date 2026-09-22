@@ -313,12 +313,25 @@ model Quote {
   /// What the price covers. Canonical keys (QUOTE_INCLUSIONS); labels live in
   /// the i18n layer so they translate with the rest of the site.
   includes                      String[]
+  /// How many nights of accommodation the price covers. Meaningful only when
+  /// `includes` contains "ACCOMMODATION" — forced null otherwise, the same
+  /// rule `weeksBetweenTrips` already follows relative to `tripsRequired`.
+  accommodationNights           Int?
   /// How many separate trips abroad the treatment needs. Implants routinely
   /// need two, months apart — the single biggest hidden cost.
   tripsRequired                 Int         @default(1)
   daysPerTrip                   Int         @default(1)
   /// Null when one trip is enough.
   weeksBetweenTrips             Int?
+  /// How many separate times the patient must physically be at the clinic —
+  /// independent of tripsRequired. A local patient has sessions with zero
+  /// trips; an implant abroad needs both a trip count and a session count,
+  /// and they are not always equal (a clinic could schedule two sessions
+  /// inside one trip).
+  sessionsRequired               Int         @default(1)
+  /// Null when one session is enough. Forced null otherwise, same rule as
+  /// weeksBetweenTrips.
+  weeksBetweenSessions           Int?
   /// The dominant fear for a dental-tourism patient: what happens when
   /// something goes wrong after they have flown home.
   warrantyYears                 Int?
