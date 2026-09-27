@@ -2,13 +2,14 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Check, Mail, MapPin, MessageCircle, Phone, PlayCircle } from "lucide-react";
-import { useLocale, useT } from "@/i18n/provider";
+import { Mail, MapPin, MessageCircle, Phone, PlayCircle } from "lucide-react";
+import { useT } from "@/i18n/provider";
 import { format } from "@/i18n/format";
-import { cn } from "@/lib/utils";
 import { markTreatmentStartedByPatient } from "@/server/quote-decisions";
+import { whatsappHref } from "@/lib/phone";
 import { treatmentTimeline, type TimelineInput } from "@/lib/treatment-timeline";
 import { ConfirmDialog } from "./confirm-dialog";
+import { TreatmentTimelineList } from "./treatment-timeline-list";
 
 export type TreatmentClinic = {
   clinicName: string;
@@ -19,11 +20,6 @@ export type TreatmentClinic = {
   city: string;
   country: string | null;
 };
-
-// A number stored in international form can open a WhatsApp chat; a number
-// kept as the clinic typed it (the fallback when it couldn't be parsed) can't
-// be trusted to, so the button is simply not offered.
-const E164 = /^\+[1-9]\d{7,14}$/;
 
 /**
  * Everything the patient needs once a clinic is chosen: how to reach it, where
@@ -40,24 +36,16 @@ export function TreatmentCard({
   timeline: TimelineInput;
 }) {
   const t = useT().requestDetail;
-  const locale = useLocale();
   const [isPending, startTransition] = useTransition();
   const [confirming, setConfirming] = useState(false);
   const steps = treatmentTimeline(timeline);
-  const date = new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric" });
 
+  const whatsapp = whatsappHref(clinic.phone);
   const mapQuery = [clinic.address, clinic.city, clinic.country].filter(Boolean).join(", ");
   const contacts = [
     { icon: Phone, label: t.contactCall, value: clinic.phone, href: `tel:${clinic.phone}` },
-    ...(E164.test(clinic.phone)
-      ? [
-          {
-            icon: MessageCircle,
-            label: t.contactWhatsapp,
-            value: clinic.phone,
-            href: `https://wa.me/${clinic.phone.slice(1)}`,
-          },
-        ]
+    ...(whatsapp
+      ? [{ icon: MessageCircle, label: t.contactWhatsapp, value: clinic.phone, href: whatsapp }]
       : []),
     { icon: Mail, label: t.contactEmail, value: clinic.email, href: `mailto:${clinic.email}` },
     {
@@ -114,54 +102,14 @@ export function TreatmentCard({
 
         <div>
           <h3 className="text-foreground text-sm font-semibold">{t.timelineTitle}</h3>
-          <ol className="mt-4">
-            {steps.map((s, i) => (
-              <li key={s.key} className="relative flex gap-4 pb-6 last:pb-0">
-                {i < steps.length - 1 && (
-                  <span
-                    aria-hidden
-                    className={cn(
-                      "absolute start-[11px] top-7 h-[calc(100%-1.5rem)] w-0.5",
-                      s.state === "done" ? "bg-teal-deep" : "bg-border",
-                    )}
-                  />
-                )}
-                <span className="relative z-10 shrink-0">
-                  {s.state === "done" && (
-                    <span className="bg-teal-deep text-cream flex h-6 w-6 items-center justify-center rounded-full">
-                      <Check className="h-3.5 w-3.5" />
-                    </span>
-                  )}
-                  {s.state === "current" && (
-                    <span className="border-coral bg-card flex h-6 w-6 items-center justify-center rounded-full border-2">
-                      <span className="bg-coral h-2.5 w-2.5 animate-pulse rounded-full" />
-                    </span>
-                  )}
-                  {s.state === "upcoming" && (
-                    <span className="border-border bg-card block h-6 w-6 rounded-full border-2" />
-                  )}
-                </span>
-                <div aria-current={s.state === "current" ? "step" : undefined}>
-                  <p
-                    className={cn(
-                      "text-sm font-semibold",
-                      s.state === "upcoming" ? "text-muted-foreground" : "text-foreground",
-                    )}
-                  >
-                    {t.timeline[s.key]}
-                  </p>
-                  <p className="text-muted-foreground mt-0.5 text-xs">
-                    {s.at
-                      ? date.format(s.at) +
-                        (s.by
-                          ? ` ✦ ${s.by === "PATIENT" ? t.startedByYou : t.startedByClinic}`
-                          : "")
-                      : s.key !== "approved" && t.timelineNext[s.key]}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ol>
+          <div className="mt-4">
+            <TreatmentTimelineList
+              steps={steps}
+              labels={t.timeline}
+              next={t.timelineNext}
+              byLabel={(by) => (by === "PATIENT" ? t.startedByYou : t.startedByClinic)}
+            />
+          </div>
 
           {timeline.status === "APPROVED" && (
             <div className="bg-muted/40 mt-6 rounded-2xl p-4">

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { normalizePhone, formatPhoneForDisplay, countryFromPhone } from "./phone";
+import { normalizePhone, formatPhoneForDisplay, countryFromPhone, whatsappHref } from "./phone";
 
 /**
  * Fixtures use the subscriber suffix 5555555 deliberately. The mobile metadata
@@ -109,5 +109,16 @@ describe("countryFromPhone", () => {
   // is a missing default and not an error.
   it.each([null, undefined, "", "not a phone", "+999"])("returns null for %o", (input) => {
     expect(countryFromPhone(input)).toBeNull();
+  });
+});
+
+describe("whatsappHref", () => {
+  it("links an international number without its plus", () => {
+    expect(whatsappHref("+972501234567")).toBe("https://wa.me/972501234567");
+  });
+
+  it("offers nothing for a number kept as typed, or none at all", () => {
+    expect(whatsappHref("03-1234567")).toBeNull();
+    expect(whatsappHref(null)).toBeNull();
   });
 });

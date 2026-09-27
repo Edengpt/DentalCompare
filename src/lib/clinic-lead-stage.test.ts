@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { clinicLeadStage, decidedElsewhere, LEAD_TABS, type LeadTab } from "./clinic-lead-stage";
+import {
+  clinicLeadStage,
+  decidedElsewhere,
+  isChosen,
+  LEAD_TABS,
+  type LeadTab,
+} from "./clinic-lead-stage";
 
 const inTab = (
   tab: LeadTab,
@@ -64,5 +70,17 @@ describe("decidedElsewhere", () => {
 
   it("does not count the clinic's own approval", () => {
     expect(decidedElsewhere("me", [row("me", "APPROVED"), row("b", "REJECTED")])).toBe(false);
+  });
+});
+
+describe("isChosen", () => {
+  it("covers approval through completion, and nothing before or beside it", () => {
+    expect(
+      ["APPROVED", "IN_TREATMENT", "COMPLETION_REQUESTED", "COMPLETED"].every((s) =>
+        isChosen(s as never),
+      ),
+    ).toBe(true);
+    expect(isChosen("PENDING_DECISION")).toBe(false);
+    expect(isChosen("REJECTED")).toBe(false);
   });
 });

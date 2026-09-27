@@ -7,12 +7,17 @@ import { format } from "@/i18n/format";
 import { db } from "@/lib/db";
 import { toMajor } from "@/lib/money";
 import { formatPhoneForDisplay } from "@/lib/phone";
-import { clinicLeadStage, decidedElsewhere as wasDecidedElsewhere } from "@/lib/clinic-lead-stage";
+import {
+  clinicLeadStage,
+  decidedElsewhere as wasDecidedElsewhere,
+  isChosen,
+} from "@/lib/clinic-lead-stage";
 import { getClinicForCurrentUser } from "@/server/clinic-account";
 import { StatusBadge } from "@/components/request/status-badge";
 import { QuoteStatusActions } from "@/components/clinics/quote-status-actions";
 import { ClinicQuotePanel } from "@/components/clinics/clinic-quote-panel";
 import { MedicalFileViewer, medicalFileKind } from "@/components/clinics/medical-file-viewer";
+import { ClinicTreatmentCard } from "@/components/clinics/clinic-treatment-card";
 
 export const dynamic = "force-dynamic";
 
@@ -65,6 +70,12 @@ export default async function ClinicRequestPage({
           weeksBetweenSessions: true,
           warrantyYears: true,
           warrantyNote: true,
+          decidedAt: true,
+          treatmentStartedAt: true,
+          treatmentStartedBy: true,
+          completionRequestedAt: true,
+          completedAt: true,
+          completionDeclinedAt: true,
         },
       },
       dentist: { select: { country: { select: { currency: true } } } },
@@ -75,7 +86,7 @@ export default async function ClinicRequestPage({
           xrayFileUrl: true,
           patientNotes: true,
           // The same details the delivery email already gave this clinic.
-          user: { select: { fullName: true, phone: true, phoneVerifiedAt: true } },
+          user: { select: { fullName: true, phone: true, phoneVerifiedAt: true, email: true } },
           requestDentists: { select: { id: true, quote: { select: { status: true } } } },
         },
       },
@@ -102,6 +113,10 @@ export default async function ClinicRequestPage({
     year: "numeric",
   });
   const user = rd.request.user;
+  const patientName = user?.fullName ?? t.quoteForm.fallbackPatient;
+  // This clinic's quote is the one the patient chose. Only then does the
+  // clinic get the patient's email — a clinic that was not chosen never does.
+  const chosen = rd.quote !== null && isChosen(rd.quote.status);
 
   const files = [
     { key: "treatment", label: t.requestDetail.treatmentPlan, url: rd.request.treatmentFileUrl },
@@ -130,6 +145,29 @@ export default async function ClinicRequestPage({
         </p>
       )}
 
+      {chosen && rd.quote && (
+        <div className="mt-8">
+          <ClinicTreatmentCard
+            requestDentistId={rd.id}
+            patient={{
+              name: patientName,
+              phone: user?.phone ?? null,
+              phoneVerified: Boolean(user?.phoneVerifiedAt),
+              email: user?.email ?? null,
+            }}
+            timeline={{
+              status: rd.quote.status,
+              decidedAt: rd.quote.decidedAt,
+              treatmentStartedAt: rd.quote.treatmentStartedAt,
+              treatmentStartedBy: rd.quote.treatmentStartedBy,
+              completionRequestedAt: rd.quote.completionRequestedAt,
+              completedAt: rd.quote.completedAt,
+            }}
+            completionDeclinedAt={rd.quote.completionDeclinedAt}
+          />
+        </div>
+      )}
+
       <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_26rem]">
         {/* The patient and their documents. */}
         <div className="space-y-6">
@@ -138,9 +176,7 @@ export default async function ClinicRequestPage({
               <User className="text-teal-deep mt-0.5 h-4 w-4 shrink-0" />
               <div>
                 <p className="text-muted-foreground text-xs">{t.clinics.reqPatient}</p>
-                <p className="text-foreground font-semibold">
-                  {user?.fullName ?? t.quoteForm.fallbackPatient}
-                </p>
+                <p className="text-foreground font-semibold">{patientName}</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
@@ -222,7 +258,9 @@ export default async function ClinicRequestPage({
               <p className="text-muted-foreground">
                 {stage === "missed" ? t.clinics.reqMissed : t.clinics.reqQuoteClosed}
               </p>
-              {rd.quote && <QuoteStatusActions requestDentistId={rd.id} status={rd.quote.status} />}
+              {rd.quote && !chosen && (
+                <QuoteStatusActions requestDentistId={rd.id} status={rd.quote.status} />
+              )}
             </div>
           )}
         </aside>

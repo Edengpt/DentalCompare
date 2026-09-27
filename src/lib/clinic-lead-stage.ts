@@ -76,6 +76,11 @@ const DECIDED: readonly QuoteStatus[] = [
   "COMPLETED",
 ];
 
+/** This quote is the one the patient chose — at any point from approval on. */
+export function isChosen(status: QuoteStatus): boolean {
+  return DECIDED.includes(status);
+}
+
 /**
  * Whether the patient already chose some OTHER clinic on this request. Read
  * from the sibling rows on the server; which clinic, and at what price, never
