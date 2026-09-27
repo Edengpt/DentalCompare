@@ -691,9 +691,26 @@ const en: typeof he = {
       "I have read and understood the subscription terms above, and I accept them on behalf of the clinic.",
     regSubmitting: "Sending…",
     regSubmit: "Register the clinic",
-    regDoneTitle: "Registration received",
-    regDoneBody:
-      "Thank you for joining DentalCompare. Your application is waiting for our team to approve it — once approved, the clinic appears in the directory and starts receiving quote requests. We'll email you.",
+    wizStepOf: "Step {n} of {total}",
+    wizNext: "Continue",
+    wizBack: "Back",
+    wizDocsMissing: "Upload every document before continuing.",
+    wizFixFields: "A few fields need fixing before you continue.",
+    dropPrompt: "Drag a file here, or click to choose one",
+    dropRelease: "Release to upload",
+    dropUploading: "Uploading… {pct}%",
+    dropChecking: "Checking the file…",
+    pendingTitle: "Application received — under review",
+    pendingIntro:
+      "Thank you for joining DentalCompare. Before a clinic is listed, someone on our team looks at its licence documents — that is how patients know every clinic on the site has been checked.",
+    pendingStepSent: "Application sent",
+    pendingStepSentNote: "Your details and documents are safely with us.",
+    pendingStepReview: "Our team reviews your documents",
+    pendingStepReviewNote: "Usually within 1–2 business days.",
+    pendingStepLive: "Approval and listing",
+    pendingStepLiveNote: "Your {trialDays}-day free trial starts on the day you are approved.",
+    pendingEmail:
+      "We'll email {email} as soon as we're done. If a document is missing or a photo is unreadable, we'll send a link to upload it again — no need to fill in the form afresh.",
     terms: [
       "The clinic chooses a subscription plan: {monthly} per month or {yearly} per year, for appearing in the DentalCompare directory and receiving patient enquiries.",
       "The clinic receives a free {trialDays}-day trial, beginning when the DentalCompare team approves it. During that period the clinic appears in the directory and receives enquiries at no charge.",
@@ -974,6 +991,7 @@ const en: typeof he = {
     tooManyRegistrations:
       "Too many registration attempts from this address. Try again in about an hour.",
     requiredFields: "Please fill in all required fields",
+    fieldRequired: "Required",
     invalidEmail: "That email address isn't valid",
     invalidExperience: "Years of experience isn't valid",
     mustAcceptTerms: "You must accept the subscription terms to register",

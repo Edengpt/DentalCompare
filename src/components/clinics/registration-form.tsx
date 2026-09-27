@@ -1,16 +1,17 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { CheckCircle2, FileSignature, ImagePlus, Loader2, X } from "lucide-react";
+import { Check, FileSignature, ImagePlus, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { registerClinic } from "@/server/clinic-registration";
 import { LOGO_ACCEPT_ATTRIBUTE, LOGO_MAX_FILE_SIZE_MB } from "@/lib/storage";
+import { DOC_MAX_FILE_SIZE_MB, missingDocKinds, requiredDocKinds } from "@/lib/clinic-documents";
 import {
-  DOC_ACCEPT_ATTRIBUTE,
-  DOC_MAX_FILE_SIZE_MB,
-  requiredDocKinds,
-} from "@/lib/clinic-documents";
-import { uploadClinicDocument } from "@/lib/upload-clinic-document";
+  clinicDetailsSchema,
+  clinicPlanSchema,
+  fieldErrors,
+  readRegistrationFields,
+} from "@/lib/clinic-registration-schema";
 import { SPECIALTIES, SPOKEN_LANGUAGES, TREATMENTS } from "@/lib/constants";
 import { formatMoney } from "@/lib/money";
 import { useLocale } from "@/i18n/provider";
@@ -25,6 +26,8 @@ import { format } from "@/i18n/format";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { PlanPicker } from "@/components/clinics/plan-picker";
+import { DocumentDropZone, type UploadedDoc } from "@/components/clinics/document-drop-zone";
+import { PendingReview } from "@/components/clinics/pending-review";
 
 const inputClass =
   "border-border/60 bg-background focus:border-teal-deep focus:ring-teal-deep/20 w-full rounded-xl border px-3.5 py-2.5 text-sm outline-none focus:ring-2";
@@ -37,6 +40,80 @@ export type RegistrationCountry = {
   /** Which licence documents this country asks for. Empty means one generic. */
   requiredDocs: string[];
 };
+
+const STEP_COUNT = 3;
+
+/** Where the wizard is, and which steps can be revisited by clicking them. */
+function StepIndicator({
+  step,
+  labels,
+  onJump,
+}: {
+  step: number;
+  labels: string[];
+  onJump: (i: number) => void;
+}) {
+  const t = useT();
+  return (
+    <nav aria-label={format(t.clinics.wizStepOf, { n: step + 1, total: STEP_COUNT })}>
+      <p className="text-muted-foreground text-xs font-medium">
+        {format(t.clinics.wizStepOf, { n: step + 1, total: STEP_COUNT })}
+      </p>
+      <ol className="mt-3 flex items-center gap-2">
+        {labels.map((label, i) => {
+          const done = i < step;
+          const current = i === step;
+          return (
+            <li key={label} className="flex flex-1 items-center gap-2">
+              <button
+                type="button"
+                // Only backwards: forwards has to go through the step's checks.
+                disabled={!done}
+                onClick={() => onJump(i)}
+                aria-current={current ? "step" : undefined}
+                className="flex min-w-0 items-center gap-2 disabled:cursor-default"
+              >
+                <span
+                  className={cn(
+                    "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 text-sm font-bold transition-colors",
+                    done && "border-teal-deep bg-teal-deep text-cream",
+                    current && "border-teal-deep text-teal-deep",
+                    !done && !current && "border-border text-muted-foreground",
+                  )}
+                >
+                  {done ? <Check className="h-4 w-4" /> : i + 1}
+                </span>
+                <span
+                  className={cn(
+                    "hidden truncate text-sm font-medium sm:inline",
+                    current ? "text-foreground" : "text-muted-foreground",
+                  )}
+                >
+                  {label}
+                </span>
+              </button>
+              {i < labels.length - 1 && (
+                <span
+                  aria-hidden
+                  className={cn("h-0.5 flex-1 rounded-full", done ? "bg-teal-deep" : "bg-border")}
+                />
+              )}
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
+  );
+}
+
+function FieldError({ id, message }: { id: string; message?: string }) {
+  if (!message) return null;
+  return (
+    <span id={id} className="text-coral text-xs">
+      {message}
+    </span>
+  );
+}
 
 function ChipGroup({
   name,
@@ -168,18 +245,22 @@ export function RegistrationForm({
   // licence documents an admin will ask for — so it can't be inferred.
   const [countryCode, setCountryCode] = useState(countries[0]?.code ?? "");
   const insurers = countries.find((c) => c.code === countryCode)?.insurers ?? [];
-  const [done, setDone] = useState(false);
+  const [step, setStep] = useState(0);
+  // Keyed by field name, already translated. Cleared field by field as the
+  // clinic types, so a fixed field stops shouting before the next "Continue".
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submittedEmail, setSubmittedEmail] = useState<string | null>(null);
   const [agreed, setAgreed] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [logoUploading, setLogoUploading] = useState(false);
   // Keyed by kind rather than by index, so changing country cannot leave a URL
   // sitting under a slot that now means something else.
-  const [docs, setDocs] = useState<Record<string, { url: string; contentType: string }>>({});
-  const [uploadingKind, setUploadingKind] = useState<string | null>(null);
+  const [docs, setDocs] = useState<Record<string, UploadedDoc>>({});
   const docKinds = requiredDocKinds(
     countries.find((c) => c.code === countryCode)?.requiredDocs ?? [],
   );
   const logoInputRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -226,32 +307,6 @@ export function RegistrationForm({
     }
   };
 
-  const handleDocChange = async (kind: string, e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Checked here as well as at the store, so an oversized file is refused
-    // instantly instead of after the clinic has waited for it to upload.
-    if (file.size > DOC_MAX_FILE_SIZE_MB * 1024 * 1024) {
-      toast.error(format(t.validation.documentSize, { mb: DOC_MAX_FILE_SIZE_MB }));
-      e.target.value = "";
-      return;
-    }
-
-    setUploadingKind(kind);
-    try {
-      const result = await uploadClinicDocument(file);
-      if (!result.ok) {
-        toast.error(result.message ?? t.clinics.regDocFailed);
-        return;
-      }
-      setDocs((prev) => ({ ...prev, [kind]: { url: result.url, contentType: file.type } }));
-    } finally {
-      setUploadingKind(null);
-      e.target.value = "";
-    }
-  };
-
   /**
    * Drops a document that is no longer attached to any slot.
    *
@@ -285,41 +340,93 @@ export function RegistrationForm({
     });
   };
 
+  const goTo = (next: number) => {
+    setStep(next);
+    formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  /**
+   * Checks the step on screen. Every step stays mounted (only hidden), so the
+   * form still holds what earlier steps collected — the same FormData the
+   * one-page form used to post.
+   */
+  const validateStep = (formData: FormData): boolean => {
+    if (step === 1) {
+      const missing = missingDocKinds(docKinds, Object.keys(docs));
+      setErrors(missing.length > 0 ? { documents: t.clinics.wizDocsMissing } : {});
+      return missing.length === 0;
+    }
+    const schema = step === 0 ? clinicDetailsSchema : clinicPlanSchema;
+    const found = fieldErrors(schema.safeParse(readRegistrationFields(formData)));
+    setErrors(
+      Object.fromEntries(Object.entries(found).map(([field, key]) => [field, t.errors[key]])),
+    );
+    const first = Object.keys(found)[0];
+    if (first) {
+      toast.error(t.clinics.wizFixFields);
+      formRef.current?.querySelector<HTMLElement>(`[name="${first}"]`)?.focus();
+    }
+    return !first;
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (logoUploading) {
+    if (step === 0 && logoUploading) {
       toast.error(t.clinics.regLogoWait);
       return;
     }
     const formData = new FormData(e.currentTarget);
+    if (!validateStep(formData)) return;
+    // Enter in a field of an earlier step means "continue", not "register".
+    if (step < STEP_COUNT - 1) {
+      goTo(step + 1);
+      return;
+    }
     startTransition(async () => {
       const result = await registerClinic(formData);
       if (!result.ok) {
         toast.error(result.error);
         return;
       }
-      setDone(true);
+      setSubmittedEmail(
+        String(formData.get("email") ?? "")
+          .trim()
+          .toLowerCase(),
+      );
     });
   };
 
-  if (done) {
-    return (
-      <div className="border-border/60 bg-card mx-auto max-w-xl rounded-3xl border p-10 text-center">
-        <div className="bg-teal-deep/10 text-teal-deep mx-auto inline-flex h-16 w-16 items-center justify-center rounded-full">
-          <CheckCircle2 className="h-8 w-8" />
-        </div>
-        <h2 className="font-display text-foreground mt-6 text-2xl font-bold">
-          {t.clinics.regDoneTitle}
-        </h2>
-        <p className="text-muted-foreground mt-3 text-pretty">{t.clinics.regDoneBody}</p>
-      </div>
-    );
+  const clearError = (e: React.FormEvent<HTMLFormElement>) => {
+    const name = (e.target as HTMLInputElement).name;
+    if (name && errors[name]) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[name];
+        return next;
+      });
+    }
+  };
+
+  if (submittedEmail !== null) {
+    return <PendingReview email={submittedEmail} trialDays={pricing.trialDays} />;
   }
 
+  const stepLabels = [t.clinics.regDetailsHeading, t.clinics.regDocs, t.clinics.regPlanHeading];
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
-      {/* Details */}
-      <div className="border-border/60 bg-card rounded-3xl border p-6 sm:p-8">
+    <form
+      ref={formRef}
+      onSubmit={handleSubmit}
+      onInput={clearError}
+      // Validation is ours, per step. The browser's would try to focus a
+      // required field on a hidden step and refuse to submit without saying why.
+      noValidate
+      className="scroll-mt-24 space-y-8"
+    >
+      <StepIndicator step={step} labels={stepLabels} onJump={goTo} />
+
+      {/* Step 1 — details */}
+      <div hidden={step !== 0} className="border-border/60 bg-card rounded-3xl border p-6 sm:p-8">
         <h2 className="font-display text-foreground text-lg font-bold">
           {t.clinics.regDetailsHeading}
         </h2>
@@ -340,11 +447,13 @@ export function RegistrationForm({
               <input
                 name={f.name}
                 type={f.type ?? "text"}
-                required={f.required}
                 placeholder={f.placeholder}
                 min={f.type === "number" ? 0 : undefined}
-                className={inputClass}
+                aria-invalid={errors[f.name] ? true : undefined}
+                aria-describedby={errors[f.name] ? `${f.name}-error` : undefined}
+                className={cn(inputClass, errors[f.name] && "border-coral")}
               />
+              <FieldError id={`${f.name}-error`} message={errors[f.name]} />
             </label>
           ))}
 
@@ -355,10 +464,11 @@ export function RegistrationForm({
             </span>
             <select
               name="countryCode"
-              required
               value={countryCode}
               onChange={(e) => handleCountryChange(e.target.value)}
-              className={inputClass}
+              aria-invalid={errors.countryCode ? true : undefined}
+              aria-describedby={errors.countryCode ? "countryCode-error" : undefined}
+              className={cn(inputClass, errors.countryCode && "border-coral")}
             >
               {countries.map((c) => (
                 <option key={c.code} value={c.code}>
@@ -366,6 +476,7 @@ export function RegistrationForm({
                 </option>
               ))}
             </select>
+            <FieldError id="countryCode-error" message={errors.countryCode} />
           </label>
         </div>
 
@@ -444,68 +555,45 @@ export function RegistrationForm({
               className="hidden"
             />
           </div>
-
-          {/* Licence documents (required) */}
-          <div className="sm:col-span-2">
-            <p className="text-foreground text-sm font-medium">{t.clinics.regDocs}</p>
-            {/* Above the slots, not beside them: what is allowed has to be read
-                before the file picker opens — afterwards it is a complaint. */}
-            <p className="text-muted-foreground mt-1 text-xs">
-              {format(t.clinics.regDocsHint, { mb: DOC_MAX_FILE_SIZE_MB })}
-            </p>
-            <div className="mt-3 space-y-2">
-              {docKinds.map((kind) => (
-                <div
-                  key={kind}
-                  className="border-border/60 flex items-center justify-between gap-3 rounded-xl border px-3.5 py-2.5"
-                >
-                  <span className="text-foreground min-w-0 truncate text-sm">{kind}</span>
-                  <input type="hidden" name="documentKind" value={kind} />
-                  <input type="hidden" name="documentUrl" value={docs[kind]?.url ?? ""} />
-                  <input type="hidden" name="documentType" value={docs[kind]?.contentType ?? ""} />
-                  {docs[kind] ? (
-                    <span className="text-teal-deep inline-flex shrink-0 items-center gap-1.5 text-sm font-medium">
-                      <CheckCircle2 className="h-4 w-4" />
-                      {t.clinics.regDocUploaded}
-                      <button
-                        type="button"
-                        onClick={() => removeDoc(kind)}
-                        aria-label={t.clinics.regDocRemove}
-                        className="text-muted-foreground hover:text-coral ms-1"
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    </span>
-                  ) : (
-                    <label
-                      className={cn(
-                        "border-border/60 text-muted-foreground hover:border-teal-deep/40 hover:text-teal-deep inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-dashed px-3.5 py-1.5 text-xs transition-colors",
-                        uploadingKind === kind && "pointer-events-none opacity-60",
-                      )}
-                    >
-                      {uploadingKind === kind ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      ) : (
-                        <ImagePlus className="h-3.5 w-3.5" />
-                      )}
-                      {t.clinics.regDocUpload}
-                      <input
-                        type="file"
-                        accept={DOC_ACCEPT_ATTRIBUTE}
-                        onChange={(e) => handleDocChange(kind, e)}
-                        className="hidden"
-                      />
-                    </label>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
 
-      {/* Plan + contract */}
-      <div className="border-teal-deep/30 bg-teal-deep/5 rounded-3xl border p-6 sm:p-8">
+      {/* Step 2 — licence documents */}
+      <div hidden={step !== 1} className="border-border/60 bg-card rounded-3xl border p-6 sm:p-8">
+        <h2 className="font-display text-foreground text-lg font-bold">{t.clinics.regDocs}</h2>
+        {/* Above the slots, not beside them: what is allowed has to be read
+            before the file picker opens — afterwards it is a complaint. */}
+        <p className="text-muted-foreground mt-2 text-sm">
+          {format(t.clinics.regDocsHint, { mb: DOC_MAX_FILE_SIZE_MB })}
+        </p>
+        <div className="mt-5 space-y-3">
+          {docKinds.map((kind) => (
+            <div key={kind}>
+              <input type="hidden" name="documentKind" value={kind} />
+              <input type="hidden" name="documentUrl" value={docs[kind]?.url ?? ""} />
+              <input type="hidden" name="documentType" value={docs[kind]?.contentType ?? ""} />
+              <DocumentDropZone
+                kind={kind}
+                doc={docs[kind]}
+                onUploaded={(doc) => {
+                  setDocs((prev) => ({ ...prev, [kind]: doc }));
+                  setErrors({});
+                }}
+                onRemove={() => removeDoc(kind)}
+              />
+            </div>
+          ))}
+        </div>
+        <div className="mt-3">
+          <FieldError id="documents-error" message={errors.documents} />
+        </div>
+      </div>
+
+      {/* Step 3 — plan + contract */}
+      <div
+        hidden={step !== 2}
+        className="border-teal-deep/30 bg-teal-deep/5 rounded-3xl border p-6 sm:p-8"
+      >
         <div className="flex items-center gap-2.5">
           <FileSignature className="text-teal-deep h-5 w-5" />
           <h2 className="font-display text-foreground text-lg font-bold">
@@ -516,6 +604,7 @@ export function RegistrationForm({
 
         <div className="mt-5">
           <PlanPicker monthly={pricing.monthly} yearly={pricing.yearly} />
+          <FieldError id="plan-error" message={errors.plan} />
         </div>
 
         <ol className="text-foreground/90 mt-6 space-y-3 text-sm">
@@ -526,7 +615,11 @@ export function RegistrationForm({
               </span>
               <span className="text-pretty">
                 {format(clause, {
-                  monthly: formatMoney(pricing.monthly.priceMinor, pricing.monthly.currency, locale),
+                  monthly: formatMoney(
+                    pricing.monthly.priceMinor,
+                    pricing.monthly.currency,
+                    locale,
+                  ),
                   yearly: formatMoney(pricing.yearly.priceMinor, pricing.yearly.currency, locale),
                   trialDays: pricing.trialDays,
                 })}
@@ -541,22 +634,49 @@ export function RegistrationForm({
             name="agreeToTerms"
             checked={agreed}
             onChange={(e) => setAgreed(e.target.checked)}
+            aria-invalid={errors.agreeToTerms ? true : undefined}
+            aria-describedby={errors.agreeToTerms ? "agreeToTerms-error" : undefined}
             className="accent-teal-deep mt-0.5 h-4 w-4 shrink-0"
           />
-          <span className="text-foreground">{t.clinics.regAgree}</span>
+          <span className="flex flex-col gap-1">
+            <span className="text-foreground">{t.clinics.regAgree}</span>
+            <FieldError id="agreeToTerms-error" message={errors.agreeToTerms} />
+          </span>
         </label>
       </div>
 
-      <button
-        type="submit"
-        disabled={isPending || !agreed || docKinds.some((k) => !docs[k])}
-        className={cn(
-          buttonVariants(),
-          "bg-teal-deep hover:bg-teal-deep/90 text-cream inline-flex h-12 w-full items-center justify-center rounded-full px-7 text-base font-semibold disabled:cursor-not-allowed disabled:opacity-50",
+      <div className="flex gap-3">
+        {step > 0 && (
+          <button
+            type="button"
+            onClick={() => {
+              setErrors({});
+              goTo(step - 1);
+            }}
+            disabled={isPending}
+            className={cn(
+              buttonVariants({ variant: "outline" }),
+              "h-12 rounded-full px-7 text-base font-semibold",
+            )}
+          >
+            {t.clinics.wizBack}
+          </button>
         )}
-      >
-        {isPending ? t.clinics.regSubmitting : t.clinics.regSubmit}
-      </button>
+        <button
+          type="submit"
+          disabled={isPending}
+          className={cn(
+            buttonVariants(),
+            "bg-teal-deep hover:bg-teal-deep/90 text-cream inline-flex h-12 flex-1 items-center justify-center rounded-full px-7 text-base font-semibold disabled:cursor-not-allowed disabled:opacity-50",
+          )}
+        >
+          {step < STEP_COUNT - 1
+            ? t.clinics.wizNext
+            : isPending
+              ? t.clinics.regSubmitting
+              : t.clinics.regSubmit}
+        </button>
+      </div>
     </form>
   );
 }
