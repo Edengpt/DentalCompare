@@ -1,9 +1,19 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-const { authMock, userFindUnique, requestFindUnique, getBlob, isAdminEmail } = vi.hoisted(() => ({
+const {
+  authMock,
+  userFindUnique,
+  requestFindUnique,
+  dentistFindUnique,
+  requestDentistFindFirst,
+  getBlob,
+  isAdminEmail,
+} = vi.hoisted(() => ({
   authMock: vi.fn(),
   userFindUnique: vi.fn(),
   requestFindUnique: vi.fn(),
+  dentistFindUnique: vi.fn(),
+  requestDentistFindFirst: vi.fn(),
   getBlob: vi.fn(),
   isAdminEmail: vi.fn(),
 }));
@@ -15,6 +25,8 @@ vi.mock("@/lib/db", () => ({
   db: {
     user: { findUnique: userFindUnique },
     request: { findUnique: requestFindUnique },
+    dentist: { findUnique: dentistFindUnique },
+    requestDentist: { findFirst: requestDentistFindFirst },
   },
 }));
 
@@ -42,6 +54,8 @@ describe("GET /api/files/[requestId]/[kind]", () => {
       xrayFileUrl: "https://blob/xray",
     });
     isAdminEmail.mockReturnValue(false);
+    dentistFindUnique.mockResolvedValue(null);
+    requestDentistFindFirst.mockResolvedValue(null);
     getBlob.mockResolvedValue({
       statusCode: 200,
       stream: streamOf([1, 2, 3]),
@@ -91,5 +105,51 @@ describe("GET /api/files/[requestId]/[kind]", () => {
     const res = await call("req_1", "xray");
     expect(res.status).toBe(200);
     expect(getBlob).toHaveBeenCalledWith("https://blob/xray", { access: "private" });
+  });
+
+  describe("a clinic signed in to its own account", () => {
+    const notTheOwner = {
+      userId: "someone_else",
+      treatmentFileUrl: "https://blob/treatment",
+      xrayFileUrl: "https://blob/xray",
+    };
+
+    beforeEach(() => {
+      authMock.mockResolvedValue({ userId: "clerk_clinic" });
+      // A clinic account need not have a patient User row at all.
+      userFindUnique.mockResolvedValue(null);
+      requestFindUnique.mockResolvedValue(notTheOwner);
+      dentistFindUnique.mockResolvedValue({ id: "dentist_1" });
+    });
+
+    it("gets the files of a request that was actually delivered to it", async () => {
+      requestDentistFindFirst.mockResolvedValue({ id: "rd_1" });
+
+      const res = await call("req_1", "xray");
+
+      expect(res.status).toBe(200);
+      expect(requestDentistFindFirst).toHaveBeenCalledWith({
+        where: { requestId: "req_1", dentistId: "dentist_1", emailSent: true },
+        select: { id: true },
+      });
+    });
+
+    it("gets 404 for a request that was not sent to it", async () => {
+      requestDentistFindFirst.mockResolvedValue(null);
+
+      const res = await call("req_1", "xray");
+
+      expect(res.status).toBe(404);
+      expect(getBlob).not.toHaveBeenCalled();
+    });
+
+    it("gets 401 when the account is neither a patient nor a clinic", async () => {
+      dentistFindUnique.mockResolvedValue(null);
+
+      const res = await call("req_1", "xray");
+
+      expect(res.status).toBe(401);
+      expect(getBlob).not.toHaveBeenCalled();
+    });
   });
 });

@@ -1,5 +1,5 @@
 import { currentUser } from "@clerk/nextjs/server";
-import { CheckCircle2, Clock, AlertTriangle, FileText, Inbox } from "lucide-react";
+import { CheckCircle2, Clock, AlertTriangle, FileText } from "lucide-react";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { isLocale, defaultLocale } from "@/i18n/config";
 import { LocaleLink as Link } from "@/i18n/locale-link";
@@ -8,7 +8,8 @@ import { db } from "@/lib/db";
 import { isClinicVisible, billingBlocker } from "@/lib/subscription";
 import { isPayPlusConfigured } from "@/lib/payplus";
 import { getClinicForCurrentUser } from "@/server/clinic-account";
-import { QuoteStatusActions } from "@/components/clinics/quote-status-actions";
+import { IncomingRequests } from "@/components/clinics/incoming-requests";
+import { clinicLeadStage, decidedElsewhere } from "@/lib/clinic-lead-stage";
 import { PendingReview } from "@/components/clinics/pending-review";
 import { clinicReviewStage } from "@/lib/clinic-review-stage";
 
@@ -91,8 +92,15 @@ export default async function ClinicDashboardPage({
       select: {
         id: true,
         sentAt: true,
-        quoteToken: true,
-        quote: { select: { id: true, status: true } },
+        quote: { select: { status: true } },
+        // Only to derive "the patient already chose another clinic" — which
+        // clinic, and at what price, never leaves the server.
+        request: {
+          select: {
+            id: true,
+            requestDentists: { select: { id: true, quote: { select: { status: true } } } },
+          },
+        },
       },
     }),
   ]);
@@ -261,30 +269,19 @@ export default async function ClinicDashboardPage({
             {t.clinics.dashLeadsNone}
           </p>
         ) : (
-          <ul className="mt-4 space-y-3">
-            {leads.map((lead) => (
-              <li
-                key={lead.id}
-                className="border-border/50 flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b pb-3 text-sm last:border-0 last:pb-0"
-              >
-                <Inbox className="text-muted-foreground h-4 w-4 shrink-0" />
-                <span className="text-muted-foreground text-xs">
-                  {lead.sentAt
-                    ? format(t.clinics.dashLeadReceived, { date: dateFmt.format(lead.sentAt) })
-                    : ""}
-                </span>
-                <QuoteStatusActions requestDentistId={lead.id} status={lead.quote?.status ?? null} />
-                {lead.quoteToken && (
-                  <Link
-                    href={`/quote/${lead.quoteToken}`}
-                    className="text-teal-deep ms-auto text-xs font-semibold underline-offset-4 hover:underline"
-                  >
-                    {t.clinics.dashLeadOpen}
-                  </Link>
-                )}
-              </li>
-            ))}
-          </ul>
+          <div className="mt-4">
+            <IncomingRequests
+              leads={leads.map((lead) => ({
+                id: lead.id,
+                requestId: lead.request.id,
+                receivedAt: lead.sentAt,
+                ...clinicLeadStage({
+                  status: lead.quote?.status ?? null,
+                  decidedElsewhere: decidedElsewhere(lead.id, lead.request.requestDentists),
+                }),
+              }))}
+            />
+          </div>
         )}
       </section>
     </main>
