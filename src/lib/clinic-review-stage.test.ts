@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { clinicReviewStage } from "./clinic-review-stage";
+import { adminReviewStage, clinicReviewStage } from "./clinic-review-stage";
 
 const doc = (rejected: boolean) => ({ rejectedAt: rejected ? new Date() : null });
 
@@ -18,5 +18,34 @@ describe("clinicReviewStage", () => {
     expect(clinicReviewStage({ approvedAt: null, documents: [doc(false), doc(true)] })).toBe(
       "needsDocument",
     );
+  });
+});
+
+describe("adminReviewStage", () => {
+  it("flags a clinic with nothing to look at first", () => {
+    expect(adminReviewStage({ isActive: false, documents: [] })).toMatchObject({
+      stage: "noDocuments",
+      tone: "danger",
+    });
+  });
+
+  it("waits on the clinic once a document was sent back", () => {
+    expect(adminReviewStage({ isActive: false, documents: [doc(true)] }).stage).toBe(
+      "needsDocument",
+    );
+  });
+
+  it("marks a live clinic that never had its licence stamped", () => {
+    expect(adminReviewStage({ isActive: true, documents: [doc(false)] })).toMatchObject({
+      stage: "missingStamp",
+      tone: "action",
+    });
+  });
+
+  it("is ready for review otherwise", () => {
+    expect(adminReviewStage({ isActive: false, documents: [doc(false)] })).toMatchObject({
+      stage: "reviewing",
+      tone: "action",
+    });
   });
 });

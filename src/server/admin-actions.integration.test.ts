@@ -2,12 +2,30 @@ import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from "vite
 import { randomUUID } from "node:crypto";
 import type { db as Db } from "@/lib/db";
 
-const { requireAdmin, sendPaymentSetupEmail, sendDocumentsRejectedEmail } = vi.hoisted(() => ({
+const {
+  requireAdmin,
+  sendPaymentSetupEmail,
+  sendDocumentsRejectedEmail,
+  sendClinicRejectedEmail,
+  blob,
+} = vi.hoisted(() => ({
   requireAdmin: vi.fn(async () => ({ id: "u1", email: "admin@example.com" })),
   sendPaymentSetupEmail: vi.fn(async () => true),
   sendDocumentsRejectedEmail: vi.fn(
     async (_args: { token: string; items: { kind: string; reason: string }[] }) => true,
   ),
+  sendClinicRejectedEmail: vi.fn(
+    async (_args: { email: string; clinicName: string; reason: string | null }) => true,
+  ),
+  blob: { deleted: [] as string[], failFor: new Set<string>() },
+}));
+
+vi.mock("@vercel/blob", async (orig) => ({
+  ...(await orig<typeof import("@vercel/blob")>()),
+  del: async (url: string) => {
+    if (blob.failFor.has(url)) throw new Error("blob store unavailable");
+    blob.deleted.push(url);
+  },
 }));
 
 vi.mock("@/server/admin", async (orig) => {
@@ -17,6 +35,7 @@ vi.mock("@/server/admin", async (orig) => {
 vi.mock("@/server/subscription-notifications", () => ({
   sendPaymentSetupEmail,
   sendDocumentsRejectedEmail,
+  sendClinicRejectedEmail,
 }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
@@ -144,8 +163,7 @@ describe.skipIf(!hasDb)("approveClinic (integration, real DB)", () => {
 
         const sub = await db.clinicSubscription.findUniqueOrThrow({ where: { dentistId } });
         const dentist = await db.dentist.findUniqueOrThrow({ where: { id: dentistId } });
-        const expectedMs =
-          dentist.approvedAt!.getTime() + 60 * 24 * 60 * 60 * 1000; // 60 days, not 30
+        const expectedMs = dentist.approvedAt!.getTime() + 60 * 24 * 60 * 60 * 1000; // 60 days, not 30
         expect(sub.trialEndsAt!.getTime()).toBe(expectedMs);
       } finally {
         await db.subscriptionPricing.update({
@@ -398,6 +416,60 @@ describe.skipIf(!hasDb)("approveClinic (integration, real DB)", () => {
         expect(await db.dentist.findUnique({ where: { id: legacyId } })).toBeNull();
 
         created.splice(created.indexOf(legacyId), 1); // already deleted
+      },
+      DB_TIMEOUT,
+    );
+
+    it(
+      "tells the clinic why, and takes its licence documents out of storage",
+      async () => {
+        const { rejectClinic } = await import("./admin-actions");
+        const dentistId = await seedPendingClinic();
+        const docUrl = `https://store.private.blob.vercel-storage.com/clinics/documents/${randomUUID()}.pdf`;
+        await db.clinicDocument.create({
+          data: { dentistId, kind: "licence", blobUrl: docUrl, contentType: "application/pdf" },
+        });
+        blob.deleted.length = 0;
+        sendClinicRejectedEmail.mockClear();
+
+        const result = await rejectClinic(dentistId, "  Not a dental practice  ");
+
+        expect(result.ok).toBe(true);
+        expect(blob.deleted).toEqual([docUrl]);
+        expect(sendClinicRejectedEmail).toHaveBeenCalledWith(
+          expect.objectContaining({ reason: "Not a dental practice" }),
+        );
+        expect(await db.dentist.findUnique({ where: { id: dentistId } })).toBeNull();
+        const log = await db.auditLog.findFirst({
+          where: { entityId: dentistId, action: "clinic.reject" },
+          orderBy: { createdAt: "desc" },
+        });
+        expect(log?.metadata).toMatchObject({ reason: "Not a dental practice", emailed: true });
+
+        created.splice(created.indexOf(dentistId), 1); // already deleted
+      },
+      DB_TIMEOUT,
+    );
+
+    it(
+      "keeps the clinic and sends nothing when its documents cannot be deleted",
+      async () => {
+        const { rejectClinic } = await import("./admin-actions");
+        const dentistId = await seedPendingClinic();
+        const docUrl = `https://store.private.blob.vercel-storage.com/clinics/documents/${randomUUID()}.pdf`;
+        await db.clinicDocument.create({
+          data: { dentistId, kind: "licence", blobUrl: docUrl, contentType: "application/pdf" },
+        });
+        blob.failFor.add(docUrl);
+        sendClinicRejectedEmail.mockClear();
+
+        const result = await rejectClinic(dentistId, "reason");
+
+        blob.failFor.delete(docUrl);
+        // Retryable: nothing half-done, the clinic not yet told.
+        expect(result.ok).toBe(false);
+        expect(sendClinicRejectedEmail).not.toHaveBeenCalled();
+        expect(await db.dentist.findUnique({ where: { id: dentistId } })).not.toBeNull();
       },
       DB_TIMEOUT,
     );

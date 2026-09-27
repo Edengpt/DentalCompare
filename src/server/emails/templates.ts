@@ -492,3 +492,32 @@ export function completionDeclinedEmailHtml(opts: {
     body: opts.t.completionDeclinedBody,
   });
 }
+
+/**
+ * Clinic: its registration was not approved. Sent just before the clinic is
+ * removed — the one message it will get about this, so it carries the reason
+ * when the admin gave one and says how to get in touch.
+ */
+export function clinicRejectedEmailHtml(opts: {
+  locale: Locale;
+  t: EmailStrings;
+  clinicName: string;
+  reason: string | null;
+}): string {
+  const { locale, t, clinicName, reason } = opts;
+  return shell(
+    locale,
+    `    <h2 style="color:#0f4c4c;">${t.clinicRejectedHeading}</h2>
+    <p>${format(t.greeting, { name: `<strong>${escapeHtml(clinicName)}</strong>` })}</p>
+    <p>${t.clinicRejectedBody}</p>
+    ${
+      reason
+        ? `<p style="font-weight:600;">${t.clinicRejectedReason}</p>
+    <p style="background:#f6f3ee;border-radius:8px;padding:12px 16px;white-space:pre-wrap;">${escapeHtml(reason)}</p>`
+        : ""
+    }
+    <p>${t.clinicRejectedContact}</p>
+    ${HR}
+    <p style="font-size:12px;color:#777;">${t.autoFooter}</p>`,
+  );
+}

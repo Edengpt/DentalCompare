@@ -27,8 +27,11 @@ export function ConfirmDialog({
   title: string;
   children?: React.ReactNode;
   confirmLabel: string;
-  /** primary = the step the patient came to take; quiet = a step away from it. */
-  tone?: "primary" | "quiet";
+  /**
+   * primary = the step the user came to take; quiet = a step away from it;
+   * approve / danger = an admin's green light and its irreversible opposite.
+   */
+  tone?: "primary" | "quiet" | "approve" | "danger";
   irreversible?: boolean;
 }) {
   const t = useT().requestDetail;
@@ -71,9 +74,12 @@ export function ConfirmDialog({
               onClick={onConfirm}
               className={cn(
                 "inline-flex h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-bold disabled:opacity-70",
-                tone === "quiet"
-                  ? "bg-foreground text-background hover:bg-foreground/90"
-                  : "bg-coral hover:bg-coral/90 text-white",
+                {
+                  primary: "bg-coral hover:bg-coral/90 text-white",
+                  quiet: "bg-foreground text-background hover:bg-foreground/90",
+                  approve: "bg-emerald-600 text-white hover:bg-emerald-700",
+                  danger: "bg-red-600 text-white hover:bg-red-700",
+                }[tone],
               )}
             >
               {pending && <Loader2 className="h-4 w-4 animate-spin" />}
