@@ -9,6 +9,8 @@ import { isClinicVisible, billingBlocker } from "@/lib/subscription";
 import { isPayPlusConfigured } from "@/lib/payplus";
 import { getClinicForCurrentUser } from "@/server/clinic-account";
 import { QuoteStatusActions } from "@/components/clinics/quote-status-actions";
+import { PendingReview } from "@/components/clinics/pending-review";
+import { clinicReviewStage } from "@/lib/clinic-review-stage";
 
 export const dynamic = "force-dynamic";
 
@@ -68,6 +70,7 @@ export default async function ClinicDashboardPage({
         plan: true,
         currentPeriodEnd: true,
         trialEndsAt: true,
+        trialDays: true,
         trialEndedUnbilledAt: true,
         recurringToken: true,
         setupToken: true,
@@ -121,6 +124,13 @@ export default async function ClinicDashboardPage({
           })
         : null;
 
+  // Until approval, the first thing the clinic sees is where its application
+  // stands — the same timeline it saw right after submitting.
+  const reviewStage = clinicReviewStage({ approvedAt: clinic.approvedAt, documents });
+  const returned = documents
+    .filter((d) => d.rejectedAt)
+    .map((d) => ({ kind: d.kind, reason: d.rejectionReason }));
+
   return (
     <main className="mx-auto max-w-3xl space-y-6 px-4 py-12">
       <header>
@@ -129,6 +139,19 @@ export default async function ClinicDashboardPage({
         </h1>
         <p className="text-muted-foreground mt-1 text-sm">{t.clinics.dashTitle}</p>
       </header>
+
+      {reviewStage && (
+        <PendingReview
+          email={clinic.email}
+          trialDays={subscription?.trialDays ?? 0}
+          returned={returned}
+          replaceHref={
+            clinic.documentToken && returned.length > 0
+              ? `/clinics/documents/${clinic.documentToken}`
+              : null
+          }
+        />
+      )}
 
       <section className="border-border/60 bg-card rounded-2xl border p-6">
         <h2 className="text-foreground font-semibold">{t.clinics.dashStatusHeading}</h2>

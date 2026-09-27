@@ -788,6 +788,13 @@ const en: typeof he = {
     pendingStepReview: "Our team reviews your documents",
     pendingStepReviewNote: "Usually within 1–2 business days.",
     pendingStepLive: "Approval and listing",
+    pendingStepFix: "A document needs replacing",
+    pendingStepFixNote:
+      "Our team looked at your documents and one needs fixing. The review continues as soon as we have it.",
+    pendingFixTitle: "One document away",
+    pendingFixIntro:
+      "Almost there. To be listed, replace the document marked below — there is no need to fill in the form again.",
+    pendingFixByEmail: "The link to upload it was sent to you by email.",
     pendingStepLiveNote: "Your {trialDays}-day free trial starts on the day you are approved.",
     pendingEmail:
       "We'll email {email} as soon as we're done. If a document is missing or a photo is unreadable, we'll send a link to upload it again — no need to fill in the form afresh.",
