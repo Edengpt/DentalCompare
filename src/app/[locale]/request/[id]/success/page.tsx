@@ -1,6 +1,6 @@
 import { LocaleLink as Link } from "@/i18n/locale-link";
 import { notFound, redirect } from "next/navigation";
-import { CheckCircle2, Mail } from "lucide-react";
+import { CheckCircle2, Loader2, Mail } from "lucide-react";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { fulfillRequest } from "@/server/fulfillment";
@@ -11,6 +11,16 @@ import { isLocale, defaultLocale } from "@/i18n/config";
 import { plural } from "@/i18n/format";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
+import { RefreshWhileSending } from "@/components/request/refresh-while-sending";
+
+// Delivery normally lands within seconds of the submit action returning. A
+// request still SUBMITTED after this long lost its background run, and this
+// page finishes it rather than leaving it to the daily cron.
+const STALLED_AFTER_MS = 2 * 60 * 1000;
+
+function isStalled(submittedAt: Date): boolean {
+  return Date.now() - submittedAt.getTime() > STALLED_AFTER_MS;
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -20,7 +30,11 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export const dynamic = "force-dynamic";
 
-export default async function RequestSuccessPage({ params }: { params: Promise<{ id: string; locale: string }> }) {
+export default async function RequestSuccessPage({
+  params,
+}: {
+  params: Promise<{ id: string; locale: string }>;
+}) {
   const { id, locale } = await params;
   const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
   const { userId: clerkUserId } = await auth();
@@ -31,14 +45,15 @@ export default async function RequestSuccessPage({ params }: { params: Promise<{
 
   const request = await db.request.findUnique({
     where: { id },
-    select: { id: true, userId: true, status: true },
+    select: { id: true, userId: true, status: true, updatedAt: true },
   });
   if (!request || request.userId !== user.id) notFound();
 
-  // There is no payment to verify any more. If the submit action set the request
-  // to SUBMITTED but delivery didn't complete, retry here — fulfillRequest is
-  // idempotent, so a clinic already emailed is never emailed twice.
-  if (request.status === "SUBMITTED") {
+  // The submit action delivers in the background, so SUBMITTED on arrival is
+  // normal and this page just watches it. Only a request stuck there is
+  // delivered from here — fulfillRequest claims each recipient before sending,
+  // so racing a background run that is merely slow emails no clinic twice.
+  if (request.status === "SUBMITTED" && isStalled(request.updatedAt)) {
     await fulfillRequest(id);
   }
 
@@ -51,27 +66,42 @@ export default async function RequestSuccessPage({ params }: { params: Promise<{
   });
   const dentistCount = fresh?._count.requestDentists ?? 0;
   const sent = fresh?.status === "SENT";
+  const sending = fresh?.status === "SUBMITTED";
 
   return (
     <>
       <Header />
       <main className="flex-1">
         <div className="mx-auto flex max-w-2xl flex-col items-center px-6 py-20 text-center lg:py-28">
-          <div className="bg-teal-deep/10 text-teal-deep inline-flex h-16 w-16 items-center justify-center rounded-full">
-            <CheckCircle2 className="h-8 w-8" />
+          {sending && <RefreshWhileSending />}
+          <div
+            className="bg-teal-deep/10 text-teal-deep inline-flex h-16 w-16 items-center justify-center rounded-full"
+            aria-hidden="true"
+          >
+            {sending ? (
+              <Loader2 className="h-8 w-8 animate-spin" />
+            ) : (
+              <CheckCircle2 className="animate-in zoom-in-50 h-8 w-8 duration-500" />
+            )}
           </div>
 
-          <h1 className="font-display text-foreground mt-6 text-4xl font-bold tracking-tight text-balance sm:text-5xl">
-            {sent ? t.requestFlow.successTitleSent : t.requestFlow.successTitlePending}
-          </h1>
+          <div aria-live="polite">
+            <h1 className="font-display text-foreground mt-6 text-4xl font-bold tracking-tight text-balance sm:text-5xl">
+              {sent
+                ? t.requestFlow.successTitleSent
+                : sending
+                  ? t.requestFlow.successTitleSending
+                  : t.requestFlow.successTitlePending}
+            </h1>
 
-          <p className="text-muted-foreground mt-4 max-w-md text-lg text-pretty">
-            {sent ? (
-              plural(t.requestFlow.successBodySent, dentistCount)
-            ) : (
-              t.requestFlow.successBodyPending
-            )}
-          </p>
+            <p className="text-muted-foreground mx-auto mt-4 max-w-md text-lg text-pretty">
+              {sent
+                ? plural(t.requestFlow.successBodySent, dentistCount)
+                : sending
+                  ? t.requestFlow.successBodySending
+                  : t.requestFlow.successBodyPending}
+            </p>
+          </div>
 
           {sent && (
             <div className="text-muted-foreground mt-8 inline-flex items-center gap-2 text-sm">

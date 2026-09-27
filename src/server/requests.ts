@@ -4,6 +4,7 @@ import { getDictionary } from "@/i18n/get-dictionary";
 import { getRequestLocale } from "@/i18n/request-locale";
 import { format } from "@/i18n/format";
 import { auth } from "@clerk/nextjs/server";
+import { after } from "next/server";
 import { db } from "@/lib/db";
 import { REQUEST_LIMITS } from "@/lib/constants";
 import { publicDentistWhere } from "@/lib/dentist-public";
@@ -91,7 +92,7 @@ export async function saveRequestDentists(
 }
 
 /**
- * Submits a request and delivers it to the selected clinics. This replaces the
+ * Submits a request and schedules delivery to the selected clinics. This replaces the
  * removed checkout action as the single trigger for the whole delivery pipeline
  * — submission is free for the patient (PRD 4.1), so there is no payment gate.
  *
@@ -186,8 +187,19 @@ export async function submitRequest(requestId: string): Promise<SubmitRequestRes
 
   await db.request.update({ where: { id: requestId }, data: { status: "SUBMITTED" } });
 
-  const result = await fulfillRequest(requestId);
-  if (!result.ok) return { ok: false, error: result.error };
+  // Delivery runs after the response. Every email carries the plan and the
+  // x-ray, and waiting for three of them held the patient on a spinner for
+  // seconds after the decision was already made. The success page watches the
+  // status land; if this dies, that page and the retry cron both pick it up —
+  // fulfillRequest claims each recipient before sending, so none is emailed
+  // twice.
+  after(async () => {
+    try {
+      await fulfillRequest(requestId);
+    } catch (err) {
+      console.error(`[submitRequest] background delivery failed for ${requestId}:`, err);
+    }
+  });
 
   return { ok: true, sentTo: eligibleIds.size };
 }
