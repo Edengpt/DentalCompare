@@ -77,6 +77,7 @@ export default async function RequestDetailPage({
               warrantyYears: true,
               warrantyNote: true,
               status: true,
+              rejectedAuto: true,
             },
           },
           dentist: {
@@ -122,6 +123,7 @@ export default async function RequestDetailPage({
     warrantyYears: rd.quote?.warrantyYears ?? null,
     warrantyNote: rd.quote?.warrantyNote ?? null,
     note: rd.quote?.note ?? null,
+    rejectedAuto: rd.quote?.rejectedAuto ?? false,
   }));
   // One converter per page load, handed to the table — which never touches the
   // database itself. Null for a quote with no honest rate: the patient still
