@@ -8,6 +8,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getOrCreateUser } from "@/server/users";
 import { RequestList } from "@/components/request/request-list";
+import { CompletionBanner } from "@/components/request/completion-banner";
 import { isAdminEmail } from "@/server/admin";
 import { db } from "@/lib/db";
 import { getDictionary } from "@/i18n/get-dictionary";
@@ -50,12 +51,30 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
           createdAt: true,
           treatmentFileUrl: true,
           xrayFileUrl: true,
-          requestDentists: { select: { quote: { select: { status: true } } } },
+          requestDentists: {
+            select: {
+              id: true,
+              dentist: { select: { clinicName: true } },
+              quote: { select: { status: true } },
+            },
+          },
         },
       })
     : [];
 
   const hasRequests = requests.length > 0;
+
+  // A clinic asking the patient to confirm completion is the one thing that
+  // blocks a treatment on the patient — it gets a banner, not just a badge.
+  const completionAsks = requests.flatMap((r) =>
+    r.requestDentists
+      .filter((rd) => rd.quote?.status === "COMPLETION_REQUESTED")
+      .map((rd) => ({
+        requestId: r.id,
+        requestDentistId: rd.id,
+        clinicName: rd.dentist.clinicName,
+      })),
+  );
 
   return (
     <>
@@ -111,18 +130,32 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
               </Link>
             </div>
           ) : (
-            <RequestList
-              t={t}
-              locale={locale}
-              rows={requests.map((r) => ({
-                id: r.id,
-                status: r.status,
-                createdAt: r.createdAt,
-                filesReady: !!r.treatmentFileUrl && !!r.xrayFileUrl,
-                recipients: r.requestDentists.length,
-                quotes: r.requestDentists.flatMap((rd) => (rd.quote ? [rd.quote.status] : [])),
-              }))}
-            />
+            <>
+              {completionAsks.length > 0 && (
+                <div className="mt-10 space-y-3">
+                  {completionAsks.map((a) => (
+                    <CompletionBanner
+                      key={a.requestDentistId}
+                      requestDentistId={a.requestDentistId}
+                      clinicName={a.clinicName}
+                      detailsHref={`/request/${a.requestId}`}
+                    />
+                  ))}
+                </div>
+              )}
+              <RequestList
+                t={t}
+                locale={locale}
+                rows={requests.map((r) => ({
+                  id: r.id,
+                  status: r.status,
+                  createdAt: r.createdAt,
+                  filesReady: !!r.treatmentFileUrl && !!r.xrayFileUrl,
+                  recipients: r.requestDentists.length,
+                  quotes: r.requestDentists.flatMap((rd) => (rd.quote ? [rd.quote.status] : [])),
+                }))}
+              />
+            </>
           )}
         </div>
       </main>

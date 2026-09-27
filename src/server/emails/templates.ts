@@ -433,3 +433,62 @@ export function treatmentCompletedEmailHtml(opts: {
     <p style="font-size: 12px; color: #777;">${t.autoFooter}</p>`,
   );
 }
+
+/**
+ * A short notice to a clinic about something the patient did on its treatment:
+ * heading, one line, a button to the clinic area. The two below differ only in
+ * their strings.
+ */
+function clinicTreatmentNoticeHtml(opts: {
+  locale: Locale;
+  t: EmailStrings;
+  clinicName: string;
+  link: string;
+  heading: string;
+  body: string;
+}): string {
+  const { locale, t, clinicName, link, heading, body } = opts;
+  return shell(
+    locale,
+    `    <h2 style="color: #0f4c4c;">${heading}</h2>
+    <p>${format(t.greeting, { name: escapeHtml(clinicName) })}</p>
+    <p>${format(body, { patient: t.patientFallback })}</p>
+    <div style="text-align: center; margin: 28px 0;">
+      <a href="${link}"
+         style="display: inline-block; background: #0f4c4c; color: #fff; text-decoration: none;
+                font-size: 16px; font-weight: bold; padding: 14px 30px; border-radius: 999px;">
+        ${t.treatmentCompletedCta}
+      </a>
+    </div>
+    ${HR}
+    <p style="font-size: 12px; color: #777;">${t.autoFooter}</p>`,
+  );
+}
+
+/** Clinic: the patient marked the treatment as started. */
+export function treatmentStartedByPatientEmailHtml(opts: {
+  locale: Locale;
+  t: EmailStrings;
+  clinicName: string;
+  link: string;
+}): string {
+  return clinicTreatmentNoticeHtml({
+    ...opts,
+    heading: opts.t.treatmentStartedByPatientHeading,
+    body: opts.t.treatmentStartedByPatientBody,
+  });
+}
+
+/** Clinic: the patient answered the completion request with "still ongoing". */
+export function completionDeclinedEmailHtml(opts: {
+  locale: Locale;
+  t: EmailStrings;
+  clinicName: string;
+  link: string;
+}): string {
+  return clinicTreatmentNoticeHtml({
+    ...opts,
+    heading: opts.t.completionDeclinedHeading,
+    body: opts.t.completionDeclinedBody,
+  });
+}

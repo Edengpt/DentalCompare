@@ -15,6 +15,8 @@ import {
   sendTreatmentStartedEmail,
   sendCompletionRequestedEmail,
   sendTreatmentCompletedEmail,
+  sendTreatmentStartedByPatientEmail,
+  sendCompletionDeclinedEmail,
 } from "@/server/quote-decision-notifications";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
@@ -239,7 +241,11 @@ async function loadOwnedByClinic(requestDentistId: string) {
   return { ok: true as const, rd };
 }
 
-/** The clinic marks that the patient has begun treatment. Only after APPROVED. */
+/**
+ * The clinic marks that the patient has begun treatment. Only after APPROVED.
+ * The patient may mark it too (markTreatmentStartedByPatient); whoever is first
+ * wins, because both guard on APPROVED.
+ */
 export async function markTreatmentStarted(requestDentistId: string): Promise<ActionResult> {
   const e = (await getDictionary(await getRequestLocale())).errors;
   const loaded = await loadOwnedByClinic(requestDentistId);
@@ -248,7 +254,7 @@ export async function markTreatmentStarted(requestDentistId: string): Promise<Ac
 
   const result = await db.quote.updateMany({
     where: { id: rd.quote!.id, status: "APPROVED" },
-    data: { status: "IN_TREATMENT", treatmentStartedAt: new Date() },
+    data: { status: "IN_TREATMENT", treatmentStartedAt: new Date(), treatmentStartedBy: "CLINIC" },
   });
   if (result.count === 0) return { ok: false, error: e.invalidQuoteTransition };
 
@@ -338,5 +344,86 @@ export async function confirmCompletion(requestDentistId: string): Promise<Actio
   }
 
   revalidatePath(`/request/${rd.requestId}`);
+  // The dashboard carries the completion banner too.
+  revalidatePath("/dashboard");
+  return { ok: true };
+}
+
+/**
+ * The patient marks that treatment has begun — the clinic can forget, and the
+ * patient is the one sitting in the chair. Same guard as the clinic's version,
+ * so only the first of the two lands; the other side is emailed.
+ */
+export async function markTreatmentStartedByPatient(requestDentistId: string): Promise<ActionResult> {
+  const e = (await getDictionary(await getRequestLocale())).errors;
+  const loaded = await loadOwnedRequestDentist(requestDentistId);
+  if (!loaded.ok) return { ok: false, error: e[loaded.error] };
+  const { rd } = loaded;
+
+  const result = await db.quote.updateMany({
+    where: { id: rd.quote!.id, status: "APPROVED" },
+    data: { status: "IN_TREATMENT", treatmentStartedAt: new Date(), treatmentStartedBy: "PATIENT" },
+  });
+  if (result.count === 0) return { ok: false, error: e.invalidQuoteTransition };
+
+  await audit({ actor: "patient", action: "quote.treatment_started", entity: "Quote", entityId: rd.quote!.id });
+
+  if (
+    await sendTreatmentStartedByPatientEmail({
+      to: rd.dentist.email,
+      clinicName: rd.dentist.clinicName,
+      locale: asLocale(rd.dentist.locale),
+    })
+  ) {
+    await stampNotified(rd.quote!.id, { treatmentStartedNotifiedAt: new Date() });
+  }
+
+  revalidatePath(`/request/${rd.requestId}`);
+  revalidatePath("/dashboard");
+  return { ok: true };
+}
+
+/**
+ * The patient answers a completion request with "not yet". The quote goes back
+ * to IN_TREATMENT and the request is cleared, so the clinic can ask again once
+ * it really is done — and that second ask is emailed (and retried) afresh.
+ */
+export async function declineCompletion(requestDentistId: string): Promise<ActionResult> {
+  const e = (await getDictionary(await getRequestLocale())).errors;
+  const loaded = await loadOwnedRequestDentist(requestDentistId);
+  if (!loaded.ok) return { ok: false, error: e[loaded.error] };
+  const { rd } = loaded;
+
+  const result = await db.quote.updateMany({
+    where: { id: rd.quote!.id, status: "COMPLETION_REQUESTED" },
+    data: {
+      status: "IN_TREATMENT",
+      completionRequestedAt: null,
+      completionRequestedNotifiedAt: null,
+      completionDeclinedAt: new Date(),
+      completionDeclinedNotifiedAt: null,
+    },
+  });
+  if (result.count === 0) return { ok: false, error: e.invalidQuoteTransition };
+
+  await audit({
+    actor: "patient",
+    action: "quote.completion_declined",
+    entity: "Quote",
+    entityId: rd.quote!.id,
+  });
+
+  if (
+    await sendCompletionDeclinedEmail({
+      to: rd.dentist.email,
+      clinicName: rd.dentist.clinicName,
+      locale: asLocale(rd.dentist.locale),
+    })
+  ) {
+    await stampNotified(rd.quote!.id, { completionDeclinedNotifiedAt: new Date() });
+  }
+
+  revalidatePath(`/request/${rd.requestId}`);
+  revalidatePath("/dashboard");
   return { ok: true };
 }

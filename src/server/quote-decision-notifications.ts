@@ -6,6 +6,8 @@ import {
   treatmentStartedEmailHtml,
   completionRequestedEmailHtml,
   treatmentCompletedEmailHtml,
+  treatmentStartedByPatientEmailHtml,
+  completionDeclinedEmailHtml,
 } from "@/server/emails/templates";
 import { appUrl } from "@/lib/app-url";
 import { getDictionary } from "@/i18n/get-dictionary";
@@ -109,4 +111,36 @@ export async function sendTreatmentCompletedEmail(args: {
     link: `${appUrl()}/${args.locale}/clinics/dashboard`,
   });
   return send(args.to, t.treatmentCompletedHeading, html, "treatment-completed");
+}
+
+/** Clinic "the patient marked the treatment as started" notification. */
+export async function sendTreatmentStartedByPatientEmail(args: {
+  to: string;
+  clinicName: string;
+  locale: Locale;
+}): Promise<boolean> {
+  const t = (await getDictionary(args.locale)).emails;
+  const html = treatmentStartedByPatientEmailHtml({
+    locale: args.locale,
+    t,
+    clinicName: args.clinicName,
+    link: `${appUrl()}/${args.locale}/clinics/dashboard`,
+  });
+  return send(args.to, t.treatmentStartedByPatientHeading, html, "treatment-started-by-patient");
+}
+
+/** Clinic "the patient says treatment is still ongoing" notification. */
+export async function sendCompletionDeclinedEmail(args: {
+  to: string;
+  clinicName: string;
+  locale: Locale;
+}): Promise<boolean> {
+  const t = (await getDictionary(args.locale)).emails;
+  const html = completionDeclinedEmailHtml({
+    locale: args.locale,
+    t,
+    clinicName: args.clinicName,
+    link: `${appUrl()}/${args.locale}/clinics/dashboard`,
+  });
+  return send(args.to, t.completionDeclinedHeading, html, "completion-declined");
 }

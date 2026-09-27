@@ -203,6 +203,12 @@ enum TravelScope {
   ANY // כל מדינה פעילה — נקרא בזמן אמת, לא מוקפא
 }
 
+/// Which side of a treatment took an action.
+enum TreatmentActor {
+  PATIENT
+  CLINIC
+}
+
 enum QuoteStatus {
   PENDING_DECISION
   APPROVED
@@ -343,7 +349,15 @@ model Quote {
   decidedAt                     DateTime?
   rejectedAuto                  Boolean     @default(false)
   treatmentStartedAt            DateTime?
+  /// Who marked the start — either side may. Decides who the "treatment
+  /// started" email goes to (the other party), including on a cron retry.
+  /// Null on rows from before the patient could mark it: those were the clinic.
+  treatmentStartedBy            TreatmentActor?
   completionRequestedAt         DateTime?
+  /// The patient answered a completion request with "still ongoing". The quote
+  /// went back to IN_TREATMENT; the clinic may ask again later.
+  completionDeclinedAt          DateTime?
+  completionDeclinedNotifiedAt  DateTime?
   completedAt                   DateTime?
   decisionNotifiedAt            DateTime?
   treatmentStartedNotifiedAt    DateTime?

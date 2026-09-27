@@ -28,7 +28,12 @@ let GET: (req: Request) => Promise<Response>;
 const created = { userIds: [] as string[], dentistIds: [] as string[], requestIds: [] as string[] };
 const HOUR = 60 * 60 * 1000;
 
-async function seedQuote(opts: { createdAt: Date; notifiedAt?: Date | null }) {
+async function seedQuote(opts: {
+  createdAt: Date;
+  notifiedAt?: Date | null;
+  /** Extra quote columns — lifecycle state for the treatment blocks. */
+  quote?: Record<string, unknown>;
+}) {
   const sfx = randomUUID().slice(0, 8);
   const user = await db.user.create({
     data: {
@@ -73,12 +78,13 @@ async function seedQuote(opts: { createdAt: Date; notifiedAt?: Date | null }) {
       currency: "ILS",
       createdAt: opts.createdAt,
       patientNotifiedAt: opts.notifiedAt ?? null,
+      ...opts.quote,
     },
   });
   created.userIds.push(user.id);
   created.dentistIds.push(dentist.id);
   created.requestIds.push(request.id);
-  return { quote, user };
+  return { quote, user, dentist };
 }
 
 function call(secret = "test-secret") {
@@ -156,5 +162,63 @@ describe.skipIf(!hasDb)("retry-notifications cron (integration, real DB)", () =>
 
     expect(h.state.sends.find((s) => s.to === fresh.user.email)).toBeUndefined();
     expect(h.state.sends.find((s) => s.to === done.user.email)).toBeUndefined();
+  });
+
+  // Either side may mark a treatment started; the retry must reach the OTHER
+  // side, never echo the news back to the one who pressed the button.
+  it("retries a patient-marked start to the clinic, not to the patient", async () => {
+    const twoHoursAgo = new Date(Date.now() - 2 * HOUR);
+    const { quote, user, dentist } = await seedQuote({
+      createdAt: twoHoursAgo,
+      notifiedAt: twoHoursAgo,
+      quote: {
+        status: "IN_TREATMENT",
+        treatmentStartedAt: twoHoursAgo,
+        treatmentStartedBy: "PATIENT",
+      },
+    });
+
+    await call();
+
+    const recipients = h.state.sends.map((m) => m.to);
+    expect(recipients).toContain(dentist.email);
+    expect(recipients).not.toContain(user.email);
+    const after = await db.quote.findUniqueOrThrow({ where: { id: quote.id } });
+    expect(after.treatmentStartedNotifiedAt).not.toBeNull();
+  });
+
+  it("retries a clinic-marked start (or a legacy one with no actor) to the patient", async () => {
+    const twoHoursAgo = new Date(Date.now() - 2 * HOUR);
+    const { user, dentist } = await seedQuote({
+      createdAt: twoHoursAgo,
+      notifiedAt: twoHoursAgo,
+      quote: { status: "IN_TREATMENT", treatmentStartedAt: twoHoursAgo },
+    });
+
+    await call();
+
+    const recipients = h.state.sends.map((m) => m.to);
+    expect(recipients).toContain(user.email);
+    expect(recipients).not.toContain(dentist.email);
+  });
+
+  it("retries a 'still ongoing' answer to the clinic and stamps it", async () => {
+    const twoHoursAgo = new Date(Date.now() - 2 * HOUR);
+    const { quote, dentist } = await seedQuote({
+      createdAt: twoHoursAgo,
+      notifiedAt: twoHoursAgo,
+      quote: {
+        status: "IN_TREATMENT",
+        treatmentStartedAt: twoHoursAgo,
+        treatmentStartedNotifiedAt: twoHoursAgo,
+        completionDeclinedAt: twoHoursAgo,
+      },
+    });
+
+    await call();
+
+    expect(h.state.sends.map((m) => m.to)).toContain(dentist.email);
+    const after = await db.quote.findUniqueOrThrow({ where: { id: quote.id } });
+    expect(after.completionDeclinedNotifiedAt).not.toBeNull();
   });
 });
