@@ -45,12 +45,12 @@ export default async function AdminDentistsPage({
       </header>
 
       {pendingCount > 0 && (
-        <div className="border-highlight bg-highlight/10 text-foreground rounded-2xl border px-5 py-3 text-sm">
+        <div className="border-highlight bg-highlight/10 text-foreground rounded-lg border px-5 py-3 text-sm">
           <strong className="font-semibold">{pendingCount}</strong> {t.admin.dentistsPendingNotice}
         </div>
       )}
 
-      <div className="border-border/60 bg-card overflow-x-auto rounded-2xl border">
+      <div className="border-border/60 bg-card overflow-x-auto rounded-lg border">
         <table className="w-full min-w-[680px] text-sm">
           <thead className="bg-muted/40 text-muted-foreground text-xs">
             <tr>
@@ -79,7 +79,7 @@ export default async function AdminDentistsPage({
                       <p className="text-foreground flex items-center gap-2 font-medium">
                         {d.dentistName}
                         {pending && (
-                          <span className="bg-highlight text-on-highlight rounded-full px-2 py-0.5 text-[10px] font-semibold">
+                          <span className="bg-highlight text-on-highlight rounded-sm px-2 py-0.5 text-[10px] font-semibold">
                             {t.admin.newRegistration}
                           </span>
                         )}

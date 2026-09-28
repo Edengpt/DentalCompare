@@ -89,7 +89,7 @@ export default async function AdminSubscriptionsPage({
 
       <PricingSettingsForm rows={pricingRows} />
 
-      <div className="border-border/60 bg-card overflow-hidden rounded-2xl border">
+      <div className="border-border/60 bg-card overflow-hidden rounded-lg border">
         <table className="w-full text-sm">
           <thead className="bg-muted/40 text-muted-foreground text-xs">
             <tr>
@@ -122,7 +122,7 @@ export default async function AdminSubscriptionsPage({
                     <p className="text-foreground">{statusLabel(s.status, t.admin)}</p>
                     {s.trialEndedUnbilledAt && (
                       <p
-                        className="mt-1 inline-block rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900"
+                        className="mt-1 inline-block rounded-sm bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900"
                         title={t.admin.subTrialUnbilledHint}
                       >
                         {t.admin.subTrialUnbilled}

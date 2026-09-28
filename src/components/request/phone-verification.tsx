@@ -109,9 +109,9 @@ export function PhoneVerification({ redirectTo }: { redirectTo: string }) {
   const pending = busy || isSyncing;
 
   return (
-    <div className="border-border/60 bg-card space-y-5 rounded-3xl border p-6 sm:p-8">
+    <div className="border-border/60 bg-card space-y-5 rounded-lg border p-6 sm:p-8">
       <div className="flex items-center gap-3">
-        <span className="bg-teal-deep/10 text-teal-deep inline-flex h-10 w-10 items-center justify-center rounded-xl">
+        <span className="bg-teal-deep/10 text-teal-deep inline-flex h-10 w-10 items-center justify-center rounded-lg">
           {step === "enter" ? <Phone className="h-5 w-5" /> : <ShieldCheck className="h-5 w-5" />}
         </span>
         <div>
@@ -139,7 +139,7 @@ export function PhoneVerification({ redirectTo }: { redirectTo: string }) {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && !pending && sendCode()}
-            className="border-border/60 bg-background focus:ring-teal-deep/40 w-full rounded-2xl border px-4 py-3 text-base outline-none focus:ring-2"
+            className="border-border/60 bg-background focus:ring-teal-deep/40 w-full rounded-lg border px-4 py-3 text-base outline-none focus:ring-2"
             aria-label={t.phoneVerification.phoneAria}
           />
           <button
@@ -148,7 +148,7 @@ export function PhoneVerification({ redirectTo }: { redirectTo: string }) {
             disabled={pending}
             className={cn(
               buttonVariants(),
-              "bg-teal-deep hover:bg-teal-deep/90 text-cream inline-flex h-12 w-full items-center justify-center gap-2 rounded-full text-base font-semibold",
+              "bg-teal-deep hover:bg-teal-deep/90 text-cream inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg text-base font-semibold",
               pending && "cursor-wait opacity-80",
             )}
           >
@@ -174,7 +174,7 @@ export function PhoneVerification({ redirectTo }: { redirectTo: string }) {
             value={code}
             onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
             onKeyDown={(e) => e.key === "Enter" && !pending && confirmCode()}
-            className="border-border/60 bg-background focus:ring-teal-deep/40 w-full rounded-2xl border px-4 py-3 text-center text-2xl tracking-[0.4em] outline-none focus:ring-2"
+            className="border-border/60 bg-background focus:ring-teal-deep/40 w-full rounded-lg border px-4 py-3 text-center text-2xl tracking-[0.4em] outline-none focus:ring-2"
             aria-label={t.phoneVerification.codeAria}
           />
           <button
@@ -183,7 +183,7 @@ export function PhoneVerification({ redirectTo }: { redirectTo: string }) {
             disabled={pending}
             className={cn(
               buttonVariants(),
-              "bg-teal-deep hover:bg-teal-deep/90 text-cream inline-flex h-12 w-full items-center justify-center gap-2 rounded-full text-base font-semibold",
+              "bg-teal-deep hover:bg-teal-deep/90 text-cream inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg text-base font-semibold",
               pending && "cursor-wait opacity-80",
             )}
           >

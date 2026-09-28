@@ -48,11 +48,11 @@ export default async function BillingSetupPage({
         <p className="text-muted-foreground mt-2">{sub.dentist.clinicName}</p>
 
         {hasCompletedPaymentSetup(sub) || sub.status === "ACTIVE" ? (
-          <p className="border-border/60 bg-card mt-8 rounded-2xl border p-6 text-sm">
+          <p className="border-border/60 bg-card mt-8 rounded-lg border p-6 text-sm">
             {t.clinics.billingAlreadyActive}
           </p>
         ) : (
-          <div className="border-border/60 bg-card mt-8 rounded-2xl border p-6">
+          <div className="border-border/60 bg-card mt-8 rounded-lg border p-6">
             <p className="text-foreground text-lg font-semibold">
               {format(t.clinics.billingPlanLine, {
                 plan: planLabel,

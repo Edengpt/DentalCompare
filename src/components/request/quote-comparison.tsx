@@ -126,7 +126,7 @@ export function QuoteComparison({
             {q.includes.map((key) => (
               <span
                 key={key}
-                className="bg-teal-deep/10 text-teal-deep rounded-full px-2 py-0.5 text-xs"
+                className="bg-teal-deep/10 text-teal-deep rounded-sm px-2 py-0.5 text-xs"
               >
                 {translateInclusion(t.labels, key)}
                 {key === "ACCOMMODATION" && q.accommodationNights
@@ -169,7 +169,7 @@ export function QuoteComparison({
 
   return (
     // The table scrolls inside this box; the page never scrolls sideways.
-    <div className="border-border/60 bg-card overflow-x-auto rounded-2xl border">
+    <div className="border-border/60 bg-card overflow-x-auto rounded-lg border">
       <table className="w-full min-w-[560px] text-sm">
         <thead>
           <tr className="border-border/60 border-b">
@@ -183,7 +183,7 @@ export function QuoteComparison({
                   {q.clinicName}
                 </span>
                 {q.dentistId === cheapestId && (
-                  <span className="bg-teal-deep/10 text-teal-deep mt-1.5 inline-block rounded-full px-2 py-0.5 text-xs font-semibold">
+                  <span className="bg-teal-deep/10 text-teal-deep mt-1.5 inline-block rounded-sm px-2 py-0.5 text-xs font-semibold">
                     {d.cheapest}
                   </span>
                 )}

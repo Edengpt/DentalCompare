@@ -197,7 +197,7 @@ export function DentistDirectory({
               <button
                 type="button"
                 onClick={() => setSheetOpen(false)}
-                className="bg-teal-deep text-cream h-12 w-full rounded-full text-base font-semibold"
+                className="bg-teal-deep text-cream h-12 w-full rounded-lg text-base font-semibold"
               >
                 {format(t.dentists.filtersShow, { count: visible.length })}
               </button>
@@ -208,14 +208,14 @@ export function DentistDirectory({
 
       <div className="mx-auto grid max-w-7xl gap-8 px-6 py-10 pb-32 lg:grid-cols-[16rem_1fr] lg:px-10">
         {/* Desktop: the Booking-style sidebar, following the scroll. */}
-        <aside className="border-border/60 bg-card hidden self-start rounded-3xl border p-5 lg:sticky lg:top-24 lg:block lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
+        <aside className="border-border/60 bg-sand hidden self-start rounded-lg border p-5 lg:sticky lg:top-24 lg:block lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
           {panel}
         </aside>
 
         <div>
           <p className="text-muted-foreground mb-4 hidden text-sm lg:block">{resultCount}</p>
           {visible.length === 0 ? (
-            <div className="text-muted-foreground border-border/60 mx-auto max-w-md rounded-3xl border border-dashed p-12 text-center">
+            <div className="text-muted-foreground border-border/60 mx-auto max-w-md rounded-lg border border-dashed p-12 text-center">
               <p className="text-base">{t.dentists.noResults}</p>
               <button
                 type="button"

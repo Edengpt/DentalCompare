@@ -35,7 +35,7 @@ export function FinalCta({ t }: { t: Dictionary["finalCta"] }) {
               href="/sign-up"
               className={cn(
                 buttonVariants(),
-                "bg-accent hover:bg-accent/90 text-accent-foreground inline-flex h-14 items-center gap-2 rounded-full px-8 text-base font-semibold shadow-2xl shadow-black/20",
+                "bg-accent hover:bg-accent/90 text-accent-foreground inline-flex h-14 items-center gap-2 rounded-lg px-8 text-base font-semibold shadow-2xl shadow-black/20",
               )}
             >
               {t.cta}
@@ -47,7 +47,7 @@ export function FinalCta({ t }: { t: Dictionary["finalCta"] }) {
               href="/dashboard"
               className={cn(
                 buttonVariants(),
-                "bg-accent hover:bg-accent/90 text-accent-foreground inline-flex h-14 items-center gap-2 rounded-full px-8 text-base font-semibold shadow-2xl shadow-black/20",
+                "bg-accent hover:bg-accent/90 text-accent-foreground inline-flex h-14 items-center gap-2 rounded-lg px-8 text-base font-semibold shadow-2xl shadow-black/20",
               )}
             >
               {t.cta}

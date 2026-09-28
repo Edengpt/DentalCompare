@@ -114,7 +114,7 @@ export default async function RequestSuccessPage({
             href="/dashboard"
             className={cn(
               buttonVariants(),
-              "bg-teal-deep hover:bg-teal-deep/90 text-cream mt-10 inline-flex h-12 items-center gap-2 rounded-full px-7 text-base font-semibold",
+              "bg-teal-deep hover:bg-teal-deep/90 text-cream mt-10 inline-flex h-12 items-center gap-2 rounded-lg px-7 text-base font-semibold",
             )}
           >
             {t.requestFlow.successToDashboard}

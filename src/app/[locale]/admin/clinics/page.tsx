@@ -65,7 +65,7 @@ export default async function AdminClinicsPage({
       </header>
 
       {rows.length === 0 ? (
-        <div className="border-border/60 bg-card rounded-2xl border px-6 py-16 text-center">
+        <div className="border-border/60 bg-card rounded-lg border px-6 py-16 text-center">
           <div className="bg-teal-deep/10 text-teal-deep mx-auto inline-flex h-14 w-14 items-center justify-center rounded-full">
             <Building2 className="h-7 w-7" />
           </div>
@@ -73,7 +73,7 @@ export default async function AdminClinicsPage({
           <p className="text-muted-foreground mt-1.5 text-sm">{t.admin.clinicsEmptyBody}</p>
         </div>
       ) : (
-        <div className="border-border/60 bg-card overflow-x-auto rounded-2xl border">
+        <div className="border-border/60 bg-card overflow-x-auto rounded-lg border">
           <table className="w-full min-w-[720px] text-sm">
             <thead className="bg-muted/40 text-muted-foreground text-xs">
               <tr>

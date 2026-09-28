@@ -48,7 +48,7 @@ export function ExplainTreatment({ requestId }: { requestId: string }) {
       </h2>
 
       {state !== "done" && (
-        <div className="border-border/60 bg-card rounded-2xl border p-5">
+        <div className="border-border/60 bg-card rounded-lg border p-5">
           <p className="text-muted-foreground mb-4 text-sm">
             {t.explain.subtitle}
           </p>
@@ -58,7 +58,7 @@ export function ExplainTreatment({ requestId }: { requestId: string }) {
             disabled={state === "loading"}
             className={cn(
               buttonVariants(),
-              "bg-teal-deep hover:bg-teal-deep/90 text-cream inline-flex h-11 items-center gap-2 rounded-full px-6 font-semibold",
+              "bg-teal-deep hover:bg-teal-deep/90 text-cream inline-flex h-11 items-center gap-2 rounded-lg px-6 font-semibold",
               state === "loading" && "cursor-wait opacity-80",
             )}
           >
@@ -85,7 +85,7 @@ export function ExplainTreatment({ requestId }: { requestId: string }) {
       )}
 
       {state === "done" && result && (
-        <div className="border-border/60 bg-card space-y-6 rounded-2xl border p-5">
+        <div className="border-border/60 bg-card space-y-6 rounded-lg border p-5">
           {!result.isReadable ? (
             <p className="text-muted-foreground inline-flex items-center gap-2 text-sm">
               <AlertCircle className="h-4 w-4" />

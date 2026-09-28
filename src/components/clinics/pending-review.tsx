@@ -51,7 +51,7 @@ export function PendingReview({
   ] as const;
 
   return (
-    <div className="border-border/60 bg-card mx-auto max-w-xl rounded-3xl border p-8 sm:p-10">
+    <div className="border-border/60 bg-card mx-auto max-w-xl rounded-lg border p-8 sm:p-10">
       <div
         className={cn(
           "inline-flex h-14 w-14 items-center justify-center rounded-full",
@@ -113,7 +113,7 @@ export function PendingReview({
                     {returned.map((doc) => (
                       <li
                         key={doc.kind}
-                        className="border-highlight bg-highlight/10 rounded-xl border px-3.5 py-2.5 text-sm"
+                        className="border-highlight bg-highlight/10 rounded-lg border px-3.5 py-2.5 text-sm"
                       >
                         <span className="text-foreground font-semibold">{doc.kind}</span>
                         {doc.reason && (
@@ -127,7 +127,7 @@ export function PendingReview({
                   {replaceHref ? (
                     <Link
                       href={replaceHref}
-                      className="bg-coral hover:bg-coral/90 inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold text-white"
+                      className="bg-coral hover:bg-coral/90 inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-bold text-white"
                     >
                       <Upload className="h-4 w-4" />
                       {t.clinics.dashDocReplace}

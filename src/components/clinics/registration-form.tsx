@@ -30,7 +30,7 @@ import { DocumentDropZone, type UploadedDoc } from "@/components/clinics/documen
 import { PendingReview } from "@/components/clinics/pending-review";
 
 const inputClass =
-  "border-border/60 bg-background focus:border-teal-deep focus:ring-teal-deep/20 w-full rounded-xl border px-3.5 py-2.5 text-sm outline-none focus:ring-2";
+  "border-border/60 bg-background focus:border-teal-deep focus:ring-teal-deep/20 w-full rounded-lg border px-3.5 py-2.5 text-sm outline-none focus:ring-2";
 
 /** The subset of Country a clinic needs at registration time. */
 export type RegistrationCountry = {
@@ -426,7 +426,7 @@ export function RegistrationForm({
       <StepIndicator step={step} labels={stepLabels} onJump={goTo} />
 
       {/* Step 1 — details */}
-      <div hidden={step !== 0} className="border-border/60 bg-card rounded-3xl border p-6 sm:p-8">
+      <div hidden={step !== 0} className="border-border/60 bg-card rounded-lg border p-6 sm:p-8">
         <h2 className="font-display text-foreground text-lg font-bold">
           {t.clinics.regDetailsHeading}
         </h2>
@@ -513,7 +513,7 @@ export function RegistrationForm({
             <input type="hidden" name="profileImageUrl" value={logoUrl ?? ""} />
             <div className="mt-2 flex items-center gap-4">
               {logoUrl ? (
-                <span className="border-border/60 relative inline-block h-20 w-20 overflow-hidden rounded-2xl border">
+                <span className="border-border/60 relative inline-block h-20 w-20 overflow-hidden rounded-lg border">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={logoUrl}
@@ -534,7 +534,7 @@ export function RegistrationForm({
                   type="button"
                   onClick={() => logoInputRef.current?.click()}
                   disabled={logoUploading}
-                  className="border-border/60 text-muted-foreground hover:border-teal-deep/40 hover:text-teal-deep inline-flex h-20 w-20 flex-col items-center justify-center gap-1 rounded-2xl border border-dashed text-xs transition-colors disabled:opacity-60"
+                  className="border-border/60 text-muted-foreground hover:border-teal-deep/40 hover:text-teal-deep inline-flex h-20 w-20 flex-col items-center justify-center gap-1 rounded-lg border border-dashed text-xs transition-colors disabled:opacity-60"
                 >
                   {logoUploading ? (
                     <Loader2 className="h-5 w-5 animate-spin" />
@@ -559,7 +559,7 @@ export function RegistrationForm({
       </div>
 
       {/* Step 2 — licence documents */}
-      <div hidden={step !== 1} className="border-border/60 bg-card rounded-3xl border p-6 sm:p-8">
+      <div hidden={step !== 1} className="border-border/60 bg-card rounded-lg border p-6 sm:p-8">
         <h2 className="font-display text-foreground text-lg font-bold">{t.clinics.regDocs}</h2>
         {/* Above the slots, not beside them: what is allowed has to be read
             before the file picker opens — afterwards it is a complaint. */}
@@ -592,7 +592,7 @@ export function RegistrationForm({
       {/* Step 3 — plan + contract */}
       <div
         hidden={step !== 2}
-        className="border-teal-deep/30 bg-teal-deep/5 rounded-3xl border p-6 sm:p-8"
+        className="border-teal-deep/30 bg-teal-deep/5 rounded-lg border p-6 sm:p-8"
       >
         <div className="flex items-center gap-2.5">
           <FileSignature className="text-teal-deep h-5 w-5" />
@@ -656,7 +656,7 @@ export function RegistrationForm({
             disabled={isPending}
             className={cn(
               buttonVariants({ variant: "outline" }),
-              "h-12 rounded-full px-7 text-base font-semibold",
+              "h-12 rounded-lg px-7 text-base font-semibold",
             )}
           >
             {t.clinics.wizBack}
@@ -667,7 +667,7 @@ export function RegistrationForm({
           disabled={isPending}
           className={cn(
             buttonVariants(),
-            "bg-teal-deep hover:bg-teal-deep/90 text-cream inline-flex h-12 flex-1 items-center justify-center rounded-full px-7 text-base font-semibold disabled:cursor-not-allowed disabled:opacity-50",
+            "bg-teal-deep hover:bg-teal-deep/90 text-cream inline-flex h-12 flex-1 items-center justify-center rounded-lg px-7 text-base font-semibold disabled:cursor-not-allowed disabled:opacity-50",
           )}
         >
           {step < STEP_COUNT - 1

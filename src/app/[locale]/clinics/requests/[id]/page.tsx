@@ -171,7 +171,7 @@ export default async function ClinicRequestPage({
       <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_26rem]">
         {/* The patient and their documents. */}
         <div className="space-y-6">
-          <section className="border-border/60 bg-card grid gap-4 rounded-2xl border p-5 sm:grid-cols-2">
+          <section className="border-border/60 bg-card grid gap-4 rounded-lg border p-5 sm:grid-cols-2">
             <div className="flex items-start gap-3">
               <User className="text-teal-deep mt-0.5 h-4 w-4 shrink-0" />
               <div>
@@ -254,7 +254,7 @@ export default async function ClinicRequestPage({
               }}
             />
           ) : (
-            <div className="border-border/60 bg-card space-y-3 rounded-2xl border p-5 text-sm">
+            <div className="border-border/60 bg-card space-y-3 rounded-lg border p-5 text-sm">
               <p className="text-muted-foreground">
                 {stage === "missed" ? t.clinics.reqMissed : t.clinics.reqQuoteClosed}
               </p>

@@ -81,7 +81,7 @@ export function IncomingRequests({ leads }: { leads: IncomingLead[] }) {
             <li key={lead.id}>
               <Link
                 href={`/clinics/requests/${lead.id}`}
-                className="group hover:bg-muted/40 -mx-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 rounded-xl px-2 py-3.5 transition-colors"
+                className="group hover:bg-muted/40 -mx-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 rounded-lg px-2 py-3.5 transition-colors"
               >
                 <span className="text-foreground font-mono text-sm font-semibold">
                   #{lead.requestId.slice(0, 8)}

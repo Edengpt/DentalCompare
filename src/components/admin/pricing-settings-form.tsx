@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
 const inputClass =
-  "border-border/60 bg-background focus:border-teal-deep focus:ring-teal-deep/20 w-24 rounded-xl border px-3 py-2 text-sm outline-none focus:ring-2 read-only:opacity-50";
+  "border-border/60 bg-background focus:border-teal-deep focus:ring-teal-deep/20 w-24 rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 read-only:opacity-50";
 
 type SubscriptionTier = "FREE" | "BASIC" | "PRO" | "FEATURED";
 
@@ -34,7 +34,7 @@ export function PricingSettingsForm({ rows }: { rows: PricingRow[] }) {
   const t = useT();
 
   return (
-    <section className="border-border/60 bg-card rounded-2xl border p-5">
+    <section className="border-border/60 bg-card rounded-lg border p-5">
       <h2 className="text-foreground font-semibold">{t.admin.pricingHeading}</h2>
       <div className="mt-4 space-y-8">
         {PROVIDER_ORDER.map((provider) => {
@@ -183,7 +183,7 @@ function PricingRowForm({ row }: { row: PricingRow }) {
         disabled={isPending}
         className={cn(
           buttonVariants(),
-          "bg-teal-deep hover:bg-teal-deep/90 text-cream inline-flex h-9 items-center rounded-full px-4 text-xs font-semibold disabled:opacity-60",
+          "bg-teal-deep hover:bg-teal-deep/90 text-cream inline-flex h-9 items-center rounded-lg px-4 text-xs font-semibold disabled:opacity-60",
         )}
       >
         {isPending ? t.selection.saving : t.admin.pricingSave}

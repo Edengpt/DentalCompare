@@ -91,10 +91,10 @@ export default async function AdminOverviewPage({
       {pendingClinics > 0 && (
         <Link
           href="/admin/clinics"
-          className="border-highlight bg-highlight/10 hover:bg-highlight/20 group flex items-center justify-between gap-4 rounded-2xl border px-5 py-4 transition-colors"
+          className="border-highlight bg-highlight/10 hover:bg-highlight/20 group flex items-center justify-between gap-4 rounded-lg border px-5 py-4 transition-colors"
         >
           <div className="flex items-center gap-3">
-            <span className="bg-highlight text-on-highlight inline-flex h-10 w-10 items-center justify-center rounded-xl">
+            <span className="bg-highlight text-on-highlight inline-flex h-10 w-10 items-center justify-center rounded-lg">
               <Building2 className="h-5 w-5" />
             </span>
             <div>
@@ -110,8 +110,8 @@ export default async function AdminOverviewPage({
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((s) => (
-          <div key={s.label} className="border-border/60 bg-card rounded-2xl border p-5">
-            <div className="bg-teal-deep/10 text-teal-deep inline-flex h-10 w-10 items-center justify-center rounded-xl">
+          <div key={s.label} className="border-border/60 bg-card rounded-lg border p-5">
+            <div className="bg-teal-deep/10 text-teal-deep inline-flex h-10 w-10 items-center justify-center rounded-lg">
               <s.icon className="h-5 w-5" />
             </div>
             <p className="text-foreground mt-4 text-3xl font-bold tracking-tight">{s.value}</p>
@@ -124,7 +124,7 @@ export default async function AdminOverviewPage({
         {(["DRAFT", "SUBMITTED", "SENT", "FAILED"] as const).map((status) => (
           <div
             key={status}
-            className="border-border/60 bg-card flex items-center justify-between rounded-2xl border px-5 py-4"
+            className="border-border/60 bg-card flex items-center justify-between rounded-lg border px-5 py-4"
           >
             <span className="text-muted-foreground text-sm">
               {format(t.admin.requestsByStatus, { status: t.requestStatus[status] })}
@@ -138,7 +138,7 @@ export default async function AdminOverviewPage({
         <h2 className="font-display text-foreground mb-3 text-lg font-bold">
           {t.admin.recentRequests}
         </h2>
-        <div className="border-border/60 bg-card overflow-hidden rounded-2xl border">
+        <div className="border-border/60 bg-card overflow-hidden rounded-lg border">
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-muted-foreground text-xs">
               <tr>

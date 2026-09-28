@@ -59,7 +59,7 @@ export function QuoteDecisionButtons({
             type="button"
             disabled={isPending}
             onClick={() => setConfirming("approve")}
-            className="bg-coral hover:bg-coral/90 rounded-full px-4 py-2 text-sm font-bold text-white shadow-sm disabled:opacity-50"
+            className="bg-coral hover:bg-coral/90 rounded-lg px-4 py-2 text-sm font-bold text-white shadow-sm disabled:opacity-50"
           >
             {t.quoteActionApprove}
           </button>
@@ -67,7 +67,7 @@ export function QuoteDecisionButtons({
             type="button"
             disabled={isPending}
             onClick={() => setConfirming("reject")}
-            className="border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 rounded-full border px-4 py-2 text-sm font-semibold disabled:opacity-50"
+            className="border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 rounded-lg border px-4 py-2 text-sm font-semibold disabled:opacity-50"
           >
             {t.quoteActionReject}
           </button>

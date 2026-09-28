@@ -57,7 +57,7 @@ export function RequestDocumentsForm({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="border-border/60 text-muted-foreground hover:border-alert/50 hover:text-alert inline-flex h-10 items-center gap-1.5 rounded-full border px-4 text-sm font-medium transition-colors"
+        className="border-border/60 text-muted-foreground hover:border-alert/50 hover:text-alert inline-flex h-10 items-center gap-1.5 rounded-lg border px-4 text-sm font-medium transition-colors"
       >
         <FileWarning className="h-4 w-4" />
         {t.admin.requestBetterDocs}
@@ -66,7 +66,7 @@ export function RequestDocumentsForm({
   }
 
   return (
-    <div className="border-border/60 bg-muted/30 w-full rounded-2xl border p-4">
+    <div className="border-border/60 bg-muted/30 w-full rounded-lg border p-4">
       <p className="text-foreground text-sm font-semibold">{t.admin.requestBetterDocsTitle}</p>
       <p className="text-muted-foreground mt-1 text-xs">{t.admin.requestBetterDocsHint}</p>
       <div className="mt-3 space-y-3">
@@ -81,7 +81,7 @@ export function RequestDocumentsForm({
               value={reasons[doc.id] ?? ""}
               onChange={(ev) => setReasons((prev) => ({ ...prev, [doc.id]: ev.target.value }))}
               placeholder={t.admin.requestBetterDocsPlaceholder}
-              className="border-border/60 bg-background focus:border-teal-deep focus:ring-teal-deep/20 w-full rounded-xl border px-3 py-2 text-sm outline-none focus:ring-2"
+              className="border-border/60 bg-background focus:border-teal-deep focus:ring-teal-deep/20 w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2"
             />
           </div>
         ))}
@@ -92,7 +92,7 @@ export function RequestDocumentsForm({
           onClick={submit}
           disabled={isPending || chosen.length === 0}
           className={cn(
-            "bg-teal-deep hover:bg-teal-deep/90 text-cream inline-flex h-9 items-center rounded-full px-4 text-sm font-semibold",
+            "bg-teal-deep hover:bg-teal-deep/90 text-cream inline-flex h-9 items-center rounded-lg px-4 text-sm font-semibold",
             "disabled:cursor-not-allowed disabled:opacity-50",
           )}
         >

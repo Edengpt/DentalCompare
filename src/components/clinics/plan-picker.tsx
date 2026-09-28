@@ -43,7 +43,7 @@ export function PlanPicker({
         <label
           key={o.value}
           className={cn(
-            "cursor-pointer rounded-2xl border p-5 transition-colors",
+            "cursor-pointer rounded-lg border p-5 transition-colors",
             selected === o.value
               ? "border-teal-deep bg-teal-deep/5 ring-teal-deep/20 ring-2"
               : "border-border/60 hover:border-teal-deep/40",

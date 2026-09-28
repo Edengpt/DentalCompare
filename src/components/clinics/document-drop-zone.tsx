@@ -65,7 +65,7 @@ export function DocumentDropZone({
 
   if (doc) {
     return (
-      <div className="border-teal-deep/40 bg-teal-deep/5 flex items-center gap-3 rounded-2xl border px-4 py-3">
+      <div className="border-teal-deep/40 bg-teal-deep/5 flex items-center gap-3 rounded-lg border px-4 py-3">
         <CheckCircle2 className="text-teal-deep h-5 w-5 shrink-0" />
         <div className="min-w-0 flex-1">
           <p className="text-foreground text-sm font-medium">{kind}</p>
@@ -100,7 +100,7 @@ export function DocumentDropZone({
         if (file && !busy) void handleFile(file);
       }}
       className={cn(
-        "border-border/70 text-muted-foreground focus-within:ring-teal-deep/30 flex cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-dashed px-4 py-7 text-center transition-colors focus-within:ring-2",
+        "border-border/70 text-muted-foreground focus-within:ring-teal-deep/30 flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed px-4 py-7 text-center transition-colors focus-within:ring-2",
         "hover:border-teal-deep/50 hover:bg-teal-deep/5",
         dragging && "border-teal-deep bg-teal-deep/10 text-teal-deep",
         busy && "pointer-events-none",
