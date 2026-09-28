@@ -104,7 +104,7 @@ export default async function QuotePage({
               token={token}
               currencyLabel={currency}
               initial={{
-                amount: rd.quote ? toMajor(rd.quote.amountMinor ?? 0, currency) : null,
+                amount: rd.quote ? toMajor(rd.quote.amountMinor, currency) : null,
                 note: rd.quote?.note ?? null,
                 includes: rd.quote?.includes ?? [],
                 accommodationNights: rd.quote?.accommodationNights ?? null,

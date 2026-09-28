@@ -232,7 +232,7 @@ model Request {
   sentAt               DateTime?
   travelScope          TravelScope   @default(LOCAL)
   /// In use only when travelScope = SELECTED; empty otherwise.
-  destinationCountries String[]
+  destinationCountries String[]      @default([])
   /// Explicit consent to send health data to the chosen clinics and to store it
   /// in the United States. Null means not yet given, and sending is blocked.
   /// The version is kept alongside the timestamp because consent without the
@@ -305,8 +305,8 @@ model Quote {
   requestDentist   RequestDentist @relation(fields: [requestDentistId], references: [id], onDelete: Cascade)
   // Money is an integer count of minor units plus an ISO 4217 code. The pair is
   // the unit — a bare number is meaningless once more than one currency exists.
-  amountMinor      Int?
-  currency         String?
+  amountMinor      Int
+  currency         String
   note             String?        @db.Text // free-text, e.g. "כולל צילום, לא כולל שתל"
 
   // --- Cross-border comparison ---
