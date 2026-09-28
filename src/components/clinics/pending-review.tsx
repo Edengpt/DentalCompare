@@ -55,7 +55,7 @@ export function PendingReview({
       <div
         className={cn(
           "inline-flex h-14 w-14 items-center justify-center rounded-full",
-          needsDocument ? "bg-coral/15 text-coral" : "bg-teal-deep/10 text-teal-deep",
+          needsDocument ? "bg-highlight/30 text-on-highlight" : "bg-teal-deep/10 text-teal-deep",
         )}
       >
         {needsDocument ? <AlertTriangle className="h-7 w-7" /> : <Clock className="h-7 w-7" />}
@@ -87,7 +87,7 @@ export function PendingReview({
                 </span>
               )}
               {s.state === "attention" && (
-                <span className="bg-coral flex h-6 w-6 items-center justify-center rounded-full text-white">
+                <span className="bg-highlight text-on-highlight flex h-6 w-6 items-center justify-center rounded-full">
                   <AlertTriangle className="h-3.5 w-3.5" />
                 </span>
               )}
@@ -98,7 +98,7 @@ export function PendingReview({
                 className={cn(
                   "text-sm font-semibold",
                   s.state === "next" && "text-muted-foreground",
-                  s.state === "attention" && "text-coral",
+                  s.state === "attention" && "text-foreground",
                   (s.state === "done" || s.state === "current") && "text-foreground",
                 )}
                 aria-current={s.state === "current" || s.state === "attention" ? "step" : undefined}
@@ -113,7 +113,7 @@ export function PendingReview({
                     {returned.map((doc) => (
                       <li
                         key={doc.kind}
-                        className="border-coral/30 bg-coral/5 rounded-xl border px-3.5 py-2.5 text-sm"
+                        className="border-highlight bg-highlight/10 rounded-xl border px-3.5 py-2.5 text-sm"
                       >
                         <span className="text-foreground font-semibold">{doc.kind}</span>
                         {doc.reason && (

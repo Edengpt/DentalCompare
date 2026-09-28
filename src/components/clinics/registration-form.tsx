@@ -109,7 +109,7 @@ function StepIndicator({
 function FieldError({ id, message }: { id: string; message?: string }) {
   if (!message) return null;
   return (
-    <span id={id} className="text-coral text-xs">
+    <span id={id} className="text-alert text-xs">
       {message}
     </span>
   );
@@ -441,7 +441,7 @@ export function RegistrationForm({
             >
               <span className="text-foreground font-medium">
                 {f.label}
-                {f.required && <span className="text-coral"> *</span>}
+                {f.required && <span className="text-alert"> *</span>}
                 {f.hint && <span className="text-muted-foreground font-normal"> ({f.hint})</span>}
               </span>
               <input
@@ -451,7 +451,7 @@ export function RegistrationForm({
                 min={f.type === "number" ? 0 : undefined}
                 aria-invalid={errors[f.name] ? true : undefined}
                 aria-describedby={errors[f.name] ? `${f.name}-error` : undefined}
-                className={cn(inputClass, errors[f.name] && "border-coral")}
+                className={cn(inputClass, errors[f.name] && "border-alert")}
               />
               <FieldError id={`${f.name}-error`} message={errors[f.name]} />
             </label>
@@ -460,7 +460,7 @@ export function RegistrationForm({
           <label className="flex flex-col gap-1.5 text-sm sm:col-span-2">
             <span className="text-foreground font-medium">
               {t.clinics.regCountry}
-              <span className="text-coral"> *</span>
+              <span className="text-alert"> *</span>
             </span>
             <select
               name="countryCode"
@@ -468,7 +468,7 @@ export function RegistrationForm({
               onChange={(e) => handleCountryChange(e.target.value)}
               aria-invalid={errors.countryCode ? true : undefined}
               aria-describedby={errors.countryCode ? "countryCode-error" : undefined}
-              className={cn(inputClass, errors.countryCode && "border-coral")}
+              className={cn(inputClass, errors.countryCode && "border-alert")}
             >
               {countries.map((c) => (
                 <option key={c.code} value={c.code}>

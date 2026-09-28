@@ -11,7 +11,7 @@ export function FinalCta({ t }: { t: Dictionary["finalCta"] }) {
       {/* atmosphere */}
       <div
         aria-hidden="true"
-        className="bg-coral/20 absolute -top-32 -left-32 h-[400px] w-[400px] rounded-full blur-3xl"
+        className="bg-highlight/20 absolute -top-32 -left-32 h-[400px] w-[400px] rounded-full blur-3xl"
       />
       <div
         aria-hidden="true"

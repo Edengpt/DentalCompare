@@ -73,7 +73,7 @@ export default async function AdminLayout({
                   <item.icon className="h-4 w-4" />
                   {item.label}
                   {badge > 0 && (
-                    <span className="bg-coral text-cream ms-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-bold">
+                    <span className="bg-highlight text-on-highlight ms-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-bold">
                       {badge}
                     </span>
                   )}

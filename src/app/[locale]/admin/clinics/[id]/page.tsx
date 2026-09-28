@@ -157,7 +157,7 @@ export default async function AdminClinicReviewPage({
                 {dateFmt.format(d.agreedToTermsAt)}
               </>
             ) : (
-              <span className="text-coral">{t.admin.contractMissing}</span>
+              <span className="text-alert">{t.admin.contractMissing}</span>
             )}
           </p>
         </section>
@@ -172,7 +172,7 @@ export default async function AdminClinicReviewPage({
             // Registration cannot produce this any more, but a clinic created
             // before the gate existed can — and approving one unseen is exactly
             // what the promise forbids.
-            <p className="border-coral/40 bg-coral/5 text-coral rounded-2xl border p-4 text-sm">
+            <p className="border-alert/40 bg-alert/5 text-alert rounded-2xl border p-4 text-sm">
               {t.admin.clinicDocsNone}
             </p>
           ) : (
@@ -188,7 +188,7 @@ export default async function AdminClinicReviewPage({
                     already asked to have replaced from one you have not
                     looked at yet. */}
                 {doc.rejectedAt && (
-                  <p className="text-coral text-xs">
+                  <p className="text-alert text-xs">
                     {format(t.admin.docRejectedOn, { date: dateFmt.format(doc.rejectedAt) })}
                     {doc.rejectionReason ? ` — ${doc.rejectionReason}` : ""}
                   </p>

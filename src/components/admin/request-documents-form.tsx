@@ -57,7 +57,7 @@ export function RequestDocumentsForm({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="border-border/60 text-muted-foreground hover:border-coral/50 hover:text-coral inline-flex h-10 items-center gap-1.5 rounded-full border px-4 text-sm font-medium transition-colors"
+        className="border-border/60 text-muted-foreground hover:border-alert/50 hover:text-alert inline-flex h-10 items-center gap-1.5 rounded-full border px-4 text-sm font-medium transition-colors"
       >
         <FileWarning className="h-4 w-4" />
         {t.admin.requestBetterDocs}

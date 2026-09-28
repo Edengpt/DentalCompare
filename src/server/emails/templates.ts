@@ -34,12 +34,12 @@ export function escapeHtml(value: string): string {
 /** Shared wrapper, so direction and typography can't drift between templates. */
 function shell(locale: Locale, body: string): string {
   return `
-  <div dir="${dir[locale]}" style="font-family: Arial, sans-serif; color: #1a1a1a; max-width: 560px; margin: 0 auto;">
+  <div dir="${dir[locale]}" style="font-family: Arial, sans-serif; color: #14202e; max-width: 560px; margin: 0 auto;">
 ${body}
   </div>`;
 }
 
-const HR = `<hr style="border: none; border-top: 1px solid #e5e5e5; margin: 24px 0;" />`;
+const HR = `<hr style="border: none; border-top: 1px solid #d5dde8; margin: 24px 0;" />`;
 
 /** Dentist "you were asked for a quote" email (patient fulfillment). */
 export function quoteRequestEmailHtml(opts: {
@@ -71,18 +71,18 @@ export function quoteRequestEmailHtml(opts: {
   const d = escapeHtml(dentistName);
   const phone = escapeHtml(patientPhone);
   const phoneNote = phoneVerified
-    ? ` <span style="color:#0f7a5a;">${t.smsVerified}</span>`
+    ? ` <span style="color:#1b7a4b;">${t.smsVerified}</span>`
     : ` <span style="color:#999;">${t.smsNotVerified}</span>`;
 
   return shell(
     locale,
-    `    <h2 style="color: #0f4c4c;">${format(t.quoteRequestHeading, { patient: p })}</h2>
+    `    <h2 style="color: #0e2f55;">${format(t.quoteRequestHeading, { patient: p })}</h2>
     <p>${format(t.greeting, { name: d })}</p>
     <p>${format(t.quoteRequestBody, { patient: p })}</p>
 
     <div style="text-align: center; margin: 28px 0;">
       <a href="${quoteUrl}"
-         style="display: inline-block; background: #ff6b4a; color: #fff; text-decoration: none;
+         style="display: inline-block; background: #2356c7; color: #fff; text-decoration: none;
                 font-size: 17px; font-weight: bold; padding: 16px 32px; border-radius: 999px;">
         ${t.quoteRequestCta}
       </a>
@@ -117,12 +117,12 @@ export function newQuoteEmailHtml(opts: {
 
   return shell(
     locale,
-    `    <h2 style="color: #0f4c4c;">${t.newQuoteHeading}</h2>
+    `    <h2 style="color: #0e2f55;">${t.newQuoteHeading}</h2>
     <p>${greeting}</p>
     <p>${t.newQuoteBody}</p>
     <div style="text-align: center; margin: 28px 0;">
       <a href="${link}"
-         style="display: inline-block; background: #0f4c4c; color: #fff; text-decoration: none;
+         style="display: inline-block; background: #0e2f55; color: #fff; text-decoration: none;
                 font-size: 16px; font-weight: bold; padding: 14px 30px; border-radius: 999px;">
         ${t.newQuoteCta}
       </a>
@@ -145,12 +145,12 @@ export function paymentSetupEmailHtml(opts: {
 
   return shell(
     locale,
-    `    <h2 style="color: #0f4c4c;">${t.setupHeading}</h2>
+    `    <h2 style="color: #0e2f55;">${t.setupHeading}</h2>
     <p>${format(t.greeting, { name: escapeHtml(contactName) || t.clinicTeam })}</p>
     <p>${format(t.setupApproved, { clinic: `<strong>${escapeHtml(clinicName)}</strong>` })}</p>
     <p>${t.setupInstruction}</p>
     <p style="margin: 24px 0;">
-      <a href="${link}" style="background:#0f4c4c;color:#fff;padding:12px 22px;border-radius:999px;text-decoration:none;">
+      <a href="${link}" style="background:#0e2f55;color:#fff;padding:12px 22px;border-radius:999px;text-decoration:none;">
         ${t.setupCta}
       </a>
     </p>
@@ -199,10 +199,10 @@ export function trialEndingEmailHtml(opts: {
   if (setupUrl) {
     return shell(
       locale,
-      `    <h2 style="color:#0f4c4c;">${format(t.trialSetupHeading, { when })}</h2>
+      `    <h2 style="color:#0e2f55;">${format(t.trialSetupHeading, { when })}</h2>
     <p>${format(t.greeting, { name: `<strong>${escapeHtml(clinicName)}</strong>` })}</p>
     <p>${format(t.trialSetupBody, { clinic: `<strong>${escapeHtml(clinicName)}</strong>`, when, plan: escapeHtml(planLabel), price: `<strong>${price}</strong>` })}</p>
-    <p style="margin:24px 0;"><a href="${setupUrl}" style="background:#0f4c4c;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;">${t.trialSetupCta}</a></p>
+    <p style="margin:24px 0;"><a href="${setupUrl}" style="background:#0e2f55;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;">${t.trialSetupCta}</a></p>
     <p>${t.trialSetupNoCharge}</p>
     <p style="font-size:12px;color:#777;">${t.trialCancelPrefix} <a href="mailto:${SITE_CONFIG.supportEmail}">${SITE_CONFIG.supportEmail}</a></p>`,
     );
@@ -210,7 +210,7 @@ export function trialEndingEmailHtml(opts: {
 
   return shell(
     locale,
-    `    <h2 style="color:#0f4c4c;">${format(t.trialHeading, { when })}</h2>
+    `    <h2 style="color:#0e2f55;">${format(t.trialHeading, { when })}</h2>
     <p>${format(t.greeting, { name: `<strong>${escapeHtml(clinicName)}</strong>` })}</p>
     <p>${format(t.trialBody, { when, plan: escapeHtml(planLabel), price: `<strong>${price}</strong>` })}</p>
     <p>${t.trialNoAction}</p>
@@ -228,7 +228,7 @@ export function paymentFailedEmailHtml(opts: {
 
   return shell(
     locale,
-    `    <h2 style="color:#0f4c4c;">${t.chargeFailedHeading}</h2>
+    `    <h2 style="color:#0e2f55;">${t.chargeFailedHeading}</h2>
     <p>${format(t.chargeFailedBody, { clinic: `<strong>${escapeHtml(clinicName)}</strong>` })}</p>
     <p style="font-size:12px;color:#777;">${t.supportPrefix} <a href="mailto:${SITE_CONFIG.supportEmail}">${SITE_CONFIG.supportEmail}</a></p>`,
   );
@@ -253,7 +253,7 @@ export function trialUnbilledAdminEmailHtml(opts: {
 
   return shell(
     locale,
-    `    <h2 style="color:#0f4c4c;">${t.trialUnbilledHeading}</h2>
+    `    <h2 style="color:#0e2f55;">${t.trialUnbilledHeading}</h2>
     <p>${format(t.trialUnbilledBody, { clinic: `<strong>${escapeHtml(clinicName)}</strong>` })}</p>
     <p>${t.trialUnbilledReasonLabel} <strong>${escapeHtml(reasonLabel)}</strong></p>
     <p>${t.trialUnbilledClinicLabel} <a href="mailto:${escapeHtml(clinicEmail)}">${escapeHtml(clinicEmail)}</a></p>
@@ -290,12 +290,12 @@ export function documentsRejectedEmailHtml(opts: {
 
   return shell(
     locale,
-    `    <h2 style="color:#0f4c4c;">${t.docsRejectedHeading}</h2>
+    `    <h2 style="color:#0e2f55;">${t.docsRejectedHeading}</h2>
     <p>${format(t.greeting, { name: `<strong>${escapeHtml(clinicName)}</strong>` })}</p>
     <p>${format(t.docsRejectedBody, { clinic: `<strong>${escapeHtml(clinicName)}</strong>` })}</p>
     <p style="font-weight:600;">${t.docsRejectedWhat}</p>
     <ul>${list}</ul>
-    <p style="margin:24px 0;"><a href="${link}" style="background:#0f4c4c;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;">${t.docsRejectedCta}</a></p>
+    <p style="margin:24px 0;"><a href="${link}" style="background:#0e2f55;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;">${t.docsRejectedCta}</a></p>
     ${HR}
     <p style="font-size:12px;color:#777;">${format(t.docsRejectedExpiry, { days: DOCUMENT_TOKEN_DAYS })}</p>`,
   );
@@ -311,12 +311,12 @@ export function quoteApprovedEmailHtml(opts: {
   const { locale, t, clinicName, link } = opts;
   return shell(
     locale,
-    `    <h2 style="color: #0f4c4c;">${t.quoteApprovedHeading}</h2>
+    `    <h2 style="color: #0e2f55;">${t.quoteApprovedHeading}</h2>
     <p>${format(t.greeting, { name: escapeHtml(clinicName) })}</p>
     <p>${format(t.quoteApprovedBody, { patient: t.patientFallback })}</p>
     <div style="text-align: center; margin: 28px 0;">
       <a href="${link}"
-         style="display: inline-block; background: #0f4c4c; color: #fff; text-decoration: none;
+         style="display: inline-block; background: #0e2f55; color: #fff; text-decoration: none;
                 font-size: 16px; font-weight: bold; padding: 14px 30px; border-radius: 999px;">
         ${t.quoteApprovedCta}
       </a>
@@ -336,12 +336,12 @@ export function quoteRejectedEmailHtml(opts: {
   const { locale, t, clinicName, link } = opts;
   return shell(
     locale,
-    `    <h2 style="color: #0f4c4c;">${t.quoteRejectedHeading}</h2>
+    `    <h2 style="color: #0e2f55;">${t.quoteRejectedHeading}</h2>
     <p>${format(t.greeting, { name: escapeHtml(clinicName) })}</p>
     <p>${format(t.quoteRejectedBody, { patient: t.patientFallback })}</p>
     <div style="text-align: center; margin: 28px 0;">
       <a href="${link}"
-         style="display: inline-block; background: #0f4c4c; color: #fff; text-decoration: none;
+         style="display: inline-block; background: #0e2f55; color: #fff; text-decoration: none;
                 font-size: 16px; font-weight: bold; padding: 14px 30px; border-radius: 999px;">
         ${t.quoteRejectedCta}
       </a>
@@ -365,12 +365,12 @@ export function treatmentStartedEmailHtml(opts: {
     : t.greetingNoName;
   return shell(
     locale,
-    `    <h2 style="color: #0f4c4c;">${t.treatmentStartedHeading}</h2>
+    `    <h2 style="color: #0e2f55;">${t.treatmentStartedHeading}</h2>
     <p>${greeting}</p>
     <p>${format(t.treatmentStartedBody, { clinic: escapeHtml(clinicName) })}</p>
     <div style="text-align: center; margin: 28px 0;">
       <a href="${link}"
-         style="display: inline-block; background: #0f4c4c; color: #fff; text-decoration: none;
+         style="display: inline-block; background: #0e2f55; color: #fff; text-decoration: none;
                 font-size: 16px; font-weight: bold; padding: 14px 30px; border-radius: 999px;">
         ${t.treatmentStartedCta}
       </a>
@@ -394,12 +394,12 @@ export function completionRequestedEmailHtml(opts: {
     : t.greetingNoName;
   return shell(
     locale,
-    `    <h2 style="color: #0f4c4c;">${t.completionRequestedHeading}</h2>
+    `    <h2 style="color: #0e2f55;">${t.completionRequestedHeading}</h2>
     <p>${greeting}</p>
     <p>${format(t.completionRequestedBody, { clinic: escapeHtml(clinicName) })}</p>
     <div style="text-align: center; margin: 28px 0;">
       <a href="${link}"
-         style="display: inline-block; background: #0f4c4c; color: #fff; text-decoration: none;
+         style="display: inline-block; background: #0e2f55; color: #fff; text-decoration: none;
                 font-size: 16px; font-weight: bold; padding: 14px 30px; border-radius: 999px;">
         ${t.completionRequestedCta}
       </a>
@@ -419,12 +419,12 @@ export function treatmentCompletedEmailHtml(opts: {
   const { locale, t, clinicName, link } = opts;
   return shell(
     locale,
-    `    <h2 style="color: #0f4c4c;">${t.treatmentCompletedHeading}</h2>
+    `    <h2 style="color: #0e2f55;">${t.treatmentCompletedHeading}</h2>
     <p>${format(t.greeting, { name: escapeHtml(clinicName) })}</p>
     <p>${format(t.treatmentCompletedBody, { patient: t.patientFallback, clinic: escapeHtml(clinicName) })}</p>
     <div style="text-align: center; margin: 28px 0;">
       <a href="${link}"
-         style="display: inline-block; background: #0f4c4c; color: #fff; text-decoration: none;
+         style="display: inline-block; background: #0e2f55; color: #fff; text-decoration: none;
                 font-size: 16px; font-weight: bold; padding: 14px 30px; border-radius: 999px;">
         ${t.treatmentCompletedCta}
       </a>
@@ -450,12 +450,12 @@ function clinicTreatmentNoticeHtml(opts: {
   const { locale, t, clinicName, link, heading, body } = opts;
   return shell(
     locale,
-    `    <h2 style="color: #0f4c4c;">${heading}</h2>
+    `    <h2 style="color: #0e2f55;">${heading}</h2>
     <p>${format(t.greeting, { name: escapeHtml(clinicName) })}</p>
     <p>${format(body, { patient: t.patientFallback })}</p>
     <div style="text-align: center; margin: 28px 0;">
       <a href="${link}"
-         style="display: inline-block; background: #0f4c4c; color: #fff; text-decoration: none;
+         style="display: inline-block; background: #0e2f55; color: #fff; text-decoration: none;
                 font-size: 16px; font-weight: bold; padding: 14px 30px; border-radius: 999px;">
         ${t.treatmentCompletedCta}
       </a>
@@ -507,13 +507,13 @@ export function clinicRejectedEmailHtml(opts: {
   const { locale, t, clinicName, reason } = opts;
   return shell(
     locale,
-    `    <h2 style="color:#0f4c4c;">${t.clinicRejectedHeading}</h2>
+    `    <h2 style="color:#0e2f55;">${t.clinicRejectedHeading}</h2>
     <p>${format(t.greeting, { name: `<strong>${escapeHtml(clinicName)}</strong>` })}</p>
     <p>${t.clinicRejectedBody}</p>
     ${
       reason
         ? `<p style="font-weight:600;">${t.clinicRejectedReason}</p>
-    <p style="background:#f6f3ee;border-radius:8px;padding:12px 16px;white-space:pre-wrap;">${escapeHtml(reason)}</p>`
+    <p style="background:#f3f6fa;border-radius:8px;padding:12px 16px;white-space:pre-wrap;">${escapeHtml(reason)}</p>`
         : ""
     }
     <p>${t.clinicRejectedContact}</p>

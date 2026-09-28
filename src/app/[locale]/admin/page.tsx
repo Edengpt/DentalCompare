@@ -91,10 +91,10 @@ export default async function AdminOverviewPage({
       {pendingClinics > 0 && (
         <Link
           href="/admin/clinics"
-          className="border-coral/40 bg-coral/5 hover:bg-coral/10 group flex items-center justify-between gap-4 rounded-2xl border px-5 py-4 transition-colors"
+          className="border-highlight bg-highlight/10 hover:bg-highlight/20 group flex items-center justify-between gap-4 rounded-2xl border px-5 py-4 transition-colors"
         >
           <div className="flex items-center gap-3">
-            <span className="bg-coral/15 text-coral inline-flex h-10 w-10 items-center justify-center rounded-xl">
+            <span className="bg-highlight text-on-highlight inline-flex h-10 w-10 items-center justify-center rounded-xl">
               <Building2 className="h-5 w-5" />
             </span>
             <div>
@@ -104,7 +104,7 @@ export default async function AdminOverviewPage({
               <p className="text-muted-foreground text-xs">{t.admin.pendingClinicsHint}</p>
             </div>
           </div>
-          <ArrowLeft className="text-coral h-4 w-4 transition-transform group-hover:-translate-x-1" />
+          <ArrowLeft className="text-on-highlight h-4 w-4 transition-transform group-hover:-translate-x-1" />
         </Link>
       )}
 

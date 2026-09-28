@@ -43,9 +43,9 @@ export function CompletionBanner({
     });
 
   return (
-    <div role="status" className="border-coral/40 bg-coral/10 rounded-3xl border-2 p-5 sm:p-6">
+    <div role="status" className="border-highlight bg-highlight/15 rounded-3xl border-2 p-5 sm:p-6">
       <div className="flex items-start gap-3">
-        <span className="bg-coral inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white">
+        <span className="bg-highlight text-on-highlight inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
           <BellRing className="h-5 w-5" />
         </span>
         <div className="min-w-0 flex-1">

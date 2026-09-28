@@ -54,7 +54,7 @@ export function ConfirmDialog({
           >
             {children}
             {irreversible && (
-              <p className="text-coral inline-flex items-center gap-1.5 font-semibold">
+              <p className="text-alert inline-flex items-center gap-1.5 font-semibold">
                 <AlertTriangle className="h-4 w-4 shrink-0" />
                 {t.confirmIrreversible}
               </p>

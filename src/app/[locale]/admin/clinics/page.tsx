@@ -103,7 +103,7 @@ export default async function AdminClinicsPage({
                     <td className="text-muted-foreground px-4 py-2.5">
                       {d.documents.length}
                       {returned > 0 && (
-                        <span className="text-coral ms-1 text-xs">
+                        <span className="text-alert ms-1 text-xs">
                           ({format(t.admin.docsReturned, { count: returned })})
                         </span>
                       )}

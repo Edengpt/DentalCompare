@@ -215,7 +215,7 @@ export default async function RequestDetailPage({
                   isSent
                     ? "bg-teal-deep/10 text-teal-deep"
                     : request.status === "FAILED"
-                      ? "bg-coral/15 text-coral"
+                      ? "bg-alert/10 text-alert"
                       : "bg-muted text-muted-foreground",
                 )}
               >

@@ -81,14 +81,14 @@ export function Hero({
             {t.headlineTop}
           </span>
           <span className="mt-3 block text-5xl leading-[1.05] sm:text-6xl lg:text-7xl">
-            {t.headlineMain} <span className="text-coral">{t.headlineAccent}</span>
+            {t.headlineMain} <span className="text-highlight">{t.headlineAccent}</span>
           </span>
         </h1>
 
         <ul className="mx-auto mt-8 flex max-w-xl flex-col gap-3.5 text-start">
           {benefits.map((b) => (
             <li key={b.text} className="flex items-center gap-3">
-              <span className="bg-cream/10 text-coral ring-cream/10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ring-1">
+              <span className="bg-cream/10 text-highlight ring-cream/10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ring-1">
                 <b.icon className="h-[18px] w-[18px]" strokeWidth={2} />
               </span>
               <span className="text-cream/90 text-base leading-snug sm:text-lg">{b.text}</span>

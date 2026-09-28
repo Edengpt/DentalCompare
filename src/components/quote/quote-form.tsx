@@ -293,7 +293,7 @@ export function QuoteForm({
         />
       </div>
 
-      {error && <p className="text-coral text-sm font-medium">{error}</p>}
+      {error && <p className="text-alert text-sm font-medium">{error}</p>}
       <Button
         type="submit"
         disabled={pending}

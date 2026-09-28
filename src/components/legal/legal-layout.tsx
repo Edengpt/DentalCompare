@@ -80,7 +80,7 @@ export function List({ items }: { items: ReactNode[] }) {
  */
 export function Ph({ children }: { children: ReactNode }) {
   return (
-    <mark className="bg-coral/15 text-coral rounded px-1.5 py-0.5 font-semibold">
+    <mark className="bg-highlight/30 text-on-highlight rounded px-1.5 py-0.5 font-semibold">
       «{children}»
     </mark>
   );
