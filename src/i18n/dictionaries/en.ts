@@ -64,6 +64,19 @@ const en: typeof he = {
     statSpreadLabel: "median gap between quotes for the same plan",
     statSpreadFallbackValue: "£0",
     statSpreadFallbackLabel: "what a patient pays, always",
+    searchTreatmentLabel: "Which treatment?",
+    searchTreatmentAny: "Not sure yet / any treatment",
+    searchWhereLabel: "Where?",
+    searchWhereLocal: "Only in my own country",
+    searchWhereAny: "Abroad too",
+    searchSubmit: "Get my quotes",
+    searchHint: "Upload your treatment plan and x-ray, choose up to 3 clinics, and the quotes arrive by email.",
+  },
+
+  destinations: {
+    title: "Popular destinations",
+    subtitle: "Countries with clinics whose licence a person has checked.",
+    verified: "Verified clinics",
   },
 
   howItWorks: {

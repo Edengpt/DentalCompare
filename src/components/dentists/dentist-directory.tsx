@@ -31,6 +31,8 @@ type DentistDirectoryProps = {
   initialSelectedIds?: string[];
   /** Country code to display name, so cards and filters read "Israel", not "IL". */
   countryNames: Record<string, string>;
+  /** Filters to start from, e.g. the treatment picked on the homepage. */
+  initialFilters?: DentistFilters;
 };
 
 export function DentistDirectory({
@@ -38,11 +40,12 @@ export function DentistDirectory({
   requestId,
   initialSelectedIds,
   countryNames,
+  initialFilters,
 }: DentistDirectoryProps) {
   const t = useT();
   const router = useRouter();
   const [isSaving, startSaving] = useTransition();
-  const [filters, setFilters] = useState<DentistFilters>(EMPTY_FILTERS);
+  const [filters, setFilters] = useState<DentistFilters>(initialFilters ?? EMPTY_FILTERS);
   const [selected, setSelected] = useState<Set<string>>(() => new Set(initialSelectedIds ?? []));
 
   const cities = useMemo(() => [...new Set(dentists.map((d) => d.city))].sort(), [dentists]);
