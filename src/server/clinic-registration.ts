@@ -18,11 +18,12 @@ import { rateLimit } from "@/lib/rate-limit";
 import { createPendingSubscription } from "@/server/subscriptions";
 import { getSubscriptionPricing } from "@/lib/subscription-pricing";
 import type { SubscriptionProvider } from "@/generated/prisma/enums";
+import { requiredDocKinds, missingDocKinds, isClinicDocumentBlobUrl } from "@/lib/clinic-documents";
 import {
-  requiredDocKinds,
-  missingDocKinds,
-  isClinicDocumentBlobUrl,
-} from "@/lib/clinic-documents";
+  clinicRegistrationSchema,
+  readRegistrationFields,
+  type RegistrationErrorKey,
+} from "@/lib/clinic-registration-schema";
 
 async function clientIp(): Promise<string> {
   const fwd = (await headers()).get("x-forwarded-for");
@@ -60,19 +61,26 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
     return { ok: false, error: e.tooManyRegistrations };
   }
 
-  const contactName = String(formData.get("contactName") ?? "").trim();
-  const dentistName = String(formData.get("dentistName") ?? "").trim();
-  const clinicName = String(formData.get("clinicName") ?? "").trim();
-  const email = String(formData.get("email") ?? "")
-    .trim()
-    .toLowerCase();
-  const phoneRaw = String(formData.get("phone") ?? "").trim();
-  const city = String(formData.get("city") ?? "").trim();
-  const address = String(formData.get("address") ?? "").trim();
-  const experienceYears = Number(formData.get("experienceYears") ?? 0);
-  const agreed = formData.get("agreeToTerms");
-  const planRaw = String(formData.get("plan") ?? "");
-  const plan = planRaw === "MONTHLY" || planRaw === "YEARLY" ? planRaw : null;
+  // The same rules the wizard enforced step by step. The browser's verdict is
+  // not trusted — it is re-reached here from the raw form.
+  const parsed = clinicRegistrationSchema.safeParse(readRegistrationFields(formData));
+  if (!parsed.success) {
+    const key = parsed.error.issues[0]?.message as RegistrationErrorKey;
+    // "This field is required" is how the wizard phrases it beside a field; a
+    // form-level refusal names the form instead.
+    return { ok: false, error: key === "fieldRequired" ? e.requiredFields : e[key] };
+  }
+  const {
+    contactName,
+    dentistName,
+    clinicName,
+    email,
+    phone: phoneRaw,
+    city,
+    address,
+    experienceYears,
+    plan,
+  } = parsed.data;
 
   // Optional logo: only accept a URL produced by our own blob upload endpoint.
   const logoRaw = String(formData.get("profileImageUrl") ?? "").trim();
@@ -81,28 +89,11 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
       ? logoRaw
       : null;
 
-  if (!contactName || !dentistName || !clinicName || !email || !phoneRaw || !city || !address) {
-    return { ok: false, error: e.requiredFields };
-  }
-  if (!email.includes("@")) {
-    return { ok: false, error: e.invalidEmail };
-  }
-  if (!Number.isFinite(experienceYears) || experienceYears < 0) {
-    return { ok: false, error: e.invalidExperience };
-  }
-  if (agreed !== "on" && agreed !== "true") {
-    return { ok: false, error: e.mustAcceptTerms };
-  }
-  if (!plan) {
-    return { ok: false, error: e.mustPickPlan };
-  }
-
   // The country has to be one we actually operate in. Trusting the submitted
   // value would let a clinic attach itself to a draft country that has no
   // currency and no licence requirements configured.
-  const countryCode = String(formData.get("countryCode") ?? "").trim();
   const country = await db.country.findFirst({
-    where: { code: countryCode, isActive: true },
+    where: { code: parsed.data.countryCode, isActive: true },
     select: { code: true, insurers: true, defaultLocale: true, requiredDocs: true },
   });
   if (!country) {
@@ -112,9 +103,13 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
   // Documents are read against THIS country's list, exactly like the payer list
   // below: what a clinic must show is a property of where it operates.
   const requiredKinds = requiredDocKinds(country.requiredDocs);
-  const docKinds = formData.getAll("documentKind").filter((v): v is string => typeof v === "string");
+  const docKinds = formData
+    .getAll("documentKind")
+    .filter((v): v is string => typeof v === "string");
   const docUrls = formData.getAll("documentUrl").filter((v): v is string => typeof v === "string");
-  const docTypes = formData.getAll("documentType").filter((v): v is string => typeof v === "string");
+  const docTypes = formData
+    .getAll("documentType")
+    .filter((v): v is string => typeof v === "string");
 
   const documents = docKinds
     .map((kind, i) => ({ kind, url: docUrls[i] ?? "", contentType: docTypes[i] ?? "" }))

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { FileWarning } from "lucide-react";
 import { toast } from "sonner";
@@ -28,6 +29,7 @@ export function RequestDocumentsForm({
   const [open, setOpen] = useState(false);
   const [reasons, setReasons] = useState<Record<string, string>>({});
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const chosen = Object.entries(reasons).filter(([, reason]) => reason.trim() !== "");
 
@@ -44,6 +46,9 @@ export function RequestDocumentsForm({
       toast.success(format(t.admin.docsRequested, { clinic: clinicName }));
       setReasons({});
       setOpen(false);
+      // The review page shows which documents were sent back; refresh it so
+      // the one just marked says so without a reload.
+      router.refresh();
     });
   };
 

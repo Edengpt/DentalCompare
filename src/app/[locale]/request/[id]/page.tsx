@@ -1,5 +1,7 @@
 import { getConverter } from "@/lib/exchange-rates";
 import { QuoteComparison, type ConvertedPrice } from "@/components/request/quote-comparison";
+import { TreatmentCard } from "@/components/request/treatment-card";
+import { CompletionBanner } from "@/components/request/completion-banner";
 import { LocaleLink as Link } from "@/i18n/locale-link";
 import { notFound, redirect } from "next/navigation";
 import {
@@ -77,6 +79,12 @@ export default async function RequestDetailPage({
               warrantyYears: true,
               warrantyNote: true,
               status: true,
+              rejectedAuto: true,
+              decidedAt: true,
+              treatmentStartedAt: true,
+              treatmentStartedBy: true,
+              completionRequestedAt: true,
+              completedAt: true,
             },
           },
           dentist: {
@@ -85,6 +93,11 @@ export default async function RequestDetailPage({
               dentistName: true,
               clinicName: true,
               city: true,
+              // Contact details, shown only once the patient has chosen this
+              // clinic — the treatment card below reads them.
+              phone: true,
+              email: true,
+              address: true,
               // Shown beside the price: which country a quote comes from is
               // part of what the patient is comparing.
               country: { select: { nameEn: true } },
@@ -100,6 +113,14 @@ export default async function RequestDetailPage({
   if (!request || request.userId !== user.id) notFound();
 
   const dentists = request.requestDentists;
+
+  // The clinic the patient chose, once there is one. Approval rejects every
+  // sibling in the same transaction, so there is at most one.
+  const chosen = dentists.find(
+    (rd) =>
+      rd.quote &&
+      ["APPROVED", "IN_TREATMENT", "COMPLETION_REQUESTED", "COMPLETED"].includes(rd.quote.status),
+  );
 
   const quoteRows: QuoteRow[] = dentists.map((rd) => ({
     dentistId: rd.dentist.id,
@@ -122,6 +143,7 @@ export default async function RequestDetailPage({
     warrantyYears: rd.quote?.warrantyYears ?? null,
     warrantyNote: rd.quote?.warrantyNote ?? null,
     note: rd.quote?.note ?? null,
+    rejectedAuto: rd.quote?.rejectedAuto ?? false,
   }));
   // One converter per page load, handed to the table — which never touches the
   // database itself. Null for a quote with no honest rate: the patient still
@@ -208,6 +230,33 @@ export default async function RequestDetailPage({
         </section>
 
         <div className="mx-auto max-w-3xl space-y-8 px-6 py-10 lg:px-10 lg:py-14">
+          {chosen?.quote?.status === "COMPLETION_REQUESTED" && (
+            <CompletionBanner requestDentistId={chosen.id} clinicName={chosen.dentist.clinicName} />
+          )}
+
+          {chosen?.quote && (
+            <TreatmentCard
+              requestDentistId={chosen.id}
+              clinic={{
+                clinicName: chosen.dentist.clinicName,
+                dentistName: chosen.dentist.dentistName,
+                phone: chosen.dentist.phone,
+                email: chosen.dentist.email,
+                address: chosen.dentist.address,
+                city: chosen.dentist.city,
+                country: chosen.dentist.country?.nameEn ?? null,
+              }}
+              timeline={{
+                status: chosen.quote.status,
+                decidedAt: chosen.quote.decidedAt,
+                treatmentStartedAt: chosen.quote.treatmentStartedAt,
+                treatmentStartedBy: chosen.quote.treatmentStartedBy,
+                completionRequestedAt: chosen.quote.completionRequestedAt,
+                completedAt: chosen.quote.completedAt,
+              }}
+            />
+          )}
+
           {isSent && (
             <section>
               <div className="border-teal-deep/30 bg-teal-deep/5 text-foreground mb-4 flex items-center gap-2.5 rounded-2xl border px-5 py-4 text-sm">

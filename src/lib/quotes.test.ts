@@ -22,6 +22,7 @@ const row = (dentistId: string, amountMinor: number | null): QuoteRow => ({
   weeksBetweenSessions: null,
   warrantyYears: null,
   warrantyNote: null,
+  rejectedAuto: false,
 });
 
 /** Every row here is priced in one currency, so the stored amount compares directly. */
@@ -75,6 +76,7 @@ describe("comparing across currencies", () => {
       weeksBetweenSessions: null,
       warrantyYears: null,
       warrantyNote: null,
+      rejectedAuto: false,
     }) as QuoteRow;
 
   // ₺5,000 is roughly a tenth of €4,000, but its minor-unit integer is larger.

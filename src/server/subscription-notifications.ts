@@ -6,6 +6,7 @@ import {
   trialEndingEmailHtml,
   trialUnbilledAdminEmailHtml,
   documentsRejectedEmailHtml,
+  clinicRejectedEmailHtml,
 } from "@/server/emails/templates";
 import { appUrl } from "@/lib/app-url";
 import { getDictionary } from "@/i18n/get-dictionary";
@@ -223,6 +224,37 @@ export async function sendDocumentsRejectedEmail(args: {
     return true;
   } catch (err) {
     console.error(`Failed to send documents-rejected email to ${args.email}:`, err);
+    return false;
+  }
+}
+
+/** Clinic "your registration was not approved", with the admin's reason if given. */
+export async function sendClinicRejectedEmail(args: {
+  email: string;
+  clinicName: string;
+  locale: Locale;
+  reason: string | null;
+}): Promise<boolean> {
+  const t = (await getDictionary(args.locale)).emails;
+  try {
+    const { error } = await getResend().emails.send({
+      from: fromAddress(),
+      to: args.email,
+      subject: t.subjectClinicRejected,
+      html: clinicRejectedEmailHtml({
+        locale: args.locale,
+        t,
+        clinicName: args.clinicName,
+        reason: args.reason,
+      }),
+    });
+    if (error) {
+      console.error(`Resend error for clinic-rejected ${args.email}:`, error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error(`Failed to send clinic-rejected email to ${args.email}:`, err);
     return false;
   }
 }

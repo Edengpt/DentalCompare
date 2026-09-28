@@ -31,6 +31,8 @@ export type QuoteRow = {
   weeksBetweenSessions: number | null;
   warrantyYears: number | null;
   warrantyNote: string | null;
+  /** Declined by the system when the patient approved another quote, not by the patient. */
+  rejectedAuto: boolean;
 };
 
 /**

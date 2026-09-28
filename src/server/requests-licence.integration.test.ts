@@ -1,10 +1,7 @@
 import { describe, it, expect, vi, beforeAll, afterEach } from "vitest";
 import { randomUUID } from "node:crypto";
 import type { db as Db } from "@/lib/db";
-import type {
-  saveRequestDentists as SaveFn,
-  submitRequest as SubmitFn,
-} from "@/server/requests";
+import type { saveRequestDentists as SaveFn, submitRequest as SubmitFn } from "@/server/requests";
 
 /**
  * The licence gate, asserted where it actually matters.
@@ -28,6 +25,13 @@ vi.mock("@/server/fulfillment", () => ({
     fulfilled.push(id);
     return { ok: true, sent: 0 };
   },
+}));
+
+// submitRequest hands delivery to `after`, which only exists inside a live
+// request. Run it inline so the recipients above are what fulfillment sees.
+vi.mock("next/server", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("next/server")>()),
+  after: (cb: () => unknown) => void cb(),
 }));
 
 const hasDb = Boolean(process.env.DATABASE_URL);

@@ -22,6 +22,10 @@ export const PROTECTED_PATTERNS = [
   // and protecting /clinics(.*) would lock out the very clinic being asked to
   // set up payment or replace a document.
   "/(he|en)?/clinics/dashboard(.*)",
+  // A request as the clinic sees it: the patient's contact details and
+  // medical files. The page checks the clinic too; this keeps anonymous
+  // visitors from reaching it at all.
+  "/(he|en)?/clinics/requests(.*)",
   // API routes are never locale-prefixed — they live outside src/app/[locale]/.
   "/api/requests(.*)",
   "/api/admin(.*)",

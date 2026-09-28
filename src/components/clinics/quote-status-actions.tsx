@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
 import { useT } from "@/i18n/provider";
@@ -23,11 +24,15 @@ export function QuoteStatusActions({
 }) {
   const t = useT().clinics;
   const [isPending, startTransition] = useTransition();
+  // The actions revalidate the dashboard; the request page needs a refresh of
+  // its own for the badge beside the heading to follow.
+  const router = useRouter();
 
   const run = (action: (id: string) => Promise<{ ok: boolean; error?: string }>) => {
     startTransition(async () => {
       const result = await action(requestDentistId);
       if (!result.ok) toast.error(result.error ?? t.dashLeadActionFailed);
+      else router.refresh();
     });
   };
 

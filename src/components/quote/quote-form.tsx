@@ -29,8 +29,11 @@ export function QuoteForm({
   token,
   currencyLabel,
   initial,
+  onSubmitted,
 }: {
   token: string;
+  /** Called once the quote is saved — the clinic area uses it to refresh its statuses in place. */
+  onSubmitted?: () => void;
   /** The clinic's own currency, so the price field never claims to be shekels. */
   currencyLabel: string;
   initial: QuoteFormInitial;
@@ -93,8 +96,10 @@ export function QuoteForm({
       warrantyNote,
     });
     setPending(false);
-    if (res.ok) setDone(true);
-    else setError(res.error);
+    if (res.ok) {
+      setDone(true);
+      onSubmitted?.();
+    } else setError(res.error);
   }
 
   if (done) {

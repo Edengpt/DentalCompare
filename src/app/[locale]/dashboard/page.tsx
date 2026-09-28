@@ -7,13 +7,13 @@ import { Footer } from "@/components/shared/footer";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getOrCreateUser } from "@/server/users";
-import { DeleteRequestButton } from "@/components/request/delete-request-button";
+import { RequestList } from "@/components/request/request-list";
+import { CompletionBanner } from "@/components/request/completion-banner";
 import { isAdminEmail } from "@/server/admin";
 import { db } from "@/lib/db";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { isLocale, defaultLocale } from "@/i18n/config";
 import { ForwardArrow } from "@/components/ui/forward-arrow";
-import type { RequestStatus } from "@/generated/prisma/enums";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -24,14 +24,9 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale } = await params;
-  const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
-
-  // Was a local map keyed PENDING/PAID/FAILED — the payment statuses removed in
-  // the free-patient pivot. RequestStatus is DRAFT/SUBMITTED/SENT/FAILED, so
-  // every normal request rendered a blank status and a failed one claimed the
-  // *payment* had failed. Keyed off the real enum now.
-  const statusLabel = (status: RequestStatus) => t.requestStatus[status];
+  const { locale: rawLocale } = await params;
+  const locale = isLocale(rawLocale) ? rawLocale : defaultLocale;
+  const t = await getDictionary(locale);
 
   const { userId } = await auth();
   if (!userId) redirect(`/${locale}/sign-in`);
@@ -56,12 +51,30 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
           createdAt: true,
           treatmentFileUrl: true,
           xrayFileUrl: true,
-          _count: { select: { requestDentists: true } },
+          requestDentists: {
+            select: {
+              id: true,
+              dentist: { select: { clinicName: true } },
+              quote: { select: { status: true } },
+            },
+          },
         },
       })
     : [];
 
   const hasRequests = requests.length > 0;
+
+  // A clinic asking the patient to confirm completion is the one thing that
+  // blocks a treatment on the patient — it gets a banner, not just a badge.
+  const completionAsks = requests.flatMap((r) =>
+    r.requestDentists
+      .filter((rd) => rd.quote?.status === "COMPLETION_REQUESTED")
+      .map((rd) => ({
+        requestId: r.id,
+        requestDentistId: rd.id,
+        clinicName: rd.dentist.clinicName,
+      })),
+  );
 
   return (
     <>
@@ -117,54 +130,32 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
               </Link>
             </div>
           ) : (
-            <div className="mt-12 space-y-4">
-              <h2 className="font-display text-foreground text-xl font-bold">
-                {t.dashboard.myRequests}
-              </h2>
-              <ul className="divide-border/60 bg-card border-border/60 divide-y rounded-3xl border">
-                {requests.map((r) => {
-                  const isSent = r.status === "SENT" || r.status === "SUBMITTED";
-                  const filesReady = !!r.treatmentFileUrl && !!r.xrayFileUrl;
-                  // Sent requests are locked → read-only detail. Unfinished
-                  // requests link back into the flow so the user can complete them.
-                  const href = isSent
-                    ? `/request/${r.id}`
-                    : filesReady
-                      ? `/request/${r.id}/dentists`
-                      : `/request/${r.id}/upload`;
-                  const date = new Intl.DateTimeFormat("he-IL", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  }).format(r.createdAt);
-                  return (
-                    <li
-                      key={r.id}
-                      className="flex flex-wrap items-center justify-between gap-3 p-5"
-                    >
-                      <div>
-                        <p className="text-foreground font-semibold">
-                          {t.dashboard.requestLabel} #{r.id.slice(0, 8)}
-                        </p>
-                        <p className="text-muted-foreground mt-0.5 text-xs">
-                          {date} ✦ {t.dashboard.statusLabel}: {statusLabel(r.status)} ✦{" "}
-                          {r._count.requestDentists} {t.dashboard.dentistsLabel}
-                        </p>
-                      </div>
-                      <div className="flex shrink-0 flex-col items-end gap-2">
-                        <Link
-                          href={href}
-                          className="text-teal-deep text-sm font-semibold underline-offset-4 hover:underline"
-                        >
-                          {isSent ? t.dashboard.view : t.dashboard.continue}
-                        </Link>
-                        <DeleteRequestButton requestId={r.id} />
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
+            <>
+              {completionAsks.length > 0 && (
+                <div className="mt-10 space-y-3">
+                  {completionAsks.map((a) => (
+                    <CompletionBanner
+                      key={a.requestDentistId}
+                      requestDentistId={a.requestDentistId}
+                      clinicName={a.clinicName}
+                      detailsHref={`/request/${a.requestId}`}
+                    />
+                  ))}
+                </div>
+              )}
+              <RequestList
+                t={t}
+                locale={locale}
+                rows={requests.map((r) => ({
+                  id: r.id,
+                  status: r.status,
+                  createdAt: r.createdAt,
+                  filesReady: !!r.treatmentFileUrl && !!r.xrayFileUrl,
+                  recipients: r.requestDentists.length,
+                  quotes: r.requestDentists.flatMap((rd) => (rd.quote ? [rd.quote.status] : [])),
+                }))}
+              />
+            </>
           )}
         </div>
       </main>

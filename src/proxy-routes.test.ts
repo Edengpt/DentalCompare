@@ -29,6 +29,8 @@ const PROTECTED = [
   "/admin",
   "/admin/clinics",
   "/clinics/dashboard",
+  // A patient's name, phone and medical files are on this page.
+  "/clinics/requests/rd123",
 ];
 
 const PUBLIC = [

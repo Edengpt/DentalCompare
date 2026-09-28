@@ -5,6 +5,7 @@ import { formatMoney } from "@/lib/money";
 import { translateInclusion, translateLanguage } from "@/lib/labels";
 import { format } from "@/i18n/format";
 import { QuoteDecisionButtons } from "./quote-decision-buttons";
+import { StatusBadge } from "./status-badge";
 
 /**
  * Three quotes side by side, one dimension per row.
@@ -97,9 +98,19 @@ export function QuoteComparison({
       label: d.rowStatus,
       cell: (q) =>
         q.status ? (
-          <QuoteDecisionButtons requestDentistId={q.requestDentistId} status={q.status} />
+          <QuoteDecisionButtons
+            requestDentistId={q.requestDentistId}
+            status={q.status}
+            rejectedAuto={q.rejectedAuto}
+            clinicName={q.clinicName}
+            otherPending={
+              quotes.filter(
+                (o) => o.requestDentistId !== q.requestDentistId && o.status === "PENDING_DECISION",
+              ).length
+            }
+          />
         ) : (
-          <span className="text-muted-foreground text-xs">{d.awaitingQuote}</span>
+          <StatusBadge tone="waiting">{d.awaitingQuote}</StatusBadge>
         ),
     },
     { label: d.rowPrice, cell: priceCell },

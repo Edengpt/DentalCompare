@@ -1,31 +1,49 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { CheckCircle2 } from "lucide-react";
 import { useT } from "@/i18n/provider";
-import { approveQuote, rejectQuote, confirmCompletion } from "@/server/quote-decisions";
+import { format, plural } from "@/i18n/format";
+import { approveQuote, rejectQuote } from "@/server/quote-decisions";
 import type { QuoteStatus } from "@/generated/prisma/enums";
+import { StatusBadge } from "./status-badge";
+import { ConfirmDialog } from "./confirm-dialog";
+
+type Decision = "approve" | "reject";
 
 /**
- * The patient's per-quote action, one row of the comparison table at a time.
+ * The patient's per-quote action, one column of the comparison table at a time.
  *
  * Every button here fires a final, non-reversible transition (see the design
- * doc, §1.4) — there is deliberately no "undo" affordance.
+ * doc, §1.4) — there is deliberately no "undo" affordance. That is exactly why
+ * approving and declining each go through a confirmation that says what will
+ * happen: one mis-tap on a phone used to approve a clinic and decline the rest.
+ *
+ * Once a quote is chosen, what happens next lives in the treatment card above
+ * the table (start, completion); this cell only reports where the quote stands.
  */
 export function QuoteDecisionButtons({
   requestDentistId,
   status,
+  rejectedAuto,
+  clinicName,
+  otherPending,
 }: {
   requestDentistId: string;
   status: QuoteStatus;
+  rejectedAuto: boolean;
+  clinicName: string;
+  /** Other quotes on this request still awaiting a decision — the ones approving this one declines. */
+  otherPending: number;
 }) {
   const t = useT().requestDetail;
   const [isPending, startTransition] = useTransition();
+  const [confirming, setConfirming] = useState<Decision | null>(null);
 
   const run = (action: (id: string) => Promise<{ ok: boolean; error?: string }>) => {
     startTransition(async () => {
       const result = await action(requestDentistId);
+      setConfirming(null);
       if (!result.ok) {
         toast.error(result.error ?? t.quoteActionFailed);
       }
@@ -34,60 +52,63 @@ export function QuoteDecisionButtons({
 
   if (status === "PENDING_DECISION") {
     return (
-      <div className="flex gap-2">
-        <button
-          type="button"
-          disabled={isPending}
-          onClick={() => run(approveQuote)}
-          className="bg-teal-deep text-cream rounded-full px-3 py-1.5 text-xs font-semibold disabled:opacity-50"
+      <div className="flex flex-col items-start gap-2.5">
+        <StatusBadge tone="action">{t.quoteBadgePending}</StatusBadge>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            disabled={isPending}
+            onClick={() => setConfirming("approve")}
+            className="bg-coral hover:bg-coral/90 rounded-full px-4 py-2 text-sm font-bold text-white shadow-sm disabled:opacity-50"
+          >
+            {t.quoteActionApprove}
+          </button>
+          <button
+            type="button"
+            disabled={isPending}
+            onClick={() => setConfirming("reject")}
+            className="border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 rounded-full border px-4 py-2 text-sm font-semibold disabled:opacity-50"
+          >
+            {t.quoteActionReject}
+          </button>
+        </div>
+
+        <ConfirmDialog
+          open={confirming !== null}
+          onCancel={() => setConfirming(null)}
+          onConfirm={() => run(confirming === "reject" ? rejectQuote : approveQuote)}
+          pending={isPending}
+          title={format(confirming === "reject" ? t.confirmRejectTitle : t.confirmApproveTitle, {
+            clinic: clinicName,
+          })}
+          confirmLabel={confirming === "reject" ? t.confirmRejectYes : t.confirmApproveYes}
+          tone={confirming === "reject" ? "quiet" : "primary"}
         >
-          {t.quoteActionApprove}
-        </button>
-        <button
-          type="button"
-          disabled={isPending}
-          onClick={() => run(rejectQuote)}
-          className="text-coral border-coral/40 rounded-full border px-3 py-1.5 text-xs font-semibold disabled:opacity-50"
-        >
-          {t.quoteActionReject}
-        </button>
+          <p>{confirming === "reject" ? t.confirmRejectBody : t.confirmApproveBody}</p>
+          {confirming === "approve" && otherPending > 0 && (
+            <p className="text-foreground">{plural(t.confirmApproveOthers, otherPending)}</p>
+          )}
+        </ConfirmDialog>
       </div>
     );
   }
 
-  if (status === "APPROVED") {
-    return (
-      <span className="text-teal-deep inline-flex items-center gap-1 text-xs font-semibold">
-        <CheckCircle2 className="h-3.5 w-3.5" /> {t.quoteStatusApproved}
-      </span>
-    );
-  }
-
   if (status === "REJECTED") {
-    return <span className="text-muted-foreground text-xs">{t.quoteStatusRejected}</span>;
-  }
-
-  if (status === "IN_TREATMENT") {
-    return <span className="text-teal-deep text-xs font-semibold">{t.quoteStatusInTreatment}</span>;
+    return (
+      <StatusBadge tone="neutral">
+        {rejectedAuto ? t.quoteStatusRejectedAuto : t.quoteStatusRejected}
+      </StatusBadge>
+    );
   }
 
   if (status === "COMPLETION_REQUESTED") {
-    return (
-      <button
-        type="button"
-        disabled={isPending}
-        onClick={() => run(confirmCompletion)}
-        className="bg-teal-deep text-cream rounded-full px-3 py-1.5 text-xs font-semibold disabled:opacity-50"
-      >
-        {t.quoteActionConfirmComplete}
-      </button>
-    );
+    return <StatusBadge tone="action">{t.quoteBadgeCompletionRequested}</StatusBadge>;
   }
 
-  // COMPLETED
-  return (
-    <span className="text-teal-deep inline-flex items-center gap-1 text-xs font-semibold">
-      <CheckCircle2 className="h-3.5 w-3.5" /> {t.quoteStatusCompleted}
-    </span>
-  );
+  const label = {
+    APPROVED: t.quoteStatusApproved,
+    IN_TREATMENT: t.quoteStatusInTreatment,
+    COMPLETED: t.quoteStatusCompleted,
+  }[status];
+  return <StatusBadge tone="positive">{label}</StatusBadge>;
 }

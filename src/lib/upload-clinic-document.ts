@@ -8,8 +8,7 @@ import { clinicDocumentBlobPath } from "./clinic-documents";
  * its own translated text rather than that.
  */
 export type ClinicDocumentUploadResult =
-  | { ok: true; url: string }
-  | { ok: false; message: string | null };
+  { ok: true; url: string } | { ok: false; message: string | null };
 
 /**
  * Uploads a licence document straight to storage, then has the server confirm
@@ -20,7 +19,11 @@ export type ClinicDocumentUploadResult =
  * that is uploaded but never confirmed has not been checked, and must not be
  * shown to the clinic as accepted.
  */
-export async function uploadClinicDocument(file: File): Promise<ClinicDocumentUploadResult> {
+export async function uploadClinicDocument(
+  file: File,
+  /** 0-100 while the bytes travel. 100 is not "accepted" — the check follows. */
+  onProgress?: (percentage: number) => void,
+): Promise<ClinicDocumentUploadResult> {
   let url: string;
   try {
     const blob = await upload(clinicDocumentBlobPath(file), file, {
@@ -29,6 +32,7 @@ export async function uploadClinicDocument(file: File): Promise<ClinicDocumentUp
       // which would make the admin-only download route pointless.
       access: "private",
       handleUploadUrl: "/api/clinics/documents/token",
+      onUploadProgress: onProgress ? (e) => onProgress(e.percentage) : undefined,
     });
     url = blob.url;
   } catch {

@@ -20,9 +20,14 @@ function extFor(contentType: string | null): string {
 
 /**
  * Streams a request's private medical file (treatment plan / x-ray) to the
- * patient who owns the request or to an admin. Everyone else — including anyone
- * holding the raw blob URL — gets a 404. This is the only way those private
- * blobs are reachable in the browser.
+ * patient who owns the request, to an admin, or to a clinic the request was
+ * actually delivered to. Everyone else — including anyone holding the raw blob
+ * URL — gets a 404. This is the only way those private blobs are reachable in
+ * the browser.
+ *
+ * The clinic case exposes nothing new: the delivery email already carried both
+ * files as attachments. It exists so the clinic can price the request from its
+ * own area instead of digging for that email.
  */
 export async function GET(
   _req: Request,
@@ -36,11 +41,15 @@ export async function GET(
   const { userId: clerkUserId } = await auth();
   if (!clerkUserId) return new NextResponse("Unauthorized", { status: 401 });
 
-  const user = await db.user.findUnique({
-    where: { clerkUserId },
-    select: { id: true, email: true },
-  });
-  if (!user) return new NextResponse("Unauthorized", { status: 401 });
+  // A clinic account signs in through the same Clerk instance but need not have
+  // a patient User row, so the two identities are looked up side by side.
+  const [user, clinic] = await Promise.all([
+    db.user.findUnique({ where: { clerkUserId }, select: { id: true, email: true } }),
+    // Only an account already stamped onto a clinic. Linking one happens in the
+    // clinic area on a verified address, never as a side effect of a download.
+    db.dentist.findUnique({ where: { clerkUserId }, select: { id: true } }),
+  ]);
+  if (!user && !clinic) return new NextResponse("Unauthorized", { status: 401 });
 
   const request = await db.request.findUnique({
     where: { id: requestId },
@@ -48,9 +57,10 @@ export async function GET(
   });
   if (!request) return new NextResponse("Not found", { status: 404 });
 
-  // Owner or admin only. Use 404 (not 403) so we don't confirm the request exists
-  // to unrelated users.
-  const allowed = request.userId === user.id || isAdminEmail(user.email);
+  // Use 404 (not 403) so we don't confirm the request exists to anyone else.
+  const allowed =
+    (user !== null && (request.userId === user.id || isAdminEmail(user.email))) ||
+    (clinic !== null && (await wasDeliveredTo(requestId, clinic.id)));
   if (!allowed) return new NextResponse("Not found", { status: 404 });
 
   const url = kind === "treatment" ? request.treatmentFileUrl : request.xrayFileUrl;
@@ -74,4 +84,17 @@ export async function GET(
     console.error(`file download failed for ${requestId}/${kind}:`, err);
     return new NextResponse("Not found", { status: 404 });
   }
+}
+
+/**
+ * Whether this clinic received the request — selected AND emailed. A clinic the
+ * patient picked but that was never sent the request (dropped at send time, or
+ * still in the queue) has not been given the files and does not get them here.
+ */
+async function wasDeliveredTo(requestId: string, dentistId: string): Promise<boolean> {
+  const rd = await db.requestDentist.findFirst({
+    where: { requestId, dentistId, emailSent: true },
+    select: { id: true },
+  });
+  return rd !== null;
 }

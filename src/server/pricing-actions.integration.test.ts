@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeAll, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeAll, afterAll, afterEach } from "vitest";
 import type { db as Db } from "@/lib/db";
 import type { updatePricing as UpdatePricingFn } from "@/server/pricing-actions";
 
@@ -28,6 +28,8 @@ const BASIC_FIELDS = {
 
 describe.skipIf(!hasDb)("updatePricing", () => {
   const DB_TIMEOUT = 60_000;
+  const ADMIN_EMAIL = "pricing-admin-test@example.com";
+  let originalAdminEmails: string | undefined;
   let originalPayplusBasicRow: {
     monthlyPriceMinor: number;
     yearlyPriceMinor: number;
@@ -39,25 +41,27 @@ describe.skipIf(!hasDb)("updatePricing", () => {
   beforeAll(async () => {
     ({ db } = await import("@/lib/db"));
     ({ updatePricing } = await import("@/server/pricing-actions"));
-    // ADMIN_EMAILS must include this address locally for requireAdmin to pass —
-    // reuse whatever the existing admin-actions integration tests rely on by
-    // reading it the same way; if none is configured, check
-    // src/server/admin-actions.integration.test.ts for the convention this repo
-    // already uses to authenticate as an admin in a test.
+    // requireAdmin checks the signed-in user's email against ADMIN_EMAILS. The
+    // suite puts its own address on that list rather than borrowing whatever a
+    // developer's .env.local happens to hold: in CI the variable is unset, and
+    // every test here was being redirected away as a non-admin.
+    originalAdminEmails = process.env.ADMIN_EMAILS;
+    process.env.ADMIN_EMAILS = [originalAdminEmails, ADMIN_EMAIL].filter(Boolean).join(",");
     const admin = await db.user.upsert({
       where: { clerkUserId: "pricing_admin_test" },
-      create: {
-        clerkUserId: "pricing_admin_test",
-        fullName: "Admin",
-        email: process.env.ADMIN_EMAILS?.split(",")[0]?.trim() ?? "admin@example.com",
-      },
-      update: {},
+      create: { clerkUserId: "pricing_admin_test", fullName: "Admin", email: ADMIN_EMAIL },
+      update: { email: ADMIN_EMAIL },
     });
     authState.clerkUserId = admin.clerkUserId;
     originalPayplusBasicRow = await db.subscriptionPricing.findUniqueOrThrow({
       where: { provider_tier: { provider: "PAYPLUS", tier: "BASIC" } },
     });
   }, DB_TIMEOUT);
+
+  afterAll(() => {
+    if (originalAdminEmails === undefined) delete process.env.ADMIN_EMAILS;
+    else process.env.ADMIN_EMAILS = originalAdminEmails;
+  });
 
   afterEach(async () => {
     // Restore PAYPLUS/BASIC to its seeded values so other suites (and this

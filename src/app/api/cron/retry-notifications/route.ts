@@ -8,6 +8,8 @@ import {
   sendTreatmentStartedEmail,
   sendCompletionRequestedEmail,
   sendTreatmentCompletedEmail,
+  sendTreatmentStartedByPatientEmail,
+  sendCompletionDeclinedEmail,
 } from "@/server/quote-decision-notifications";
 
 export const runtime = "nodejs";
@@ -103,16 +105,18 @@ export async function GET(req: Request) {
     console.error("retry-notifications: decision block failed:", err);
   }
 
-  // 3. Treatment-started notification to the patient.
+  // 3. Treatment-started notification — to whichever side did NOT mark it.
+  // A null actor is a row from before patients could mark it: the clinic did.
   try {
     const stuckStarted = await db.quote.findMany({
       where: { treatmentStartedNotifiedAt: null, treatmentStartedAt: { lt: cutoff } },
       select: {
         id: true,
+        treatmentStartedBy: true,
         requestDentist: {
           select: {
             requestId: true,
-            dentist: { select: { clinicName: true } },
+            dentist: { select: { clinicName: true, email: true, locale: true } },
             request: { select: { user: { select: { fullName: true, email: true, locale: true } } } },
           },
         },
@@ -120,15 +124,25 @@ export async function GET(req: Request) {
     });
     checked += stuckStarted.length;
     for (const q of stuckStarted) {
-      const user = q.requestDentist.request.user;
-      if (!user) continue;
-      const ok = await sendTreatmentStartedEmail({
-        to: user.email,
-        patientName: user.fullName,
-        clinicName: q.requestDentist.dentist.clinicName,
-        requestId: q.requestDentist.requestId,
-        locale: asLocale(user.locale),
-      });
+      const dentist = q.requestDentist.dentist;
+      let ok: boolean;
+      if (q.treatmentStartedBy === "PATIENT") {
+        ok = await sendTreatmentStartedByPatientEmail({
+          to: dentist.email,
+          clinicName: dentist.clinicName,
+          locale: asLocale(dentist.locale),
+        });
+      } else {
+        const user = q.requestDentist.request.user;
+        if (!user) continue;
+        ok = await sendTreatmentStartedEmail({
+          to: user.email,
+          patientName: user.fullName,
+          clinicName: dentist.clinicName,
+          requestId: q.requestDentist.requestId,
+          locale: asLocale(user.locale),
+        });
+      }
       if (ok) {
         await db.quote.update({ where: { id: q.id }, data: { treatmentStartedNotifiedAt: new Date() } });
         sent += 1;
@@ -197,6 +211,32 @@ export async function GET(req: Request) {
     }
   } catch (err) {
     console.error("retry-notifications: completed block failed:", err);
+  }
+
+  // 6. "Still ongoing" notification to the clinic.
+  try {
+    const stuckDeclined = await db.quote.findMany({
+      where: { completionDeclinedNotifiedAt: null, completionDeclinedAt: { lt: cutoff } },
+      select: {
+        id: true,
+        requestDentist: { select: { dentist: { select: { email: true, locale: true, clinicName: true } } } },
+      },
+    });
+    checked += stuckDeclined.length;
+    for (const q of stuckDeclined) {
+      const dentist = q.requestDentist.dentist;
+      const ok = await sendCompletionDeclinedEmail({
+        to: dentist.email,
+        clinicName: dentist.clinicName,
+        locale: asLocale(dentist.locale),
+      });
+      if (ok) {
+        await db.quote.update({ where: { id: q.id }, data: { completionDeclinedNotifiedAt: new Date() } });
+        sent += 1;
+      }
+    }
+  } catch (err) {
+    console.error("retry-notifications: completion-declined block failed:", err);
   }
 
   return NextResponse.json({ checked, sent });

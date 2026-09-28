@@ -9,9 +9,11 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/server/admin";
+import { del } from "@vercel/blob";
 import {
   sendPaymentSetupEmail,
   sendDocumentsRejectedEmail,
+  sendClinicRejectedEmail,
 } from "@/server/subscription-notifications";
 import { audit } from "@/lib/audit";
 import { trialEndFrom } from "@/lib/subscription";
@@ -206,14 +208,32 @@ export async function requestBetterDocuments(
   return { ok: true };
 }
 
-/** Reject (delete) any clinic that has not yet been approved. */
-export async function rejectClinic(dentistId: string): Promise<ActionResult> {
+/**
+ * Rejects a clinic that has not been approved: tells it, then removes it.
+ *
+ * In that order, and with its licence documents taken out of the private store
+ * first. Those files are the most sensitive thing a clinic handed over, and a
+ * deleted clinic row would leave them in storage with nothing pointing at them.
+ * If they cannot be deleted the rejection stops before anything else happens —
+ * nothing half-done, the clinic not yet told — so the admin can simply retry.
+ *
+ * The email cannot be retried later (the clinic is gone), so whether it went
+ * out is recorded in the audit log beside the reason.
+ */
+export async function rejectClinic(dentistId: string, reason?: string): Promise<ActionResult> {
   const e = (await getDictionary(await getRequestLocale())).errors;
   const admin = await requireAdmin();
+  const why = reason?.trim() || null;
 
   const dentist = await db.dentist.findUnique({
     where: { id: dentistId },
-    select: { isActive: true },
+    select: {
+      isActive: true,
+      email: true,
+      clinicName: true,
+      locale: true,
+      documents: { select: { blobUrl: true } },
+    },
   });
   if (!dentist) return { ok: false, error: e.clinicNotFound };
   // Guard: never delete a live (isActive) dentist. Deliberately not gated on
@@ -223,6 +243,22 @@ export async function rejectClinic(dentistId: string): Promise<ActionResult> {
     return { ok: false, error: e.onlyPendingCanBeRejected };
   }
 
+  for (const doc of dentist.documents) {
+    try {
+      await del(doc.blobUrl);
+    } catch (err) {
+      console.error(`rejectClinic: could not delete document for ${dentistId}:`, err);
+      return { ok: false, error: e.deleteFailed };
+    }
+  }
+
+  const emailed = await sendClinicRejectedEmail({
+    email: dentist.email,
+    clinicName: dentist.clinicName,
+    locale: asLocale(dentist.locale),
+    reason: why,
+  });
+
   await db.dentist.delete({ where: { id: dentistId } });
 
   await audit({
@@ -230,6 +266,7 @@ export async function rejectClinic(dentistId: string): Promise<ActionResult> {
     action: "clinic.reject",
     entity: "Dentist",
     entityId: dentistId,
+    metadata: { clinicName: dentist.clinicName, email: dentist.email, reason: why, emailed },
   });
 
   revalidatePath("/admin/clinics");

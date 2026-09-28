@@ -84,3 +84,13 @@ export function countryFromPhone(e164: string | null | undefined): string | null
     return null;
   }
 }
+
+/**
+ * A WhatsApp chat link for a number stored in international form, or null.
+ *
+ * A number kept as someone typed it (the fallback when it couldn't be parsed)
+ * can't be trusted to open the right chat, so no link is offered for it.
+ */
+export function whatsappHref(phone: string | null | undefined): string | null {
+  return phone && /^\+[1-9]\d{7,14}$/.test(phone) ? `https://wa.me/${phone.slice(1)}` : null;
+}
