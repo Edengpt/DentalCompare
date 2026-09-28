@@ -1,5 +1,6 @@
 import { ShieldCheck } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { Header } from "@/components/shared/header";
@@ -11,6 +12,8 @@ import { PUBLIC_DENTIST_SELECT, publicDentistWhere } from "@/lib/dentist-public"
 import { attachCapStatus } from "@/server/dentist-cap";
 import { destinationCountryCodes } from "@/lib/travel-scope";
 import { getActiveCountries } from "@/lib/countries";
+import { START_PREFERENCES_COOKIE, parseStartPreferences } from "@/lib/start-preferences";
+import { EMPTY_FILTERS } from "@/components/dentists/dentist-filters";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -81,6 +84,17 @@ export default async function RequestDentistsPage({
 
   const initialSelectedIds = request.requestDentists.map((rd) => rd.dentistId);
 
+  // The treatment picked in the homepage search box starts as an ordinary
+  // filter the patient can clear — but only when some listed clinic offers it,
+  // so the first screen is never an empty list the patient didn't ask for.
+  const { specialty } = parseStartPreferences(
+    (await cookies()).get(START_PREFERENCES_COOKIE)?.value,
+  );
+  const initialFilters =
+    specialty && dentists.some((d) => d.specialties.includes(specialty))
+      ? { ...EMPTY_FILTERS, specialties: [specialty] }
+      : undefined;
+
   return (
     <>
       <Header />
@@ -108,6 +122,7 @@ export default async function RequestDentistsPage({
           dentists={dentists}
           requestId={request.id}
           initialSelectedIds={initialSelectedIds}
+          initialFilters={initialFilters}
           countryNames={countryNames}
         />
       </main>

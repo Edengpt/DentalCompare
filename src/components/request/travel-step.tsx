@@ -15,17 +15,20 @@ export function TravelStep({
   requestId,
   countries,
   defaultCountry,
+  defaultScope = "LOCAL",
   locale,
 }: {
   requestId: string;
   countries: { code: string; nameEn: string }[];
   defaultCountry: string;
+  /** Pre-selected radio, e.g. from the homepage search box. */
+  defaultScope?: "LOCAL" | "SELECTED" | "ANY";
   locale: string;
 }) {
   const t = useT();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [scope, setScope] = useState<"LOCAL" | "SELECTED" | "ANY">("LOCAL");
+  const [scope, setScope] = useState<"LOCAL" | "SELECTED" | "ANY">(defaultScope);
 
   const SCOPES = [
     { value: "LOCAL", label: t.requestFlow.travelScopeLocal },

@@ -58,6 +58,21 @@ const he = {
     statSpreadLabel: "פער חציוני בין ההצעות על אותה תוכנית",
     statSpreadFallbackValue: "₪0",
     statSpreadFallbackLabel: "עלות למטופל, תמיד",
+    // The yellow search box. It starts a request with these as defaults; it
+    // does not search prices (there are none before clinics see the plan).
+    searchTreatmentLabel: "איזה טיפול?",
+    searchTreatmentAny: "עוד לא יודעים / כל טיפול",
+    searchWhereLabel: "איפה?",
+    searchWhereLocal: "רק במדינה שלי",
+    searchWhereAny: "גם בחו״ל",
+    searchSubmit: "קבלו הצעות מחיר",
+    searchHint: "מעלים תוכנית טיפול וצילום, בוחרים עד 3 מרפאות, וההצעות מגיעות למייל.",
+  },
+
+  destinations: {
+    title: "יעדים מבוקשים",
+    subtitle: "מדינות שיש בהן מרפאות שהרישיון שלהן נבדק על ידי אדם.",
+    verified: "מרפאות מאומתות",
   },
 
   howItWorks: {
