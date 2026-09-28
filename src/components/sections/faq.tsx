@@ -18,29 +18,25 @@ export function Faq({ t }: { t: Dictionary["faq"] }) {
   ];
 
   return (
-    <section id="faq" className="bg-background py-24 lg:py-32">
-      <div className="mx-auto max-w-4xl px-6 lg:px-10">
-        <div className="text-center">
-          <p className="eyebrow justify-center">{t.eyebrow}</p>
-          <h2 className="font-display text-foreground mt-5 text-4xl font-bold tracking-tight text-balance sm:text-5xl">
-            {t.title}
-          </h2>
-        </div>
+    <section id="faq" className="scroll-mt-20 py-14 sm:py-16">
+      <div className="mx-auto max-w-6xl px-6 lg:px-10">
+        <h2 className="font-display text-foreground text-2xl font-bold sm:text-3xl">{t.eyebrow}</h2>
+        <p className="text-muted-foreground mt-1 text-sm sm:text-base">{t.title}</p>
 
-        <Accordion className="mt-14 w-full" defaultValue={["item-0"]}>
+        <Accordion className="mt-4 w-full" defaultValue={["item-0"]}>
           {faqs.map((faq, i) => (
             <AccordionItem key={faq.q} value={`item-${i}`} className="border-border/60">
-              <AccordionTrigger className="text-foreground py-6 text-start text-lg font-semibold hover:no-underline">
+              <AccordionTrigger className="text-foreground py-5 text-start text-base font-semibold hover:no-underline">
                 {faq.q}
               </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground pb-6 text-base leading-relaxed">
+              <AccordionContent className="text-muted-foreground pb-5 text-sm leading-relaxed">
                 {faq.a}
               </AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>
 
-        <p className="text-muted-foreground mt-12 text-center text-sm">
+        <p className="text-muted-foreground mt-6 text-sm">
           {t.contactPrefix}{" "}
           <a
             href={`mailto:${SITE_CONFIG.supportEmail}`}

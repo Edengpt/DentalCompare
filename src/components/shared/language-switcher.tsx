@@ -16,7 +16,7 @@ import { useLocale } from "@/i18n/provider";
  * Uses next/link directly, not LocaleLink — the href already carries the target
  * locale, and prefixing it again would produce /en/he/….
  */
-export function LanguageSwitcher() {
+export function LanguageSwitcher({ inverted = false }: { inverted?: boolean }) {
   const current = useLocale();
   const pathname = usePathname();
 
@@ -34,7 +34,10 @@ export function LanguageSwitcher() {
 
   return (
     <div className="flex items-center gap-1">
-      <Languages className="text-muted-foreground h-4 w-4" aria-hidden="true" />
+      <Languages
+        className={inverted ? "text-cream/70 h-4 w-4" : "text-muted-foreground h-4 w-4"}
+        aria-hidden="true"
+      />
       {other.map((locale) => (
         <Link
           key={locale}
@@ -43,7 +46,11 @@ export function LanguageSwitcher() {
           // The label is in the target language, never translated — a reader who
           // can't read the current language still has to recognise their own.
           lang={locale}
-          className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors"
+          className={
+            inverted
+              ? "text-cream/80 hover:text-cream text-sm font-medium transition-colors"
+              : "text-muted-foreground hover:text-foreground text-sm font-medium transition-colors"
+          }
         >
           {localeNames[locale]}
         </Link>

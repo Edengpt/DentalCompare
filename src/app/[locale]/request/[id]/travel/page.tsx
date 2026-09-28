@@ -9,7 +9,11 @@ import { isLocale, defaultLocale } from "@/i18n/config";
 import { getActiveCountries } from "@/lib/countries";
 import { countryFromPhone } from "@/lib/phone";
 import { TravelStep } from "@/components/request/travel-step";
-import { START_PREFERENCES_COOKIE, parseStartPreferences } from "@/lib/start-preferences";
+import {
+  START_PREFERENCES_COOKIE,
+  parseStartPreferences,
+  travelDefaults,
+} from "@/lib/start-preferences";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -47,18 +51,21 @@ export default async function TravelPage({
 
   const countries = await getActiveCountries();
 
-  // The "where?" answer from the homepage search box, if there was one. A
-  // default for the radio, never an answer on the patient's behalf.
-  const { scope: defaultScope } = parseStartPreferences(
-    (await cookies()).get(START_PREFERENCES_COOKIE)?.value,
-  );
-
   // A guess, not a conclusion. The phone gives a good default; an Israeli living
   // in London keeps an Israeli mobile, so the patient changes it in one click if
   // the number is misleading. Ignored when it names a country we don't operate in.
   const guessed = countryFromPhone(user.phone);
   const defaultCountry =
     guessed && countries.some((c) => c.code === guessed) ? guessed : user.countryCode;
+
+  // The "where?" answer from the homepage search box, if there was one. A
+  // default for the radio, never an answer on the patient's behalf.
+  const startCookie = (await cookies()).get(START_PREFERENCES_COOKIE)?.value;
+  const defaults = travelDefaults(
+    startCookie ? parseStartPreferences(startCookie) : null,
+    defaultCountry,
+    countries.map((c) => c.code),
+  );
 
   return (
     <>
@@ -82,7 +89,8 @@ export default async function TravelPage({
               requestId={request.id}
               countries={countries.map((c) => ({ code: c.code, nameEn: c.nameEn }))}
               defaultCountry={defaultCountry}
-              defaultScope={defaultScope ?? undefined}
+              defaultScope={defaults.scope}
+              defaultDestinations={defaults.destinations}
               locale={locale}
             />
           </div>

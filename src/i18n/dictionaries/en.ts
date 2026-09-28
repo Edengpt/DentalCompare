@@ -39,104 +39,79 @@ const en: typeof he = {
     faq: "FAQ",
     clinicsJoin: "For clinics",
     signIn: "Sign in",
-    getStarted: "Get started",
     dashboard: "My account",
   },
 
   hero: {
-    eyebrow: "Compare dental quotes",
     headlineTop: "Not sure the price you were quoted is fair?",
     headlineMain: "Get 3 written quotes.",
     headlineAccent: "Save thousands.",
-    benefitUpload: "Upload once: your treatment plan and your x-ray.",
-    benefitSend: "Your request goes to 3 leading clinics at the same time.",
-    benefitCompare: "Quotes come back to your inbox — compare, and save.",
-    benefitNoCalls: "No phone calls, no commitment, no pressure.",
-    cta: "Get my quotes",
-    secondaryCta: "How does it work?",
     reassurance: "Completely free ✦ No credit card ✦ No commitment",
-    statClinicsLabel: "clinics in our network",
-    statClinicsFallbackValue: "up to 3",
-    statClinicsFallbackLabel: "quotes from a single request",
-    statResponseLabel: "of requests answered within 48 hours",
-    statResponseFallbackValue: "48 hours",
-    statResponseFallbackLabel: "the target for quotes to arrive",
-    statSpreadLabel: "median gap between quotes for the same plan",
-    statSpreadFallbackValue: "£0",
-    statSpreadFallbackLabel: "what a patient pays, always",
     searchTreatmentLabel: "Which treatment?",
     searchTreatmentAny: "Not sure yet / any treatment",
     searchWhereLabel: "Where?",
-    searchWhereLocal: "Only in my own country",
-    searchWhereAny: "Abroad too",
+    searchWhereAnywhere: "Anywhere",
     searchSubmit: "Get my quotes",
-    searchHint: "Upload your treatment plan and x-ray, choose up to 3 clinics, and the quotes arrive by email.",
+    searchHint:
+      "Upload your treatment plan and x-ray, choose up to 3 clinics, and the quotes arrive by email. Target: within 48 hours.",
+    popularTreatments: "Popular treatments",
   },
 
   destinations: {
     title: "Popular destinations",
-    subtitle: "Countries with clinics whose licence a person has checked.",
-    verified: "Verified clinics",
+    subtitle: "Clinics whose licence a person has checked, at home and abroad.",
+    verified: { one: "1 verified clinic", other: "{count} verified clinics" },
+    joiningSoon: "Clinics joining soon",
   },
 
   howItWorks: {
-    eyebrow: "How it works",
-    title: "Three steps — and the hardest part is waiting.",
-    subtitle:
-      "No endless forms, no pushy calls. The whole thing happens on one screen and takes about three minutes.",
+    title: "How it works",
+    subtitle: "Three steps, no endless forms and no pushy calls.",
     step1Title: "Upload your plan and x-ray",
     step1Description:
-      "The treatment plan a dentist has already given you, plus your x-ray. PDF or photo, up to 20MB each — that's it.",
+      "The treatment plan a dentist has already given you, plus your x-ray. PDF or photo, up to 20MB each.",
     step1Detail: "1–2 minutes",
     step2Title: "Pick up to 3 clinics",
     step2Description:
-      "Filter by city, speciality and insurer, and choose exactly who you want. Your request goes only to the clinics you ticked — no spam, ever.",
+      "Filter by country, city, speciality and insurer, and choose exactly who you want. Your request goes only to the clinics you ticked.",
     step2Detail: "Smart filters",
     step3Title: "Quotes arrive by email",
     step3Description:
-      "Each clinic receives your documents and replies with a written quote. Compare them in your own time and choose — with no obligation.",
-    step3Detail: "Within 24–48 hours",
+      "Each clinic replies with a written quote. Compare them in your own time and choose, with no obligation.",
+    step3Detail: "Target: within 48 hours",
+    verifiedTitle: "Every clinic here has been checked",
     verifiedPromise:
       "Every clinic you see here uploaded its licence to practise, and a person on our team looked at it before the clinic appeared. A clinic whose licence was not checked never reaches you.",
   },
-
-  benefits: {
-    eyebrow: "Why DentalCompare",
-    title: "Four problems. Four answers.",
-    subtitle:
-      "No grand claims about a “revolutionary platform” — just a direct answer to four frustrations anyone facing expensive dental work knows well.",
-    oneTitle: "Save thousands",
-    oneDescription:
-      "Transparent comparison hands you back the bargaining power. The same treatment plan is priced differently from one clinic to the next — and once the quotes sit side by side in writing, the difference stops being guesswork.",
-    twoTitle: "One request, 3 clinics",
-    twoDescription:
-      "Instead of hours of phone calls and email chains — three minutes at your screen, and your request is already on its way to every clinic at once.",
-    threeTitle: "Your privacy is kept",
-    threeDescription:
-      "Your medical documents reach only the clinics you picked. Never shared with third parties, never used for advertising, never spammed.",
-    fourTitle: "No pointless clinic visits",
-    fourDescription:
-      "Instead of travelling between clinics and booking appointments just to hear a price — quotes arrive written down and itemised. You only visit once you've chosen.",
+  exampleComparison: {
+    title: "Compare quotes side by side",
+    subtitle: "This is what a comparison looks like once the quotes arrive. The figures here are examples only.",
+    plan: "One implant with crown",
+    rowPrice: "Price",
+    rowIncluded: "What's included",
+    rowVisits: "Trips and visits",
+    rowWarranty: "Warranty",
+    newBadge: "New",
+    ratingLabel: "Rated {rating} out of 5",
+    converted: "≈ {amount} at today's rate",
+    clinicA: "Clinic A",
+    clinicAPlace: "Tel Aviv, Israel",
+    clinicAIncluded: "Implant, porcelain crown, x-ray",
+    clinicAVisits: "4 visits",
+    clinicAWarranty: "10 years",
+    clinicB: "Clinic B",
+    clinicBPlace: "Haifa, Israel",
+    clinicBIncluded: "Implant, zirconia crown",
+    clinicBVisits: "3 visits",
+    clinicBWarranty: "7 years",
+    clinicC: "Clinic C",
+    clinicCPlace: "Budapest, Hungary",
+    clinicCIncluded: "Implant, crown, 4 nights' stay",
+    clinicCVisits: "2 trips, 5 visits",
+    clinicCWarranty: "5 years",
   },
 
-  comparingQuotes: {
-    eyebrow: "After the quotes arrive",
-    title: "Three quotes are in. Now the real work starts.",
-    subtitle:
-      "The lowest price is almost never the cheapest quote. Four things to check before you choose.",
-    oneTitle: "What's included, and what arrives as a separate bill",
-    oneDescription:
-      "A £4,800 quote that leaves the crown out is not cheaper than a £5,500 one that includes it. The difference doesn't disappear — it just arrives later.",
-    twoTitle: "How many visits, and over how long",
-    twoDescription:
-      "An implant is usually two stages months apart. A clinic that finishes in two visits and one that needs six differ in days off work, not only in money.",
-    threeTitle: "What happens if something fails in two years",
-    threeDescription:
-      "A clinic offering five years of warranty in writing has priced its own risk. One offering none has handed that risk to you without mentioning it.",
-    fourTitle: "The gap itself is information, not a verdict",
-    fourDescription:
-      "If three clinics price the same plan at £4,800, £5,500 and £6,900, it doesn't mean the dearest is overcharging. It means you have a precise question to ask them — and now you have it in writing.",
-  },
+
 
   faq: {
     eyebrow: "FAQ",
@@ -159,13 +134,9 @@ const en: typeof he = {
   },
 
   finalCta: {
-    eyebrow: "The first step",
     title: "Healthy teeth shouldn't cost a fortune.",
-    subtitle:
-      "The first price you're given is almost never the lowest one available. Join the patients already comparing — and saving — quietly, and in their own time.",
-    cta: "Get my quotes",
-    secondaryCta: "I still have questions",
-    reassurance: "✦ Completely free ✦ No credit card ✦ No commitment ✦",
+    subtitle: "The first price you're given is almost never the lowest one available.",
+    cta: "Get my quotes now",
   },
 
   request: {
@@ -1231,25 +1202,21 @@ const en: typeof he = {
   },
 
   footer: {
-    tagline:
-      "The transparent way to get several quotes for dental treatment. No phone calls, no pressure.",
-    groupProduct: "Product",
-    groupCompany: "Company",
-    groupLegal: "Legal",
+    tagline: "Compare quotes for dental treatment, at home and abroad.",
+    groupPatients: "For patients",
+    groupClinics: "For clinics",
+    groupInfo: "Information",
     howItWorks: "How it works",
-    benefits: "Benefits",
     faq: "FAQ",
-    about: "About",
-    contact: "Contact",
-    clinicsJoin: "For clinics",
-    clinicsArea: "Clinic area",
+    getQuotes: "Get quotes",
+    clinicsJoin: "Join as a clinic",
+    clinicsArea: "Clinic sign-in",
     terms: "Terms of use",
     privacy: "Privacy policy",
     cookies: "Cookie policy",
     refunds: "Cancellations & refunds",
     accessibility: "Accessibility statement",
     rights: "All rights reserved.",
-    builtWith: "Designed and built with care",
   },
 };
 
