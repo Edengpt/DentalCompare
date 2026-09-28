@@ -10,6 +10,7 @@ import { Destinations } from "@/components/sections/destinations";
 import { StartSearchProvider } from "@/components/sections/start-search-context";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { plural } from "@/i18n/format";
+import { countryName } from "@/lib/country-names";
 import { getHomepageDestinations } from "@/lib/homepage-destinations";
 import { SPECIALTIES } from "@/lib/constants";
 import { translateSpecialty } from "@/lib/labels";
@@ -26,11 +27,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   // or a clinic's licence being approved shows up on the next visit.
   const destinations = await getHomepageDestinations();
 
-  // Names from the runtime's own CLDR data, in the page's language: the Country
-  // table only keeps English names.
-  const regionNames = new Intl.DisplayNames([locale], { type: "region" });
-  const countryName = (code: string) => regionNames.of(code) ?? code;
-
   const specialties = SPECIALTIES.map((value) => ({
     value,
     label: translateSpecialty(t.labels, value),
@@ -39,7 +35,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   // is promoted: patients and clinics come from everywhere.
   const collator = new Intl.Collator(locale);
   const named = destinations
-    .map((d) => ({ ...d, name: countryName(d.code) }))
+    .map((d) => ({ ...d, name: countryName(d.code, locale) }))
     .sort((a, b) => b.clinics - a.clinics || collator.compare(a.name, b.name));
   const countries = named.map((d) => ({ code: d.code, name: d.name }));
   const tiles = named.map((d) => ({

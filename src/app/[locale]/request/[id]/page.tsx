@@ -3,6 +3,7 @@ import { QuoteComparison, type ConvertedPrice } from "@/components/request/quote
 import { TreatmentCard } from "@/components/request/treatment-card";
 import { CompletionBanner } from "@/components/request/completion-banner";
 import { LocaleLink as Link } from "@/i18n/locale-link";
+import { countryName } from "@/lib/country-names";
 import { notFound, redirect } from "next/navigation";
 import {
   ArrowRight,
@@ -100,7 +101,7 @@ export default async function RequestDetailPage({
               address: true,
               // Shown beside the price: which country a quote comes from is
               // part of what the patient is comparing.
-              country: { select: { nameEn: true } },
+              country: { select: { code: true, nameEn: true } },
               spokenLanguages: true,
             },
           },
@@ -131,7 +132,9 @@ export default async function RequestDetailPage({
     city: rd.dentist.city,
     amountMinor: rd.quote?.amountMinor ?? null,
     currency: rd.quote?.currency ?? null,
-    country: rd.dentist.country?.nameEn ?? null,
+    country: rd.dentist.country
+      ? countryName(rd.dentist.country.code, locale, rd.dentist.country.nameEn)
+      : null,
     spokenLanguages: rd.dentist.spokenLanguages,
     includes: rd.quote?.includes ?? [],
     accommodationNights: rd.quote?.accommodationNights ?? null,
@@ -244,7 +247,13 @@ export default async function RequestDetailPage({
                 email: chosen.dentist.email,
                 address: chosen.dentist.address,
                 city: chosen.dentist.city,
-                country: chosen.dentist.country?.nameEn ?? null,
+                country: chosen.dentist.country
+                  ? countryName(
+                      chosen.dentist.country.code,
+                      locale,
+                      chosen.dentist.country.nameEn,
+                    )
+                  : null,
               }}
               timeline={{
                 status: chosen.quote.status,

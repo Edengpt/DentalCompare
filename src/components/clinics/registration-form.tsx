@@ -35,7 +35,8 @@ const inputClass =
 /** The subset of Country a clinic needs at registration time. */
 export type RegistrationCountry = {
   code: string;
-  nameEn: string;
+  /** In the reader's language. */
+  name: string;
   insurers: string[];
   /** Which licence documents this country asks for. Empty means one generic. */
   requiredDocs: string[];
@@ -472,7 +473,7 @@ export function RegistrationForm({
             >
               {countries.map((c) => (
                 <option key={c.code} value={c.code}>
-                  {c.nameEn}
+                  {c.name}
                 </option>
               ))}
             </select>

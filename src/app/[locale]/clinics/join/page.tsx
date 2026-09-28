@@ -5,6 +5,7 @@ import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
 import { RegistrationForm } from "@/components/clinics/registration-form";
 import { getActiveCountries } from "@/lib/countries";
+import { withCountryNames } from "@/lib/country-names";
 import { getSubscriptionPricing } from "@/lib/subscription-pricing";
 
 export const dynamic = "force-dynamic";
@@ -50,7 +51,7 @@ export default async function ClinicJoinPage({
         </section>
 
         <div className="mx-auto max-w-3xl px-6 py-10 lg:px-10 lg:py-14">
-          <RegistrationForm countries={countries} pricing={pricing} />
+          <RegistrationForm countries={withCountryNames(countries, locale)} pricing={pricing} />
         </div>
       </main>
       <Footer />

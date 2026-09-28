@@ -12,6 +12,7 @@ import { PUBLIC_DENTIST_SELECT, publicDentistWhere } from "@/lib/dentist-public"
 import { attachCapStatus } from "@/server/dentist-cap";
 import { destinationCountryCodes } from "@/lib/travel-scope";
 import { getActiveCountries } from "@/lib/countries";
+import { withCountryNames } from "@/lib/country-names";
 import { START_PREFERENCES_COOKIE, parseStartPreferences } from "@/lib/start-preferences";
 import { EMPTY_FILTERS } from "@/components/dentists/dentist-filters";
 
@@ -80,7 +81,9 @@ export default async function RequestDentistsPage({
 
   // Names, not codes: the filter and the card both read "Israel" rather than "IL".
   const countries = await getActiveCountries();
-  const countryNames = Object.fromEntries(countries.map((c) => [c.code, c.nameEn]));
+  const countryNames = Object.fromEntries(
+    withCountryNames(countries, locale).map((c) => [c.code, c.name]),
+  );
 
   const initialSelectedIds = request.requestDentists.map((rd) => rd.dentistId);
 
