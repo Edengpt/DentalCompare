@@ -18,14 +18,17 @@ export const START_PREFERENCES_COOKIE = "dc_start";
 /** A day: long enough to survive sign-up, short enough not to haunt a later visit. */
 export const START_PREFERENCES_MAX_AGE = 60 * 60 * 24;
 
-export type StartScope = "LOCAL" | "ANY";
-
 export type StartPreferences = {
   specialty: Specialty | null;
-  scope: StartScope | null;
+  /**
+   * ISO 3166-1 alpha-2 code of the country picked under "where?", or null for
+   * "anywhere". Only its shape is checked here; the travel step compares it with
+   * the active countries, so a code we stopped operating in simply falls away.
+   */
+  country: string | null;
 };
 
-const EMPTY: StartPreferences = { specialty: null, scope: null };
+const EMPTY: StartPreferences = { specialty: null, country: null };
 
 export function parseStartPreferences(raw: string | undefined | null): StartPreferences {
   if (!raw) return EMPTY;
@@ -36,16 +39,42 @@ export function parseStartPreferences(raw: string | undefined | null): StartPref
     return EMPTY;
   }
   if (!value || typeof value !== "object") return EMPTY;
-  const { specialty, scope } = value as Record<string, unknown>;
+  const { specialty, country } = value as Record<string, unknown>;
   return {
     specialty:
       typeof specialty === "string" && (SPECIALTIES as readonly string[]).includes(specialty)
         ? (specialty as Specialty)
         : null,
-    scope: scope === "LOCAL" || scope === "ANY" ? scope : null,
+    country: typeof country === "string" && /^[A-Z]{2}$/.test(country) ? country : null,
   };
 }
 
 export function serializeStartPreferences(prefs: StartPreferences): string {
-  return JSON.stringify({ specialty: prefs.specialty, scope: prefs.scope });
+  return JSON.stringify({ specialty: prefs.specialty, country: prefs.country });
+}
+
+export type TravelDefaults = {
+  scope: "LOCAL" | "SELECTED" | "ANY";
+  destinations: string[];
+};
+
+/**
+ * Turns the homepage's "where?" into the travel step's own terms.
+ *
+ * The patient's home country is LOCAL, any other active country is SELECTED
+ * with that one destination ticked, and "anywhere" is ANY. With no cookie at
+ * all the step keeps its usual LOCAL default.
+ */
+export function travelDefaults(
+  prefs: StartPreferences | null,
+  homeCountry: string,
+  activeCodes: readonly string[],
+): TravelDefaults {
+  if (!prefs) return { scope: "LOCAL", destinations: [] };
+  const { country } = prefs;
+  if (country === null) return { scope: "ANY", destinations: [] };
+  if (country === homeCountry || !activeCodes.includes(country)) {
+    return { scope: "LOCAL", destinations: [] };
+  }
+  return { scope: "SELECTED", destinations: [country] };
 }

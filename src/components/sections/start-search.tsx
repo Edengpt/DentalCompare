@@ -1,54 +1,34 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useLocale } from "@/i18n/provider";
 import type { Specialty } from "@/lib/constants";
-import {
-  START_PREFERENCES_COOKIE,
-  START_PREFERENCES_MAX_AGE,
-  serializeStartPreferences,
-  type StartScope,
-} from "@/lib/start-preferences";
+import { useStartSearch } from "./start-search-context";
 
 type Labels = {
   treatmentLabel: string;
   treatmentAny: string;
   whereLabel: string;
-  whereLocal: string;
-  whereAny: string;
+  whereAnywhere: string;
   submit: string;
 };
 
 /**
- * The yellow search frame from the design system.
- *
- * It does not search: prices only exist once clinics have seen the plan. It
- * starts the request with the two answers the flow would otherwise ask for
- * later, saved as defaults (see src/lib/start-preferences.ts), then goes where
- * the old hero button went.
+ * The yellow search frame from the design system: which treatment, where, go.
+ * See StartSearchProvider for what "go" does.
  */
 export function StartSearch({
-  href,
   labels,
   specialties,
+  countries,
 }: {
-  /** Unprefixed app path, e.g. "/sign-up". */
-  href: string;
   labels: Labels;
   specialties: { value: Specialty; label: string }[];
+  countries: { code: string; name: string }[];
 }) {
-  const router = useRouter();
-  const locale = useLocale();
+  const { specialty, setSpecialty, country, setCountry, start } = useStartSearch();
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = new FormData(e.currentTarget);
-    const specialty = (form.get("specialty") as Specialty | "") || null;
-    const scope = (form.get("scope") as StartScope | "") || null;
-    document.cookie = `${START_PREFERENCES_COOKIE}=${encodeURIComponent(
-      serializeStartPreferences({ specialty, scope }),
-    )}; Path=/; Max-Age=${START_PREFERENCES_MAX_AGE}; SameSite=Lax`;
-    router.push(`/${locale}${href}`);
+    start();
   };
 
   const field =
@@ -63,7 +43,12 @@ export function StartSearch({
     >
       <label className={field}>
         <span className="text-muted-foreground text-xs">{labels.treatmentLabel}</span>
-        <select name="specialty" defaultValue="" className={select}>
+        <select
+          name="specialty"
+          value={specialty}
+          onChange={(e) => setSpecialty(e.target.value as Specialty | "")}
+          className={select}
+        >
           <option value="">{labels.treatmentAny}</option>
           {specialties.map((s) => (
             <option key={s.value} value={s.value}>
@@ -74,9 +59,18 @@ export function StartSearch({
       </label>
       <label className={field}>
         <span className="text-muted-foreground text-xs">{labels.whereLabel}</span>
-        <select name="scope" defaultValue="LOCAL" className={select}>
-          <option value="LOCAL">{labels.whereLocal}</option>
-          <option value="ANY">{labels.whereAny}</option>
+        <select
+          name="country"
+          value={country}
+          onChange={(e) => setCountry(e.target.value)}
+          className={select}
+        >
+          {countries.map((c) => (
+            <option key={c.code} value={c.code}>
+              {c.name}
+            </option>
+          ))}
+          <option value="">{labels.whereAnywhere}</option>
         </select>
       </label>
       <button

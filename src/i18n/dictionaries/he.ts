@@ -29,109 +29,82 @@ const he = {
     faq: "שאלות נפוצות",
     clinicsJoin: "הצטרפות מרפאות",
     signIn: "כניסה",
-    getStarted: "התחילו עכשיו",
     dashboard: "אזור אישי",
   },
 
   hero: {
-    eyebrow: "פלטפורמת השוואת מחירים",
     headlineTop: "לא יודעים אם המחיר לטיפול השיניים הוגן?",
     headlineMain: "קבלו 3 הצעות מחיר.",
     headlineAccent: "חסכו אלפי שקלים.",
-    benefitUpload: "מעלים פעם אחת: תוכנית טיפול וצילום שיניים.",
-    benefitSend: "הבקשה נשלחת ל-3 רופאים מובילים במקביל.",
-    benefitCompare: "הצעות המחיר חוזרות ישירות למייל — משווים וחוסכים.",
-    benefitNoCalls: "בלי שיחות טלפון, בלי התחייבות, בלי לחץ.",
-    cta: "קבלו הצעות מחיר עכשיו",
-    secondaryCta: "איך זה עובד?",
     reassurance: "חינם לחלוטין ✦ ללא כרטיס אשראי ✦ ללא התחייבות",
-    // Each stat has a measured form and a fallback used until enough evidence
-    // exists to show it (src/lib/homepage-stats.ts). The fallback is never a
-    // smaller number — it is a fact about how the service works, true on the
-    // first day and still true on the thousandth.
-    statClinicsLabel: "מרפאות במאגר",
-    statClinicsFallbackValue: "עד 3",
-    statClinicsFallbackLabel: "הצעות מחיר בבקשה אחת",
-    statResponseLabel: "מהבקשות מקבלות מענה תוך 48 שעות",
-    statResponseFallbackValue: "48 שעות",
-    statResponseFallbackLabel: "זמן היעד לקבלת הצעות",
-    statSpreadLabel: "פער חציוני בין ההצעות על אותה תוכנית",
-    statSpreadFallbackValue: "₪0",
-    statSpreadFallbackLabel: "עלות למטופל, תמיד",
     // The yellow search box. It starts a request with these as defaults; it
     // does not search prices (there are none before clinics see the plan).
     searchTreatmentLabel: "איזה טיפול?",
     searchTreatmentAny: "עוד לא יודעים / כל טיפול",
     searchWhereLabel: "איפה?",
-    searchWhereLocal: "רק במדינה שלי",
-    searchWhereAny: "גם בחו״ל",
+    searchWhereAnywhere: "בכל מקום",
     searchSubmit: "קבלו הצעות מחיר",
-    searchHint: "מעלים תוכנית טיפול וצילום, בוחרים עד 3 מרפאות, וההצעות מגיעות למייל.",
+    searchHint:
+      "מעלים תוכנית טיפול וצילום, בוחרים עד 3 מרפאות, וההצעות מגיעות למייל. היעד: תוך 48 שעות.",
+    popularTreatments: "טיפולים נפוצים",
   },
 
   destinations: {
     title: "יעדים מבוקשים",
-    subtitle: "מדינות שיש בהן מרפאות שהרישיון שלהן נבדק על ידי אדם.",
-    verified: "מרפאות מאומתות",
+    subtitle: "מרפאות שהרישיון שלהן נבדק על ידי אדם, בארץ ובחו״ל.",
+    verified: { one: "מרפאה מאומתת אחת", other: "{count} מרפאות מאומתות" },
+    joiningSoon: "מרפאות מצטרפות בקרוב",
   },
 
   howItWorks: {
-    eyebrow: "איך זה עובד",
-    title: "שלושה שלבים — והעבודה הכי קשה היא לחכות.",
-    subtitle: "בלי טפסים אינסופיים ובלי שיחות מציקות — כל התהליך במסך אחד, ומסתיים בשלוש דקות.",
+    title: "איך זה עובד",
+    subtitle: "שלושה שלבים, בלי טפסים אינסופיים ובלי שיחות מציקות.",
     step1Title: "מעלים תוכנית טיפול וצילום",
     step1Description:
-      "את תוכנית הטיפול שכבר קיבלתם מרופא, ואת צילום השיניים. PDF או תמונה, עד 20MB לקובץ — וזהו.",
+      "את תוכנית הטיפול שכבר קיבלתם מרופא, ואת צילום השיניים. PDF או תמונה, עד 20MB לקובץ.",
     step1Detail: "1–2 דקות",
-    step2Title: "בוחרים עד 3 רופאים",
+    step2Title: "בוחרים עד 3 מרפאות",
     step2Description:
-      "מסננים לפי עיר, התמחות ומבטח, ובוחרים בדיוק את מי שתרצו. הבקשה נשלחת רק לרופאים שסימנתם — אפס ספאם.",
-    step2Detail: "פילטרים חכמים",
+      "מסננים לפי מדינה, עיר, התמחות ומבטח, ובוחרים בדיוק את מי שתרצו. הבקשה נשלחת רק למי שסימנתם.",
+    step2Detail: "סינון חכם",
     step3Title: "ההצעות מגיעות למייל",
-    step3Description:
-      "כל רופא מקבל את המסמכים ומשיב אליכם הצעת מחיר כתובה. אתם משווים בנחת ובוחרים — בלי שום התחייבות.",
-    step3Detail: "תוך 24–48 שעות",
+    step3Description: "כל מרפאה משיבה הצעת מחיר כתובה. משווים בנחת ובוחרים, בלי שום התחייבות.",
+    step3Detail: "היעד: תוך 48 שעות",
+    verifiedTitle: "כל מרפאה כאן נבדקה",
     verifiedPromise:
       "כל מרפאה שתראו כאן העלתה את רישיון העיסוק שלה, ואדם מהצוות שלנו הסתכל עליו לפני שהיא הופיעה במאגר. מרפאה בלי רישיון שנבדק לא מגיעה אליכם.",
   },
-
-  benefits: {
-    eyebrow: "למה DentalCompare",
-    title: "ארבעה כאבים. ארבעה פתרונות.",
-    subtitle:
-      "בלי מילים גדולות ובלי „פלטפורמה מהפכנית” — רק תשובה ישירה לארבעה כאבים שכל מי שעומד לפני טיפול שיניים יקר מכיר היטב.",
-    oneTitle: "חוסכים אלפי שקלים",
-    oneDescription:
-      "השוואה שקופה מחזירה אליכם את כוח המיקוח. אותה תוכנית טיפול בדיוק מתומחרת אחרת ממרפאה למרפאה — וכשההצעות מונחות זו לצד זו בכתב, ההפרש מפסיק להיות ניחוש.",
-    twoTitle: "בקשה אחת, 3 מרפאות",
-    twoDescription:
-      "במקום שעות של שיחות טלפון וסבבי מיילים — שלוש דקות מול המסך, והבקשה כבר בדרך לכל הרופאים במקביל.",
-    threeTitle: "הפרטיות שלכם נשמרת",
-    threeDescription:
-      "המסמכים הרפואיים מגיעים אך ורק לרופאים שבחרתם. בלי שיתוף עם צד שלישי, בלי פרסום, ובלי ספאם.",
-    fourTitle: "אפס הגעות מיותרות למרפאות",
-    fourDescription:
-      "במקום להסתובב בין מרפאה למרפאה ולתאם פגישות רק כדי לשמוע כמה זה יעלה — ההצעות מגיעות אליכם כתובות ומפורטות. מגיעים למרפאה רק כשכבר בחרתם.",
+  // Made-up clinics, prices and ratings that show what a comparison looks like.
+  // The subtitle must keep saying so.
+  exampleComparison: {
+    title: "משווים הצעות זו לצד זו",
+    subtitle: "כך נראית ההשוואה אחרי שההצעות מגיעות. הנתונים כאן לדוגמה בלבד.",
+    plan: "שתל אחד כולל כתר",
+    rowPrice: "מחיר",
+    rowIncluded: "מה כלול",
+    rowVisits: "נסיעות וביקורים",
+    rowWarranty: "אחריות",
+    newBadge: "חדש",
+    ratingLabel: "דירוג {rating} מתוך 5",
+    converted: "≈ {amount} לפי השער היום",
+    clinicA: "מרפאה א׳",
+    clinicAPlace: "תל אביב, ישראל",
+    clinicAIncluded: "שתל, כתר חרסינה, צילום",
+    clinicAVisits: "4 ביקורים",
+    clinicAWarranty: "10 שנים",
+    clinicB: "מרפאה ב׳",
+    clinicBPlace: "חיפה, ישראל",
+    clinicBIncluded: "שתל, כתר זירקוניה",
+    clinicBVisits: "3 ביקורים",
+    clinicBWarranty: "7 שנים",
+    clinicC: "מרפאה ג׳",
+    clinicCPlace: "בודפשט, הונגריה",
+    clinicCIncluded: "שתל, כתר, 4 לילות לינה",
+    clinicCVisits: "2 נסיעות, 5 ביקורים",
+    clinicCWarranty: "5 שנים",
   },
 
-  comparingQuotes: {
-    eyebrow: "אחרי שההצעות מגיעות",
-    title: "קיבלתם שלוש הצעות. עכשיו מתחיל החלק החשוב.",
-    subtitle:
-      "המחיר הנמוך ביותר הוא כמעט אף פעם ההצעה הזולה ביותר. ארבעה דברים לבדוק לפני שבוחרים.",
-    oneTitle: "מה כלול, ומה יגיע כחשבון נפרד",
-    oneDescription:
-      "הצעה של 19,200 ₪ שאינה כוללת את הכתר אינה זולה מהצעה של 22,000 ₪ שכוללת אותו. ההפרש לא נעלם — הוא רק מגיע מאוחר יותר.",
-    twoTitle: "כמה ביקורים, ולאורך כמה זמן",
-    twoDescription:
-      "השתלה היא לרוב שני שלבים בהפרש חודשים. מרפאה שסוגרת את זה בשני ביקורים ומרפאה שדורשת שישה — ההבדל ביניהן נמדד בימי עבודה, לא רק בשקלים.",
-    threeTitle: "מה קורה אם משהו משתבש בעוד שנתיים",
-    threeDescription:
-      "מרפאה שנותנת חמש שנות אחריות בכתב מתמחרת את הסיכון של עצמה. מרפאה שאינה נותנת מגלגלת אותו אליכם, בלי לומר את זה.",
-    fourTitle: "הפער עצמו הוא מידע, לא פסק דין",
-    fourDescription:
-      "אם שלוש מרפאות תמחרו את אותה תוכנית ב-19,200, 22,000 ו-27,500 — זה לא אומר שהיקרה מנפחת. זה אומר שיש לכם שאלה מדויקת לשאול אותה, ועכשיו היא בכתב.",
-  },
+
 
   faq: {
     eyebrow: "שאלות נפוצות",
@@ -154,13 +127,9 @@ const he = {
   },
 
   finalCta: {
-    eyebrow: "הצעד הראשון",
     title: "שיניים בריאות לא צריכות לעלות הון.",
-    subtitle:
-      "המחיר הראשון שאתם מקבלים כמעט אף פעם לא הזול ביותר. הצטרפו לאלפי מטופלים שכבר משווים — וחוסכים אלפי שקלים, בדיסקרטיות ובזמן שלהם.",
+    subtitle: "המחיר הראשון שאתם מקבלים כמעט אף פעם לא הזול ביותר.",
     cta: "קבלו הצעות מחיר עכשיו",
-    secondaryCta: "יש לי עדיין שאלות",
-    reassurance: "✦ חינם לחלוטין ✦ ללא כרטיס אשראי ✦ ללא התחייבות ✦",
   },
 
   request: {
@@ -1201,24 +1170,21 @@ const he = {
   },
 
   footer: {
-    tagline: "הדרך השקופה לקבל מספר הצעות מחיר לטיפול שיניים. ללא שיחות טלפון, ללא לחץ.",
-    groupProduct: "המוצר",
-    groupCompany: "חברה",
-    groupLegal: "משפטי",
+    tagline: "השוואת הצעות מחיר לטיפולי שיניים, בארץ ובחו״ל.",
+    groupPatients: "למטופלים",
+    groupClinics: "למרפאות",
+    groupInfo: "מידע",
     howItWorks: "איך זה עובד",
-    benefits: "יתרונות",
     faq: "שאלות נפוצות",
-    about: "אודות",
-    contact: "צרו קשר",
+    getQuotes: "קבלו הצעות מחיר",
     clinicsJoin: "הצטרפות מרפאות",
-    clinicsArea: "אזור המרפאה",
+    clinicsArea: "כניסה לאזור המרפאה",
     terms: "תנאי שימוש",
     privacy: "מדיניות פרטיות",
     cookies: "מדיניות עוגיות",
     refunds: "ביטולים והחזרים",
     accessibility: "הצהרת נגישות",
     rights: "כל הזכויות שמורות.",
-    builtWith: "עוצב ופותח באהבה",
   },
 };
 

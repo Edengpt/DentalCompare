@@ -16,6 +16,7 @@ export function TravelStep({
   countries,
   defaultCountry,
   defaultScope = "LOCAL",
+  defaultDestinations = [],
   locale,
 }: {
   requestId: string;
@@ -23,6 +24,8 @@ export function TravelStep({
   defaultCountry: string;
   /** Pre-selected radio, e.g. from the homepage search box. */
   defaultScope?: "LOCAL" | "SELECTED" | "ANY";
+  /** Countries pre-ticked when the scope is SELECTED. */
+  defaultDestinations?: string[];
   locale: string;
 }) {
   const t = useT();
@@ -97,6 +100,7 @@ export function TravelStep({
                   type="checkbox"
                   name="destinations"
                   value={c.code}
+                  defaultChecked={defaultDestinations.includes(c.code)}
                   className="accent-teal-deep h-4 w-4"
                 />
                 <span className="text-foreground">{c.nameEn}</span>
