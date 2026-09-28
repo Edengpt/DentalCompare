@@ -64,7 +64,7 @@ export function TreatmentCard({
     });
 
   return (
-    <section className="border-teal-deep/30 bg-card overflow-hidden rounded-3xl border">
+    <section className="border-teal-deep/30 bg-card overflow-hidden rounded-lg border">
       <div className="bg-teal-deep text-cream px-6 py-5">
         <p className="text-cream/70 text-xs font-medium">{t.treatmentEyebrow}</p>
         <h2 className="font-display mt-1 text-2xl font-bold">
@@ -84,7 +84,7 @@ export function TreatmentCard({
                   href={c.href}
                   target={c.href.startsWith("http") ? "_blank" : undefined}
                   rel={c.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                  className="border-border/60 hover:border-teal-deep/40 hover:bg-teal-deep/5 flex items-center gap-3 rounded-2xl border px-4 py-3 transition-colors"
+                  className="border-border/60 hover:border-teal-deep/40 hover:bg-teal-deep/5 flex items-center gap-3 rounded-lg border px-4 py-3 transition-colors"
                 >
                   <c.icon className="text-teal-deep h-4 w-4 shrink-0" />
                   <span className="min-w-0">
@@ -112,13 +112,13 @@ export function TreatmentCard({
           </div>
 
           {timeline.status === "APPROVED" && (
-            <div className="bg-muted/40 mt-6 rounded-2xl p-4">
+            <div className="bg-muted/40 mt-6 rounded-lg p-4">
               <p className="text-muted-foreground text-sm">{t.markStartedHint}</p>
               <button
                 type="button"
                 disabled={isPending}
                 onClick={() => setConfirming(true)}
-                className="bg-teal-deep text-cream hover:bg-teal-deep/90 mt-3 inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold disabled:opacity-50"
+                className="bg-teal-deep text-cream hover:bg-teal-deep/90 mt-3 inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-bold disabled:opacity-50"
               >
                 <PlayCircle className="h-4 w-4" />
                 {t.markStarted}

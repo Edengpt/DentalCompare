@@ -22,7 +22,7 @@ export function MedicalFileViewer({
 }) {
   const Icon = kind === "image" ? ImageIcon : FileText;
   return (
-    <figure className="border-border/60 bg-card overflow-hidden rounded-2xl border">
+    <figure className="border-border/60 bg-card overflow-hidden rounded-lg border">
       <figcaption className="border-border/60 flex items-center justify-between gap-3 border-b px-4 py-3">
         <span className="text-foreground inline-flex items-center gap-2 text-sm font-semibold">
           <Icon className="text-teal-deep h-4 w-4" />

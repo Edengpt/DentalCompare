@@ -152,7 +152,7 @@ export function FileDropzone({
       }}
       onDragLeave={() => setDragOver(false)}
       className={cn(
-        "border-border/60 bg-card/50 rounded-3xl border-2 border-dashed p-8 text-center transition-all",
+        "border-border/60 bg-card/50 rounded-lg border-2 border-dashed p-8 text-center transition-all",
         dragOver && "border-teal-deep/60 bg-teal-deep/5",
         state.status === "done" && "border-teal-deep/40 bg-teal-deep/3 border-solid",
       )}
@@ -174,7 +174,7 @@ export function FileDropzone({
           onClick={() => inputRef.current?.click()}
           className="flex w-full flex-col items-center gap-3 outline-none"
         >
-          <span className="bg-teal-deep/10 text-teal-deep inline-flex h-12 w-12 items-center justify-center rounded-2xl">
+          <span className="bg-teal-deep/10 text-teal-deep inline-flex h-12 w-12 items-center justify-center rounded-lg">
             <UploadCloud className="h-5 w-5" />
           </span>
           <div>

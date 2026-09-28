@@ -99,7 +99,7 @@ export default async function ConfirmRequestPage({ params }: { params: Promise<{
 
         <div className="mx-auto max-w-3xl space-y-8 px-6 py-10 lg:px-10 lg:py-14">
           {/* Summary card */}
-          <div className="border-border/60 bg-card rounded-3xl border p-6 sm:p-8">
+          <div className="border-border/60 bg-card rounded-lg border p-6 sm:p-8">
             <dl className="divide-border/60 divide-y">
               {summaryRows.map((row) => (
                 <div
@@ -125,7 +125,7 @@ export default async function ConfirmRequestPage({ params }: { params: Promise<{
             <h2 className="font-display text-foreground mb-3 text-lg font-bold">
               {t.confirm.recipients}
             </h2>
-            <ul className="border-border/60 bg-card divide-border/60 divide-y rounded-3xl border">
+            <ul className="border-border/60 bg-card divide-border/60 divide-y rounded-lg border">
               {dentists.map((d) => (
                 <li key={d.id} className="flex items-center justify-between gap-3 p-4">
                   <div>
@@ -148,7 +148,7 @@ export default async function ConfirmRequestPage({ params }: { params: Promise<{
           {/* Phone verification — an invitation, not a gate. Sending is allowed
               either way; this only explains why verifying is worth 30 seconds. */}
           {!user.phoneVerifiedAt && (
-            <div className="border-border/60 bg-muted/40 flex flex-col gap-3 rounded-2xl border p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="border-border/60 bg-muted/40 flex flex-col gap-3 rounded-lg border p-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-foreground text-sm font-semibold">
                   {user.phone ? t.confirm.phoneVerifyTitle : t.confirm.phoneMissingTitle}
@@ -159,7 +159,7 @@ export default async function ConfirmRequestPage({ params }: { params: Promise<{
               </div>
               <Link
                 href={`/verify-phone?next=${encodeURIComponent(`/request/${id}/confirm`)}`}
-                className="border-teal-deep/40 text-teal-deep hover:bg-teal-deep/5 inline-flex shrink-0 items-center justify-center rounded-full border px-5 py-2.5 text-sm font-semibold"
+                className="border-teal-deep/40 text-teal-deep hover:bg-teal-deep/5 inline-flex shrink-0 items-center justify-center rounded-lg border px-5 py-2.5 text-sm font-semibold"
               >
                 {user.phone ? t.confirm.phoneVerifyCta : t.confirm.phoneAddCta}
               </Link>
@@ -168,7 +168,7 @@ export default async function ConfirmRequestPage({ params }: { params: Promise<{
 
           {/* Send */}
           <div className="border-border/60 flex flex-col gap-4 border-t pt-8">
-            <div className="bg-muted/40 text-muted-foreground rounded-2xl px-5 py-4 text-sm">
+            <div className="bg-muted/40 text-muted-foreground rounded-lg px-5 py-4 text-sm">
               {t.confirm.freeNoticePrefix}{" "}
               <span className="text-foreground font-semibold">{t.confirm.freeNoticeStrong}</span>{" "}
               {t.confirm.freeNoticeSuffix}

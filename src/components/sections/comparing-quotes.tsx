@@ -37,7 +37,7 @@ export function ComparingQuotes({ t }: { t: Dictionary["comparingQuotes"] }) {
           {points.map((point) => (
             <div
               key={point.title}
-              className="bg-card ring-border/60 flex flex-col rounded-3xl p-8 ring-1 transition-all hover:shadow-lg"
+              className="bg-card ring-border/60 flex flex-col rounded-lg p-8 ring-1 transition-all hover:shadow-card"
             >
               <point.icon className="text-teal-deep h-7 w-7" aria-hidden="true" />
               <h3 className="font-display text-foreground mt-5 text-xl leading-tight font-bold">

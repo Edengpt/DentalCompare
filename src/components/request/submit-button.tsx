@@ -42,7 +42,7 @@ export function SubmitButton({ requestId }: SubmitButtonProps) {
       disabled={isPending}
       className={cn(
         buttonVariants(),
-        "bg-teal-deep hover:bg-teal-deep/90 text-cream inline-flex h-12 items-center justify-center gap-2 rounded-full px-7 text-base font-semibold",
+        "bg-teal-deep hover:bg-teal-deep/90 text-cream inline-flex h-12 items-center justify-center gap-2 rounded-lg px-7 text-base font-semibold",
         isPending && "cursor-wait opacity-80",
       )}
     >

@@ -76,7 +76,7 @@ export default async function QuotePage({
         <p className="text-muted-foreground mt-2 text-sm">{t.quoteForm.pageSubtitle}</p>
 
         {files.length > 0 && (
-          <div className="border-border/60 bg-card mt-6 rounded-2xl border p-4">
+          <div className="border-border/60 bg-card mt-6 rounded-lg border p-4">
             <p className="text-muted-foreground text-sm">{t.quoteForm.attachmentsNote}</p>
             <ul className="divide-border/60 mt-3 divide-y">
               {files.map((f) => (
@@ -94,7 +94,7 @@ export default async function QuotePage({
 
         <div className="mt-6">
           {rd.quote && rd.quote.status !== "PENDING_DECISION" ? (
-            <div className="border-border/60 bg-card rounded-2xl border p-5 text-sm">
+            <div className="border-border/60 bg-card rounded-lg border p-5 text-sm">
               <p className="text-foreground font-semibold">
                 {t.quoteForm.statusLabel[rd.quote.status]}
               </p>

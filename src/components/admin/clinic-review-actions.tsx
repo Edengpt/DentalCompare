@@ -58,7 +58,7 @@ export function ClinicReviewActions({
         type="button"
         onClick={() => setConfirming("approve")}
         disabled={isPending || !canApprove}
-        className="inline-flex h-11 items-center gap-1.5 rounded-full bg-emerald-600 px-6 text-sm font-bold text-white shadow-sm hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+        className="inline-flex h-11 items-center gap-1.5 rounded-lg bg-emerald-600 px-6 text-sm font-bold text-white shadow-sm hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
       >
         <Check className="h-4 w-4" />
         {t.approve}
@@ -71,7 +71,7 @@ export function ClinicReviewActions({
           type="button"
           onClick={() => setConfirming("reject")}
           disabled={isPending}
-          className="inline-flex h-11 items-center gap-1.5 rounded-full border border-red-600/40 px-5 text-sm font-semibold text-red-700 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex h-11 items-center gap-1.5 rounded-lg border border-red-600/40 px-5 text-sm font-semibold text-red-700 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <X className="h-4 w-4" />
           {t.reject}
@@ -108,7 +108,7 @@ export function ClinicReviewActions({
             onChange={(e) => setReason(e.target.value)}
             rows={3}
             placeholder={t.rejectReasonPlaceholder}
-            className="border-border/60 bg-background focus:border-teal-deep mt-1.5 block w-full rounded-xl border px-3 py-2 text-sm font-normal outline-none"
+            className="border-border/60 bg-background focus:border-teal-deep mt-1.5 block w-full rounded-lg border px-3 py-2 text-sm font-normal outline-none"
           />
         </label>
       </ConfirmDialog>

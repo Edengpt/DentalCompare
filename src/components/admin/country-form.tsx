@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
 const inputClass =
-  "border-border/60 bg-background focus:border-teal-deep focus:ring-teal-deep/20 w-full rounded-xl border px-3 py-2 text-sm outline-none focus:ring-2";
+  "border-border/60 bg-background focus:border-teal-deep focus:ring-teal-deep/20 w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2";
 
 export function NewCountryForm() {
   const t = useT();
@@ -51,7 +51,7 @@ export function NewCountryForm() {
         onClick={() => setOpen(true)}
         className={cn(
           buttonVariants(),
-          "bg-teal-deep hover:bg-teal-deep/90 text-cream inline-flex h-10 items-center gap-2 rounded-full px-5 text-sm font-semibold",
+          "bg-teal-deep hover:bg-teal-deep/90 text-cream inline-flex h-10 items-center gap-2 rounded-lg px-5 text-sm font-semibold",
         )}
       >
         <Plus className="h-4 w-4" />
@@ -64,7 +64,7 @@ export function NewCountryForm() {
     <form
       ref={formRef}
       onSubmit={handleSubmit}
-      className="border-border/60 bg-card grid w-full gap-4 rounded-2xl border p-5 sm:grid-cols-2"
+      className="border-border/60 bg-card grid w-full gap-4 rounded-lg border p-5 sm:grid-cols-2"
     >
       <p className="text-muted-foreground text-sm sm:col-span-2">{t.admin.countryDraftNotice}</p>
 
@@ -103,7 +103,7 @@ export function NewCountryForm() {
           disabled={isPending}
           className={cn(
             buttonVariants(),
-            "bg-teal-deep hover:bg-teal-deep/90 text-cream inline-flex h-10 items-center rounded-full px-5 text-sm font-semibold disabled:opacity-60",
+            "bg-teal-deep hover:bg-teal-deep/90 text-cream inline-flex h-10 items-center rounded-lg px-5 text-sm font-semibold disabled:opacity-60",
           )}
         >
           {isPending ? t.selection.saving : t.admin.newCountry}

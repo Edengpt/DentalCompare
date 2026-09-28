@@ -27,7 +27,7 @@ export function SelectionCounter({ selected, onContinue, isSaving }: SelectionCo
       )}
       aria-live="polite"
     >
-      <div className="bg-teal-deep text-cream pointer-events-auto flex w-full max-w-xl items-center gap-4 rounded-full px-5 py-2.5 shadow-2xl ring-1 shadow-black/25 ring-white/10">
+      <div className="bg-teal-deep text-cream pointer-events-auto flex w-full max-w-xl items-center gap-4 rounded-lg px-5 py-2.5 shadow-2xl ring-1 shadow-black/25 ring-white/10">
         <div className="bg-cream/15 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full">
           <Users className="h-4 w-4" />
         </div>
@@ -46,7 +46,7 @@ export function SelectionCounter({ selected, onContinue, isSaving }: SelectionCo
           onClick={onContinue}
           disabled={!canContinue}
           className={cn(
-            "inline-flex items-center gap-1.5 rounded-full px-5 py-2 text-sm font-semibold transition-all",
+            "inline-flex items-center gap-1.5 rounded-md px-5 py-2 text-sm font-semibold transition-all",
             canContinue
               ? "bg-cream text-teal-deep hover:bg-cream/90"
               : "bg-cream/20 text-cream/60 cursor-not-allowed",

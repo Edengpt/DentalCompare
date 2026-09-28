@@ -43,7 +43,7 @@ export function CompletionBanner({
     });
 
   return (
-    <div role="status" className="border-highlight bg-highlight/15 rounded-3xl border-2 p-5 sm:p-6">
+    <div role="status" className="border-highlight bg-highlight/15 rounded-lg border-2 p-5 sm:p-6">
       <div className="flex items-start gap-3">
         <span className="bg-highlight text-on-highlight inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
           <BellRing className="h-5 w-5" />
@@ -58,7 +58,7 @@ export function CompletionBanner({
               type="button"
               disabled={isPending}
               onClick={() => setConfirming(true)}
-              className="bg-coral hover:bg-coral/90 rounded-full px-5 py-2.5 text-sm font-bold text-white shadow-sm disabled:opacity-50"
+              className="bg-coral hover:bg-coral/90 rounded-lg px-5 py-2.5 text-sm font-bold text-white shadow-sm disabled:opacity-50"
             >
               {t.bannerYes}
             </button>
@@ -66,7 +66,7 @@ export function CompletionBanner({
               type="button"
               disabled={isPending}
               onClick={() => run(declineCompletion, t.declinedToast)}
-              className="border-border bg-background text-foreground hover:border-foreground/30 rounded-full border px-5 py-2.5 text-sm font-semibold disabled:opacity-50"
+              className="border-border bg-background text-foreground hover:border-foreground/30 rounded-lg border px-5 py-2.5 text-sm font-semibold disabled:opacity-50"
             >
               {t.bannerNo}
             </button>

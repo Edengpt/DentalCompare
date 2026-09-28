@@ -9,7 +9,7 @@ import { format } from "@/i18n/format";
 import { Button } from "@/components/ui/button";
 
 const fieldClass =
-  "border-border/60 focus:border-teal-deep w-full rounded-xl border px-4 py-3 outline-none";
+  "border-border/60 focus:border-teal-deep w-full rounded-lg border px-4 py-3 outline-none";
 
 export type QuoteFormInitial = {
   amount: number | null;
@@ -104,7 +104,7 @@ export function QuoteForm({
 
   if (done) {
     return (
-      <div className="border-teal-deep/30 bg-teal-deep/5 rounded-2xl border p-6 text-center">
+      <div className="border-teal-deep/30 bg-teal-deep/5 rounded-lg border p-6 text-center">
         <p className="text-foreground text-lg font-semibold">{t.quoteForm.sentTitle}</p>
         <p className="text-muted-foreground mt-1 text-sm">{t.quoteForm.sentBody}</p>
       </div>
@@ -112,7 +112,7 @@ export function QuoteForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="border-border/60 bg-card space-y-6 rounded-2xl border p-6">
+    <form onSubmit={onSubmit} className="border-border/60 bg-card space-y-6 rounded-lg border p-6">
       <div>
         <label htmlFor="amount" className="text-foreground mb-1.5 block text-sm font-semibold">
           {format(t.quoteForm.priceLabel, { currency: currencyLabel })}
@@ -297,7 +297,7 @@ export function QuoteForm({
       <Button
         type="submit"
         disabled={pending}
-        className="bg-teal-deep hover:bg-teal-deep/90 text-cream h-12 w-full rounded-full text-base font-semibold"
+        className="bg-teal-deep hover:bg-teal-deep/90 text-cream h-12 w-full rounded-lg text-base font-semibold"
       >
         {pending ? t.quoteForm.sending : t.quoteForm.submit}
       </Button>

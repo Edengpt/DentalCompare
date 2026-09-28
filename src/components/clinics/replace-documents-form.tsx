@@ -75,7 +75,7 @@ export function ReplaceDocumentsForm({
   return (
     <div className="mt-8 space-y-3">
       {documents.map((doc) => (
-        <div key={doc.id} className="border-border/60 bg-card rounded-2xl border p-5">
+        <div key={doc.id} className="border-border/60 bg-card rounded-lg border p-5">
           <p className="text-foreground font-medium">{doc.kind}</p>
           {doc.rejectionReason && (
             <p className="text-muted-foreground mt-1 text-sm">{doc.rejectionReason}</p>
@@ -89,7 +89,7 @@ export function ReplaceDocumentsForm({
             ) : (
               <label
                 className={cn(
-                  "border-border/60 text-muted-foreground hover:border-teal-deep/40 hover:text-teal-deep inline-flex cursor-pointer items-center gap-2 rounded-full border border-dashed px-4 py-2 text-sm transition-colors",
+                  "border-border/60 text-muted-foreground hover:border-teal-deep/40 hover:text-teal-deep inline-flex cursor-pointer items-center gap-2 rounded-lg border border-dashed px-4 py-2 text-sm transition-colors",
                   busy === doc.id && "pointer-events-none opacity-60",
                 )}
               >

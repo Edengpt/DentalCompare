@@ -39,7 +39,7 @@ export default async function AdminUsersPage({ params }: { params: Promise<{ loc
         </p>
       </header>
 
-      <div className="border-border/60 bg-card overflow-x-auto rounded-2xl border">
+      <div className="border-border/60 bg-card overflow-x-auto rounded-lg border">
         <table className="w-full min-w-[560px] text-sm">
           <thead className="bg-muted/40 text-muted-foreground text-xs">
             <tr>

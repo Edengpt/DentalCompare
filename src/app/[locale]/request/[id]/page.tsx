@@ -211,7 +211,7 @@ export default async function RequestDetailPage({
               </h1>
               <span
                 className={cn(
-                  "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold",
+                  "inline-flex items-center gap-1.5 rounded-sm px-3 py-1 text-sm font-semibold",
                   isSent
                     ? "bg-teal-deep/10 text-teal-deep"
                     : request.status === "FAILED"
@@ -259,7 +259,7 @@ export default async function RequestDetailPage({
 
           {isSent && (
             <section>
-              <div className="border-teal-deep/30 bg-teal-deep/5 text-foreground mb-4 flex items-center gap-2.5 rounded-2xl border px-5 py-4 text-sm">
+              <div className="border-teal-deep/30 bg-teal-deep/5 text-foreground mb-4 flex items-center gap-2.5 rounded-lg border px-5 py-4 text-sm">
                 <Mail className="text-teal-deep h-4 w-4 shrink-0" />
                 {responded > 0
                   ? format(t.requestDetail.someResponded, { responded, total })
@@ -280,7 +280,7 @@ export default async function RequestDetailPage({
           )}
 
           {!isSent && (
-            <div className="border-border/60 bg-card flex flex-col gap-4 rounded-2xl border p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="border-border/60 bg-card flex flex-col gap-4 rounded-lg border p-5 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-muted-foreground text-sm">
                 {request.status === "FAILED"
                   ? t.requestDetail.sendFailed
@@ -290,7 +290,7 @@ export default async function RequestDetailPage({
                 href={continueHref}
                 className={cn(
                   buttonVariants(),
-                  "bg-teal-deep hover:bg-teal-deep/90 text-cream inline-flex h-11 shrink-0 items-center gap-2 rounded-full px-6 font-semibold",
+                  "bg-teal-deep hover:bg-teal-deep/90 text-cream inline-flex h-11 shrink-0 items-center gap-2 rounded-lg px-6 font-semibold",
                 )}
               >
                 {t.requestDetail.continueRequest}
@@ -304,11 +304,11 @@ export default async function RequestDetailPage({
               {t.requestDetail.uploadedDocuments}
             </h2>
             {fileLinks.length === 0 ? (
-              <p className="text-muted-foreground border-border/60 bg-card rounded-2xl border px-5 py-4 text-sm">
+              <p className="text-muted-foreground border-border/60 bg-card rounded-lg border px-5 py-4 text-sm">
                 {t.requestDetail.noDocuments}
               </p>
             ) : (
-              <ul className="border-border/60 bg-card divide-border/60 divide-y rounded-2xl border">
+              <ul className="border-border/60 bg-card divide-border/60 divide-y rounded-lg border">
                 {fileLinks.map((f) => (
                   <li key={f.label} className="flex items-center justify-between gap-3 p-4">
                     <span className="text-foreground inline-flex items-center gap-2.5 text-sm font-medium">
@@ -338,7 +338,7 @@ export default async function RequestDetailPage({
               <h2 className="font-display text-foreground mb-3 text-lg font-bold">
                 {t.requestDetail.patientNotes}
               </h2>
-              <p className="border-border/60 bg-card text-foreground rounded-2xl border px-5 py-4 text-sm whitespace-pre-wrap">
+              <p className="border-border/60 bg-card text-foreground rounded-lg border px-5 py-4 text-sm whitespace-pre-wrap">
                 {request.patientNotes}
               </p>
             </section>
@@ -351,11 +351,11 @@ export default async function RequestDetailPage({
               {format(t.requestDetail.dentistsInRequest, { count: dentists.length })}
             </h2>
             {dentists.length === 0 ? (
-              <p className="text-muted-foreground border-border/60 bg-card rounded-2xl border px-5 py-4 text-sm">
+              <p className="text-muted-foreground border-border/60 bg-card rounded-lg border px-5 py-4 text-sm">
                 {t.requestDetail.noDentists}
               </p>
             ) : (
-              <ul className="border-border/60 bg-card divide-border/60 divide-y rounded-2xl border">
+              <ul className="border-border/60 bg-card divide-border/60 divide-y rounded-lg border">
                 {dentists.map((rd) => (
                   <li key={rd.dentist.id} className="flex items-center justify-between gap-3 p-4">
                     <div>

@@ -99,7 +99,7 @@ export default async function AdminClinicReviewPage({
 
       <div className="grid gap-6 lg:grid-cols-[22rem_1fr]">
         {/* What the clinic declared. */}
-        <section className="border-border/60 bg-card space-y-4 self-start rounded-2xl border p-5">
+        <section className="border-border/60 bg-card space-y-4 self-start rounded-lg border p-5">
           <Detail icon={User} label={t.admin.contactPerson} value={d.contactName ?? "—"} />
           <Detail icon={Building2} label={t.admin.colDentist} value={d.dentistName} />
           <Detail icon={Mail} label={t.admin.colEmail} value={d.email} ltr />
@@ -172,7 +172,7 @@ export default async function AdminClinicReviewPage({
             // Registration cannot produce this any more, but a clinic created
             // before the gate existed can — and approving one unseen is exactly
             // what the promise forbids.
-            <p className="border-alert/40 bg-alert/5 text-alert rounded-2xl border p-4 text-sm">
+            <p className="border-alert/40 bg-alert/5 text-alert rounded-lg border p-4 text-sm">
               {t.admin.clinicDocsNone}
             </p>
           ) : (
@@ -200,7 +200,7 @@ export default async function AdminClinicReviewPage({
       </div>
 
       {/* The decision. */}
-      <section className="border-border/60 bg-card space-y-4 rounded-2xl border p-5">
+      <section className="border-border/60 bg-card space-y-4 rounded-lg border p-5">
         <h2 className="text-foreground font-semibold">{t.admin.decisionTitle}</h2>
         <ClinicReviewActions
           dentistId={d.id}

@@ -72,7 +72,7 @@ function Section({
       <h2 className="font-display text-foreground text-xl font-bold">{title}</h2>
       <ul
         className={cn(
-          "divide-border/60 bg-card border-border/60 divide-y rounded-3xl border",
+          "divide-border/60 bg-card border-border/60 divide-y rounded-lg border",
           muted && "opacity-80",
         )}
       >
@@ -109,7 +109,7 @@ function Section({
                   className={cn(
                     "text-sm font-semibold underline-offset-4 hover:underline",
                     r.badge.tone === "action"
-                      ? "bg-coral rounded-full px-4 py-1.5 text-white hover:no-underline"
+                      ? "bg-coral rounded-lg px-4 py-1.5 text-white hover:no-underline"
                       : "text-teal-deep",
                   )}
                 >

@@ -104,7 +104,7 @@ export function Hero({
               href="/sign-up"
               className={cn(
                 buttonVariants(),
-                "bg-accent hover:bg-accent/90 text-accent-foreground group inline-flex h-14 items-center gap-2 rounded-full px-8 text-base font-semibold shadow-2xl shadow-black/30 transition-all hover:shadow-black/40",
+                "bg-accent hover:bg-accent/90 text-accent-foreground group inline-flex h-14 items-center gap-2 rounded-lg px-8 text-base font-semibold shadow-2xl shadow-black/30 transition-all hover:shadow-black/40",
               )}
             >
               {t.cta}
@@ -116,7 +116,7 @@ export function Hero({
               href="/dashboard"
               className={cn(
                 buttonVariants(),
-                "bg-accent hover:bg-accent/90 text-accent-foreground group inline-flex h-14 items-center gap-2 rounded-full px-8 text-base font-semibold shadow-2xl shadow-black/30 transition-all hover:shadow-black/40",
+                "bg-accent hover:bg-accent/90 text-accent-foreground group inline-flex h-14 items-center gap-2 rounded-lg px-8 text-base font-semibold shadow-2xl shadow-black/30 transition-all hover:shadow-black/40",
               )}
             >
               {t.cta}

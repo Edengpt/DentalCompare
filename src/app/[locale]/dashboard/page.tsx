@@ -101,7 +101,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
               href="/request/new"
               className={cn(
                 buttonVariants(),
-                "bg-accent text-accent-foreground hover:bg-accent/90 inline-flex h-12 items-center gap-2 rounded-full px-6 text-base font-semibold shadow-md",
+                "bg-accent text-accent-foreground hover:bg-accent/90 inline-flex h-12 items-center gap-2 rounded-lg px-6 text-base font-semibold shadow-md",
               )}
             >
               <FilePlus className="h-4 w-4" />
@@ -111,7 +111,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
           </div>
 
           {!hasRequests ? (
-            <div className="border-border/60 bg-card mt-12 rounded-3xl border border-dashed p-12 text-center">
+            <div className="border-border/60 bg-card mt-12 rounded-lg border border-dashed p-12 text-center">
               <h2 className="font-display text-foreground text-xl font-bold">
                 {t.dashboard.emptyTitle}
               </h2>
@@ -122,7 +122,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
                 href="/request/new"
                 className={cn(
                   buttonVariants(),
-                  "bg-teal-deep hover:bg-teal-deep/90 text-cream mt-6 inline-flex h-11 items-center gap-2 rounded-full px-6 font-semibold",
+                  "bg-teal-deep hover:bg-teal-deep/90 text-cream mt-6 inline-flex h-11 items-center gap-2 rounded-lg px-6 font-semibold",
                 )}
               >
                 <FilePlus className="h-4 w-4" />

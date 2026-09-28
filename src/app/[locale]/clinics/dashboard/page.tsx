@@ -55,7 +55,7 @@ export default async function ClinicDashboardPage({
         </p>
         <Link
           href="/clinics/join"
-          className="bg-teal-deep text-cream mt-6 inline-flex rounded-xl px-5 py-2.5 text-sm font-semibold"
+          className="bg-teal-deep text-cream mt-6 inline-flex rounded-lg px-5 py-2.5 text-sm font-semibold"
         >
           {t.clinics.dashNoClinicJoin}
         </Link>
@@ -161,7 +161,7 @@ export default async function ClinicDashboardPage({
         />
       )}
 
-      <section className="border-border/60 bg-card rounded-2xl border p-6">
+      <section className="border-border/60 bg-card rounded-lg border p-6">
         <h2 className="text-foreground font-semibold">{t.clinics.dashStatusHeading}</h2>
         <ul className="mt-4 space-y-2.5 text-sm">
           <StatusRow
@@ -190,7 +190,7 @@ export default async function ClinicDashboardPage({
         )}
       </section>
 
-      <section className="border-border/60 bg-card rounded-2xl border p-6">
+      <section className="border-border/60 bg-card rounded-lg border p-6">
         <h2 className="text-foreground font-semibold">{t.clinics.dashSubHeading}</h2>
         {!subscription ? (
           <p className="text-muted-foreground mt-3 text-sm">{t.clinics.dashSubNone}</p>
@@ -205,7 +205,7 @@ export default async function ClinicDashboardPage({
                 sentences it gets depends on whose problem it is: a missing card
                 is theirs to fix, an unopened billing provider is ours. */}
             {subscription.trialEndedUnbilledAt && (
-              <div className="rounded-xl bg-amber-50 p-4 text-amber-900">
+              <div className="rounded-lg bg-amber-50 p-4 text-amber-900">
                 <p className="flex items-center gap-2 font-semibold">
                   <AlertTriangle className="h-4 w-4 shrink-0" />
                   {t.clinics.dashTrialEndedUnbilled}
@@ -229,7 +229,7 @@ export default async function ClinicDashboardPage({
         )}
       </section>
 
-      <section className="border-border/60 bg-card rounded-2xl border p-6">
+      <section className="border-border/60 bg-card rounded-lg border p-6">
         <h2 className="text-foreground font-semibold">{t.clinics.dashDocsHeading}</h2>
         {documents.length === 0 ? (
           <p className="text-muted-foreground mt-3 text-sm">{t.clinics.dashDocsNone}</p>
@@ -242,7 +242,7 @@ export default async function ClinicDashboardPage({
                 <span
                   className={
                     doc.rejectedAt
-                      ? "ms-auto rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900"
+                      ? "ms-auto rounded-sm bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900"
                       : "text-muted-foreground ms-auto text-xs"
                   }
                 >
@@ -262,7 +262,7 @@ export default async function ClinicDashboardPage({
         )}
       </section>
 
-      <section className="border-border/60 bg-card rounded-2xl border p-6">
+      <section className="border-border/60 bg-card rounded-lg border p-6">
         <h2 className="text-foreground font-semibold">{t.clinics.dashLeadsHeading}</h2>
         {leads.length === 0 ? (
           <p className="text-muted-foreground mt-3 text-sm leading-relaxed">

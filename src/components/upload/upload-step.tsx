@@ -83,7 +83,7 @@ export function UploadStep({
 
       {/* Separate from every other agreement on purpose: bundling consent for
           health data with anything else is what makes it not count. */}
-      <section className="border-border/60 bg-muted/30 rounded-2xl border p-5">
+      <section className="border-border/60 bg-muted/30 rounded-lg border p-5">
         <h2 className="font-display text-foreground text-base font-bold">
           {t.upload.consentTitle}
         </h2>
@@ -124,7 +124,7 @@ export function UploadStep({
           }}
           className={cn(
             buttonVariants(),
-            "inline-flex h-12 items-center justify-center gap-2 rounded-full px-7 text-base font-semibold",
+            "inline-flex h-12 items-center justify-center gap-2 rounded-lg px-7 text-base font-semibold",
             canContinue
               ? "bg-teal-deep hover:bg-teal-deep/90 text-cream"
               : "bg-muted text-muted-foreground cursor-not-allowed",

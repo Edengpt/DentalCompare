@@ -38,7 +38,7 @@ export function ToggleActive({
       disabled={isProcessing}
       title={isActive ? t.admin.toggleToDisable : t.admin.toggleToEnable}
       className={cn(
-        "rounded-full px-3 py-1 text-xs font-semibold transition-colors disabled:opacity-50",
+        "rounded-sm px-3 py-1 text-xs font-semibold transition-colors disabled:opacity-50",
         isActive
           ? "bg-teal-deep/10 text-teal-deep hover:bg-teal-deep/20"
           : pending

@@ -52,7 +52,7 @@ export function Header() {
             </Link>
             <Link
               href="/sign-up"
-              className={cn(buttonVariants({ size: "sm" }), "h-9 rounded-full px-5 text-sm")}
+              className={cn(buttonVariants({ size: "sm" }), "h-9 rounded-lg px-5 text-sm")}
             >
               {t.nav.getStarted}
             </Link>

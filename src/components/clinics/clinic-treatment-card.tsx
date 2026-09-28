@@ -95,7 +95,7 @@ export function ClinicTreatmentCard({
   const showDeclined = completionDeclinedAt !== null && timeline.status === "IN_TREATMENT";
 
   return (
-    <section className="border-teal-deep/30 bg-card overflow-hidden rounded-3xl border">
+    <section className="border-teal-deep/30 bg-card overflow-hidden rounded-lg border">
       <div className="bg-teal-deep text-cream flex flex-wrap items-end justify-between gap-3 px-6 py-5">
         <div>
           <p className="text-cream/70 text-xs font-medium">{c.ctEyebrow}</p>
@@ -116,7 +116,7 @@ export function ClinicTreatmentCard({
                   href={ct.href}
                   target={ct.href.startsWith("http") ? "_blank" : undefined}
                   rel={ct.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                  className="border-border/60 hover:border-teal-deep/40 hover:bg-teal-deep/5 flex items-center gap-3 rounded-2xl border px-4 py-3 transition-colors"
+                  className="border-border/60 hover:border-teal-deep/40 hover:bg-teal-deep/5 flex items-center gap-3 rounded-lg border px-4 py-3 transition-colors"
                 >
                   <ct.icon className="text-teal-deep h-4 w-4 shrink-0" />
                   <span className="min-w-0">
@@ -148,7 +148,7 @@ export function ClinicTreatmentCard({
           </div>
 
           {showDeclined && (
-            <p className="bg-muted/50 text-foreground mt-5 flex gap-2 rounded-2xl p-3.5 text-sm">
+            <p className="bg-muted/50 text-foreground mt-5 flex gap-2 rounded-lg p-3.5 text-sm">
               <Info className="text-teal-deep mt-0.5 h-4 w-4 shrink-0" />
               {format(c.ctDeclined, {
                 date: new Intl.DateTimeFormat(locale, { day: "numeric", month: "long" }).format(
@@ -164,7 +164,7 @@ export function ClinicTreatmentCard({
                 type="button"
                 disabled={isPending}
                 onClick={() => setConfirming("start")}
-                className="bg-teal-deep text-cream hover:bg-teal-deep/90 inline-flex h-11 items-center gap-2 rounded-full px-5 text-sm font-bold disabled:opacity-50"
+                className="bg-teal-deep text-cream hover:bg-teal-deep/90 inline-flex h-11 items-center gap-2 rounded-lg px-5 text-sm font-bold disabled:opacity-50"
               >
                 <PlayCircle className="h-4 w-4" />
                 {c.ctMarkStarted}
@@ -175,7 +175,7 @@ export function ClinicTreatmentCard({
                 type="button"
                 disabled={isPending}
                 onClick={() => setConfirming("complete")}
-                className="bg-coral hover:bg-coral/90 inline-flex h-11 items-center gap-2 rounded-full px-5 text-sm font-bold text-white disabled:opacity-50"
+                className="bg-coral hover:bg-coral/90 inline-flex h-11 items-center gap-2 rounded-lg px-5 text-sm font-bold text-white disabled:opacity-50"
               >
                 <BellRing className="h-4 w-4" />
                 {c.ctRequestCompletion}

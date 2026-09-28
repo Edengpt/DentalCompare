@@ -49,7 +49,7 @@ export function QuoteStatusActions({
             type="button"
             disabled={isPending}
             onClick={() => run(markTreatmentStarted)}
-            className="bg-teal-deep text-cream rounded-full px-3 py-1 text-xs font-semibold disabled:opacity-50"
+            className="bg-teal-deep text-cream rounded-lg px-3 py-1 text-xs font-semibold disabled:opacity-50"
           >
             {t.dashLeadMarkStarted}
           </button>
@@ -65,7 +65,7 @@ export function QuoteStatusActions({
             type="button"
             disabled={isPending}
             onClick={() => run(requestCompletionConfirmation)}
-            className="bg-teal-deep text-cream rounded-full px-3 py-1 text-xs font-semibold disabled:opacity-50"
+            className="bg-teal-deep text-cream rounded-lg px-3 py-1 text-xs font-semibold disabled:opacity-50"
           >
             {t.dashLeadRequestCompletion}
           </button>

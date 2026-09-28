@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
 const inputClass =
-  "border-border/60 bg-background focus:border-teal-deep focus:ring-teal-deep/20 w-full rounded-xl border px-3 py-2 text-sm outline-none focus:ring-2";
+  "border-border/60 bg-background focus:border-teal-deep focus:ring-teal-deep/20 w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2";
 
 export function TravelStep({
   requestId,
@@ -83,7 +83,7 @@ export function TravelStep({
       {/* Only rendered for SELECTED. An always-visible country list would read as
           a filter the patient has to clear, rather than an answer they gave. */}
       {scope === "SELECTED" && (
-        <fieldset className="border-border/60 bg-card space-y-3 rounded-2xl border p-5">
+        <fieldset className="border-border/60 bg-card space-y-3 rounded-lg border p-5">
           <legend className="text-foreground px-1 text-sm font-medium">
             {t.requestFlow.travelDestinationsLabel}
           </legend>
@@ -108,7 +108,7 @@ export function TravelStep({
         disabled={isPending}
         className={cn(
           buttonVariants(),
-          "bg-teal-deep hover:bg-teal-deep/90 text-cream inline-flex h-11 items-center rounded-full px-6 text-sm font-semibold disabled:opacity-60",
+          "bg-teal-deep hover:bg-teal-deep/90 text-cream inline-flex h-11 items-center rounded-lg px-6 text-sm font-semibold disabled:opacity-60",
         )}
       >
         {isPending ? t.selection.saving : t.requestFlow.travelContinue}

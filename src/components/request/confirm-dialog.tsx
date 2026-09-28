@@ -44,7 +44,7 @@ export function ConfirmDialog({
     >
       <AlertDialog.Portal>
         <AlertDialog.Backdrop className="data-open:animate-in data-open:fade-in-0 fixed inset-0 z-50 bg-black/40" />
-        <AlertDialog.Popup className="bg-card data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 fixed top-1/2 left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-3xl p-6 shadow-2xl sm:p-8">
+        <AlertDialog.Popup className="bg-card data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 fixed top-1/2 left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg p-6 shadow-2xl sm:p-8">
           <AlertDialog.Title className="font-display text-foreground text-xl font-bold text-balance">
             {title}
           </AlertDialog.Title>
@@ -64,7 +64,7 @@ export function ConfirmDialog({
           <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <AlertDialog.Close
               disabled={pending}
-              className="border-border text-foreground hover:bg-muted h-11 rounded-full border px-5 text-sm font-semibold disabled:opacity-50"
+              className="border-border text-foreground hover:bg-muted h-11 rounded-lg border px-5 text-sm font-semibold disabled:opacity-50"
             >
               {t.confirmCancel}
             </AlertDialog.Close>
@@ -73,7 +73,7 @@ export function ConfirmDialog({
               disabled={pending}
               onClick={onConfirm}
               className={cn(
-                "inline-flex h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-bold disabled:opacity-70",
+                "inline-flex h-11 items-center justify-center gap-2 rounded-lg px-5 text-sm font-bold disabled:opacity-70",
                 {
                   primary: "bg-coral hover:bg-coral/90 text-white",
                   quiet: "bg-foreground text-background hover:bg-foreground/90",

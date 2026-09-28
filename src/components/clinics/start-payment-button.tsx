@@ -27,7 +27,7 @@ export function StartPaymentButton({ setupToken }: { setupToken: string }) {
       }
       className={cn(
         buttonVariants(),
-        "bg-teal-deep hover:bg-teal-deep/90 text-cream inline-flex h-12 items-center justify-center gap-2 rounded-full px-7 font-semibold disabled:opacity-50",
+        "bg-teal-deep hover:bg-teal-deep/90 text-cream inline-flex h-12 items-center justify-center gap-2 rounded-lg px-7 font-semibold disabled:opacity-50",
       )}
     >
       {isPending ? t.clinics.payRedirecting : t.clinics.payCta}
