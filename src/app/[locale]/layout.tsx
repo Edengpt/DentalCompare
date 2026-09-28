@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Frank_Ruhl_Libre, Heebo } from "next/font/google";
+import { Rubik } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { heIL, enUS } from "@clerk/localizations";
 import { shadcn } from "@clerk/ui/themes";
@@ -20,18 +20,13 @@ import "../globals.css";
  * nesting the root layout in the dynamic segment for this reason.
  */
 
-const heebo = Heebo({
+// One face for everything, Hebrew and Latin alike. Headings used to be set in
+// a serif (Frank Ruhl Libre); globals.css now points --font-serif at this too,
+// so every `font-display` heading follows without touching its markup.
+const rubik = Rubik({
   variable: "--font-sans",
   subsets: ["hebrew", "latin"],
-  display: "swap",
-});
-
-// Hebrew display face. Latin text falls back to the stack in globals.css, since
-// Frank Ruhl's Latin is a companion rather than a face to set English in.
-const frankRuhl = Frank_Ruhl_Libre({
-  variable: "--font-serif",
-  subsets: ["hebrew", "latin"],
-  weight: ["400", "500", "700", "900"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -91,7 +86,7 @@ export default async function LocaleLayout({
     <html
       lang={typedLocale}
       dir={dir[typedLocale]}
-      className={`${heebo.variable} ${frankRuhl.variable} h-full antialiased`}
+      className={`${rubik.variable} h-full antialiased`}
     >
       <body className="bg-background text-foreground flex min-h-full flex-col">
         <ClerkProvider

@@ -76,7 +76,7 @@ export function DocumentDropZone({
           type="button"
           onClick={onRemove}
           aria-label={t.clinics.regDocRemove}
-          className="text-muted-foreground hover:text-coral rounded-full p-1"
+          className="text-muted-foreground hover:text-alert rounded-full p-1"
         >
           <X className="h-4 w-4" />
         </button>

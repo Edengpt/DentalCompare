@@ -49,6 +49,12 @@
   --color-coral: var(--coral);
   --color-coral-soft: var(--coral-soft);
   --color-sand: var(--sand);
+  --color-highlight: var(--highlight);
+  --color-on-highlight: var(--on-highlight);
+  --color-alert: var(--alert);
+  --color-success: var(--success);
+  --color-price-was: var(--price-was);
+  --shadow-card: var(--shadow-card-value);
 
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
@@ -60,16 +66,34 @@
 }
 
 :root {
-  /* DentalCompare brand palette — editorial wellness */
-  --cream: oklch(0.985 0.005 75);
-  --ink: oklch(0.2 0.02 240);
-  --teal: oklch(0.5 0.06 200);
-  --teal-deep: oklch(0.32 0.05 215);
-  --coral: oklch(0.7 0.16 30);
-  --coral-soft: oklch(0.88 0.06 30);
-  --sand: oklch(0.93 0.015 75);
+  /*
+   * DentalCompare brand palette — Booking-style navy, blue and yellow.
+   *
+   * The old token names stay, remapped, because ~600 class names across the
+   * app use them by role: teal-deep is the brand's dark surface and primary,
+   * teal is the link/secondary blue, coral is the action button, cream is
+   * the text on dark surfaces. Highlights (things waiting on the user) and
+   * alerts (errors, irreversible warnings) are separate tokens, because they
+   * used to share coral with the buttons and no longer look alike.
+   */
+  --cream: #ffffff; /* text on navy/blue; was the page background */
+  --ink: #14202e;
+  --teal: #2356c7; /* blue-600 */
+  --teal-deep: #0e2f55; /* navy-900 */
+  --coral: #2356c7; /* action buttons: blue, white text */
+  --coral-soft: #eaf1fd; /* blue-50 */
+  --sand: #f3f6fa; /* surface-sunk */
+  --highlight: #f4c63d; /* yellow-400: waiting on you, counts, stars */
+  --on-highlight: #14202e;
+  --alert: #b8322a; /* errors and irreversible warnings */
+  --success: #1b7a4b;
+  --price-was: #b8322a;
+  --shadow-card-value: 0 2px 8px rgba(14, 47, 85, 0.12);
 
-  --background: var(--cream);
+  /* Headings share the body face (Rubik) — see [locale]/layout.tsx. */
+  --font-serif: var(--font-sans);
+
+  --background: #ffffff;
   --foreground: var(--ink);
   --card: oklch(1 0 0);
   --card-foreground: var(--ink);
@@ -80,26 +104,26 @@
   --secondary: var(--sand);
   --secondary-foreground: var(--ink);
   --muted: var(--sand);
-  --muted-foreground: oklch(0.45 0.025 230);
+  --muted-foreground: #5a6778;
   --accent: var(--coral);
   --accent-foreground: oklch(1 0 0);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.88 0.015 75);
-  --input: oklch(0.88 0.015 75);
+  --border: #d5dde8;
+  --input: #d5dde8;
   --ring: var(--teal);
-  --chart-1: oklch(0.5 0.06 200);
-  --chart-2: oklch(0.7 0.16 30);
-  --chart-3: oklch(0.45 0.025 230);
-  --chart-4: oklch(0.65 0.08 180);
-  --chart-5: oklch(0.32 0.05 215);
-  --radius: 0.625rem;
-  --sidebar: var(--cream);
+  --chart-1: #2356c7;
+  --chart-2: #f4c63d;
+  --chart-3: #5a6778;
+  --chart-4: #1b7a4b;
+  --chart-5: #0e2f55;
+  --radius: 0.5rem; /* radius-md 8px */
+  --sidebar: var(--background);
   --sidebar-foreground: var(--ink);
   --sidebar-primary: var(--teal-deep);
   --sidebar-primary-foreground: var(--cream);
   --sidebar-accent: var(--sand);
   --sidebar-accent-foreground: var(--ink);
-  --sidebar-border: oklch(0.88 0.015 75);
+  --sidebar-border: #d5dde8;
   --sidebar-ring: var(--teal);
 }
 

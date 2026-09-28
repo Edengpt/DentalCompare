@@ -35,7 +35,7 @@ export function DeleteRequestButton({ requestId }: { requestId: string }) {
       type="button"
       onClick={handleClick}
       disabled={isPending}
-      className="text-muted-foreground hover:text-coral inline-flex items-center gap-1.5 text-xs font-medium underline-offset-4 transition-colors hover:underline disabled:opacity-50"
+      className="text-muted-foreground hover:text-alert inline-flex items-center gap-1.5 text-xs font-medium underline-offset-4 transition-colors hover:underline disabled:opacity-50"
     >
       <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
       {t.dashboard.deleteRequest}

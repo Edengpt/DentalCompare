@@ -70,7 +70,7 @@ export default async function AdminCountriesPage({
               </tr>
             ) : (
               countries.map((c) => (
-                <tr key={c.code} className={c.isActive ? undefined : "bg-coral/5"}>
+                <tr key={c.code} className={c.isActive ? undefined : "bg-highlight/10"}>
                   <td className="text-foreground px-4 py-3 font-mono font-medium">{c.code}</td>
                   <td className="text-foreground px-4 py-3 font-medium">{c.nameEn}</td>
                   <td className="text-foreground px-4 py-3 font-mono">{c.currency}</td>

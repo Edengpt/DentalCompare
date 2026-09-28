@@ -42,7 +42,7 @@ export function ToggleCountry({
         "rounded-full px-3 py-1 text-xs font-semibold transition-colors disabled:opacity-50",
         isActive
           ? "bg-teal-deep/10 text-teal-deep hover:bg-teal-deep/20"
-          : "bg-coral/15 text-coral hover:bg-coral/25",
+          : "bg-highlight/40 text-on-highlight hover:bg-highlight/60",
       )}
     >
       {isActive ? t.admin.statusActive : t.admin.countryDraft}

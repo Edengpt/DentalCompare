@@ -62,7 +62,7 @@ export function IncomingRequests({ leads }: { leads: IncomingLead[] }) {
                 className={cn(
                   "rounded-full px-1.5 text-xs",
                   key === "action" && count > 0
-                    ? "bg-coral text-white"
+                    ? "bg-highlight text-on-highlight"
                     : "bg-muted text-muted-foreground",
                 )}
               >

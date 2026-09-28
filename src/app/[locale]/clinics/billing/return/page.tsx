@@ -113,7 +113,7 @@ export default async function BillingReturnPage({
         {success ? (
           <CheckCircle2 className="text-teal-deep h-14 w-14" />
         ) : (
-          <XCircle className="text-coral h-14 w-14" />
+          <XCircle className="text-alert h-14 w-14" />
         )}
         <h1 className="font-display text-foreground mt-6 text-2xl font-bold">
           {success ? t.clinics.returnSuccessTitle : t.clinics.returnFailedTitle}

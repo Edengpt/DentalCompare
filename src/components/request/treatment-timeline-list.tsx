@@ -46,8 +46,8 @@ export function TreatmentTimelineList({
               </span>
             )}
             {s.state === "current" && (
-              <span className="border-coral bg-card flex h-6 w-6 items-center justify-center rounded-full border-2">
-                <span className="bg-coral h-2.5 w-2.5 animate-pulse rounded-full" />
+              <span className="border-highlight bg-card flex h-6 w-6 items-center justify-center rounded-full border-2">
+                <span className="bg-highlight h-2.5 w-2.5 animate-pulse rounded-full" />
               </span>
             )}
             {s.state === "upcoming" && (

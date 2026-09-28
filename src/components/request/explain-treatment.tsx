@@ -76,7 +76,7 @@ export function ExplainTreatment({ requestId }: { requestId: string }) {
           </button>
 
           {state === "error" && (
-            <p className="text-coral mt-3 inline-flex items-center gap-1.5 text-sm">
+            <p className="text-alert mt-3 inline-flex items-center gap-1.5 text-sm">
               <AlertCircle className="h-4 w-4" />
               {error}
             </p>

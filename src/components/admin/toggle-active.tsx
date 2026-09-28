@@ -42,7 +42,7 @@ export function ToggleActive({
         isActive
           ? "bg-teal-deep/10 text-teal-deep hover:bg-teal-deep/20"
           : pending
-            ? "bg-coral/15 text-coral hover:bg-coral/25"
+            ? "bg-highlight/40 text-on-highlight hover:bg-highlight/60"
             : "bg-muted text-muted-foreground hover:bg-muted/80",
       )}
     >

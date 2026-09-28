@@ -72,7 +72,7 @@ export function NewCountryForm() {
         <label key={f.name} className="flex flex-col gap-1.5 text-sm">
           <span className="text-foreground font-medium">
             {f.label}
-            {f.required && <span className="text-coral"> *</span>}
+            {f.required && <span className="text-alert"> *</span>}
           </span>
           <input
             name={f.name}
@@ -86,7 +86,7 @@ export function NewCountryForm() {
       <label className="flex flex-col gap-1.5 text-sm">
         <span className="text-foreground font-medium">
           {t.admin.fieldDefaultLocale}
-          <span className="text-coral"> *</span>
+          <span className="text-alert"> *</span>
         </span>
         <select name="defaultLocale" defaultValue="en" className={inputClass}>
           {locales.map((l) => (

@@ -45,7 +45,7 @@ export default async function AdminDentistsPage({
       </header>
 
       {pendingCount > 0 && (
-        <div className="border-coral/40 bg-coral/5 text-foreground rounded-2xl border px-5 py-3 text-sm">
+        <div className="border-highlight bg-highlight/10 text-foreground rounded-2xl border px-5 py-3 text-sm">
           <strong className="font-semibold">{pendingCount}</strong> {t.admin.dentistsPendingNotice}
         </div>
       )}
@@ -74,12 +74,12 @@ export default async function AdminDentistsPage({
               dentists.map((d) => {
                 const pending = d.submittedBySelf && !d.isActive;
                 return (
-                  <tr key={d.id} className={pending ? "bg-coral/5" : undefined}>
+                  <tr key={d.id} className={pending ? "bg-highlight/10" : undefined}>
                     <td className="px-4 py-3">
                       <p className="text-foreground flex items-center gap-2 font-medium">
                         {d.dentistName}
                         {pending && (
-                          <span className="bg-coral/15 text-coral rounded-full px-2 py-0.5 text-[10px] font-semibold">
+                          <span className="bg-highlight text-on-highlight rounded-full px-2 py-0.5 text-[10px] font-semibold">
                             {t.admin.newRegistration}
                           </span>
                         )}

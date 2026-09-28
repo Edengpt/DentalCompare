@@ -114,7 +114,7 @@ export function NewDentistForm() {
         <label key={f.name} className="flex flex-col gap-1.5 text-sm">
           <span className="text-foreground font-medium">
             {f.label}
-            {f.required && <span className="text-coral"> *</span>}
+            {f.required && <span className="text-alert"> *</span>}
           </span>
           <input
             name={f.name}
@@ -130,7 +130,7 @@ export function NewDentistForm() {
       <div className="sm:col-span-2">
         <span className="text-foreground text-sm font-medium">
           {t.admin.newDentistDoc}
-          <span className="text-coral"> *</span>
+          <span className="text-alert"> *</span>
         </span>
         <input type="hidden" name="documentKind" value="licence" />
         <input type="hidden" name="documentUrl" value={doc?.url ?? ""} />
