@@ -196,6 +196,11 @@
     font-weight: 600;
     letter-spacing: 0.22em;
     text-transform: uppercase;
+  }
+  /* The default colour only. Zero specificity, so a text-* utility on the
+     element wins — the hero and final CTA set text-cream on dark video and
+     navy, and this rule used to override them into grey-on-dark. */
+  :where(.eyebrow) {
     color: var(--muted-foreground);
   }
   .eyebrow::before {
