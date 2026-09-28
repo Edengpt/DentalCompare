@@ -59,7 +59,7 @@ const en: typeof he = {
 
   destinations: {
     title: "Popular destinations",
-    subtitle: "Clinics whose licence a person has checked, at home and abroad.",
+    subtitle: "Clinics whose licence a person has checked, around the world.",
     verified: { one: "1 verified clinic", other: "{count} verified clinics" },
     joiningSoon: "Clinics joining soon",
   },
@@ -1202,7 +1202,7 @@ const en: typeof he = {
   },
 
   footer: {
-    tagline: "Compare quotes for dental treatment, at home and abroad.",
+    tagline: "Compare quotes for dental treatment, around the world.",
     groupPatients: "For patients",
     groupClinics: "For clinics",
     groupInfo: "Information",

@@ -32,20 +32,15 @@ const Context = createContext<StartSearchState | null>(null);
  * Nothing here searches: prices only exist once clinics have seen the plan.
  * The answers travel as defaults in a cookie (src/lib/start-preferences.ts).
  */
-export function StartSearchProvider({
-  defaultCountry,
-  children,
-}: {
-  defaultCountry: string;
-  children: React.ReactNode;
-}) {
+export function StartSearchProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const locale = useLocale();
   // Auth-aware: a signed-in visitor must NOT be sent to /sign-up (Clerk bounces
   // them back and the button looks broken).
   const { isSignedIn } = useAuth();
   const [specialty, setSpecialty] = useState<Specialty | "">("");
-  const [country, setCountry] = useState(defaultCountry);
+  // "Anywhere" until the patient says otherwise: no country is the default.
+  const [country, setCountry] = useState("");
 
   const start = (override?: { country?: string }) => {
     const chosenCountry = override?.country ?? country;

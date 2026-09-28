@@ -65,12 +65,12 @@ export function StartSearch({
           onChange={(e) => setCountry(e.target.value)}
           className={select}
         >
+          <option value="">{labels.whereAnywhere}</option>
           {countries.map((c) => (
             <option key={c.code} value={c.code}>
               {c.name}
             </option>
           ))}
-          <option value="">{labels.whereAnywhere}</option>
         </select>
       </label>
       <button
