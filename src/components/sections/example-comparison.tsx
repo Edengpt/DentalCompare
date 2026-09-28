@@ -29,8 +29,7 @@ export function ExampleComparison({
       name: t.clinicA,
       place: t.clinicAPlace,
       rating: 4.8,
-      price: money(7800, "ILS"),
-      converted: null,
+      price: money(2400, "GBP"),
       included: t.clinicAIncluded,
       visits: t.clinicAVisits,
       warranty: t.clinicAWarranty,
@@ -39,8 +38,7 @@ export function ExampleComparison({
       name: t.clinicB,
       place: t.clinicBPlace,
       rating: 4.6,
-      price: money(6900, "ILS"),
-      converted: null,
+      price: money(950, "EUR"),
       included: t.clinicBIncluded,
       visits: t.clinicBVisits,
       warranty: t.clinicBWarranty,
@@ -50,7 +48,6 @@ export function ExampleComparison({
       place: t.clinicCPlace,
       rating: null,
       price: money(1450, "EUR"),
-      converted: format(t.converted, { amount: money(5800, "ILS") }),
       included: t.clinicCIncluded,
       visits: t.clinicCVisits,
       warranty: t.clinicCWarranty,
@@ -114,9 +111,6 @@ export function ExampleComparison({
                 {clinics.map((c) => (
                   <td key={c.name} className={td}>
                     <p className="font-display text-foreground text-xl font-bold">{c.price}</p>
-                    {c.converted && (
-                      <p className="text-muted-foreground mt-0.5 text-xs">{c.converted}</p>
-                    )}
                   </td>
                 ))}
               </tr>

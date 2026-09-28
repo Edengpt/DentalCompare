@@ -7,6 +7,7 @@ import { Footer } from "@/components/shared/footer";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { isLocale, defaultLocale } from "@/i18n/config";
 import { getActiveCountries } from "@/lib/countries";
+import { withCountryNames } from "@/lib/country-names";
 import { countryFromPhone } from "@/lib/phone";
 import { TravelStep } from "@/components/request/travel-step";
 import {
@@ -87,7 +88,7 @@ export default async function TravelPage({
           <div className="mx-auto max-w-3xl px-6 lg:px-10">
             <TravelStep
               requestId={request.id}
-              countries={countries.map((c) => ({ code: c.code, nameEn: c.nameEn }))}
+              countries={withCountryNames(countries, locale).map((c) => ({ code: c.code, name: c.name }))}
               defaultCountry={defaultCountry}
               defaultScope={defaults.scope}
               defaultDestinations={defaults.destinations}

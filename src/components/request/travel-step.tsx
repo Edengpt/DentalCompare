@@ -20,7 +20,7 @@ export function TravelStep({
   locale,
 }: {
   requestId: string;
-  countries: { code: string; nameEn: string }[];
+  countries: { code: string; name: string }[];
   defaultCountry: string;
   /** Pre-selected radio, e.g. from the homepage search box. */
   defaultScope?: "LOCAL" | "SELECTED" | "ANY";
@@ -61,7 +61,7 @@ export function TravelStep({
         <select name="countryCode" defaultValue={defaultCountry} className={inputClass}>
           {countries.map((c) => (
             <option key={c.code} value={c.code}>
-              {c.nameEn}
+              {c.name}
             </option>
           ))}
         </select>
@@ -103,7 +103,7 @@ export function TravelStep({
                   defaultChecked={defaultDestinations.includes(c.code)}
                   className="accent-teal-deep h-4 w-4"
                 />
-                <span className="text-foreground">{c.nameEn}</span>
+                <span className="text-foreground">{c.name}</span>
               </label>
             ))}
           </div>

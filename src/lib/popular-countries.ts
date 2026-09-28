@@ -32,6 +32,7 @@ export const POPULAR_COUNTRIES: PopularCountry[] = [
   { code: "RS", nameEn: "Serbia", currency: "RSD", callingCode: "381" },
   { code: "AL", nameEn: "Albania", currency: "ALL", callingCode: "355" },
   { code: "GE", nameEn: "Georgia", currency: "GEL", callingCode: "995" },
+  { code: "AZ", nameEn: "Azerbaijan", currency: "AZN", callingCode: "994" },
   { code: "MX", nameEn: "Mexico", currency: "MXN", callingCode: "52" },
   { code: "CR", nameEn: "Costa Rica", currency: "CRC", callingCode: "506" },
   { code: "CO", nameEn: "Colombia", currency: "COP", callingCode: "57" },
