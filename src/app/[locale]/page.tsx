@@ -35,23 +35,25 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     value,
     label: translateSpecialty(t.labels, value),
   }));
-  const countries = destinations.map((d) => ({ code: d.code, name: countryName(d.code) }));
-  const tiles = destinations.map((d) => ({
+  // Busiest first, then alphabetical in the reader's own language. No country
+  // is promoted: patients and clinics come from everywhere.
+  const collator = new Intl.Collator(locale);
+  const named = destinations
+    .map((d) => ({ ...d, name: countryName(d.code) }))
+    .sort((a, b) => b.clinics - a.clinics || collator.compare(a.name, b.name));
+  const countries = named.map((d) => ({ code: d.code, name: d.name }));
+  const tiles = named.map((d) => ({
     code: d.code,
-    name: countryName(d.code),
+    name: d.name,
     clinicsLabel:
       d.clinics === 0 ? t.destinations.joiningSoon : plural(t.destinations.verified, d.clinics),
   }));
-
-  // Most Hebrew-speaking visitors are in Israel; an English-speaking one could
-  // be anywhere, so they start from "anywhere" rather than from a guess.
-  const defaultCountry = locale === "he" && destinations.some((d) => d.code === "IL") ? "IL" : "";
 
   return (
     <>
       <Header />
       <main className="flex-1">
-        <StartSearchProvider defaultCountry={defaultCountry}>
+        <StartSearchProvider>
           <Hero t={t.hero} specialties={specialties} countries={countries} />
           <PopularTreatments title={t.hero.popularTreatments} specialties={specialties} />
           <Destinations

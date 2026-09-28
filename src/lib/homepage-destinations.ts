@@ -9,7 +9,7 @@ export type HomepageDestination = {
 };
 
 /**
- * Every active country, busiest first, for the "popular destinations" tiles and
+ * Every active country with its clinic count, for the "popular destinations" tiles and
  * the "where?" list of the search box.
  *
  * Counted with the directory's gate (publicDentistWhere), for the reason spelled
@@ -29,7 +29,7 @@ export async function getHomepageDestinations(): Promise<HomepageDestination[]> 
     }),
   ]);
   const counts = new Map(rows.map((r) => [r.countryCode, r._count._all]));
-  return countries
-    .map(({ code }) => ({ code, clinics: counts.get(code) ?? 0 }))
-    .sort((a, b) => b.clinics - a.clinics || a.code.localeCompare(b.code));
+  // Ordering is the page's job: ties are broken by the name in the reader's
+  // language, which only the page knows.
+  return countries.map(({ code }) => ({ code, clinics: counts.get(code) ?? 0 }));
 }
