@@ -2,7 +2,7 @@
 
 The product, planning and business materials that until 2026-09-28 lived only in OneDrive, next to the code rather than inside it. They're in the repository now so they have version history and a backup.
 
-> **Note:** these are working documents from along the way (June–September 2026), and parts of them describe decisions that have since changed. For example, the PRD talks about patients paying and choosing more than 3 clinics. For **what exists today**, the source of truth is the code and `docs/HANDOFF.md`.
+> **Note:** these are working documents from along the way (June–September 2026), and the early ones describe decisions that have since changed. For example, `Spec.md` (June) talks about choosing up to 10 clinics and Stripe payment, and `OPUS_EXECUTION_PLAN.md` (July) about a one-off patient fee, while the August PRD already matches today: up to 3 clinics, and free for the patient. For **what exists today**, the source of truth is the code and `docs/HANDOFF.md`.
 
 ## `prd/` — specification and planning
 
