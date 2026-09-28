@@ -719,7 +719,7 @@ const en: typeof he = {
     regEmail: "Email",
     regEmailPlaceholder: "dr@clinic.com",
     regPhone: "Phone",
-    regPhonePlaceholder: "+44 20 1234 5678",
+    regPhonePlaceholder: "+36 1 234 5678",
     regCity: "City",
     regCityPlaceholder: "Budapest",
     regAddress: "Clinic address",
