@@ -115,7 +115,7 @@ export const TRIAL_WARNING_DAYS_BEFORE = [15, 2] as const;
 
 // Bumped when SUBSCRIPTION_TERMS_HE changes materially — v2 adds the 60-day free
 // trial, so clinics that signed v1 agreed to different terms.
-export const SUBSCRIPTION_CONTRACT_VERSION = "2026-08-sub-v2";
+export const SUBSCRIPTION_CONTRACT_VERSION = "2026-09-sub-v3";
 
 // --- Rate limits (DB-backed, fixed window) ---
 const HOUR_MS = 60 * 60 * 1000;

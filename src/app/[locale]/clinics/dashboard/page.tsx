@@ -3,7 +3,7 @@ import { CheckCircle2, Clock, AlertTriangle, FileText } from "lucide-react";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { isLocale, defaultLocale } from "@/i18n/config";
 import { LocaleLink as Link } from "@/i18n/locale-link";
-import { format } from "@/i18n/format";
+import { format, plural } from "@/i18n/format";
 import { db } from "@/lib/db";
 import { isClinicVisible, billingBlocker } from "@/lib/subscription";
 import { isPayPlusConfigured } from "@/lib/payplus";
@@ -12,6 +12,13 @@ import { IncomingRequests } from "@/components/clinics/incoming-requests";
 import { clinicLeadStage, decidedElsewhere } from "@/lib/clinic-lead-stage";
 import { PendingReview } from "@/components/clinics/pending-review";
 import { clinicReviewStage } from "@/lib/clinic-review-stage";
+import { formatMoney } from "@/lib/money";
+import { currentYearMonth } from "@/lib/date";
+import { costPerRequestMinor, nextMonthStart } from "@/lib/clinic-usage";
+import { foundingPriceMinor } from "@/lib/founding";
+import { getSubscriptionPricing } from "@/lib/subscription-pricing";
+import { foundingSlotsLeft } from "@/server/founding";
+import { UpgradePanel } from "@/components/clinics/upgrade-panel";
 
 export const dynamic = "force-dynamic";
 
@@ -63,7 +70,7 @@ export default async function ClinicDashboardPage({
     );
   }
 
-  const [subscription, documents, leads] = await Promise.all([
+  const [subscription, documents, leads, usage] = await Promise.all([
     db.clinicSubscription.findUnique({
       where: { dentistId: clinic.id },
       select: {
@@ -75,6 +82,14 @@ export default async function ClinicDashboardPage({
         trialEndedUnbilledAt: true,
         recurringToken: true,
         setupToken: true,
+        tier: true,
+        provider: true,
+        priceMinor: true,
+        currency: true,
+        monthlyRequestCap: true,
+        isFounding: true,
+        regularPriceMinor: true,
+        foundingEndsAt: true,
       },
     }),
     db.clinicDocument.findMany({
@@ -103,7 +118,50 @@ export default async function ClinicDashboardPage({
         },
       },
     }),
+    // The same counter the request cap reads, so "3 of 3" here and the clinic
+    // dropping out of the results can never disagree.
+    db.monthlyRequestUsage.findUnique({
+      where: { dentistId_yearMonth: { dentistId: clinic.id, yearMonth: currentYearMonth() } },
+      select: { count: true },
+    }),
   ]);
+
+  const money = (minor: number) => formatMoney(minor, subscription?.currency ?? "ILS", locale);
+  const requestsThisMonth = usage?.count ?? 0;
+  const isFree = subscription?.tier === "FREE";
+  const isPaid = subscription !== null && !isFree && subscription.priceMinor > 0;
+  const perRequest = isPaid
+    ? costPerRequestMinor(subscription.priceMinor, subscription.plan, requestsThisMonth)
+    : null;
+  const atCap =
+    subscription?.monthlyRequestCap != null && requestsThisMonth >= subscription.monthlyRequestCap;
+
+  // What upgrading would cost, read live: a free clinic has no paid price
+  // frozen on its row yet, and the offer it sees is the one it would get today.
+  const upgradeOffer =
+    subscription && isFree && subscription.status === "ACTIVE"
+      ? await (async () => {
+          const [basic, left] = await Promise.all([
+            getSubscriptionPricing(subscription.provider, "BASIC"),
+            foundingSlotsLeft(),
+          ]);
+          const fmt = (m: number) => formatMoney(m, basic.currency, locale);
+          return {
+            body: format(t.clinics.dashUpgradeBody, {
+              cap: basic.monthlyRequestCap ?? "∞",
+              monthly: fmt(basic.monthlyPriceMinor),
+              yearly: fmt(basic.yearlyPriceMinor),
+            }),
+            foundingNote:
+              left > 0
+                ? format(t.clinics.dashUpgradeFounding, {
+                    monthly: fmt(foundingPriceMinor(basic.monthlyPriceMinor, basic.currency)),
+                    left,
+                  })
+                : null,
+          };
+        })()
+      : null;
 
   const dateFmt = new Intl.DateTimeFormat(locale, {
     day: "numeric",
@@ -151,7 +209,7 @@ export default async function ClinicDashboardPage({
       {reviewStage && (
         <PendingReview
           email={clinic.email}
-          trialDays={subscription?.trialDays ?? 0}
+          trialDays={subscription?.tier === "FREE" ? null : (subscription?.trialDays ?? 0)}
           returned={returned}
           replaceHref={
             clinic.documentToken && returned.length > 0
@@ -196,6 +254,11 @@ export default async function ClinicDashboardPage({
           <p className="text-muted-foreground mt-3 text-sm">{t.clinics.dashSubNone}</p>
         ) : (
           <div className="mt-3 space-y-3 text-sm">
+            {isFree && (
+              <p className="text-foreground">
+                {format(t.clinics.dashSubFree, { cap: subscription.monthlyRequestCap ?? 0 })}
+              </p>
+            )}
             <p className="text-foreground">
               {subscription.status === "TRIALING" ? t.clinics.dashSubTrialing : null}
               {trialLine ? (subscription.status === "TRIALING" ? ` · ${trialLine}` : trialLine) : ""}
@@ -228,6 +291,61 @@ export default async function ClinicDashboardPage({
           </div>
         )}
       </section>
+
+      {subscription && subscription.status !== "PENDING" && (
+        <section className="border-border/60 bg-card rounded-lg border p-6">
+          <h2 className="text-foreground font-semibold">{t.clinics.dashMonthHeading}</h2>
+          <p className="font-display text-teal-deep mt-3 text-2xl font-bold">
+            {plural(t.clinics.dashMonthRequests, requestsThisMonth)}
+          </p>
+          <div className="text-muted-foreground mt-2 space-y-1.5 text-sm">
+            {subscription.monthlyRequestCap != null && (
+              <p>{format(t.clinics.dashMonthOfCap, { cap: subscription.monthlyRequestCap })}</p>
+            )}
+            {perRequest !== null && (
+              <p className="text-foreground">
+                {format(t.clinics.dashMonthCostPerRequest, { price: money(perRequest) })}
+              </p>
+            )}
+            {requestsThisMonth === 0 && <p>{t.clinics.dashMonthNoneYet}</p>}
+          </div>
+
+          {isFree && atCap && (
+            <p className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
+              {format(t.clinics.dashFreeAtCap, {
+                cap: subscription.monthlyRequestCap ?? 0,
+                date: dateFmt.format(nextMonthStart(new Date())),
+              })}
+            </p>
+          )}
+
+          {subscription.isFounding && subscription.regularPriceMinor !== null && (
+            <p className="bg-highlight/30 text-foreground mt-4 rounded-lg p-3 text-sm">
+              {subscription.foundingEndsAt
+                ? format(t.clinics.dashFoundingActive, {
+                    price: money(subscription.priceMinor),
+                    regular: money(subscription.regularPriceMinor),
+                    date: dateFmt.format(subscription.foundingEndsAt),
+                  })
+                : format(t.clinics.dashFoundingPending, {
+                    price: money(subscription.priceMinor),
+                    regular: money(subscription.regularPriceMinor),
+                  })}
+            </p>
+          )}
+
+          {upgradeOffer && (
+            <div className="mt-4">
+              <UpgradePanel
+                body={upgradeOffer.body}
+                foundingNote={upgradeOffer.foundingNote}
+                monthlyLabel={t.clinics.dashUpgradeMonthly}
+                yearlyLabel={t.clinics.dashUpgradeYearly}
+              />
+            </div>
+          )}
+        </section>
+      )}
 
       <section className="border-border/60 bg-card rounded-lg border p-6">
         <h2 className="text-foreground font-semibold">{t.clinics.dashDocsHeading}</h2>

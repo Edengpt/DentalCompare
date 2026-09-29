@@ -69,9 +69,24 @@ export async function createSubscriptionCheckoutSession(args: {
   clinicName: string;
   email: string;
   itemName: string;
+  /**
+   * Founding offer: amountMinor stays the list price and a repeating coupon
+   * takes the difference off, so the price reverts on its own when the coupon
+   * runs out — nothing on our side has to remember to change it.
+   */
+  discount?: { amountOffMinor: number; months: number };
 }): Promise<{ url: string }> {
   const stripe = getStripeClient();
   const base = appUrl();
+  const coupon = args.discount
+    ? await stripe.coupons.create({
+        amount_off: args.discount.amountOffMinor,
+        currency: args.currency.toLowerCase(),
+        duration: "repeating",
+        duration_in_months: args.discount.months,
+        name: "Founding clinic",
+      })
+    : null;
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     customer_email: args.email,
@@ -87,8 +102,10 @@ export async function createSubscriptionCheckoutSession(args: {
         quantity: 1,
       },
     ],
+    ...(coupon ? { discounts: [{ coupon: coupon.id }] } : {}),
     subscription_data: {
-      trial_period_days: args.trialDays,
+      // Stripe rejects 0; no trial is expressed by leaving it out.
+      ...(args.trialDays > 0 ? { trial_period_days: args.trialDays } : {}),
       metadata: { setupToken: args.setupToken },
     },
     metadata: { setupToken: args.setupToken },

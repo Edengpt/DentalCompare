@@ -506,6 +506,18 @@ const tr: typeof he = {
     subjectNewQuote: "Yeni bir teklif aldınız 🎉",
     subjectQuoteRequest: "Yeni teklif talebi — DentalCompare",
     subjectPaymentSetup: "Klinik onaylandı — DentalCompare aboneliğinizi etkinleştirin",
+    subjectFreeLive: "Kliniğiniz onaylandı ve DentalCompare'de yayında",
+    freeLiveHeading: "Kliniğiniz onaylandı ve dizinde yer alıyor",
+    freeLiveBody:
+      "{clinic} artık ücretsiz planla DentalCompare'de listeleniyor; hastalar kliniği seçip teklif talebi gönderebilir.",
+    freeLiveUpgrade:
+      "Ücretsiz plan ayda en fazla 3 talep içerir. Daha fazlası için klinik alanınızdan istediğiniz zaman yükseltebilirsiniz.",
+    freeLiveCta: "Klinik alanına git",
+    subjectFoundingEnding: "Kurucu fiyatınız yaklaşık bir ay içinde sona eriyor",
+    foundingEndingHeading: "İlklerden olduğunuz için teşekkürler",
+    foundingEndingBody:
+      "Kurucu fiyat yılınız şu tarihte sona eriyor: {date}. Bir sonraki ödemeden itibaren aboneliğiniz ({plan}): {price}.",
+    foundingEndingNoAction: "Yapmanız gereken bir şey yok; aboneliğiniz aynen devam eder.",
     subjectTrialEndingSoon: "Deneme süreniz bitiyor — ilk ödeme yaklaşıyor",
     subjectTrialSetupNeeded: "Ücretsiz deneme süreniz bitiyor — ödeme bilgileri hâlâ eksik",
     subjectTrialDaysLeft: "DentalCompare deneme sürenizin bitmesine {days} gün kaldı",
@@ -761,7 +773,7 @@ const tr: typeof he = {
     regDetailsHeading: "Klinik bilgileri",
     regPlanHeading: "Plan ve abonelik koşulları",
     regPlanIntro:
-      "Bir plan seçin. Ücret yalnızca ekibimiz kliniği onayladıktan sonra alınır; ödemeyi tamamlamanız için size bir bağlantı e-postalayacağız.",
+      "Bir plan seçin: ücretsiz ya da ücretli abonelik. Ücretli planda ödeme yalnızca ekibimiz kliniği onayladıktan sonra alınır; ödemeyi tamamlamanız için e-posta ile bir bağlantı göndeririz.",
     regAgree:
       "Yukarıdaki abonelik koşullarını okudum ve anladım; bunları klinik adına kabul ediyorum.",
     regSubmitting: "Gönderiliyor…",
@@ -795,6 +807,8 @@ const tr: typeof he = {
       "İşimiz biter bitmez {email} adresine e-posta göndereceğiz. Bir belge eksikse veya fotoğraf okunamıyorsa, yeniden yüklemeniz için bir bağlantı göndeririz; formu baştan doldurmanıza gerek kalmaz.",
     terms: [
       "Klinik, DentalCompare rehberinde yer almak ve hasta talepleri almak için bir abonelik planı seçer: aylık {monthly} veya yıllık {yearly}.",
+      "Ücretsiz plan: klinik dizinde yer alır ve ücret ödemeden, ödeme yöntemi tanımlamadan ayda en fazla {freeCap} talep alır. Ayın talepleri kullanıldıktan sonra klinik, bir sonraki ayın başına kadar hastalara gösterilmez. Klinik istediği zaman ücretli aboneliğe geçebilir.",
+      "Kurucu teklifi: ücretli planda kurucu yeri alan klinik, ilk ödemeyle başlayan 12 ay boyunca liste fiyatından üçte bir daha az öder. Ardından abonelik, yaklaşık 30 gün önceden e-posta ile bildirilerek liste fiyatıyla devam eder.",
       "Klinik, DentalCompare ekibinin onayıyla başlayan {trialDays} günlük ücretsiz bir deneme süresinden yararlanır. Bu süre boyunca klinik rehberde yer alır ve ücretsiz olarak talep alır.",
       "Kayıt sırasında bir ödeme yöntemi saklanır ve ilk ödeme, {trialDays} günlük deneme süresi sona erdiğinde otomatik olarak tahsil edilir. Bu ilk ödemeden önce e-posta ile bildirim gönderilir.",
       "Abonelik deneme süresi içinde herhangi bir zamanda iptal edilebilir; bu durumda hiçbir ücret alınmaz.",
@@ -808,7 +822,7 @@ const tr: typeof he = {
     joinEyebrow: "Diş klinikleri için",
     joinTitle: "Tedavi planı hazır olan hastalardan talep alın.",
     joinSubtitle:
-      "Dünyanın dört bir yanındaki hastalar tedavi planı ve röntgen göndererek yazılı teklif ister. Doğrulanmış bir klinik rehberde yer alır ve bu talepleri doğrudan alır. Önce ücretsiz deneme süresi, ardından aylık veya yıllık abonelik.",
+      "Dünyanın dört bir yanından hastalar tedavi planı ve röntgen gönderip yazılı teklif ister. Doğrulanmış bir klinik dizinde yer alır ve bu talepleri doğrudan alır. Ücretsiz planla ya da deneme süreli ücretli abonelikle başlayın.",
     planMonthlyTitle: "Aylık plan",
     planMonthlyPer: "aylık",
     planMonthlyNote: "Taahhüt yok — istediğiniz zaman iptal edin",
@@ -838,6 +852,30 @@ const tr: typeof he = {
     // --- Clinic area ---
     dashMetaTitle: "Panelim",
     dashTitle: "Klinik paneli",
+    dashSubFree: "Ücretsiz plan — ayda en fazla {cap} talep, ödeme yok.",
+    dashMonthHeading: "Bu ay",
+    dashMonthRequests: { one: "1 talep alındı", other: "{count} talep alındı" },
+    dashMonthOfCap: "Planınız ayda en fazla {cap} talep içerir.",
+    dashMonthCostPerRequest: "Bu ay aboneliğinizin talep başına maliyeti: {price}.",
+    dashMonthNoneYet: "Bu ay henüz talep yok. Bir hasta sizi seçtiği anda burada görünecek.",
+    dashFreeAtCap:
+      "Bu ay ücretsiz planın {cap} talebinin tamamını kullandınız; bu nedenle kliniğiniz şu tarihe kadar hastalara gösterilmiyor: {date}. Talep almaya devam etmek için yükseltin.",
+    dashFoundingActive:
+      "Kurucu klinik: şu tarihe kadar {regular} yerine {price} ödüyorsunuz: {date}.",
+    dashFoundingPending:
+      "Kurucu klinik: ilk ödemeden itibaren 12 ay boyunca {regular} yerine {price}.",
+    dashUpgradeTitle: "Temel plana yükseltin",
+    dashUpgradeBody: "Ayda en fazla {cap} talep; aylık {monthly} veya yıllık {yearly}.",
+    dashUpgradeFounding: "Kurucu fiyatı: 12 ay boyunca aylık {monthly} — kalan yer: {left}",
+    dashUpgradeMonthly: "Yükselt — aylık",
+    dashUpgradeYearly: "Yükselt — yıllık",
+    planFreeTitle: "Ücretsiz",
+    planFreeNote: "Kart gerekmez. İstediğiniz zaman yükseltin.",
+    planCapLine: "Ayda en fazla {cap} talep",
+    planFoundingBadge: "12 ay kurucu fiyatı",
+    foundingBanner:
+      "Kurucu teklifi: ücretli planı ilk seçen klinikler ilk 12 ay üçte bir daha az öder. Kalan yer: {left}.",
+    pendingStepLiveNoteFree: "Ücretsiz planda kliniğiniz onaylandığı anda dizinde görünür.",
     dashNoClinicTitle: "Bu hesaba ait klinik bulunamadı",
     dashNoClinicBody:
       "Bu hesap ({email}) herhangi bir klinikle ilişkili değil. Kayıt olurken kullandığınız e-posta adresiyle giriş yapın veya bir klinik kaydedin.",
@@ -1008,6 +1046,9 @@ const tr: typeof he = {
     requestsSubtitle: "Toplam {count} talep.",
     subscriptionsTitle: "Abonelikler",
     subscriptionsSubtitle: "Platformdaki her kliniğin abonelik durumu.",
+    subsFoundingCount: "Kurucu yerleri: {total} yerden {taken} dolu",
+    subFree: "Ücretsiz",
+    subFoundingTag: "Kurucu",
     subPending: "Ödeme bekleniyor",
     subActive: "Aktif",
     subPastDue: "Ödeme alınamadı",

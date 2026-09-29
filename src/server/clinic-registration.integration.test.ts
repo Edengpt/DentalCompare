@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeAll, afterAll, afterEach } from "vitest";
 import { randomUUID } from "node:crypto";
+import { foundingPriceMinor } from "@/lib/founding";
 import type { db as Db } from "@/lib/db";
 import { requiredDocKinds } from "@/lib/clinic-documents";
 
@@ -118,12 +119,51 @@ describe.skipIf(!hasDb)("registerClinic documents (integration, real DB)", () =>
         include: { subscription: true },
       });
       created.push(dentist!.id);
-      expect(dentist!.subscription!.plan).toBe("YEARLY");
-      expect(dentist!.subscription!.priceMinor).toBe(pricing.yearlyPriceMinor);
-      expect(dentist!.subscription!.currency).toBe(pricing.currency);
+      const sub = dentist!.subscription!;
+      expect(sub.plan).toBe("YEARLY");
+      // The list price is the yearly rate whether or not a founding place was
+      // still open; the founding price, when given, is derived from it.
+      const listPrice = sub.isFounding ? sub.regularPriceMinor : sub.priceMinor;
+      expect(listPrice).toBe(pricing.yearlyPriceMinor);
+      if (sub.isFounding) {
+        expect(sub.priceMinor).toBe(foundingPriceMinor(pricing.yearlyPriceMinor, pricing.currency));
+      }
+      expect(sub.currency).toBe(pricing.currency);
       // The actual failure mode this guards against: the ternary in
       // clinic-registration.ts picking the monthly rate regardless of plan.
-      expect(dentist!.subscription!.priceMinor).not.toBe(pricing.monthlyPriceMinor);
+      expect(listPrice).not.toBe(pricing.monthlyPriceMinor);
+    },
+    DB_TIMEOUT,
+  );
+
+  it(
+    "registers the free tier at no charge with its own request cap",
+    async () => {
+      const free = await db.subscriptionPricing.findUniqueOrThrow({
+        where: { provider_tier: { provider: "STRIPE", tier: "FREE" } },
+      });
+      const sfx = randomUUID().slice(0, 8);
+      const fd = baseForm(sfx);
+      fd.set("plan", "FREE");
+      for (const kind of ["Licence", "Insurance"]) {
+        fd.append("documentKind", kind);
+        fd.append("documentUrl", `${DOC_URL}?k=${kind}`);
+        fd.append("documentType", "application/pdf");
+      }
+
+      const result = await registerClinic(fd);
+      expect(result.ok).toBe(true);
+
+      const dentist = await db.dentist.findUnique({
+        where: { email: `reg_${sfx}@example.com` },
+        include: { subscription: true },
+      });
+      created.push(dentist!.id);
+      const sub = dentist!.subscription!;
+      expect(sub.tier).toBe("FREE");
+      expect(sub.priceMinor).toBe(0);
+      expect(sub.isFounding).toBe(false);
+      expect(sub.monthlyRequestCap).toBe(free.monthlyRequestCap);
     },
     DB_TIMEOUT,
   );

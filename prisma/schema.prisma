@@ -487,6 +487,17 @@ model ClinicSubscription {
   // visibleSubscriptionFilter or isClinicVisible drops a clinic from the
   // directory with no error anywhere.
   trialEndedUnbilledAt    DateTime?
+  // Founding offer (the first FOUNDING_SLOTS paid clinics, src/lib/founding.ts).
+  // priceMinor above holds the discounted price the clinic pays today;
+  // regularPriceMinor is the list price it moves to once foundingEndsAt passes.
+  // Both frozen at registration/upgrade like every other price field here.
+  isFounding              Boolean              @default(false)
+  regularPriceMinor       Int?
+  // Set at the first paid charge (PayPlus) or when Stripe confirms the
+  // subscription: 12 months of discounted billing from there.
+  foundingEndsAt          DateTime?
+  // The "your price is going up" notice, sent once ~30 days before foundingEndsAt.
+  foundingNoticeSentAt    DateTime?
   createdAt               DateTime             @default(now())
   updatedAt               DateTime             @updatedAt
 

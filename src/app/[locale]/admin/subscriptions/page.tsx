@@ -4,6 +4,9 @@ import { formatMoney } from "@/lib/money";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/server/admin";
 import { PricingSettingsForm } from "@/components/admin/pricing-settings-form";
+import { format } from "@/i18n/format";
+import { FOUNDING_SLOTS } from "@/lib/founding";
+import { foundingSlotsLeft } from "@/server/founding";
 import type { Dictionary } from "@/i18n/get-dictionary";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
@@ -76,15 +79,24 @@ export default async function AdminSubscriptionsPage({
       // screen exists to watch.
       trialEndsAt: true,
       trialEndedUnbilledAt: true,
+      tier: true,
+      isFounding: true,
       dentist: { select: { clinicName: true, email: true } },
     },
   });
+  const foundingLeft = await foundingSlotsLeft();
 
   return (
     <div className="space-y-6">
       <header>
         <h1 className="font-display text-foreground text-3xl font-bold tracking-tight">{t.admin.subscriptionsTitle}</h1>
         <p className="text-muted-foreground mt-1.5 text-sm">{t.admin.subscriptionsSubtitle}</p>
+        <p className="text-foreground mt-3 text-sm font-medium">
+          {format(t.admin.subsFoundingCount, {
+            taken: FOUNDING_SLOTS - foundingLeft,
+            total: FOUNDING_SLOTS,
+          })}
+        </p>
       </header>
 
       <PricingSettingsForm rows={pricingRows} />
@@ -115,8 +127,19 @@ export default async function AdminSubscriptionsPage({
                     <p className="text-muted-foreground text-xs">{s.dentist.email}</p>
                   </td>
                   <td className="text-foreground px-4 py-3">
-                    {(s.plan === "MONTHLY" ? t.emails.planMonthly : t.emails.planYearly)} ·{" "}
-                    {formatMoney(s.priceMinor ?? 0, s.currency ?? "ILS", pageLocale)}
+                    {s.tier === "FREE" ? (
+                      t.admin.subFree
+                    ) : (
+                      <>
+                        {s.plan === "MONTHLY" ? t.emails.planMonthly : t.emails.planYearly} ·{" "}
+                        {formatMoney(s.priceMinor ?? 0, s.currency ?? "ILS", pageLocale)}
+                      </>
+                    )}
+                    {s.isFounding && (
+                      <span className="bg-highlight text-on-highlight ms-2 rounded-sm px-1.5 py-0.5 text-xs font-semibold">
+                        {t.admin.subFoundingTag}
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <p className="text-foreground">{statusLabel(s.status, t.admin)}</p>

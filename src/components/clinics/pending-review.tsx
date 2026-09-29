@@ -27,7 +27,8 @@ export function PendingReview({
   replaceHref = null,
 }: {
   email: string;
-  trialDays: number;
+  /** null for the free tier, which goes live with no trial to count down. */
+  trialDays: number | null;
   returned?: ReturnedDocument[];
   /** The tokenised replacement page, when one has been issued. */
   replaceHref?: string | null;
@@ -46,7 +47,10 @@ export function PendingReview({
     {
       state: "next",
       title: t.clinics.pendingStepLive,
-      note: format(t.clinics.pendingStepLiveNote, { trialDays }),
+      note:
+        trialDays === null
+          ? t.clinics.pendingStepLiveNoteFree
+          : format(t.clinics.pendingStepLiveNote, { trialDays }),
     },
   ] as const;
 

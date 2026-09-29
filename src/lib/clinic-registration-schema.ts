@@ -42,7 +42,10 @@ export const clinicDetailsSchema = z.object({
 
 /** Step 3 — the plan and the contract. Step 2 (documents) depends on the country, see clinic-documents. */
 export const clinicPlanSchema = z.object({
-  plan: z.enum(["MONTHLY", "YEARLY"], { error: "mustPickPlan" }),
+  // FREE is a tier, not a billing interval; the server maps it to a free
+  // MONTHLY row (see registerClinic). Kept in one field so the form stays a
+  // single choice of three cards.
+  plan: z.enum(["FREE", "MONTHLY", "YEARLY"], { error: "mustPickPlan" }),
   agreeToTerms: z.enum(["on", "true"], { error: "mustAcceptTerms" }),
 });
 
