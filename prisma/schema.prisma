@@ -240,6 +240,9 @@ model Request {
   /// agreedToTermsAt / termsVersion.
   consentAt            DateTime?
   consentVersion       String?
+  // Last time the owner opened this request's page. A quote that arrived after
+  // it is one the patient has not seen yet — the reminder cron's only signal.
+  patientViewedAt      DateTime?
   createdAt            DateTime      @default(now())
   updatedAt            DateTime      @updatedAt
 
@@ -345,6 +348,9 @@ model Quote {
   // When the patient "you got a new quote" email was successfully sent. Null =
   // not yet notified (first send failed) — the retry cron picks these up.
   patientNotifiedAt             DateTime?
+  // The one "your quotes are waiting" reminder, sent when the patient has not
+  // opened the request since this quote arrived (see quote-reminders.ts).
+  patientReminderSentAt         DateTime?
   status                        QuoteStatus @default(PENDING_DECISION)
   decidedAt                     DateTime?
   rejectedAuto                  Boolean     @default(false)

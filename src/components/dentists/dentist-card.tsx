@@ -63,15 +63,17 @@ export function DentistCard({
             )}
             aria-hidden="true"
           >
-            {initials(dentist.dentistName)}
+            {initials(dentist.clinicName)}
           </div>
         )}
 
         <div className="min-w-0 flex-1">
+          {/* The clinic is what the patient is choosing and what the rest of
+              the site talks about; the dentist is who they will meet there. */}
           <h3 className="font-display text-foreground truncate text-lg leading-tight font-bold">
-            {dentist.dentistName}
+            {dentist.clinicName}
           </h3>
-          <p className="text-muted-foreground mt-0.5 truncate text-sm">{dentist.clinicName}</p>
+          <p className="text-muted-foreground mt-0.5 truncate text-sm">{dentist.dentistName}</p>
           {/* Rendered from the row, never as a constant. Every listed clinic is
               verified by construction — which is exactly why: if that gate ever
               breaks, a constant badge would keep claiming "verified" about a
@@ -122,11 +124,15 @@ export function DentistCard({
         ))}
       </ul>
 
-      {/* HMOs */}
-      <div className="text-muted-foreground mt-4 text-xs">
-        <span className="font-medium">{t.dentists.insurersLabel}</span>
-        {dentist.insurerAffiliations.map((i) => translateInsurer(t.labels, i)).join(" ✦ ")}
-      </div>
+      {/* Insurers. Hidden when there are none, like languages below: most
+          countries have no payer list at all, and an empty label reads as a
+          missing answer. */}
+      {dentist.insurerAffiliations.length > 0 && (
+        <div className="text-muted-foreground mt-4 text-xs">
+          <span className="font-medium">{t.dentists.insurersLabel}</span>
+          {dentist.insurerAffiliations.map((i) => translateInsurer(t.labels, i)).join(" ✦ ")}
+        </div>
+      )}
 
       {/* Languages. Hidden when the clinic named none, rather than shown empty —
           a blank row reads as "speaks nothing" instead of "didn't say". */}

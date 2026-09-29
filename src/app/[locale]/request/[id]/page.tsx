@@ -113,6 +113,9 @@ export default async function RequestDetailPage({
 
   if (!request || request.userId !== user.id) notFound();
 
+  // The owner is looking at the quotes now, so none of them needs a reminder.
+  await db.request.update({ where: { id: request.id }, data: { patientViewedAt: new Date() } });
+
   const dentists = request.requestDentists;
 
   // The clinic the patient chose, once there is one. Approval rejects every

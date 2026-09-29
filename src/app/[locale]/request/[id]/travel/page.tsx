@@ -4,6 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
+import { StepHeader } from "@/components/request/step-header";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { isLocale, defaultLocale } from "@/i18n/config";
 import { getActiveCountries } from "@/lib/countries";
@@ -72,19 +73,14 @@ export default async function TravelPage({
     <>
       <Header />
       <main className="flex-1">
-        <section className="border-border/60 bg-muted/30 border-b py-12 lg:py-16">
-          <div className="mx-auto max-w-3xl px-6 lg:px-10">
-            <p className="eyebrow">{t.requestFlow.travelStep}</p>
-            <h1 className="font-display text-foreground mt-4 text-4xl font-bold tracking-tight text-balance">
-              {t.requestFlow.travelTitle}
-            </h1>
-            <p className="text-muted-foreground mt-4 leading-relaxed text-pretty">
-              {t.requestFlow.travelSubtitle}
-            </p>
-          </div>
-        </section>
+        <StepHeader
+          step={2}
+          label={t.requestFlow.travelStep}
+          title={t.requestFlow.travelTitle}
+          subtitle={t.requestFlow.travelSubtitle}
+        />
 
-        <section className="py-12 lg:py-16">
+        <section className="py-6 sm:py-12 lg:py-16">
           <div className="mx-auto max-w-3xl px-6 lg:px-10">
             <TravelStep
               requestId={request.id}

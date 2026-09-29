@@ -115,7 +115,7 @@ export function TravelStep({
         disabled={isPending}
         className={cn(
           buttonVariants(),
-          "bg-teal-deep hover:bg-teal-deep/90 text-cream inline-flex h-11 items-center rounded-lg px-6 text-sm font-semibold disabled:opacity-60",
+          "bg-teal-deep hover:bg-teal-deep/90 text-cream inline-flex h-12 w-full items-center justify-center rounded-lg px-6 text-sm font-semibold disabled:opacity-60 sm:h-11 sm:w-auto",
         )}
       >
         {isPending ? t.selection.saving : t.requestFlow.travelContinue}

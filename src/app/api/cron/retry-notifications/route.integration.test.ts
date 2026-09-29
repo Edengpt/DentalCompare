@@ -118,6 +118,60 @@ describe.skipIf(!hasDb)("retry-notifications cron (integration, real DB)", () =>
     created.userIds = [];
   }, DB_TIMEOUT);
 
+  it("reminds once about unopened quotes, in one email per request", async () => {
+    const DAY = 24 * HOUR;
+    const old = new Date(Date.now() - 4 * DAY);
+    const { quote, user } = await seedQuote({ createdAt: old, notifiedAt: old });
+    // A second clinic's quote on the same request.
+    const rd = await db.requestDentist.findUniqueOrThrow({ where: { id: quote.requestDentistId } });
+    const other = await db.dentist.create({
+      data: {
+        clinicName: "מרפאה 2",
+        dentistName: "ד״ר",
+        email: `qd2_${randomUUID().slice(0, 8)}@example.com`,
+        phone: "03",
+        city: "חיפה",
+        address: "רחוב 2",
+        experienceYears: 3,
+      },
+    });
+    created.dentistIds.push(other.id);
+    const rd2 = await db.requestDentist.create({
+      data: { requestId: rd.requestId, dentistId: other.id, emailSent: true, quoteToken: randomUUID() },
+    });
+    await db.quote.create({
+      data: {
+        requestDentistId: rd2.id,
+        amountMinor: 400000,
+        currency: "ILS",
+        createdAt: old,
+        patientNotifiedAt: old,
+      },
+    });
+
+    await call();
+    const reminders = h.state.sends.filter((m) => m.to === user.email);
+    expect(reminders).toHaveLength(1);
+
+    h.state.sends = [];
+    await call();
+    expect(h.state.sends.filter((m) => m.to === user.email)).toHaveLength(0);
+  });
+
+  it("does not remind a patient who already opened the request", async () => {
+    const DAY = 24 * HOUR;
+    const old = new Date(Date.now() - 4 * DAY);
+    const { quote, user } = await seedQuote({ createdAt: old, notifiedAt: old });
+    const rd = await db.requestDentist.findUniqueOrThrow({ where: { id: quote.requestDentistId } });
+    await db.request.update({
+      where: { id: rd.requestId },
+      data: { patientViewedAt: new Date(Date.now() - DAY) },
+    });
+
+    await call();
+    expect(h.state.sends.filter((m) => m.to === user.email)).toHaveLength(0);
+  });
+
   it("rejects a call without the cron secret", async () => {
     const res = await GET(new Request("http://x/api/cron/retry-notifications"));
     expect(res.status).toBe(401);

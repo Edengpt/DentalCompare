@@ -522,6 +522,13 @@ const zh: typeof he = {
     newQuoteHeading: "您收到了一份新报价 🎉",
     newQuoteBody: "有诊所为您在 DentalCompare 上的请求提交了报价。请登录查看比较并做出选择。",
     newQuoteCta: "查看比较",
+    subjectQuoteReminder: "您的报价正在等您查看",
+    quoteReminderHeading: "您还没有查看报价",
+    quoteReminderBody: {
+      one: "有 1 份针对您治疗方案的报价在等您查看。您可以在个人账户中查看，从容决定。",
+      other: "有 {count} 份针对您治疗方案的报价在等您查看。您可以在个人账户中并排比较。",
+    },
+    quoteReminderNote: "没有任何义务——您也可以拒绝所有报价。",
     quoteApprovedHeading: "患者选择了您 🎉",
     quoteApprovedBody: "{patient}接受了您的报价。您可以联系患者并安排治疗。",
     quoteApprovedCta: "进入我的专区",

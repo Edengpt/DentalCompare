@@ -567,6 +567,14 @@ const de: typeof he = {
     newQuoteBody:
       "Eine Klinik hat ein Angebot für Ihre Anfrage bei DentalCompare abgegeben. Melden Sie sich an, um die Angebote zu vergleichen und zu wählen.",
     newQuoteCta: "Vergleich ansehen",
+    subjectQuoteReminder: "Ihre Angebote warten auf Sie",
+    quoteReminderHeading: "Sie haben Ihre Angebote noch nicht angesehen",
+    quoteReminderBody: {
+      one: "Ein Angebot für Ihren Behandlungsplan wartet auf Sie. Sie können es in Ihrem Konto ansehen und in Ruhe entscheiden.",
+      other:
+        "{count} Angebote für Ihren Behandlungsplan warten auf Sie. Sie können sie in Ihrem Konto nebeneinander vergleichen.",
+    },
+    quoteReminderNote: "Keine Verpflichtung – Sie können auch alle Angebote ablehnen.",
     quoteApprovedHeading: "Der Patient hat sich für Sie entschieden 🎉",
     quoteApprovedBody:
       "{patient} hat Ihr Angebot angenommen. Sie können jetzt Kontakt aufnehmen und die Behandlung planen.",
