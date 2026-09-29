@@ -53,7 +53,7 @@ const en: typeof he = {
     searchWhereAnywhere: "Anywhere",
     searchSubmit: "Get my quotes",
     searchHint:
-      "Upload your treatment plan and x-ray, choose up to 3 clinics, and the quotes arrive by email. Target: within 48 hours.",
+      "Upload your treatment plan and x-ray and choose up to 3 clinics. Quotes wait for you in your account, and we email you as each one arrives. Target: within 48 hours.",
     popularTreatments: "Popular treatments",
   },
 
@@ -123,9 +123,9 @@ const en: typeof he = {
     q2: "Is my medical information secure?",
     a2: "Yes. Every file is stored in encrypted cloud storage with private access only, transferred over HTTPS, and sent solely to the clinics you personally chose. We don't share it with third parties and we don't use it for advertising or sell it. You can request full deletion at any time.",
     q3: "How long until quotes arrive?",
-    a3: "Your request reaches every clinic you picked at the same moment, and our target is for quotes to come back within 48 hours. Clinics reply straight to your email — there's no need to come back to the site.",
+    a3: "Your request reaches every clinic you picked at the same moment, and our target is for quotes to arrive within 48 hours. Each quote is saved in your account, and we email you the moment it arrives.",
     q4: "How do clinics get back to me?",
-    a4: "Each clinic receives a dedicated email with your documents and a private link for submitting a quote. You get personal replies by email — exactly as if you had approached them directly, except you approached 3 clinics at once.",
+    a4: "Each clinic receives a dedicated email with your documents and a private link for submitting a written quote. The quotes appear side by side in your account — just as if you had approached each clinic yourself, except you approached 3 at once and compare them in one place.",
     q5: "What if I don't like any of the quotes?",
     a5: "There is no obligation to accept any of them. The platform is a comparison tool — you decide whether and when to start treatment, and with whom. Even if you go back to your original dentist, you'll be holding written quotes and real bargaining power.",
     q6: "Which treatments is this best for?",
@@ -168,7 +168,7 @@ const en: typeof he = {
     newRequest: "New quote request",
     emptyTitle: "No active requests yet",
     emptyBody:
-      "Start your first request: upload your treatment plan and x-ray, pick up to 3 clinics, and the quotes will arrive in your inbox.",
+      "Start your first request: upload your treatment plan and x-ray and pick up to 3 clinics. Quotes will appear here, and we'll email you as each one arrives.",
     emptyCta: "Start a request",
     myRequests: "My requests",
     requestLabel: "Request",
@@ -220,9 +220,9 @@ const en: typeof he = {
       "Filter by country, city, speciality and insurer. Your request goes only to the clinics you tick, all at the same moment.",
     successMetaTitle: "Request sent",
     successBodySent: {
-      one: "We've sent your treatment plan and x-ray to one clinic. Their quote will arrive straight in your inbox — usually within 48 hours.",
+      one: "We've sent your treatment plan and x-ray to one clinic. Their quote will appear in your account, and we'll email you when it arrives. Target: within 48 hours.",
       other:
-        "We've sent your treatment plan and x-ray to {count} clinics. Their quotes will arrive straight in your inbox — usually within 48 hours.",
+        "We've sent your treatment plan and x-ray to {count} clinics. Their quotes will appear in your account, and we'll email you as each one arrives. Target: within 48 hours.",
     },
     successTitleSent: "Your request is on its way to the clinics 🎉",
     successTitleSending: "Sending your request to the clinics…",
@@ -230,7 +230,7 @@ const en: typeof he = {
     successTitlePending: "Sending in progress…",
     successBodyPending:
       "We've received your request and it's on its way to the clinics. Try refreshing in a moment.",
-    successWatchInbox: "Keep an eye on your inbox (and sometimes your spam folder)",
+    successWatchInbox: "We'll email you as each quote arrives — check your spam folder too",
     successToDashboard: "Go to my account",
   },
 

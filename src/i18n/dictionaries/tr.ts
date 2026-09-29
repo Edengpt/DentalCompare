@@ -44,7 +44,7 @@ const tr: typeof he = {
     searchWhereAnywhere: "Her yerde",
     searchSubmit: "Tekliflerimi al",
     searchHint:
-      "Tedavi planınızı ve röntgeninizi yükleyin, en fazla 3 klinik seçin; teklifler e-postanıza gelsin. Hedefimiz: 48 saat içinde.",
+      "Tedavi planınızı ve röntgeninizi yükleyin, en fazla 3 klinik seçin. Teklifler hesabınızda sizi bekler; her teklif geldiğinde size e-posta göndeririz. Hedefimiz: 48 saat içinde.",
     popularTreatments: "Popüler tedaviler",
   },
 
@@ -113,9 +113,9 @@ const tr: typeof he = {
     q2: "Tıbbi bilgilerim güvende mi?",
     a2: "Evet. Her dosya yalnızca özel erişimli, şifrelenmiş bulut depolamada saklanır, HTTPS üzerinden aktarılır ve yalnızca bizzat seçtiğiniz kliniklere gönderilir. Dosyalarınızı üçüncü taraflarla paylaşmıyor, reklam için kullanmıyor ve satmıyoruz. İstediğiniz zaman tamamen silinmesini talep edebilirsiniz.",
     q3: "Teklifler ne kadar sürede gelir?",
-    a3: "Talebiniz seçtiğiniz tüm kliniklere aynı anda ulaşır ve hedefimiz tekliflerin 48 saat içinde gelmesidir. Klinikler doğrudan e-postanıza yanıt verir; siteye geri dönmenize gerek yoktur.",
+    a3: "Talebiniz seçtiğiniz tüm kliniklere aynı anda ulaşır; hedefimiz tekliflerin 48 saat içinde gelmesidir. Her teklif hesabınıza kaydedilir ve geldiği anda size e-posta göndeririz.",
     q4: "Klinikler bana nasıl dönüş yapar?",
-    a4: "Her klinik, belgelerinizi ve teklif göndermek için özel bir bağlantıyı içeren ayrı bir e-posta alır. Siz de kişisel yanıtları e-postayla alırsınız; tıpkı onlara doğrudan başvurmuşsunuz gibi, tek farkla: aynı anda 3 kliniğe başvurmuş olursunuz.",
+    a4: "Her klinik, belgelerinizi ve yazılı teklif göndermesi için kişisel bir bağlantı içeren özel bir e-posta alır. Teklifler hesabınızda yan yana görünür; tıpkı her kliniğe kendiniz başvurmuşsunuz gibi, ancak aynı anda 3 kliniğe başvurur ve tek bir yerde karşılaştırırsınız.",
     q5: "Tekliflerin hiçbirini beğenmezsem ne olur?",
     a5: "Hiçbirini kabul etme yükümlülüğünüz yok. Platform bir karşılaştırma aracıdır; tedaviye başlayıp başlamayacağınıza, ne zaman ve kiminle başlayacağınıza siz karar verirsiniz. İlk diş hekiminize geri dönseniz bile elinizde yazılı teklifler ve gerçek bir pazarlık gücü olur.",
     q6: "Hangi tedaviler için en uygun?",
@@ -159,7 +159,7 @@ const tr: typeof he = {
     newRequest: "Yeni teklif talebi",
     emptyTitle: "Henüz aktif talebiniz yok",
     emptyBody:
-      "İlk talebinizi başlatın: tedavi planınızı ve röntgeninizi yükleyin, en fazla 3 klinik seçin; teklifler gelen kutunuza ulaşsın.",
+      "İlk talebinizi başlatın: tedavi planınızı ve röntgeninizi yükleyin, en fazla 3 klinik seçin. Teklifler burada görünecek; her teklif geldiğinde size e-posta göndereceğiz.",
     emptyCta: "Talep başlat",
     myRequests: "Taleplerim",
     requestLabel: "Talep",
@@ -211,9 +211,9 @@ const tr: typeof he = {
       "Ülke, şehir, uzmanlık alanı ve sigortaya göre filtreleyin. Talebiniz yalnızca işaretlediğiniz kliniklere, hepsine aynı anda gider.",
     successMetaTitle: "Talep gönderildi",
     successBodySent: {
-      one: "Tedavi planınızı ve röntgeninizi bir kliniğe gönderdik. Teklif doğrudan gelen kutunuza ulaşacak; genellikle 48 saat içinde.",
+      one: "Tedavi planınızı ve röntgeninizi bir kliniğe gönderdik. Teklif hesabınızda görünecek ve geldiğinde size e-posta göndereceğiz. Hedefimiz: 48 saat içinde.",
       other:
-        "Tedavi planınızı ve röntgeninizi {count} kliniğe gönderdik. Teklifler doğrudan gelen kutunuza ulaşacak; genellikle 48 saat içinde.",
+        "Tedavi planınızı ve röntgeninizi {count} kliniğe gönderdik. Teklifler hesabınızda görünecek; her teklif geldiğinde size e-posta göndereceğiz. Hedefimiz: 48 saat içinde.",
     },
     successTitleSent: "Talebiniz kliniklere doğru yola çıktı 🎉",
     successTitleSending: "Talebiniz kliniklere gönderiliyor…",
@@ -222,7 +222,8 @@ const tr: typeof he = {
     successTitlePending: "Gönderim sürüyor…",
     successBodyPending:
       "Talebinizi aldık ve kliniklere gönderiliyor. Birazdan sayfayı yenilemeyi deneyin.",
-    successWatchInbox: "Gelen kutunuzu (ve bazen spam klasörünüzü) takip edin",
+    successWatchInbox:
+      "Her teklif geldiğinde size e-posta göndereceğiz — spam klasörünüzü de kontrol edin",
     successToDashboard: "Hesabıma git",
   },
 
@@ -544,7 +545,7 @@ const tr: typeof he = {
     smsNotVerified: "(doğrulanmadı)",
     newQuoteHeading: "Yeni bir teklif aldınız 🎉",
     newQuoteBody:
-      "Bir klinik, DentalCompare talebiniz için teklif gönderdi. Karşılaştırmayı görmek ve seçim yapmak için giriş yapın.",
+      "Bir klinik, DentalCompare'deki talebiniz için teklif gönderdi. Karşılaştırmayı görmek ve seçim yapmak için giriş yapın.",
     newQuoteCta: "Karşılaştırmayı görüntüle",
     quoteApprovedHeading: "Hasta sizi seçti 🎉",
     quoteApprovedBody:
