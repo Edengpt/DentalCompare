@@ -40,8 +40,8 @@ export function Header() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-4">
-          <LanguageSwitcher inverted />
+        <div className="flex items-center gap-2 sm:gap-4">
+          <LanguageSwitcher />
 
           <Show when="signed-out">
             <Link

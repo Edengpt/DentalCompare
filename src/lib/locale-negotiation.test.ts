@@ -15,11 +15,11 @@ describe("negotiateLocale", () => {
   });
 
   it("takes the first supported language, ignoring unsupported ones ahead of it", () => {
-    expect(negotiateLocale(undefined, "de-DE,de;q=0.9,en;q=0.8")).toBe("en");
+    expect(negotiateLocale(undefined, "pt-BR,pt;q=0.9,de;q=0.8")).toBe("de");
   });
 
   it("falls back to Hebrew when nothing matches", () => {
-    expect(negotiateLocale(undefined, "de-DE,de;q=0.9")).toBe("he");
+    expect(negotiateLocale(undefined, "pt-BR,pt;q=0.9")).toBe("he");
     expect(negotiateLocale(undefined, null)).toBe("he");
     expect(negotiateLocale(undefined, "")).toBe("he");
   });
@@ -32,8 +32,8 @@ describe("negotiateLocale", () => {
 
 describe("isUnsupportedLocaleSegment", () => {
   it("flags a language-shaped segment we don't serve", () => {
-    expect(isUnsupportedLocaleSegment("de")).toBe(true);
-    expect(isUnsupportedLocaleSegment("fr")).toBe(true);
+    expect(isUnsupportedLocaleSegment("pt")).toBe(true);
+    expect(isUnsupportedLocaleSegment("it")).toBe(true);
   });
 
   it("does not flag supported locales", () => {

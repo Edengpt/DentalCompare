@@ -10,23 +10,28 @@
  * `auth.protect()` is never called, and the admin area is served to anyone who
  * asks. Nothing throws, the build succeeds, and the page renders normally, so
  * the only thing standing between that and production is the test beside this
- * file. Add a locale, add it here.
+ * file. The prefix is built from the locale list, so a new locale is covered
+ * the moment it is added to src/i18n/config.ts.
  */
+import { locales } from "./i18n/config";
+
+const L = `(${locales.join("|")})?`;
+
 export const PROTECTED_PATTERNS = [
-  "/(he|en)?/dashboard(.*)",
-  "/(he|en)?/request(.*)",
-  "/(he|en)?/verify-phone(.*)",
-  "/(he|en)?/admin(.*)",
+  `/${L}/dashboard(.*)`,
+  `/${L}/request(.*)`,
+  `/${L}/verify-phone(.*)`,
+  `/${L}/admin(.*)`,
   // The clinic's own area. Deliberately narrow: /clinics/join, /clinics/billing
   // and /clinics/documents are reached by clinics that have no account at all,
   // and protecting /clinics(.*) would lock out the very clinic being asked to
   // set up payment or replace a document.
-  "/(he|en)?/clinics/dashboard(.*)",
+  `/${L}/clinics/dashboard(.*)`,
   // A request as the clinic sees it: the patient's contact details and
   // medical files. The page checks the clinic too; this keeps anonymous
   // visitors from reaching it at all.
-  "/(he|en)?/clinics/requests(.*)",
+  `/${L}/clinics/requests(.*)`,
   // API routes are never locale-prefixed — they live outside src/app/[locale]/.
   "/api/requests(.*)",
   "/api/admin(.*)",
-] as const;
+];

@@ -11,6 +11,11 @@ import type { Locale } from "./config";
 const dictionaries = {
   he: () => import("./dictionaries/he").then((m) => m.default),
   en: () => import("./dictionaries/en").then((m) => m.default),
+  ru: () => import("./dictionaries/ru").then((m) => m.default),
+  fr: () => import("./dictionaries/fr").then((m) => m.default),
+  de: () => import("./dictionaries/de").then((m) => m.default),
+  zh: () => import("./dictionaries/zh").then((m) => m.default),
+  tr: () => import("./dictionaries/tr").then((m) => m.default),
 };
 
 export function getDictionary(locale: Locale) {

@@ -12,7 +12,7 @@ import { quoteRequestEmailHtml } from "@/server/emails/templates";
 import { recordVerifiedRequest } from "@/server/request-usage";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { getRequestLocale } from "@/i18n/request-locale";
-import { asLocale } from "@/i18n/config";
+import { asLocale, intlLocale } from "@/i18n/config";
 
 /**
  * Downloads a private blob and returns it as a Resend attachment (Buffer content)
@@ -89,7 +89,7 @@ export async function fulfillRequest(requestId: string): Promise<FulfillResult> 
   }
 
   const formatDate = (locale: string) =>
-    new Intl.DateTimeFormat(locale === "he" ? "he-IL" : "en-GB", {
+    new Intl.DateTimeFormat(intlLocale[asLocale(locale)], {
       day: "numeric",
       month: "long",
       year: "numeric",
