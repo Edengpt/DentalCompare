@@ -23,7 +23,7 @@ import { ExplainTreatment } from "@/components/request/explain-treatment";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { getDictionary } from "@/i18n/get-dictionary";
-import { isLocale, defaultLocale } from "@/i18n/config";
+import { isLocale, defaultLocale, intlLocale } from "@/i18n/config";
 import { format } from "@/i18n/format";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
@@ -169,7 +169,7 @@ export default async function RequestDetailPage({
   const cheapestId = cheapestDentistId(quoteRows, comparable);
   const { responded, total } = responseCounts(quoteRows);
 
-  const date = new Intl.DateTimeFormat("he-IL", {
+  const date = new Intl.DateTimeFormat(intlLocale[isLocale(locale) ? locale : defaultLocale], {
     day: "numeric",
     month: "long",
     year: "numeric",

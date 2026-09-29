@@ -8,7 +8,7 @@
  * and a line in PROTECTED_PATTERNS (see src/proxy-routes.ts), which is the
  * easy one to forget.
  */
-export const locales = ["he", "en"] as const;
+export const locales = ["en", "he", "ru", "fr", "de", "zh", "tr"] as const;
 
 export type Locale = (typeof locales)[number];
 
@@ -18,10 +18,41 @@ export type Locale = (typeof locales)[number];
  */
 export const defaultLocale: Locale = "he";
 
-export const dir: Record<Locale, "rtl" | "ltr"> = { he: "rtl", en: "ltr" };
+export const dir: Record<Locale, "rtl" | "ltr"> = {
+  en: "ltr",
+  he: "rtl",
+  ru: "ltr",
+  fr: "ltr",
+  de: "ltr",
+  zh: "ltr",
+  tr: "ltr",
+};
 
 /** Locale label in its own language — never translated, per convention. */
-export const localeNames: Record<Locale, string> = { he: "עברית", en: "English" };
+export const localeNames: Record<Locale, string> = {
+  en: "English",
+  he: "עברית",
+  ru: "Русский",
+  fr: "Français",
+  de: "Deutsch",
+  zh: "中文",
+  tr: "Türkçe",
+};
+
+/**
+ * The full tag for Intl formatting (dates, numbers) and hreflang. The site is
+ * localised by language; the region only picks conventions such as day-month
+ * order, and zh means Simplified Chinese.
+ */
+export const intlLocale: Record<Locale, string> = {
+  en: "en-GB",
+  he: "he-IL",
+  ru: "ru-RU",
+  fr: "fr-FR",
+  de: "de-DE",
+  zh: "zh-CN",
+  tr: "tr-TR",
+};
 
 export function isLocale(value: string): value is Locale {
   return (locales as readonly string[]).includes(value);

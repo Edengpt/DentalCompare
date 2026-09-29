@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { createRouteMatcher } from "@clerk/nextjs/server";
 import { PROTECTED_PATTERNS } from "./proxy-routes";
+import { locales } from "./i18n/config";
 
 /**
  * Guards against the silent-public failure mode.
@@ -19,7 +20,10 @@ const matches = createRouteMatcher([...PROTECTED_PATTERNS]);
 
 // createRouteMatcher reads request.nextUrl; this is the smallest shape it needs.
 const req = (path: string) =>
-  ({ nextUrl: new URL(`https://dentalcompare.co.il${path}`), url: `https://dentalcompare.co.il${path}` }) as never;
+  ({
+    nextUrl: new URL(`https://dentalcompare.co.il${path}`),
+    url: `https://dentalcompare.co.il${path}`,
+  }) as never;
 
 const PROTECTED = [
   "/dashboard",
@@ -51,16 +55,14 @@ describe("protected route patterns", () => {
   for (const path of PROTECTED) {
     it(`protects ${path} unprefixed and in every locale`, () => {
       expect(matches(req(path))).toBe(true);
-      expect(matches(req(`/he${path}`))).toBe(true);
-      expect(matches(req(`/en${path}`))).toBe(true);
+      for (const locale of locales) expect(matches(req(`/${locale}${path}`))).toBe(true);
     });
   }
 
   for (const path of PUBLIC) {
     it(`leaves ${path} public in every locale`, () => {
       expect(matches(req(path))).toBe(false);
-      expect(matches(req(`/he${path}`))).toBe(false);
-      expect(matches(req(`/en${path}`))).toBe(false);
+      for (const locale of locales) expect(matches(req(`/${locale}${path}`))).toBe(false);
     });
   }
 

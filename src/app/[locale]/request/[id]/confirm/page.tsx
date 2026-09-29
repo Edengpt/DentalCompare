@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
 import { getDictionary } from "@/i18n/get-dictionary";
-import { isLocale, defaultLocale } from "@/i18n/config";
+import { isLocale, defaultLocale, intlLocale } from "@/i18n/config";
 import { plural } from "@/i18n/format";
 import { SubmitButton } from "@/components/request/submit-button";
 
@@ -60,7 +60,7 @@ export default async function ConfirmRequestPage({ params }: { params: Promise<{
   const dentists = request.requestDentists.map((rd) => rd.dentist);
   if (dentists.length === 0) redirect(`/request/${id}/dentists`);
 
-  const date = new Intl.DateTimeFormat("he-IL", {
+  const date = new Intl.DateTimeFormat(intlLocale[isLocale(locale) ? locale : defaultLocale], {
     day: "numeric",
     month: "long",
     year: "numeric",

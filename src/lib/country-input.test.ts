@@ -70,7 +70,7 @@ describe("parseCountryInput", () => {
   describe("defaultLocale", () => {
     // A locale the site cannot serve would render the country's clinics in a
     // language with no dictionary behind it.
-    it.each(["", "de", "EN"])("rejects %o", (defaultLocale) => {
+    it.each(["", "pt", "EN"])("rejects %o", (defaultLocale) => {
       expect(parse({ defaultLocale })).toEqual({ ok: false, field: "defaultLocale" });
     });
 
