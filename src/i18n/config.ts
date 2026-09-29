@@ -13,10 +13,14 @@ export const locales = ["en", "he", "ru", "fr", "de", "zh", "tr"] as const;
 export type Locale = (typeof locales)[number];
 
 /**
- * Hebrew stays the default. Israel is the only live market, and defaulting the
- * whole site to English would be a regression for every current user.
+ * The fallback when neither the visitor's cookie nor their browser names a
+ * language we serve. English, because patients and clinics come from
+ * everywhere: a Spanish or Italian browser is far likelier to read English
+ * than Hebrew. A Hebrew browser still lands in Hebrew (see
+ * src/lib/locale-negotiation.ts), and existing accounts keep the language
+ * stored on them.
  */
-export const defaultLocale: Locale = "he";
+export const defaultLocale: Locale = "en";
 
 export const dir: Record<Locale, "rtl" | "ltr"> = {
   en: "ltr",

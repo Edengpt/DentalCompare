@@ -9,7 +9,7 @@
  *
  * Mixes popular treatment destinations (clinic supply) with popular
  * patient-origin markets (demand) — dental tourism needs both sides. Every
- * entry defaults to English (the only non-Hebrew locale this site serves),
+ * entry defaults to English (the site-wide fallback language),
  * no insurer list (payer names vary too much to guess), and a single generic
  * "dental_licence" required document — an admin can refine any of this later
  * at /admin/countries, same as a country added by hand.

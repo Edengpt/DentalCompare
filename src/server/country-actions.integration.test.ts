@@ -88,8 +88,8 @@ describe.skipIf(!hasDb)("country admin actions", () => {
     const result = await createCountry(draft("QX", { currency: "EURO" }));
 
     expect(result.ok).toBe(false);
-    // Hebrew is the fallback locale outside a request.
-    if (!result.ok) expect(result.error).toContain("מטבע");
+    // English is the fallback locale outside a request.
+    if (!result.ok) expect(result.error).toContain("currency");
     expect(await db.country.findUnique({ where: { code: "QX" } })).toBeNull();
   });
 
