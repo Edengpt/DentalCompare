@@ -41,7 +41,7 @@ const fr: typeof he = {
     searchWhereAnywhere: "Partout",
     searchSubmit: "Obtenir mes devis",
     searchHint:
-      "Téléversez votre plan de traitement et votre radio, choisissez jusqu'à 3 cliniques, et les devis arrivent par e-mail. Objectif : sous 48 heures.",
+      "Téléversez votre plan de traitement et votre radio, puis choisissez jusqu'à 3 cliniques. Les devis vous attendent dans votre espace, et nous vous prévenons par e-mail à l'arrivée de chacun. Objectif : sous 48 heures.",
     popularTreatments: "Traitements populaires",
   },
 
@@ -112,9 +112,9 @@ const fr: typeof he = {
     q2: "Mes données médicales sont-elles protégées ?",
     a2: "Oui. Chaque fichier est stocké dans un espace cloud chiffré à accès privé, transmis via HTTPS et envoyé uniquement aux cliniques que vous avez choisies. Nous ne le partageons avec aucun tiers, ne l'utilisons pas à des fins publicitaires et ne le vendons pas. Vous pouvez demander sa suppression complète à tout moment.",
     q3: "Sous quel délai reçoit-on les devis ?",
-    a3: "Votre demande parvient au même moment à toutes les cliniques choisies, et notre objectif est que les devis vous reviennent sous 48 heures. Les cliniques répondent directement à votre adresse e-mail : inutile de revenir sur le site.",
+    a3: "Votre demande parvient au même moment à toutes les cliniques choisies, et notre objectif est que les devis arrivent sous 48 heures. Chaque devis est enregistré dans votre espace, et nous vous prévenons par e-mail dès son arrivée.",
     q4: "Comment les cliniques me répondent-elles ?",
-    a4: "Chaque clinique reçoit un e-mail dédié avec vos documents et un lien privé pour envoyer son devis. Vous recevez des réponses personnelles par e-mail, exactement comme si vous les aviez contactées directement, sauf que vous avez sollicité 3 cliniques d'un coup.",
+    a4: "Chaque clinique reçoit un e-mail dédié avec vos documents et un lien personnel pour soumettre un devis écrit. Les devis s'affichent côte à côte dans votre espace — comme si vous aviez contacté chaque clinique vous-même, sauf que vous en contactez 3 à la fois et les comparez au même endroit.",
     q5: "Et si aucun devis ne me convient ?",
     a5: "Vous n'êtes tenu d'en accepter aucun. La plateforme est un outil de comparaison : c'est vous qui décidez si, quand et avec qui commencer un traitement. Même si vous retournez chez votre dentiste habituel, vous aurez en main des devis écrits et un vrai pouvoir de négociation.",
     q6: "Pour quels traitements est-ce le plus utile ?",
@@ -158,7 +158,7 @@ const fr: typeof he = {
     newRequest: "Nouvelle demande de devis",
     emptyTitle: "Aucune demande active pour l'instant",
     emptyBody:
-      "Lancez votre première demande : téléversez votre plan de traitement et votre radio, choisissez jusqu'à 3 cliniques, et les devis arriveront dans votre boîte de réception.",
+      "Lancez votre première demande : téléversez votre plan de traitement et votre radio, puis choisissez jusqu'à 3 cliniques. Les devis apparaîtront ici, et nous vous préviendrons par e-mail à l'arrivée de chacun.",
     emptyCta: "Lancer une demande",
     myRequests: "Mes demandes",
     requestLabel: "Demande",
@@ -211,9 +211,9 @@ const fr: typeof he = {
       "Filtrez par pays, ville, spécialité et assureur. Votre demande part uniquement vers les cliniques cochées, toutes au même moment.",
     successMetaTitle: "Demande envoyée",
     successBodySent: {
-      one: "Nous avons envoyé votre plan de traitement et votre radio à une clinique. Son devis arrivera directement dans votre boîte de réception — généralement sous 48 heures.",
+      one: "Nous avons envoyé votre plan de traitement et votre radio à une clinique. Son devis apparaîtra dans votre espace, et nous vous préviendrons par e-mail à son arrivée. Objectif : sous 48 heures.",
       other:
-        "Nous avons envoyé votre plan de traitement et votre radio à {count} cliniques. Leurs devis arriveront directement dans votre boîte de réception — généralement sous 48 heures.",
+        "Nous avons envoyé votre plan de traitement et votre radio à {count} cliniques. Leurs devis apparaîtront dans votre espace, et nous vous préviendrons par e-mail à l'arrivée de chacun. Objectif : sous 48 heures.",
     },
     successTitleSent: "Votre demande est en route vers les cliniques 🎉",
     successTitleSending: "Envoi de votre demande aux cliniques…",
@@ -223,7 +223,7 @@ const fr: typeof he = {
     successBodyPending:
       "Nous avons bien reçu votre demande et elle est en route vers les cliniques. Actualisez la page dans un instant.",
     successWatchInbox:
-      "Surveillez votre boîte de réception (et parfois vos courriers indésirables)",
+      "Nous vous écrirons à l'arrivée de chaque devis — pensez à vérifier vos spams",
     successToDashboard: "Aller à mon compte",
   },
 
@@ -549,7 +549,7 @@ const fr: typeof he = {
     smsNotVerified: "(non vérifié)",
     newQuoteHeading: "Vous avez reçu un nouveau devis 🎉",
     newQuoteBody:
-      "Une clinique a envoyé un devis pour votre demande DentalCompare. Connectez-vous pour voir la comparaison et faire votre choix.",
+      "Une clinique a soumis un devis pour votre demande sur DentalCompare. Connectez-vous pour voir la comparaison et faire votre choix.",
     newQuoteCta: "Voir la comparaison",
     quoteApprovedHeading: "Le patient vous a choisi 🎉",
     quoteApprovedBody:

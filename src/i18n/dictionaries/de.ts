@@ -40,7 +40,7 @@ const de: typeof he = {
     searchWhereAnywhere: "Überall",
     searchSubmit: "Angebote anfordern",
     searchHint:
-      "Laden Sie Ihren Heil- und Kostenplan und Ihr Röntgenbild hoch, wählen Sie bis zu 3 Kliniken – die Angebote kommen per E-Mail. Ziel: innerhalb von 48 Stunden.",
+      "Laden Sie Ihren Behandlungsplan und Ihr Röntgenbild hoch und wählen Sie bis zu 3 Kliniken. Die Angebote finden Sie in Ihrem Konto, und wir benachrichtigen Sie per E-Mail, sobald eines eintrifft. Ziel: innerhalb von 48 Stunden.",
     popularTreatments: "Beliebte Behandlungen",
   },
 
@@ -111,9 +111,9 @@ const de: typeof he = {
     q2: "Sind meine medizinischen Daten sicher?",
     a2: "Ja. Jede Datei wird verschlüsselt in einem privaten Cloud-Speicher abgelegt, über HTTPS übertragen und ausschließlich an die Kliniken gesendet, die Sie persönlich ausgewählt haben. Wir geben sie nicht an Dritte weiter, nutzen sie nicht für Werbung und verkaufen sie nicht. Sie können jederzeit die vollständige Löschung verlangen.",
     q3: "Wie lange dauert es, bis Angebote eintreffen?",
-    a3: "Ihre Anfrage erreicht alle gewählten Kliniken gleichzeitig. Unser Ziel ist, dass die Angebote innerhalb von 48 Stunden zurückkommen. Die Kliniken antworten direkt an Ihre E-Mail-Adresse – Sie müssen dafür nicht auf die Website zurückkehren.",
+    a3: "Ihre Anfrage erreicht alle gewählten Kliniken gleichzeitig, und unser Ziel ist, dass die Angebote innerhalb von 48 Stunden eintreffen. Jedes Angebot wird in Ihrem Konto gespeichert, und wir benachrichtigen Sie per E-Mail, sobald es da ist.",
     q4: "Wie melden sich die Kliniken bei mir?",
-    a4: "Jede Klinik erhält eine eigene E-Mail mit Ihren Unterlagen und einem privaten Link, über den sie ein Angebot abgibt. Sie bekommen persönliche Antworten per E-Mail – genau so, als hätten Sie die Klinik direkt angeschrieben, nur eben gleich 3 Kliniken auf einmal.",
+    a4: "Jede Klinik erhält eine eigene E-Mail mit Ihren Unterlagen und einem persönlichen Link, um ein schriftliches Angebot abzugeben. Die Angebote erscheinen nebeneinander in Ihrem Konto – als hätten Sie jede Klinik selbst angefragt, nur dass Sie 3 gleichzeitig anfragen und an einem Ort vergleichen.",
     q5: "Was, wenn mir keines der Angebote zusagt?",
     a5: "Sie müssen keines annehmen. Die Plattform ist ein Vergleichswerkzeug – Sie entscheiden, ob, wann und bei wem Sie die Behandlung beginnen. Selbst wenn Sie zu Ihrem bisherigen Zahnarzt zurückgehen, haben Sie schriftliche Angebote in der Hand und damit echte Verhandlungsmacht.",
     q6: "Für welche Behandlungen lohnt sich das besonders?",
@@ -157,7 +157,7 @@ const de: typeof he = {
     newRequest: "Neue Angebotsanfrage",
     emptyTitle: "Noch keine aktiven Anfragen",
     emptyBody:
-      "Starten Sie Ihre erste Anfrage: Laden Sie Ihren Heil- und Kostenplan und Ihr Röntgenbild hoch, wählen Sie bis zu 3 Kliniken, und die Angebote landen in Ihrem Postfach.",
+      "Starten Sie Ihre erste Anfrage: Laden Sie Ihren Behandlungsplan und Ihr Röntgenbild hoch und wählen Sie bis zu 3 Kliniken. Die Angebote erscheinen hier, und wir benachrichtigen Sie per E-Mail, sobald eines eintrifft.",
     emptyCta: "Anfrage starten",
     myRequests: "Meine Anfragen",
     requestLabel: "Anfrage",
@@ -210,9 +210,9 @@ const de: typeof he = {
       "Filtern Sie nach Land, Stadt, Fachgebiet und Versicherung. Ihre Anfrage geht gleichzeitig nur an die Kliniken, die Sie ankreuzen.",
     successMetaTitle: "Anfrage gesendet",
     successBodySent: {
-      one: "Wir haben Ihren Behandlungsplan und Ihr Röntgenbild an eine Klinik gesendet. Das Angebot kommt direkt in Ihr Postfach – meist innerhalb von 48 Stunden.",
+      one: "Wir haben Ihren Behandlungsplan und Ihr Röntgenbild an eine Klinik gesendet. Das Angebot erscheint in Ihrem Konto, und wir benachrichtigen Sie per E-Mail, sobald es da ist. Ziel: innerhalb von 48 Stunden.",
       other:
-        "Wir haben Ihren Behandlungsplan und Ihr Röntgenbild an {count} Kliniken gesendet. Die Angebote kommen direkt in Ihr Postfach – meist innerhalb von 48 Stunden.",
+        "Wir haben Ihren Behandlungsplan und Ihr Röntgenbild an {count} Kliniken gesendet. Die Angebote erscheinen in Ihrem Konto, und wir benachrichtigen Sie per E-Mail, sobald eines eintrifft. Ziel: innerhalb von 48 Stunden.",
     },
     successTitleSent: "Ihre Anfrage ist auf dem Weg zu den Kliniken 🎉",
     successTitleSending: "Ihre Anfrage wird an die Kliniken gesendet…",
@@ -221,7 +221,8 @@ const de: typeof he = {
     successTitlePending: "Wird gesendet…",
     successBodyPending:
       "Wir haben Ihre Anfrage erhalten, sie ist unterwegs zu den Kliniken. Laden Sie die Seite gleich neu.",
-    successWatchInbox: "Behalten Sie Ihr Postfach im Blick (und manchmal auch den Spam-Ordner)",
+    successWatchInbox:
+      "Wir schreiben Ihnen, sobald ein Angebot eintrifft – sehen Sie auch im Spam-Ordner nach",
     successToDashboard: "Zu meinem Konto",
   },
 
@@ -552,7 +553,7 @@ const de: typeof he = {
     smsNotVerified: "(nicht bestätigt)",
     newQuoteHeading: "Sie haben ein neues Angebot erhalten 🎉",
     newQuoteBody:
-      "Eine Klinik hat ein Angebot für Ihre DentalCompare-Anfrage abgegeben. Melden Sie sich an, um den Vergleich zu sehen und zu entscheiden.",
+      "Eine Klinik hat ein Angebot für Ihre Anfrage bei DentalCompare abgegeben. Melden Sie sich an, um die Angebote zu vergleichen und zu wählen.",
     newQuoteCta: "Vergleich ansehen",
     quoteApprovedHeading: "Der Patient hat sich für Sie entschieden 🎉",
     quoteApprovedBody:
