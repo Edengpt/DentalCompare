@@ -20,12 +20,12 @@ import type he from "./he";
  */
 const en: typeof he = {
   meta: {
-    title: "DentalCompare – Compare dental quotes. Save thousands.",
+    title: "DentalCompare – Written dental quotes, side by side",
     description:
-      "Compare written quotes from leading dental clinics with a single request, free. Upload your treatment plan once — no phone calls, no pressure.",
-    ogTitle: "DentalCompare – Compare dental quotes. Save thousands.",
+      "Send your treatment plan and x-ray once and get up to 3 written quotes from licence-checked clinics around the world. Compare them free, with no phone calls.",
+    ogTitle: "DentalCompare – Written dental quotes, side by side",
     ogDescription:
-      "Get quotes from 3 dental clinics with one request, free — no phone calls, no pressure.",
+      "Up to 3 written quotes on the same treatment plan, from verified clinics. Free, with no phone calls.",
   },
 
   common: {
@@ -44,8 +44,8 @@ const en: typeof he = {
 
   hero: {
     headlineTop: "Not sure the price you were quoted is fair?",
-    headlineMain: "Get 3 written quotes.",
-    headlineAccent: "Save thousands.",
+    headlineMain: "3 written quotes.",
+    headlineAccent: "On the same treatment plan.",
     reassurance: "Completely free ✦ No credit card ✦ No commitment",
     searchTreatmentLabel: "Which treatment?",
     searchTreatmentAny: "Not sure yet / any treatment",
@@ -58,24 +58,24 @@ const en: typeof he = {
   },
 
   destinations: {
-    title: "Popular destinations",
-    subtitle: "Clinics whose licence a person has checked, around the world.",
+    title: "Verified clinics by country",
+    subtitle: "Every clinic here had its licence checked by a person on our team.",
     verified: { one: "1 verified clinic", other: "{count} verified clinics" },
     joiningSoon: "Clinics joining soon",
   },
 
   howItWorks: {
     title: "How it works",
-    subtitle: "Three steps, no endless forms and no pushy calls.",
+    subtitle: "From one treatment plan to three quotes you can compare, with no sales calls.",
     step1Title: "Upload your plan and x-ray",
     step1Description:
       "The treatment plan a dentist has already given you, plus your x-ray. PDF or photo, up to 20MB each.",
     step1Detail: "1–2 minutes",
-    step2Title: "Pick up to 3 clinics",
+    step2Title: "Pick up to 3 verified clinics",
     step2Description:
       "Filter by country, city, speciality and insurer, and choose exactly who you want. Your request goes only to the clinics you ticked.",
     step2Detail: "Smart filters",
-    step3Title: "Quotes arrive by email",
+    step3Title: "Get written quotes and compare",
     step3Description:
       "Each clinic replies with a written quote. Compare them in your own time and choose, with no obligation.",
     step3Detail: "Target: within 48 hours",
@@ -84,7 +84,7 @@ const en: typeof he = {
       "Every clinic you see here uploaded its licence to practise, and a person on our team looked at it before the clinic appeared. A clinic whose licence was not checked never reaches you.",
   },
   exampleComparison: {
-    title: "Compare quotes side by side",
+    title: "Same plan, three quotes, side by side",
     subtitle: "This is what a comparison looks like once the quotes arrive. The figures here are examples only.",
     plan: "One implant with crown",
     rowPrice: "Price",
@@ -114,7 +114,7 @@ const en: typeof he = {
 
   faq: {
     eyebrow: "FAQ",
-    title: "Got a question? Chances are someone else asked it too.",
+    title: "What to know before you send a request",
     contactPrefix: "Still have a question?",
     contactLink: "Email us",
     contactSuffix: "— we reply within 24 hours.",
@@ -133,8 +133,8 @@ const en: typeof he = {
   },
 
   finalCta: {
-    title: "Healthy teeth shouldn't cost a fortune.",
-    subtitle: "The first price you're given is almost never the lowest one available.",
+    title: "The first price isn't the only price.",
+    subtitle: "Send your treatment plan and get up to 3 written quotes to compare, free.",
     cta: "Get my quotes now",
   },
 
@@ -168,7 +168,7 @@ const en: typeof he = {
     newRequest: "New quote request",
     emptyTitle: "No active requests yet",
     emptyBody:
-      "Start your first request — pick up to 3 clinics, upload your treatment plan and x-ray, and the quotes will arrive in your inbox.",
+      "Start your first request: upload your treatment plan and x-ray, pick up to 3 clinics, and the quotes will arrive in your inbox.",
     emptyCta: "Start a request",
     myRequests: "My requests",
     requestLabel: "Request",
@@ -196,11 +196,11 @@ const en: typeof he = {
   },
 
   requestFlow: {
-    uploadMetaTitle: "Upload your documents",
+    uploadMetaTitle: "Your treatment plan and x-ray",
     uploadStep: "Step 1 of 4",
-    uploadTitle: "Upload your medical documents",
+    uploadTitle: "Your treatment plan and x-ray",
     uploadSubtitle:
-      "Just two files are needed for clinics to quote accurately — the treatment plan you already have, and a recent x-ray.",
+      "These are the files the clinics price from. Every clinic gets exactly the same documents, so the quotes can be compared.",
     travelMetaTitle: "Where you are, and how far",
     travelStep: "Step 2 of 4",
     travelTitle: "Where do you live, and how far would you travel?",
@@ -215,16 +215,16 @@ const en: typeof he = {
     travelContinue: "Continue to choosing clinics",
     dentistsMetaTitle: "Choose clinics",
     dentistsStep: "Step 3 of 4",
-    dentistsTitle: "Choose the clinics that will compete for your treatment.",
+    dentistsTitle: "Choose up to 3 clinics to price the same plan.",
     dentistsSubtitle:
-      "Filter by location, speciality and insurer. Tick up to 3 clinics — your request goes to all of them at once.",
+      "Filter by country, city, speciality and insurer. Your request goes only to the clinics you tick, all at the same moment.",
     successMetaTitle: "Request sent",
     successBodySent: {
       one: "We've sent your treatment plan and x-ray to one clinic. Their quote will arrive straight in your inbox — usually within 48 hours.",
       other:
         "We've sent your treatment plan and x-ray to {count} clinics. Their quotes will arrive straight in your inbox — usually within 48 hours.",
     },
-    successTitleSent: "Your request is on its way! 🎉",
+    successTitleSent: "Your request is on its way to the clinics 🎉",
     successTitleSending: "Sending your request to the clinics…",
     successBodySending: "This usually takes a few seconds. Stay here — the page updates by itself.",
     successTitlePending: "Sending in progress…",
@@ -799,11 +799,11 @@ const en: typeof he = {
     ],
     joinMetaTitle: "For clinics",
     joinMetaDescription:
-      "Dentists and clinics — join DentalCompare free and receive enquiries from patients looking for quotes.",
-    joinEyebrow: "For clinics and dentists",
-    joinTitle: "Join the directory and reach new patients.",
+      "Dental clinics: receive quote requests from patients who already have a treatment plan and x-ray. Free trial period.",
+    joinEyebrow: "For dental clinics",
+    joinTitle: "Receive requests from patients who already have a treatment plan.",
     joinSubtitle:
-      "Registration is free — you only pay for results. Patients looking for a quote will see your clinic and contact you directly. Fill in your details and accept the terms.",
+      "Patients around the world send a treatment plan and x-ray and ask for a written quote. A verified clinic appears in the directory and receives those requests directly. A free trial period, then a monthly or yearly subscription.",
     planMonthlyTitle: "Monthly plan",
     planMonthlyPer: "per month",
     planMonthlyNote: "No commitment — cancel any time",
