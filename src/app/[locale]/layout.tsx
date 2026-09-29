@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import { Rubik } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
@@ -39,6 +39,9 @@ const clerkLocalizations = { he: heIL, en: enUS, ru: ruRU, fr: frFR, de: deDE, z
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
+
+/** Tints the mobile browser bar to match the navy header. */
+export const viewport: Viewport = { themeColor: "#0e2f55" };
 
 export async function generateMetadata({
   params,
