@@ -290,6 +290,9 @@ model RequestDentist {
 
   quoteToken String? @unique // per-recipient magic-link token for the quote form
   quote      Quote?
+  // The one "a patient is still waiting for your quote" nudge to the clinic,
+  // sent a day after the request if no quote came (see clinic-reminders.ts).
+  clinicReminderSentAt DateTime?
 
   // Invalid-lead report (PRD 4.5). There are no credits to refund under a
   // subscription, so compensation is subscription days; this pair exists to

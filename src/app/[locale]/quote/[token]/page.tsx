@@ -69,8 +69,8 @@ export default async function QuotePage({
   return (
     <>
       <Header />
-      <main className="mx-auto flex w-full max-w-xl flex-1 flex-col px-6 py-16">
-        <h1 className="font-display text-foreground text-3xl font-bold">
+      <main className="mx-auto flex w-full max-w-xl flex-1 flex-col px-4 py-8 sm:px-6 sm:py-16">
+        <h1 className="font-display text-foreground text-2xl font-bold sm:text-3xl">
           {format(t.quoteForm.pageTitle, { name: firstName })}
         </h1>
         <p className="text-muted-foreground mt-2 text-sm">{t.quoteForm.pageSubtitle}</p>

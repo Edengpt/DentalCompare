@@ -9,7 +9,7 @@ const de: typeof he = {
   meta: {
     title: "DentalCompare – Schriftliche Zahnarzt-Angebote im direkten Vergleich",
     description:
-      "Senden Sie Ihren Heil- und Kostenplan und Ihr Röntgenbild einmal und erhalten Sie bis zu 3 schriftliche Angebote von geprüften Kliniken weltweit. Kostenlos vergleichen, ganz ohne Telefonate.",
+      "Senden Sie Heil- und Kostenplan und Röntgenbild nur einmal – und erhalten Sie bis zu 3 schriftliche Angebote von geprüften Kliniken weltweit. Kostenlos vergleichen, ganz ohne Telefonate.",
     ogTitle: "DentalCompare – Schriftliche Zahnarzt-Angebote im direkten Vergleich",
     ogDescription:
       "Bis zu 3 schriftliche Angebote für denselben Behandlungsplan, von geprüften Kliniken. Kostenlos und ohne Telefonate.",
@@ -21,7 +21,7 @@ const de: typeof he = {
   },
 
   nav: {
-    ariaLabel: "Hauptmenü",
+    ariaLabel: "Hauptnavigation",
     howItWorks: "So funktioniert’s",
     faq: "FAQ",
     clinicsJoin: "Für Kliniken",
@@ -40,7 +40,7 @@ const de: typeof he = {
     searchWhereAnywhere: "Überall",
     searchSubmit: "Angebote anfordern",
     searchHint:
-      "Laden Sie Ihren Behandlungsplan und Ihr Röntgenbild hoch und wählen Sie bis zu 3 Kliniken. Die Angebote finden Sie in Ihrem Konto, und wir benachrichtigen Sie per E-Mail, sobald eines eintrifft. Ziel: innerhalb von 48 Stunden.",
+      "Laden Sie Ihren Behandlungsplan und Ihr Röntgenbild hoch und wählen Sie bis zu 3 Kliniken. Die Angebote landen in Ihrem Konto, und wir informieren Sie per E-Mail über jedes neue Angebot. Unser Ziel: innerhalb von 48 Stunden.",
     popularTreatments: "Beliebte Behandlungen",
   },
 
@@ -58,31 +58,31 @@ const de: typeof he = {
       "Von einem Behandlungsplan zu drei vergleichbaren Angeboten – ohne Verkaufsgespräche.",
     step1Title: "Plan und Röntgenbild hochladen",
     step1Description:
-      "Den Heil- und Kostenplan, den Ihnen ein Zahnarzt bereits erstellt hat, plus Ihr Röntgenbild. PDF oder Foto, jeweils bis 20MB.",
+      "Den Heil- und Kostenplan, den Ihnen ein Zahnarzt bereits erstellt hat, sowie Ihr Röntgenbild. PDF oder Foto, jeweils bis 20 MB.",
     step1Detail: "1–2 Minuten",
     step2Title: "Bis zu 3 geprüfte Kliniken wählen",
     step2Description:
-      "Filtern Sie nach Land, Stadt, Fachgebiet und Versicherung und wählen Sie genau, wen Sie möchten. Ihre Anfrage geht nur an die Kliniken, die Sie angekreuzt haben.",
+      "Filtern Sie nach Land, Stadt, Fachgebiet und Versicherung und entscheiden Sie selbst, wer Ihre Anfrage erhält. Sie geht nur an die Kliniken, die Sie ausgewählt haben.",
     step2Detail: "Intelligente Filter",
     step3Title: "Schriftliche Angebote erhalten und vergleichen",
     step3Description:
       "Jede Klinik antwortet mit einem schriftlichen Angebot. Vergleichen Sie in Ruhe und entscheiden Sie – ganz ohne Verpflichtung.",
     step3Detail: "Ziel: innerhalb von 48 Stunden",
-    verifiedTitle: "Jede Klinik hier wurde geprüft",
+    verifiedTitle: "Jede Klinik hier ist geprüft",
     verifiedPromise:
-      "Jede Klinik, die Sie hier sehen, hat ihre Berufszulassung hochgeladen, und ein Mitglied unseres Teams hat sie geprüft, bevor die Klinik sichtbar wurde. Eine Klinik ohne geprüfte Zulassung erreicht Sie nie.",
+      "Jede Klinik, die Sie hier sehen, hat ihre Berufszulassung hochgeladen, und ein Mitglied unseres Teams hat sie geprüft, bevor die Klinik sichtbar wurde. Eine Klinik ohne geprüfte Zulassung wird Ihnen nie angezeigt.",
   },
   exampleComparison: {
-    title: "Ein Plan, drei Angebote, direkt nebeneinander",
+    title: "Ein Plan, drei Angebote – direkt im Vergleich",
     subtitle:
       "So sieht ein Vergleich aus, sobald die Angebote eintreffen. Die Zahlen hier sind nur Beispiele.",
     plan: "Ein Implantat mit Krone",
     rowPrice: "Preis",
-    rowIncluded: "Enthaltene Leistungen",
+    rowIncluded: "Leistungsumfang",
     rowVisits: "Reisen und Termine",
     rowWarranty: "Garantie",
     newBadge: "Neu",
-    ratingLabel: "Bewertet mit {rating} von 5",
+    ratingLabel: "Bewertung: {rating} von 5",
     clinicA: "Klinik A",
     clinicAPlace: "London, Vereinigtes Königreich",
     clinicAIncluded: "Implantat, Keramikkrone, Röntgen",
@@ -113,7 +113,7 @@ const de: typeof he = {
     q3: "Wie lange dauert es, bis Angebote eintreffen?",
     a3: "Ihre Anfrage erreicht alle gewählten Kliniken gleichzeitig, und unser Ziel ist, dass die Angebote innerhalb von 48 Stunden eintreffen. Jedes Angebot wird in Ihrem Konto gespeichert, und wir benachrichtigen Sie per E-Mail, sobald es da ist.",
     q4: "Wie melden sich die Kliniken bei mir?",
-    a4: "Jede Klinik erhält eine eigene E-Mail mit Ihren Unterlagen und einem persönlichen Link, um ein schriftliches Angebot abzugeben. Die Angebote erscheinen nebeneinander in Ihrem Konto – als hätten Sie jede Klinik selbst angefragt, nur dass Sie 3 gleichzeitig anfragen und an einem Ort vergleichen.",
+    a4: "Jede Klinik erhält eine eigene E-Mail mit Ihren Unterlagen und einem persönlichen Link, um ein schriftliches Angebot abzugeben. Die Angebote erscheinen nebeneinander in Ihrem Konto – als hätten Sie jede Klinik selbst angefragt, nur dass Sie drei auf einmal anfragen und alles an einem Ort vergleichen.",
     q5: "Was, wenn mir keines der Angebote zusagt?",
     a5: "Sie müssen keines annehmen. Die Plattform ist ein Vergleichswerkzeug – Sie entscheiden, ob, wann und bei wem Sie die Behandlung beginnen. Selbst wenn Sie zu Ihrem bisherigen Zahnarzt zurückgehen, haben Sie schriftliche Angebote in der Hand und damit echte Verhandlungsmacht.",
     q6: "Für welche Behandlungen lohnt sich das besonders?",
@@ -512,6 +512,13 @@ const de: typeof he = {
   emails: {
     subjectNewQuote: "Sie haben ein neues Angebot erhalten 🎉",
     subjectQuoteRequest: "Neue Angebotsanfrage – DentalCompare",
+    subjectClinicQuoteReminder: "Erinnerung: Ein Patient wartet auf Ihr Angebot",
+    clinicReminderHeading: "Ein Patient wartet noch auf Ihr Angebot",
+    clinicReminderBody:
+      "Gestern haben wir Ihnen den Behandlungsplan und das Röntgenbild eines Patienten geschickt, der Ihre Klinik ausgewählt hat, und bisher ist kein Angebot von Ihnen eingegangen. Der Patient vergleicht die eintreffenden Angebote – es lohnt sich, dass Ihres dabei ist.",
+    clinicReminderCta: "Angebot abgeben",
+    clinicReminderNote:
+      "Behandlungsplan und Röntgenbild sind der ursprünglichen Anfrage-E-Mail beigefügt. Dies ist die einzige Erinnerung zu dieser Anfrage.",
     subjectPaymentSetup: "Klinik freigegeben – aktivieren Sie Ihr DentalCompare-Abo",
     subjectFreeLive: "Ihre Klinik ist freigegeben und auf DentalCompare sichtbar",
     freeLiveHeading: "Ihre Klinik ist freigegeben – und bereits gelistet",
@@ -766,7 +773,7 @@ const de: typeof he = {
     regLogoAlt: "Logo-Vorschau",
     regDocs: "Zulassung und Dokumente",
     regDocsHint:
-      "Bevor eine Klinik gelistet wird, müssen wir die Zulassung sehen. Ein Handyfoto genügt – PDF, JPG oder PNG, bis {mb}MB.",
+      "Bevor eine Klinik gelistet wird, müssen wir die Zulassung sehen. Ein Handyfoto genügt – PDF, JPG oder PNG, bis {mb} MB.",
     regDocUpload: "Hochladen",
     regDocUploaded: "Hochgeladen",
     regDocRemove: "Dokument entfernen",
@@ -781,7 +788,7 @@ const de: typeof he = {
     replaceHint: "Ein Handyfoto genügt – PDF, JPG oder PNG, bis {mb}MB.",
     regLogoRemove: "Logo entfernen",
     regLogoUpload: "Hochladen",
-    regLogoHint: "Erlaubte Dateien: JPG, PNG oder WEBP ✦ maximale Größe: {mb}MB",
+    regLogoHint: "Erlaubt: JPG, PNG oder WEBP ✦ max. {mb} MB",
     regLogoFailed: "Logo-Upload fehlgeschlagen",
     regLogoRetry: "Logo-Upload fehlgeschlagen – bitte erneut versuchen",
     regLogoWait: "Bitte warten Sie, bis das Logo hochgeladen ist",
@@ -804,7 +811,7 @@ const de: typeof he = {
     dropChecking: "Datei wird geprüft…",
     pendingTitle: "Antrag erhalten – wird geprüft",
     pendingIntro:
-      "Vielen Dank, dass Sie DentalCompare beitreten. Bevor eine Klinik gelistet wird, prüft ein Mitglied unseres Teams ihre Zulassungsdokumente – so wissen Patienten, dass jede Klinik auf der Website geprüft wurde.",
+      "Vielen Dank für Ihre Anmeldung bei DentalCompare. Bevor eine Klinik gelistet wird, prüft ein Mitglied unseres Teams ihre Zulassungsdokumente – so wissen Patienten, dass jede Klinik auf der Website geprüft wurde.",
     pendingStepSent: "Antrag gesendet",
     pendingStepSentNote: "Ihre Angaben und Dokumente sind sicher bei uns.",
     pendingStepReview: "Unser Team prüft Ihre Dokumente",
@@ -812,23 +819,23 @@ const de: typeof he = {
     pendingStepLive: "Freigabe und Listung",
     pendingStepFix: "Ein Dokument muss ersetzt werden",
     pendingStepFixNote:
-      "Unser Team hat Ihre Dokumente geprüft, und eines muss korrigiert werden. Die Prüfung geht weiter, sobald es vorliegt.",
+      "Unser Team hat Ihre Dokumente geprüft, und eines muss ersetzt werden. Sobald der Ersatz vorliegt, geht die Prüfung weiter.",
     pendingFixTitle: "Nur noch ein Dokument",
     pendingFixIntro:
       "Fast geschafft. Um gelistet zu werden, ersetzen Sie das unten markierte Dokument – das Formular müssen Sie nicht erneut ausfüllen.",
-    pendingFixByEmail: "Den Link zum Hochladen haben wir Ihnen per E-Mail gesendet.",
+    pendingFixByEmail: "Den Link zum Hochladen haben wir Ihnen per E-Mail geschickt.",
     pendingStepLiveNote:
       "Ihr {trialDays}-tägiger kostenloser Testzeitraum beginnt am Tag der Freigabe.",
     pendingEmail:
       "Sobald wir fertig sind, schreiben wir an {email}. Fehlt ein Dokument oder ist ein Foto unleserlich, senden wir Ihnen einen Link zum erneuten Hochladen – das Formular müssen Sie nicht neu ausfüllen.",
     terms: [
       "Die Klinik wählt einen Abotarif: {monthly} pro Monat oder {yearly} pro Jahr, für die Aufnahme in das DentalCompare-Verzeichnis und den Erhalt von Patientenanfragen.",
-      "Kostenloser Tarif: Die Klinik erscheint im Verzeichnis und erhält bis zu {freeCap} Anfragen pro Monat, ohne Kosten und ohne hinterlegtes Zahlungsmittel. Sind die Anfragen eines Monats aufgebraucht, wird die Klinik Patienten bis zum Beginn des nächsten Monats nicht angezeigt. Ein Wechsel zu einem bezahlten Abo ist jederzeit möglich.",
-      "Gründungsangebot: Eine Klinik, die einen Gründungsplatz in einem bezahlten Tarif erhalten hat, zahlt in den 12 Monaten ab der ersten Abbuchung ein Drittel weniger als den Listenpreis. Danach läuft das Abo zum Listenpreis weiter, mit einer Benachrichtigung per E-Mail etwa 30 Tage im Voraus.",
+      "Kostenloser Tarif: Die Klinik erscheint im Verzeichnis und erhält bis zu {freeCap} Anfragen pro Monat, ohne Kosten und ohne hinterlegtes Zahlungsmittel. Ist das monatliche Kontingent ausgeschöpft, wird die Klinik Patienten bis zum Beginn des nächsten Monats nicht mehr angezeigt. Ein Wechsel zu einem bezahlten Abo ist jederzeit möglich.",
+      "Gründungsangebot: Eine Klinik, die einen Gründungsplatz in einem bezahlten Tarif erhalten hat, erhält für 12 Monate ab der ersten Abbuchung ein Drittel Rabatt auf den Listenpreis. Danach läuft das Abo zum Listenpreis weiter, mit einer Benachrichtigung per E-Mail etwa 30 Tage im Voraus.",
       "Die Klinik erhält einen kostenlosen Testzeitraum von {trialDays} Tagen, der mit der Freigabe durch das DentalCompare-Team beginnt. In diesem Zeitraum erscheint die Klinik kostenlos im Verzeichnis und erhält Anfragen.",
       "Bei der Registrierung wird eine Zahlungsmethode hinterlegt; die erste Abbuchung erfolgt automatisch nach Ablauf des {trialDays}-tägigen Testzeitraums. Vor dieser ersten Abbuchung wird eine Benachrichtigung per E-Mail versendet.",
       "Das Abo kann während des Testzeitraums jederzeit gekündigt werden; in diesem Fall wird nichts berechnet.",
-      "Das Abo verlängert sich zum Ende jedes Zeitraums automatisch über die hinterlegte Zahlungsmethode, bis die Klinik kündigt.",
+      "Das Abo verlängert sich am Ende jedes Abrechnungszeitraums automatisch über die hinterlegte Zahlungsmethode, bis die Klinik kündigt.",
       "Das Abo kann jederzeit gekündigt werden; die Kündigung wird zum Ende des bereits bezahlten Zeitraums wirksam. Eine anteilige Erstattung erfolgt nicht.",
       "Die Klinik erklärt, dass ihre Angaben zutreffend sind und dass sie über die erforderliche Zulassung zur Ausübung der Zahnheilkunde in dem Land verfügt, in dem sie tätig ist. DentalCompare kann die Klinik jederzeit aus dem Verzeichnis entfernen.",
     ],
@@ -838,7 +845,7 @@ const de: typeof he = {
     joinEyebrow: "Für Zahnkliniken",
     joinTitle: "Anfragen von Patienten, die bereits einen Behandlungsplan haben.",
     joinSubtitle:
-      "Patienten aus aller Welt senden einen Behandlungsplan und ein Röntgenbild und bitten um ein schriftliches Angebot. Eine verifizierte Klinik erscheint im Verzeichnis und erhält diese Anfragen direkt. Starten Sie kostenlos oder mit einem bezahlten Abo samt Testphase.",
+      "Patienten aus aller Welt senden einen Behandlungsplan und ein Röntgenbild und bitten um ein schriftliches Angebot. Geprüfte Kliniken erscheinen im Verzeichnis und erhalten diese Anfragen direkt. Starten Sie kostenlos oder mit einem bezahlten Abo inklusive Testzeitraum.",
     planMonthlyTitle: "Monatstarif",
     planMonthlyPer: "pro Monat",
     planMonthlyNote: "Keine Bindung – jederzeit kündbar",
@@ -868,11 +875,11 @@ const de: typeof he = {
     // --- Clinic area ---
     dashMetaTitle: "Mein Bereich",
     dashTitle: "Klinikbereich",
-    dashSubFree: "Kostenloser Tarif – bis zu {cap} Anfragen pro Monat, ohne Zahlung.",
+    dashSubFree: "Kostenloser Tarif – bis zu {cap} Anfragen pro Monat, ganz ohne Kosten.",
     dashMonthHeading: "Dieser Monat",
     dashMonthRequests: { one: "1 Anfrage erhalten", other: "{count} Anfragen erhalten" },
     dashMonthOfCap: "Ihr Tarif umfasst bis zu {cap} Anfragen pro Monat.",
-    dashMonthCostPerRequest: "Diesen Monat hat Ihr Abo {price} pro Anfrage gekostet.",
+    dashMonthCostPerRequest: "Diesen Monat hat Sie jede Anfrage {price} gekostet.",
     dashMonthNoneYet:
       "Diesen Monat noch keine Anfragen. Sie erscheinen hier, sobald ein Patient Sie auswählt.",
     dashFreeAtCap:
@@ -913,9 +920,9 @@ const de: typeof he = {
     dashSubHeading: "Abo",
     dashSubTrialing: "Kostenloser Testzeitraum",
     dashTrialEnds: "Testzeitraum endet am {date}",
-    dashTrialEndedUnbilled: "Ihr Testzeitraum ist abgelaufen, und wir konnten nicht abbuchen",
+    dashTrialEndedUnbilled: "Ihr Testzeitraum ist abgelaufen – die Abbuchung war nicht möglich",
     dashTrialEndedNoCard:
-      "Es ist keine Zahlungsmethode hinterlegt. Ihre Klinik ist weiterhin gelistet – damit das so bleibt, schließen Sie die Zahlungseinrichtung ab.",
+      "Es ist keine Zahlungsmethode hinterlegt. Ihre Klinik ist weiterhin gelistet – damit das so bleibt, richten Sie bitte eine Zahlungsmethode ein.",
     dashTrialEndedNoProvider:
       "Ihr Testzeitraum ist abgelaufen. Die Abrechnung ist bei uns noch nicht freigeschaltet – Sie müssen nichts tun, wir melden uns.",
     dashSetupPayment: "Zahlung einrichten",
@@ -933,7 +940,7 @@ const de: typeof he = {
     dashLeadsNone:
       "Noch keine Anfragen. Sobald ein Patient Sie auswählt, erscheint die Anfrage hier, und wir benachrichtigen Sie zusätzlich per E-Mail.",
     dashLeadReceived: "Erhalten am {date}",
-    dashLeadAwaiting: "Wartet auf Ihren Preis",
+    dashLeadAwaiting: "Wartet auf Ihr Angebot",
     dashLeadPending: "Gesendet, Antwort ausstehend",
     dashLeadApproved: "Angenommen ✓",
     dashLeadRejected: "Abgelehnt",
@@ -1279,7 +1286,7 @@ const de: typeof he = {
   },
 
   footer: {
-    tagline: "Angebote für Zahnbehandlungen vergleichen – weltweit.",
+    tagline: "Zahnarzt-Angebote weltweit vergleichen.",
     groupPatients: "Für Patienten",
     groupClinics: "Für Kliniken",
     groupInfo: "Informationen",

@@ -112,7 +112,10 @@ export function QuoteForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="border-border/60 bg-card space-y-6 rounded-lg border p-6">
+    <form
+      onSubmit={onSubmit}
+      className="border-border/60 bg-card space-y-6 rounded-lg border p-4 sm:p-6"
+    >
       <div>
         <label htmlFor="amount" className="text-foreground mb-1.5 block text-sm font-semibold">
           {format(t.quoteForm.priceLabel, { currency: currencyLabel })}
@@ -133,7 +136,9 @@ export function QuoteForm({
       {/* What the price covers. Checkboxes rather than free text so the patient
           compares clinics on the same axis. */}
       <fieldset>
-        <legend className="text-foreground mb-2 text-sm font-semibold">{t.quoteForm.includedLegend}</legend>
+        <legend className="text-foreground mb-2 text-sm font-semibold">
+          {t.quoteForm.includedLegend}
+        </legend>
         <div className="flex flex-wrap gap-2">
           {QUOTE_INCLUSIONS.map((key) => {
             const active = includes.includes(key);
@@ -160,6 +165,7 @@ export function QuoteForm({
             <span className="text-muted-foreground">{t.quoteForm.accommodationNights}</span>
             <input
               type="number"
+              inputMode="numeric"
               min={1}
               max={60}
               value={accommodationNights}
@@ -172,7 +178,7 @@ export function QuoteForm({
       </fieldset>
 
       {/* Trips — the number that moves the patient's real cost most. */}
-      <fieldset className="grid gap-4 sm:grid-cols-2">
+      <fieldset className="grid grid-cols-2 gap-3 sm:gap-4">
         <legend className="text-foreground mb-2 text-sm font-semibold">
           {t.quoteForm.tripsLegend}
         </legend>
@@ -180,6 +186,7 @@ export function QuoteForm({
           <span className="text-muted-foreground">{t.quoteForm.tripsCount}</span>
           <input
             type="number"
+            inputMode="numeric"
             min={1}
             max={10}
             value={trips}
@@ -191,6 +198,7 @@ export function QuoteForm({
           <span className="text-muted-foreground">{t.quoteForm.daysPerTrip}</span>
           <input
             type="number"
+            inputMode="numeric"
             min={1}
             max={60}
             value={daysPerTrip}
@@ -201,10 +209,11 @@ export function QuoteForm({
         {/* Only asked when it can mean something — a gap between trips is
             nonsense with a single trip. */}
         {multiTrip && (
-          <label className="flex flex-col gap-1.5 text-sm sm:col-span-2">
+          <label className="col-span-2 flex flex-col gap-1.5 text-sm">
             <span className="text-muted-foreground">{t.quoteForm.weeksBetween}</span>
             <input
               type="number"
+              inputMode="numeric"
               min={1}
               max={104}
               value={weeksBetween}
@@ -219,7 +228,7 @@ export function QuoteForm({
       {/* Sessions — how many times the patient must physically return to the
           clinic. Independent of trips: a local patient has sessions with no
           travel at all. */}
-      <fieldset className="grid gap-4 sm:grid-cols-2">
+      <fieldset className="grid grid-cols-2 gap-3 sm:gap-4">
         <legend className="text-foreground mb-2 text-sm font-semibold">
           {t.quoteForm.sessionsLegend}
         </legend>
@@ -227,6 +236,7 @@ export function QuoteForm({
           <span className="text-muted-foreground">{t.quoteForm.sessionsCount}</span>
           <input
             type="number"
+            inputMode="numeric"
             min={1}
             max={10}
             value={sessions}
@@ -239,6 +249,7 @@ export function QuoteForm({
             <span className="text-muted-foreground">{t.quoteForm.weeksBetweenSessions}</span>
             <input
               type="number"
+              inputMode="numeric"
               min={1}
               max={104}
               value={weeksBetweenSessions}
@@ -252,11 +263,14 @@ export function QuoteForm({
 
       {/* Warranty — the dominant fear once the patient has flown home. */}
       <fieldset className="space-y-4">
-        <legend className="text-foreground mb-2 text-sm font-semibold">{t.quoteForm.warrantyLegend}</legend>
+        <legend className="text-foreground mb-2 text-sm font-semibold">
+          {t.quoteForm.warrantyLegend}
+        </legend>
         <label className="flex flex-col gap-1.5 text-sm">
           <span className="text-muted-foreground">{t.quoteForm.warrantyYears}</span>
           <input
             type="number"
+            inputMode="numeric"
             min={0}
             max={50}
             value={warrantyYears}
@@ -266,9 +280,7 @@ export function QuoteForm({
           />
         </label>
         <label className="flex flex-col gap-1.5 text-sm">
-          <span className="text-muted-foreground">
-            {t.quoteForm.warrantyNote}
-          </span>
+          <span className="text-muted-foreground">{t.quoteForm.warrantyNote}</span>
           <textarea
             rows={2}
             value={warrantyNote}

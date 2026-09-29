@@ -132,6 +132,33 @@ export function newQuoteEmailHtml(opts: {
   );
 }
 
+/** Clinic "a patient is still waiting for your quote" reminder. */
+export function clinicQuoteReminderEmailHtml(opts: {
+  locale: Locale;
+  t: EmailStrings;
+  clinicName: string;
+  quoteUrl: string;
+}): string {
+  const { locale, t, clinicName, quoteUrl } = opts;
+
+  return shell(
+    locale,
+    `    <h2 style="color: #0e2f55;">${t.clinicReminderHeading}</h2>
+    <p>${format(t.greeting, { name: `<strong>${escapeHtml(clinicName)}</strong>` })}</p>
+    <p>${t.clinicReminderBody}</p>
+    <div style="text-align: center; margin: 28px 0;">
+      <a href="${quoteUrl}"
+         style="display: inline-block; background: #0e2f55; color: #fff; text-decoration: none;
+                font-size: 16px; font-weight: bold; padding: 14px 30px; border-radius: 999px;">
+        ${t.clinicReminderCta}
+      </a>
+    </div>
+    <p style="font-size: 13px;">${t.clinicReminderNote}</p>
+    ${HR}
+    <p style="font-size: 12px; color: #777;">${t.autoFooter}</p>`,
+  );
+}
+
 /** Patient "your quotes are still waiting" reminder. */
 export function quoteReminderEmailHtml(opts: {
   locale: Locale;

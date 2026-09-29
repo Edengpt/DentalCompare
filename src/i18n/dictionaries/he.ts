@@ -492,6 +492,11 @@ const he = {
   emails: {
     subjectNewQuote: "קיבלת הצעת מחיר חדשה 🎉",
     subjectQuoteRequest: "בקשת הצעת מחיר חדשה — DentalCompare",
+    subjectClinicQuoteReminder: "תזכורת: מטופל מחכה להצעת המחיר שלכם",
+    clinicReminderHeading: "מטופל עדיין מחכה להצעה",
+    clinicReminderBody: "אתמול שלחנו אליכם תוכנית טיפול וצילום של מטופל שבחר בכם, ועדיין לא התקבלה מכם הצעת מחיר. המטופל משווה בין ההצעות שמגיעות — כדאי שגם שלכם תהיה שם.",
+    clinicReminderCta: "להגשת הצעת מחיר",
+    clinicReminderNote: "תוכנית הטיפול והצילום מצורפים למייל הבקשה המקורי. זו התזכורת היחידה לבקשה הזו.",
     subjectPaymentSetup: "אישור מרפאה — הפעלת מנוי DentalCompare",
     subjectFreeLive: "המרפאה אושרה ומופיעה ב־DentalCompare",
     freeLiveHeading: "המרפאה אושרה — ואתם כבר במאגר",

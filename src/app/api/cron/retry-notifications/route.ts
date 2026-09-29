@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { asLocale } from "@/i18n/config";
 import { sendNewQuoteEmail } from "@/server/quote-notifications";
 import { sendDueQuoteReminders } from "@/server/quote-reminders";
+import { sendDueClinicReminders } from "@/server/clinic-reminders";
 import {
   sendQuoteApprovedEmail,
   sendQuoteRejectedEmail,
@@ -250,5 +251,13 @@ export async function GET(req: Request) {
     console.error("retry-notifications: quote-reminder block failed:", err);
   }
 
-  return NextResponse.json({ checked, sent, reminders });
+  // And the one nudge to a clinic that hasn't quoted a day after the request.
+  let clinicReminders = { checked: 0, sent: 0 };
+  try {
+    clinicReminders = await sendDueClinicReminders();
+  } catch (err) {
+    console.error("retry-notifications: clinic-reminder block failed:", err);
+  }
+
+  return NextResponse.json({ checked, sent, reminders, clinicReminders });
 }

@@ -36,7 +36,7 @@ const fr: typeof he = {
     headlineAccent: "Pour le même plan de traitement.",
     reassurance: "Entièrement gratuit ✦ Sans carte bancaire ✦ Sans engagement",
     searchTreatmentLabel: "Quel traitement ?",
-    searchTreatmentAny: "Je ne sais pas encore / tout traitement",
+    searchTreatmentAny: "Je ne sais pas encore / tous traitements",
     searchWhereLabel: "Où ?",
     searchWhereAnywhere: "Partout",
     searchSubmit: "Obtenir mes devis",
@@ -50,7 +50,7 @@ const fr: typeof he = {
     subtitle:
       "L'autorisation d'exercer de chaque clinique présentée ici a été contrôlée par un membre de notre équipe.",
     verified: { one: "1 clinique vérifiée", other: "{count} cliniques vérifiées" },
-    joiningSoon: "Cliniques bientôt disponibles",
+    joiningSoon: "Des cliniques arrivent bientôt",
   },
 
   howItWorks: {
@@ -59,17 +59,17 @@ const fr: typeof he = {
       "D'un seul plan de traitement à trois devis comparables, sans aucun appel commercial.",
     step1Title: "Téléversez votre plan et votre radio",
     step1Description:
-      "Le plan de traitement qu'un dentiste vous a déjà remis, ainsi que votre radio. PDF ou photo, jusqu'à 20MB chacun.",
+      "Le plan de traitement qu'un dentiste vous a déjà remis, ainsi que votre radio. PDF ou photo, jusqu'à 20 Mo chacun.",
     step1Detail: "1 à 2 minutes",
     step2Title: "Choisissez jusqu'à 3 cliniques vérifiées",
     step2Description:
-      "Filtrez par pays, ville, spécialité et assureur, et choisissez exactement à qui vous adresser. Votre demande part uniquement vers les cliniques que vous avez cochées.",
+      "Filtrez par pays, ville, spécialité et assureur, et choisissez exactement à qui vous adresser. Votre demande n'est envoyée qu'aux cliniques que vous avez cochées.",
     step2Detail: "Filtres intelligents",
     step3Title: "Recevez des devis écrits et comparez",
     step3Description:
       "Chaque clinique répond par un devis écrit. Comparez à votre rythme et choisissez, sans aucune obligation.",
     step3Detail: "Objectif : sous 48 heures",
-    verifiedTitle: "Chaque clinique ici a été vérifiée",
+    verifiedTitle: "Chaque clinique présentée ici a été vérifiée",
     verifiedPromise:
       "Chaque clinique que vous voyez ici a téléversé son autorisation d'exercer, et un membre de notre équipe l'a examinée avant sa mise en ligne. Une clinique dont l'autorisation n'a pas été vérifiée ne vous est jamais proposée.",
   },
@@ -104,25 +104,25 @@ const fr: typeof he = {
   faq: {
     eyebrow: "FAQ",
     title: "Ce qu'il faut savoir avant d'envoyer une demande",
-    contactPrefix: "Une question ?",
+    contactPrefix: "Encore une question ?",
     contactLink: "Écrivez-nous",
     contactSuffix: "— nous répondons sous 24 heures.",
     q1: "Combien ça coûte ?",
     a1: "Rien. Le service est entièrement gratuit pour vous : nous ne vous demandons jamais vos coordonnées bancaires, et il n'y a ni abonnement ni commission cachée. Nous sommes rémunérés par les abonnements que paient les cliniques pour figurer dans notre réseau ; nous n'avons donc aucune raison de vous facturer quoi que ce soit.",
     q2: "Mes données médicales sont-elles protégées ?",
     a2: "Oui. Chaque fichier est stocké dans un espace cloud chiffré à accès privé, transmis via HTTPS et envoyé uniquement aux cliniques que vous avez choisies. Nous ne le partageons avec aucun tiers, ne l'utilisons pas à des fins publicitaires et ne le vendons pas. Vous pouvez demander sa suppression complète à tout moment.",
-    q3: "Sous quel délai reçoit-on les devis ?",
+    q3: "Sous quel délai vais-je recevoir les devis ?",
     a3: "Votre demande parvient au même moment à toutes les cliniques choisies, et notre objectif est que les devis arrivent sous 48 heures. Chaque devis est enregistré dans votre espace, et nous vous prévenons par e-mail dès son arrivée.",
     q4: "Comment les cliniques me répondent-elles ?",
     a4: "Chaque clinique reçoit un e-mail dédié avec vos documents et un lien personnel pour soumettre un devis écrit. Les devis s'affichent côte à côte dans votre espace — comme si vous aviez contacté chaque clinique vous-même, sauf que vous en contactez 3 à la fois et les comparez au même endroit.",
     q5: "Et si aucun devis ne me convient ?",
     a5: "Vous n'êtes tenu d'en accepter aucun. La plateforme est un outil de comparaison : c'est vous qui décidez si, quand et avec qui commencer un traitement. Même si vous retournez chez votre dentiste habituel, vous aurez en main des devis écrits et un vrai pouvoir de négociation.",
     q6: "Pour quels traitements est-ce le plus utile ?",
-    a6: "DentalCompare est surtout utile pour les soins coûteux : implants, couronnes et bridges, orthodontie, réhabilitation complète, traitements de canal complexes et soins esthétiques. Pour un soin simple comme un plombage, l'écart entre cliniques est généralement bien plus faible.",
+    a6: "DentalCompare est surtout utile pour les soins coûteux : implants, couronnes et bridges, orthodontie, réhabilitation complète, traitements de canal complexes et soins esthétiques. Pour un soin simple comme une obturation, l'écart entre cliniques est généralement bien plus faible.",
   },
 
   finalCta: {
-    title: "Le premier prix n'est pas le seul prix.",
+    title: "Le premier devis n'est pas le seul.",
     subtitle:
       "Envoyez votre plan de traitement et recevez gratuitement jusqu'à 3 devis écrits à comparer.",
     cta: "Obtenir mes devis maintenant",
@@ -508,6 +508,13 @@ const fr: typeof he = {
   emails: {
     subjectNewQuote: "Vous avez reçu un nouveau devis 🎉",
     subjectQuoteRequest: "Nouvelle demande de devis — DentalCompare",
+    subjectClinicQuoteReminder: "Rappel : un patient attend votre devis",
+    clinicReminderHeading: "Un patient attend toujours votre devis",
+    clinicReminderBody:
+      "Hier, nous vous avons envoyé le plan de traitement et la radio d'un patient qui a choisi votre clinique, et nous n'avons pas encore reçu votre devis. Le patient compare les devis à mesure qu'ils arrivent — il vaut la peine que le vôtre en fasse partie.",
+    clinicReminderCta: "Envoyer votre devis",
+    clinicReminderNote:
+      "Le plan de traitement et la radio sont joints à l'e-mail de demande initial. C'est le seul rappel pour cette demande.",
     subjectPaymentSetup: "Clinique approuvée — activez votre abonnement DentalCompare",
     subjectFreeLive: "Votre clinique est approuvée et en ligne sur DentalCompare",
     freeLiveHeading: "Votre clinique est approuvée — et déjà référencée",
@@ -643,7 +650,7 @@ const fr: typeof he = {
       Endodontics: "Traitement de canal",
       Orthodontics: "Orthodontie",
       Aesthetics: "Dentisterie esthétique",
-      Prosthodontics: "Prothèse dentaire",
+      Prosthodontics: "Prothèses dentaires",
       Pediatric: "Dentisterie pédiatrique",
       Periodontics: "Soins des gencives",
     },
@@ -764,7 +771,7 @@ const fr: typeof he = {
     regLogoAlt: "Aperçu du logo",
     regDocs: "Autorisation d'exercer et documents",
     regDocsHint:
-      "Nous devons voir l'autorisation d'exercer avant de référencer une clinique. Une photo prise au téléphone suffit — PDF, JPG ou PNG, jusqu'à {mb}MB.",
+      "Nous devons voir l'autorisation d'exercer avant de référencer une clinique. Une photo prise au téléphone suffit — PDF, JPG ou PNG, jusqu'à {mb} Mo.",
     regDocUpload: "Téléverser",
     regDocUploaded: "Téléversé",
     regDocRemove: "Retirer le document",
@@ -774,10 +781,10 @@ const fr: typeof he = {
     replaceReceived: "Reçu",
     replaceDone: "Merci, c'est bien reçu. Nous vous écrirons après examen.",
     replaceNothing: "Aucun document à remplacer pour le moment. Nous vous écrirons.",
-    replaceHint: "Une photo prise au téléphone suffit — PDF, JPG ou PNG, jusqu'à {mb}MB.",
+    replaceHint: "Une photo prise au téléphone suffit — PDF, JPG ou PNG, jusqu'à {mb} Mo.",
     regLogoRemove: "Retirer le logo",
     regLogoUpload: "Téléverser",
-    regLogoHint: "Fichiers acceptés : JPG, PNG ou WEBP ✦ taille maximale : {mb}MB",
+    regLogoHint: "Fichiers acceptés : JPG, PNG ou WEBP ✦ taille maximale : {mb} Mo",
     regLogoFailed: "Échec du téléversement du logo",
     regLogoRetry: "Échec du téléversement du logo — veuillez réessayer",
     regLogoWait: "Attendez la fin du téléversement du logo",
@@ -809,24 +816,24 @@ const fr: typeof he = {
     pendingStepFix: "Un document doit être remplacé",
     pendingStepFixNote:
       "Notre équipe a examiné vos documents et l'un d'eux doit être corrigé. L'examen reprend dès que nous l'avons reçu.",
-    pendingFixTitle: "Plus qu'un document",
+    pendingFixTitle: "Plus qu'un document à fournir",
     pendingFixIntro:
-      "Vous y êtes presque. Pour être référencé, remplacez le document signalé ci-dessous — inutile de remplir à nouveau le formulaire.",
+      "Vous y êtes presque. Pour que votre clinique soit référencée, remplacez le document signalé ci-dessous — inutile de remplir à nouveau le formulaire.",
     pendingFixByEmail: "Le lien pour le téléverser vous a été envoyé par e-mail.",
     pendingStepLiveNote:
       "Votre essai gratuit de {trialDays} jours commence le jour de votre approbation.",
     pendingEmail:
-      "Nous écrirons à {email} dès que ce sera fait. Si un document manque ou qu'une photo est illisible, nous vous enverrons un lien pour le téléverser à nouveau — inutile de remplir à nouveau le formulaire.",
+      "Nous écrirons à {email} dès que ce sera fait. Si un document manque ou qu'une photo est illisible, nous vous enverrons un lien pour le renvoyer — inutile de remplir à nouveau le formulaire.",
     terms: [
       "La clinique choisit une formule d'abonnement : {monthly} par mois ou {yearly} par an, pour figurer dans l'annuaire DentalCompare et recevoir des demandes de patients.",
-      "Formule gratuite : la clinique apparaît dans l'annuaire et reçoit jusqu'à {freeCap} demandes par mois, sans frais et sans moyen de paiement. Une fois les demandes du mois utilisées, la clinique n'est plus présentée aux patients jusqu'au début du mois suivant. La clinique peut passer à un abonnement payant à tout moment.",
-      "Offre fondateurs : une clinique ayant obtenu une place de fondateur sur une formule payante paie un tiers de moins que le prix catalogue pendant les 12 mois qui suivent son premier prélèvement. Ensuite, l'abonnement se poursuit au prix catalogue, avec un préavis par e-mail environ 30 jours à l'avance.",
-      "La clinique bénéficie d'un essai gratuit de {trialDays} jours, qui commence à son approbation par l'équipe DentalCompare. Pendant cette période, la clinique figure dans l'annuaire et reçoit des demandes sans frais.",
+      "Formule gratuite : la clinique apparaît dans l'annuaire et reçoit jusqu'à {freeCap} demandes par mois, sans frais et sans moyen de paiement. Une fois le quota mensuel atteint, la clinique n'est plus présentée aux patients jusqu'au début du mois suivant. La clinique peut passer à un abonnement payant à tout moment.",
+      "Offre fondateurs : une clinique ayant obtenu une place de fondateur sur une formule payante paie un tiers de moins que le prix catalogue pendant 12 mois à compter de son premier prélèvement. Ensuite, l'abonnement se poursuit au prix catalogue, avec un préavis par e-mail environ 30 jours à l'avance.",
+      "La clinique bénéficie d'un essai gratuit de {trialDays} jours, qui débute dès son approbation par l'équipe DentalCompare. Pendant cette période, la clinique figure dans l'annuaire et reçoit des demandes sans frais.",
       "Un moyen de paiement est enregistré lors de l'inscription, et le premier prélèvement est effectué automatiquement à la fin de l'essai de {trialDays} jours. Un avis est envoyé par e-mail avant ce premier prélèvement.",
       "L'abonnement peut être résilié à tout moment pendant l'essai, auquel cas rien n'est prélevé.",
-      "L'abonnement est renouvelé automatiquement à la fin de chaque période au moyen du moyen de paiement enregistré, jusqu'à sa résiliation par la clinique.",
+      "L'abonnement est renouvelé automatiquement à la fin de chaque période par prélèvement sur le moyen de paiement enregistré, jusqu'à sa résiliation par la clinique.",
       "L'abonnement peut être résilié à tout moment ; la résiliation prend effet à la fin de la période déjà payée. Aucun remboursement au prorata n'est accordé.",
-      "La clinique déclare que les informations fournies sont exactes et qu'elle détient les autorisations requises pour exercer la dentisterie dans le pays où elle exerce. DentalCompare peut retirer la clinique de l'annuaire à tout moment.",
+      "La clinique déclare que les informations fournies sont exactes et qu'elle détient les autorisations requises pour pratiquer la médecine dentaire dans le pays où elle est établie. DentalCompare peut retirer la clinique de l'annuaire à tout moment.",
     ],
     joinMetaTitle: "Pour les cliniques",
     joinMetaDescription:
@@ -840,7 +847,7 @@ const fr: typeof he = {
     planMonthlyNote: "Sans engagement — résiliable à tout moment",
     planYearlyTitle: "Formule annuelle",
     planYearlyPer: "par an",
-    planYearlyNote: "Nettement moins cher que le mensuel",
+    planYearlyNote: "Nettement moins cher que la formule mensuelle",
     itemSubscription: "Abonnement DentalCompare ({plan})",
     chargeDescription: "Abonnement DentalCompare — {clinic}",
     renewalDescription: "Renouvellement de l'abonnement DentalCompare — {clinic}",
@@ -864,7 +871,7 @@ const fr: typeof he = {
     // --- Clinic area ---
     dashMetaTitle: "Mon espace",
     dashTitle: "Espace clinique",
-    dashSubFree: "Formule gratuite — jusqu'à {cap} demandes par mois, sans paiement.",
+    dashSubFree: "Formule gratuite — jusqu'à {cap} demandes par mois, sans rien payer.",
     dashMonthHeading: "Ce mois-ci",
     dashMonthRequests: { one: "1 demande reçue", other: "{count} demandes reçues" },
     dashMonthOfCap: "Votre formule comprend jusqu'à {cap} demandes par mois.",
@@ -876,19 +883,19 @@ const fr: typeof he = {
     dashFoundingActive:
       "Clinique fondatrice : vous payez {price} au lieu de {regular} jusqu'au {date}.",
     dashFoundingPending:
-      "Clinique fondatrice : {price} au lieu de {regular} pendant 12 mois à partir du premier prélèvement.",
+      "Clinique fondatrice : {price} au lieu de {regular} pendant 12 mois à compter du premier prélèvement.",
     dashUpgradeTitle: "Passer à la formule Basic",
     dashUpgradeBody: "Jusqu'à {cap} demandes par mois, pour {monthly} par mois ou {yearly} par an.",
     dashUpgradeFounding:
-      "Prix fondateur : {monthly} par mois pendant 12 mois — plus que {left} places",
-    dashUpgradeMonthly: "Passer — mensuel",
-    dashUpgradeYearly: "Passer — annuel",
+      "Prix fondateur : {monthly} par mois pendant 12 mois — il ne reste que {left} places",
+    dashUpgradeMonthly: "Passer à Basic — mensuel",
+    dashUpgradeYearly: "Passer à Basic — annuel",
     planFreeTitle: "Gratuit",
     planFreeNote: "Sans carte bancaire. Passez à la formule payante quand vous voulez.",
     planCapLine: "Jusqu'à {cap} demandes par mois",
     planFoundingBadge: "Prix fondateur pendant 12 mois",
     foundingBanner:
-      "Offre fondateurs : les premières cliniques qui choisissent une formule payante paient un tiers de moins pendant leurs 12 premiers mois. Plus que {left} places.",
+      "Offre fondateurs : les premières cliniques qui choisissent une formule payante paient un tiers de moins pendant leurs 12 premiers mois. Il ne reste que {left} places.",
     pendingStepLiveNoteFree:
       "Avec la formule gratuite, votre clinique apparaît dans l'annuaire dès son approbation.",
     dashNoClinicTitle: "Aucune clinique associée à ce compte",
@@ -909,7 +916,7 @@ const fr: typeof he = {
     dashSubHeading: "Abonnement",
     dashSubTrialing: "Essai gratuit",
     dashTrialEnds: "Fin de l'essai le {date}",
-    dashTrialEndedUnbilled: "Votre essai est terminé et nous n'avons pas pu le facturer",
+    dashTrialEndedUnbilled: "Votre essai est terminé, mais le prélèvement n'a pas pu être effectué",
     dashTrialEndedNoCard:
       "Aucun moyen de paiement n'est enregistré. Votre clinique est toujours référencée — pour qu'elle le reste, finalisez la configuration du paiement.",
     dashTrialEndedNoProvider:
@@ -930,14 +937,14 @@ const fr: typeof he = {
       "Aucune demande pour l'instant. Dès qu'un patient vous choisit, la demande s'affiche ici et nous vous prévenons aussi par e-mail.",
     dashLeadReceived: "Reçue le {date}",
     dashLeadAwaiting: "En attente de votre prix",
-    dashLeadPending: "Envoyé, en attente de réponse",
+    dashLeadPending: "Devis envoyé — en attente de réponse",
     dashLeadApproved: "Accepté ✓",
     dashLeadRejected: "Refusé",
     dashLeadInTreatment: "En traitement",
     dashLeadCompletionRequested: "En attente de la confirmation du patient",
     dashLeadCompleted: "Terminé avec succès ✓",
     dashLeadMarkStarted: "Indiquer le début du traitement",
-    dashLeadRequestCompletion: "Demander la confirmation de fin",
+    dashLeadRequestCompletion: "Demander la confirmation de fin de traitement",
     dashLeadActionFailed: "Cela n'a pas fonctionné. Veuillez réessayer.",
     reqTabs: {
       all: "Toutes",
@@ -1279,7 +1286,7 @@ const fr: typeof he = {
     howItWorks: "Comment ça marche",
     faq: "FAQ",
     getQuotes: "Obtenir des devis",
-    clinicsJoin: "Rejoindre en tant que clinique",
+    clinicsJoin: "Inscrire ma clinique",
     clinicsArea: "Connexion clinique",
     terms: "Conditions d'utilisation",
     privacy: "Politique de confidentialité",
