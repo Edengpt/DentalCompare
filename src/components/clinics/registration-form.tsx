@@ -25,7 +25,8 @@ import { useT } from "@/i18n/provider";
 import { format } from "@/i18n/format";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
-import { PlanPicker } from "@/components/clinics/plan-picker";
+import { PlanPicker, type PlanChoice, type PlanOffer } from "@/components/clinics/plan-picker";
+import { providerForCountry } from "@/lib/subscription";
 import { DocumentDropZone, type UploadedDoc } from "@/components/clinics/document-drop-zone";
 import { PendingReview } from "@/components/clinics/pending-review";
 
@@ -145,13 +146,12 @@ function ChipGroup({
 export function RegistrationForm({
   countries,
   pricing,
+  foundingLeft,
 }: {
   countries: RegistrationCountry[];
-  pricing: {
-    monthly: { priceMinor: number; currency: string };
-    yearly: { priceMinor: number; currency: string };
-    trialDays: number;
-  };
+  /** One offer per billing provider; the clinic's country picks which applies. */
+  pricing: Record<"PAYPLUS" | "STRIPE", PlanOffer>;
+  foundingLeft: number;
 }) {
   const t = useT();
   const locale = useLocale();
@@ -246,11 +246,14 @@ export function RegistrationForm({
   // licence documents an admin will ask for — so it can't be inferred.
   const [countryCode, setCountryCode] = useState(countries[0]?.code ?? "");
   const insurers = countries.find((c) => c.code === countryCode)?.insurers ?? [];
+  // The price in the currency this clinic will actually be charged in.
+  const offer = pricing[providerForCountry(countryCode)];
   const [step, setStep] = useState(0);
   // Keyed by field name, already translated. Cleared field by field as the
   // clinic types, so a fixed field stops shouting before the next "Continue".
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submittedEmail, setSubmittedEmail] = useState<string | null>(null);
+  const [planChoice, setPlanChoice] = useState<PlanChoice>("MONTHLY");
   const [agreed, setAgreed] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [logoUploading, setLogoUploading] = useState(false);
@@ -409,7 +412,12 @@ export function RegistrationForm({
   };
 
   if (submittedEmail !== null) {
-    return <PendingReview email={submittedEmail} trialDays={pricing.trialDays} />;
+    return (
+      <PendingReview
+        email={submittedEmail}
+        trialDays={planChoice === "FREE" ? null : offer.trialDays}
+      />
+    );
   }
 
   const stepLabels = [t.clinics.regDetailsHeading, t.clinics.regDocs, t.clinics.regPlanHeading];
@@ -604,7 +612,12 @@ export function RegistrationForm({
         <p className="text-muted-foreground mt-2 text-sm">{t.clinics.regPlanIntro}</p>
 
         <div className="mt-5">
-          <PlanPicker monthly={pricing.monthly} yearly={pricing.yearly} />
+          {offer.founding && (
+            <p className="bg-highlight/30 text-foreground mb-4 rounded-lg p-3 text-sm">
+              {format(t.clinics.foundingBanner, { left: foundingLeft })}
+            </p>
+          )}
+          <PlanPicker value={planChoice} onChange={setPlanChoice} offer={offer} />
           <FieldError id="plan-error" message={errors.plan} />
         </div>
 
@@ -616,13 +629,10 @@ export function RegistrationForm({
               </span>
               <span className="text-pretty">
                 {format(clause, {
-                  monthly: formatMoney(
-                    pricing.monthly.priceMinor,
-                    pricing.monthly.currency,
-                    locale,
-                  ),
-                  yearly: formatMoney(pricing.yearly.priceMinor, pricing.yearly.currency, locale),
-                  trialDays: pricing.trialDays,
+                  monthly: formatMoney(offer.monthlyMinor, offer.currency, locale),
+                  yearly: formatMoney(offer.yearlyMinor, offer.currency, locale),
+                  trialDays: offer.trialDays,
+                  freeCap: offer.freeCap ?? 0,
                 })}
               </span>
             </li>

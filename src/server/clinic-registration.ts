@@ -17,7 +17,10 @@ import {
 import { rateLimit } from "@/lib/rate-limit";
 import { createPendingSubscription } from "@/server/subscriptions";
 import { getSubscriptionPricing } from "@/lib/subscription-pricing";
-import type { SubscriptionProvider } from "@/generated/prisma/enums";
+import type { SubscriptionProvider, SubscriptionTier } from "@/generated/prisma/enums";
+import { foundingPriceMinor } from "@/lib/founding";
+import { providerForCountry } from "@/lib/subscription";
+import { foundingSlotsLeft } from "@/server/founding";
 import { requiredDocKinds, missingDocKinds, isClinicDocumentBlobUrl } from "@/lib/clinic-documents";
 import {
   clinicRegistrationSchema,
@@ -143,8 +146,10 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
   }
 
   const setupToken = randomUUID();
-  const provider: SubscriptionProvider = country.code === "IL" ? "PAYPLUS" : "STRIPE";
-  const pricing = await getSubscriptionPricing(provider, "BASIC");
+  const provider: SubscriptionProvider = providerForCountry(country.code);
+  const tier: SubscriptionTier = plan === "FREE" ? "FREE" : "BASIC";
+  const billingPlan = plan === "YEARLY" ? "YEARLY" : "MONTHLY";
+  const pricing = await getSubscriptionPricing(provider, tier);
 
   // Both writes must succeed or fail together: an orphaned Dentist with no
   // subscription would prevent the clinic from ever re-registering.
@@ -177,19 +182,25 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
       select: { id: true },
     });
 
-    const priceMinor = plan === "MONTHLY" ? pricing.monthlyPriceMinor : pricing.yearlyPriceMinor;
+    const regularMinor =
+      billingPlan === "MONTHLY" ? pricing.monthlyPriceMinor : pricing.yearlyPriceMinor;
+    // A founding place goes to paid registrations only: the free tier costs
+    // nothing to discount. Counted inside the transaction, see founding.ts.
+    const isFounding = tier !== "FREE" && (await foundingSlotsLeft(tx)) > 0;
     await createPendingSubscription(
       {
         dentistId: dentist.id,
-        plan,
+        plan: billingPlan,
         setupToken,
-        priceMinor,
+        priceMinor: isFounding ? foundingPriceMinor(regularMinor, pricing.currency) : regularMinor,
+        regularPriceMinor: isFounding ? regularMinor : null,
+        isFounding,
         currency: pricing.currency,
         trialDays: pricing.trialDays,
         trialRequestCap: pricing.trialRequestCap,
         monthlyRequestCap: pricing.monthlyRequestCap,
         provider,
-        tier: "BASIC",
+        tier,
       },
       tx,
     );

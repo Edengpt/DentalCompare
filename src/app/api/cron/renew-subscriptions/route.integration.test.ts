@@ -9,11 +9,13 @@ const {
   sendPaymentFailedEmail,
   sendTrialEndingEmail,
   sendTrialUnbilledAdminEmail,
+  sendFoundingEndingEmail,
 } = vi.hoisted(() => ({
   chargeByToken: vi.fn(),
   isPayPlusConfigured: vi.fn(() => true),
   sendPaymentFailedEmail: vi.fn(async () => true),
   sendTrialEndingEmail: vi.fn(async (_args: { setupToken: string | null }) => true),
+  sendFoundingEndingEmail: vi.fn(async (_args: { regularPriceMinor: number }) => true),
   // Argument types are declared so the assertions on mock.calls[0][0] are
   // typechecked rather than reaching into an untyped empty tuple.
   sendTrialUnbilledAdminEmail: vi.fn(
@@ -29,6 +31,7 @@ vi.mock("@/server/subscription-notifications", () => ({
   sendPaymentFailedEmail,
   sendTrialEndingEmail,
   sendTrialUnbilledAdminEmail,
+  sendFoundingEndingEmail,
 }));
 
 const hasDb = Boolean(process.env.DATABASE_URL);
@@ -46,6 +49,8 @@ async function seedSub(opts: {
   periodEndOffsetMs: number; // relative to now (negative = past)
   notified?: boolean;
   provider?: "PAYPLUS" | "STRIPE";
+  /** Founding clinic paying 199 instead of 299, ending this far from now. */
+  foundingEndsOffsetMs?: number;
 }) {
   const sfx = randomUUID().slice(0, 8);
   const dentist = await db.dentist.create({
@@ -76,6 +81,14 @@ async function seedSub(opts: {
       recurringToken: `rtok_${sfx}`,
       currentPeriodEnd: new Date(Date.now() + opts.periodEndOffsetMs),
       paymentFailedNotifiedAt: opts.notified ? new Date() : null,
+      ...(opts.foundingEndsOffsetMs !== undefined
+        ? {
+            isFounding: true,
+            priceMinor: 19900,
+            regularPriceMinor: 29900,
+            foundingEndsAt: new Date(Date.now() + opts.foundingEndsOffsetMs),
+          }
+        : {}),
     },
   });
   created.subIds.push(sub.id);
@@ -158,6 +171,56 @@ describe.skipIf(!hasDb)("renew-subscriptions cron (integration, real DB)", () =>
     created.dentistIds = [];
     created.subIds = [];
   }, DB_TIMEOUT);
+
+  it(
+    "founding clinic: charged the founding price during its year, the list price after",
+    async () => {
+      chargeByToken.mockResolvedValue({ ok: true, transactionUid: `tx_${randomUUID()}` });
+      const during = await seedSub({
+        status: "ACTIVE",
+        periodEndOffsetMs: -DAY,
+        foundingEndsOffsetMs: 60 * DAY,
+      });
+      const after = await seedSub({
+        status: "ACTIVE",
+        periodEndOffsetMs: -DAY,
+        foundingEndsOffsetMs: -2 * DAY,
+      });
+
+      chargeByToken.mockClear();
+      await GET(cronReq());
+
+      const amounts = chargeByToken.mock.calls.map((c) => (c[0] as { amountMinor: number }).amountMinor);
+      expect(amounts).toContain(19900);
+      expect(amounts).toContain(29900);
+      const ended = await db.clinicSubscription.findUnique({ where: { id: after.subId } });
+      expect(ended!.priceMinor).toBe(29900);
+      const still = await db.clinicSubscription.findUnique({ where: { id: during.subId } });
+      expect(still!.priceMinor).toBe(19900);
+    },
+    DB_TIMEOUT,
+  );
+
+  it(
+    "founding clinic: warned once in the last month before the price rises",
+    async () => {
+      const { subId } = await seedSub({
+        status: "ACTIVE",
+        periodEndOffsetMs: 20 * DAY,
+        foundingEndsOffsetMs: 10 * DAY,
+      });
+      sendFoundingEndingEmail.mockClear();
+
+      await GET(cronReq());
+      await GET(cronReq());
+
+      expect(sendFoundingEndingEmail).toHaveBeenCalledTimes(1);
+      expect(sendFoundingEndingEmail.mock.calls[0][0].regularPriceMinor).toBe(29900);
+      const sub = await db.clinicSubscription.findUnique({ where: { id: subId } });
+      expect(sub!.foundingNoticeSentAt).not.toBeNull();
+    },
+    DB_TIMEOUT,
+  );
 
   it(
     "failed charge in grace -> PAST_DUE, notified once, still visible; second run doesn't re-notify",

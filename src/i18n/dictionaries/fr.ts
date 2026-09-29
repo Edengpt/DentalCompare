@@ -509,6 +509,18 @@ const fr: typeof he = {
     subjectNewQuote: "Vous avez reçu un nouveau devis 🎉",
     subjectQuoteRequest: "Nouvelle demande de devis — DentalCompare",
     subjectPaymentSetup: "Clinique approuvée — activez votre abonnement DentalCompare",
+    subjectFreeLive: "Votre clinique est approuvée et en ligne sur DentalCompare",
+    freeLiveHeading: "Votre clinique est approuvée — et déjà référencée",
+    freeLiveBody:
+      "{clinic} figure désormais sur DentalCompare avec la formule gratuite : les patients peuvent la choisir et lui envoyer des demandes de devis.",
+    freeLiveUpgrade:
+      "La formule gratuite comprend jusqu'à 3 demandes par mois. Pour en recevoir davantage, passez à la formule payante depuis votre espace clinique.",
+    freeLiveCta: "Accéder à votre espace",
+    subjectFoundingEnding: "Votre prix fondateur prend fin dans environ un mois",
+    foundingEndingHeading: "Merci d'avoir fait partie des premiers",
+    foundingEndingBody:
+      "Votre année au prix fondateur se termine le {date}. À partir du prochain prélèvement, votre abonnement ({plan}) sera de {price}.",
+    foundingEndingNoAction: "Vous n'avez rien à faire — votre abonnement continue simplement.",
     subjectTrialEndingSoon: "Votre essai se termine — premier prélèvement à venir",
     subjectTrialSetupNeeded: "Votre essai gratuit se termine — informations de paiement manquantes",
     subjectTrialDaysLeft: "Plus que {days} jours d'essai DentalCompare",
@@ -764,7 +776,7 @@ const fr: typeof he = {
     regDetailsHeading: "Informations sur la clinique",
     regPlanHeading: "Formule et conditions d'abonnement",
     regPlanIntro:
-      "Choisissez une formule. Vous n'êtes prélevé qu'après l'approbation de la clinique par notre équipe — nous vous enverrons par e-mail un lien pour finaliser le paiement.",
+      "Choisissez une formule : gratuite, ou un abonnement payant. Avec une formule payante, vous n'êtes débité qu'après l'approbation de la clinique par notre équipe — nous vous enverrons un lien de paiement par e-mail.",
     regAgree:
       "J'ai lu et compris les conditions d'abonnement ci-dessus, et je les accepte au nom de la clinique.",
     regSubmitting: "Envoi…",
@@ -799,6 +811,8 @@ const fr: typeof he = {
       "Nous écrirons à {email} dès que ce sera fait. Si un document manque ou qu'une photo est illisible, nous vous enverrons un lien pour le téléverser à nouveau — inutile de remplir à nouveau le formulaire.",
     terms: [
       "La clinique choisit une formule d'abonnement : {monthly} par mois ou {yearly} par an, pour figurer dans l'annuaire DentalCompare et recevoir des demandes de patients.",
+      "Formule gratuite : la clinique apparaît dans l'annuaire et reçoit jusqu'à {freeCap} demandes par mois, sans frais et sans moyen de paiement. Une fois les demandes du mois utilisées, la clinique n'est plus présentée aux patients jusqu'au début du mois suivant. La clinique peut passer à un abonnement payant à tout moment.",
+      "Offre fondateurs : une clinique ayant obtenu une place de fondateur sur une formule payante paie un tiers de moins que le prix catalogue pendant les 12 mois qui suivent son premier prélèvement. Ensuite, l'abonnement se poursuit au prix catalogue, avec un préavis par e-mail environ 30 jours à l'avance.",
       "La clinique bénéficie d'un essai gratuit de {trialDays} jours, qui commence à son approbation par l'équipe DentalCompare. Pendant cette période, la clinique figure dans l'annuaire et reçoit des demandes sans frais.",
       "Un moyen de paiement est enregistré lors de l'inscription, et le premier prélèvement est effectué automatiquement à la fin de l'essai de {trialDays} jours. Un avis est envoyé par e-mail avant ce premier prélèvement.",
       "L'abonnement peut être résilié à tout moment pendant l'essai, auquel cas rien n'est prélevé.",
@@ -812,7 +826,7 @@ const fr: typeof he = {
     joinEyebrow: "Pour les cliniques dentaires",
     joinTitle: "Recevez des demandes de patients qui ont déjà un plan de traitement.",
     joinSubtitle:
-      "Des patients du monde entier envoient un plan de traitement et une radio, et demandent un devis écrit. Une clinique vérifiée figure dans l'annuaire et reçoit ces demandes directement. Une période d'essai gratuite, puis un abonnement mensuel ou annuel.",
+      "Des patients du monde entier envoient un plan de traitement et une radio et demandent un devis écrit. Une clinique vérifiée apparaît dans l'annuaire et reçoit directement ces demandes. Commencez avec la formule gratuite, ou avec un abonnement payant et une période d'essai.",
     planMonthlyTitle: "Formule mensuelle",
     planMonthlyPer: "par mois",
     planMonthlyNote: "Sans engagement — résiliable à tout moment",
@@ -842,6 +856,33 @@ const fr: typeof he = {
     // --- Clinic area ---
     dashMetaTitle: "Mon espace",
     dashTitle: "Espace clinique",
+    dashSubFree: "Formule gratuite — jusqu'à {cap} demandes par mois, sans paiement.",
+    dashMonthHeading: "Ce mois-ci",
+    dashMonthRequests: { one: "1 demande reçue", other: "{count} demandes reçues" },
+    dashMonthOfCap: "Votre formule comprend jusqu'à {cap} demandes par mois.",
+    dashMonthCostPerRequest: "Ce mois-ci, votre abonnement vous a coûté {price} par demande.",
+    dashMonthNoneYet:
+      "Aucune demande ce mois-ci pour l'instant. Elles apparaîtront ici dès qu'un patient vous choisira.",
+    dashFreeAtCap:
+      "Vous avez utilisé les {cap} demandes de la formule gratuite ce mois-ci : votre clinique n'est plus présentée aux patients jusqu'au {date}. Passez à la formule payante pour continuer à recevoir des demandes.",
+    dashFoundingActive:
+      "Clinique fondatrice : vous payez {price} au lieu de {regular} jusqu'au {date}.",
+    dashFoundingPending:
+      "Clinique fondatrice : {price} au lieu de {regular} pendant 12 mois à partir du premier prélèvement.",
+    dashUpgradeTitle: "Passer à la formule Basic",
+    dashUpgradeBody: "Jusqu'à {cap} demandes par mois, pour {monthly} par mois ou {yearly} par an.",
+    dashUpgradeFounding:
+      "Prix fondateur : {monthly} par mois pendant 12 mois — plus que {left} places",
+    dashUpgradeMonthly: "Passer — mensuel",
+    dashUpgradeYearly: "Passer — annuel",
+    planFreeTitle: "Gratuit",
+    planFreeNote: "Sans carte bancaire. Passez à la formule payante quand vous voulez.",
+    planCapLine: "Jusqu'à {cap} demandes par mois",
+    planFoundingBadge: "Prix fondateur pendant 12 mois",
+    foundingBanner:
+      "Offre fondateurs : les premières cliniques qui choisissent une formule payante paient un tiers de moins pendant leurs 12 premiers mois. Plus que {left} places.",
+    pendingStepLiveNoteFree:
+      "Avec la formule gratuite, votre clinique apparaît dans l'annuaire dès son approbation.",
     dashNoClinicTitle: "Aucune clinique associée à ce compte",
     dashNoClinicBody:
       "Ce compte ({email}) n'est lié à aucune clinique. Connectez-vous avec l'adresse e-mail utilisée lors de l'inscription, ou inscrivez une clinique.",
@@ -1013,6 +1054,9 @@ const fr: typeof he = {
     requestsSubtitle: "{count} demandes au total.",
     subscriptionsTitle: "Abonnements",
     subscriptionsSubtitle: "Statut de l'abonnement de chaque clinique de la plateforme.",
+    subsFoundingCount: "Places fondateurs : {taken} sur {total} prises",
+    subFree: "Gratuit",
+    subFoundingTag: "Fondatrice",
     subPending: "En attente de paiement",
     subActive: "Actif",
     subPastDue: "Échec du prélèvement",

@@ -513,6 +513,18 @@ const de: typeof he = {
     subjectNewQuote: "Sie haben ein neues Angebot erhalten 🎉",
     subjectQuoteRequest: "Neue Angebotsanfrage – DentalCompare",
     subjectPaymentSetup: "Klinik freigegeben – aktivieren Sie Ihr DentalCompare-Abo",
+    subjectFreeLive: "Ihre Klinik ist freigegeben und auf DentalCompare sichtbar",
+    freeLiveHeading: "Ihre Klinik ist freigegeben – und bereits gelistet",
+    freeLiveBody:
+      "{clinic} ist jetzt im kostenlosen Tarif auf DentalCompare gelistet – Patienten können die Klinik auswählen und Angebotsanfragen senden.",
+    freeLiveUpgrade:
+      "Der kostenlose Tarif umfasst bis zu 3 Anfragen pro Monat. Für mehr können Sie jederzeit im Klinikbereich upgraden.",
+    freeLiveCta: "Zum Klinikbereich",
+    subjectFoundingEnding: "Ihr Gründungspreis endet in etwa einem Monat",
+    foundingEndingHeading: "Danke, dass Sie zu den Ersten gehörten",
+    foundingEndingBody:
+      "Ihr Gründungsjahr endet am {date}. Ab der nächsten Abbuchung kostet Ihr Abo ({plan}) {price}.",
+    foundingEndingNoAction: "Sie müssen nichts tun – Ihr Abo läuft einfach weiter.",
     subjectTrialEndingSoon: "Ihr Testzeitraum endet – die erste Abbuchung steht bevor",
     subjectTrialSetupNeeded: "Ihr kostenloser Testzeitraum endet – Zahlungsdaten fehlen noch",
     subjectTrialDaysLeft: "Noch {days} Tage in Ihrem DentalCompare-Testzeitraum",
@@ -768,7 +780,7 @@ const de: typeof he = {
     regDetailsHeading: "Angaben zur Klinik",
     regPlanHeading: "Tarif und Abobedingungen",
     regPlanIntro:
-      "Wählen Sie einen Tarif. Berechnet wird erst, nachdem unser Team die Klinik freigegeben hat – wir senden Ihnen dann per E-Mail einen Link zur Zahlung.",
+      "Wählen Sie einen Tarif: kostenlos oder ein bezahltes Abo. Beim bezahlten Tarif wird erst abgebucht, nachdem unser Team die Klinik freigegeben hat – wir senden Ihnen einen Zahlungslink per E-Mail.",
     regAgree:
       "Ich habe die obigen Abobedingungen gelesen und verstanden und akzeptiere sie im Namen der Klinik.",
     regSubmitting: "Wird gesendet…",
@@ -803,6 +815,8 @@ const de: typeof he = {
       "Sobald wir fertig sind, schreiben wir an {email}. Fehlt ein Dokument oder ist ein Foto unleserlich, senden wir Ihnen einen Link zum erneuten Hochladen – das Formular müssen Sie nicht neu ausfüllen.",
     terms: [
       "Die Klinik wählt einen Abotarif: {monthly} pro Monat oder {yearly} pro Jahr, für die Aufnahme in das DentalCompare-Verzeichnis und den Erhalt von Patientenanfragen.",
+      "Kostenloser Tarif: Die Klinik erscheint im Verzeichnis und erhält bis zu {freeCap} Anfragen pro Monat, ohne Kosten und ohne hinterlegtes Zahlungsmittel. Sind die Anfragen eines Monats aufgebraucht, wird die Klinik Patienten bis zum Beginn des nächsten Monats nicht angezeigt. Ein Wechsel zu einem bezahlten Abo ist jederzeit möglich.",
+      "Gründungsangebot: Eine Klinik, die einen Gründungsplatz in einem bezahlten Tarif erhalten hat, zahlt in den 12 Monaten ab der ersten Abbuchung ein Drittel weniger als den Listenpreis. Danach läuft das Abo zum Listenpreis weiter, mit einer Benachrichtigung per E-Mail etwa 30 Tage im Voraus.",
       "Die Klinik erhält einen kostenlosen Testzeitraum von {trialDays} Tagen, der mit der Freigabe durch das DentalCompare-Team beginnt. In diesem Zeitraum erscheint die Klinik kostenlos im Verzeichnis und erhält Anfragen.",
       "Bei der Registrierung wird eine Zahlungsmethode hinterlegt; die erste Abbuchung erfolgt automatisch nach Ablauf des {trialDays}-tägigen Testzeitraums. Vor dieser ersten Abbuchung wird eine Benachrichtigung per E-Mail versendet.",
       "Das Abo kann während des Testzeitraums jederzeit gekündigt werden; in diesem Fall wird nichts berechnet.",
@@ -816,7 +830,7 @@ const de: typeof he = {
     joinEyebrow: "Für Zahnkliniken",
     joinTitle: "Anfragen von Patienten, die bereits einen Behandlungsplan haben.",
     joinSubtitle:
-      "Patienten weltweit senden einen Behandlungsplan und ein Röntgenbild und bitten um ein schriftliches Angebot. Eine geprüfte Klinik erscheint im Verzeichnis und erhält diese Anfragen direkt. Zuerst kostenlos testen, danach monatliches oder jährliches Abo.",
+      "Patienten aus aller Welt senden einen Behandlungsplan und ein Röntgenbild und bitten um ein schriftliches Angebot. Eine verifizierte Klinik erscheint im Verzeichnis und erhält diese Anfragen direkt. Starten Sie kostenlos oder mit einem bezahlten Abo samt Testphase.",
     planMonthlyTitle: "Monatstarif",
     planMonthlyPer: "pro Monat",
     planMonthlyNote: "Keine Bindung – jederzeit kündbar",
@@ -846,6 +860,33 @@ const de: typeof he = {
     // --- Clinic area ---
     dashMetaTitle: "Mein Bereich",
     dashTitle: "Klinikbereich",
+    dashSubFree: "Kostenloser Tarif – bis zu {cap} Anfragen pro Monat, ohne Zahlung.",
+    dashMonthHeading: "Dieser Monat",
+    dashMonthRequests: { one: "1 Anfrage erhalten", other: "{count} Anfragen erhalten" },
+    dashMonthOfCap: "Ihr Tarif umfasst bis zu {cap} Anfragen pro Monat.",
+    dashMonthCostPerRequest: "Diesen Monat hat Ihr Abo {price} pro Anfrage gekostet.",
+    dashMonthNoneYet:
+      "Diesen Monat noch keine Anfragen. Sie erscheinen hier, sobald ein Patient Sie auswählt.",
+    dashFreeAtCap:
+      "Sie haben diesen Monat alle {cap} Anfragen des kostenlosen Tarifs genutzt, daher wird Ihre Klinik Patienten bis zum {date} nicht angezeigt. Wechseln Sie in den bezahlten Tarif, um weiter Anfragen zu erhalten.",
+    dashFoundingActive: "Gründungsklinik: Sie zahlen {price} statt {regular} bis zum {date}.",
+    dashFoundingPending:
+      "Gründungsklinik: {price} statt {regular} für 12 Monate ab der ersten Abbuchung.",
+    dashUpgradeTitle: "Auf den Basis-Tarif upgraden",
+    dashUpgradeBody:
+      "Bis zu {cap} Anfragen pro Monat, für {monthly} im Monat oder {yearly} im Jahr.",
+    dashUpgradeFounding:
+      "Gründungspreis: {monthly} im Monat für 12 Monate – noch {left} Plätze frei",
+    dashUpgradeMonthly: "Upgrade – monatlich",
+    dashUpgradeYearly: "Upgrade – jährlich",
+    planFreeTitle: "Kostenlos",
+    planFreeNote: "Keine Karte nötig. Jederzeit upgraden.",
+    planCapLine: "Bis zu {cap} Anfragen pro Monat",
+    planFoundingBadge: "Gründungspreis für 12 Monate",
+    foundingBanner:
+      "Gründungsangebot: Die ersten Kliniken mit bezahltem Tarif zahlen in den ersten 12 Monaten ein Drittel weniger. Noch {left} Plätze frei.",
+    pendingStepLiveNoteFree:
+      "Im kostenlosen Tarif erscheint Ihre Klinik sofort nach der Freigabe im Verzeichnis.",
     dashNoClinicTitle: "Für dieses Konto wurde keine Klinik gefunden",
     dashNoClinicBody:
       "Dieses Konto ({email}) ist mit keiner Klinik verknüpft. Melden Sie sich mit der E-Mail-Adresse an, mit der Sie sich registriert haben, oder registrieren Sie eine Klinik.",
@@ -1018,6 +1059,9 @@ const de: typeof he = {
     requestsSubtitle: "{count} Anfragen insgesamt.",
     subscriptionsTitle: "Abos",
     subscriptionsSubtitle: "Abo-Status aller Kliniken auf der Plattform.",
+    subsFoundingCount: "Gründungsplätze: {taken} von {total} vergeben",
+    subFree: "Kostenlos",
+    subFoundingTag: "Gründung",
     subPending: "Zahlung ausstehend",
     subActive: "Aktiv",
     subPastDue: "Abbuchung fehlgeschlagen",

@@ -5,12 +5,14 @@ import type { db as Db } from "@/lib/db";
 const {
   requireAdmin,
   sendPaymentSetupEmail,
+  sendFreeClinicLiveEmail,
   sendDocumentsRejectedEmail,
   sendClinicRejectedEmail,
   blob,
 } = vi.hoisted(() => ({
   requireAdmin: vi.fn(async () => ({ id: "u1", email: "admin@example.com" })),
   sendPaymentSetupEmail: vi.fn(async () => true),
+  sendFreeClinicLiveEmail: vi.fn(async () => true),
   sendDocumentsRejectedEmail: vi.fn(
     async (_args: { token: string; items: { kind: string; reason: string }[] }) => true,
   ),
@@ -34,6 +36,7 @@ vi.mock("@/server/admin", async (orig) => {
 });
 vi.mock("@/server/subscription-notifications", () => ({
   sendPaymentSetupEmail,
+  sendFreeClinicLiveEmail,
   sendDocumentsRejectedEmail,
   sendClinicRejectedEmail,
 }));
@@ -47,7 +50,11 @@ let approveClinic: (id: string) => Promise<{ ok: boolean; error?: string }>;
 
 const created: string[] = [];
 
-async function seedPendingClinic(trialDays = 60, submittedBySelf = true) {
+async function seedPendingClinic(
+  trialDays = 60,
+  submittedBySelf = true,
+  tier: "FREE" | "BASIC" = "BASIC",
+) {
   const sfx = randomUUID().slice(0, 8);
   const dentist = await db.dentist.create({
     data: {
@@ -71,6 +78,8 @@ async function seedPendingClinic(trialDays = 60, submittedBySelf = true) {
           trialDays,
           setupToken: `stk_${sfx}`,
           status: "PENDING",
+          tier,
+          ...(tier === "FREE" ? { priceMinor: 0, monthlyRequestCap: 3 } : {}),
         },
       },
     },
@@ -91,7 +100,25 @@ describe.skipIf(!hasDb)("approveClinic (integration, real DB)", () => {
   beforeEach(() => {
     sendDocumentsRejectedEmail.mockClear();
     sendPaymentSetupEmail.mockClear();
+    sendFreeClinicLiveEmail.mockClear();
   });
+
+  it(
+    "puts a free clinic straight live, with no trial and no payment email",
+    async () => {
+      const dentistId = await seedPendingClinic(60, true, "FREE");
+
+      const result = await approveClinic(dentistId);
+      expect(result.ok).toBe(true);
+
+      const sub = await db.clinicSubscription.findUnique({ where: { dentistId } });
+      expect(sub!.status).toBe("ACTIVE");
+      expect(sub!.trialEndsAt).toBeNull();
+      expect(sendPaymentSetupEmail).not.toHaveBeenCalled();
+      expect(sendFreeClinicLiveEmail).toHaveBeenCalledTimes(1);
+    },
+    DB_TIMEOUT,
+  );
 
   afterEach(async () => {
     for (const id of created) {

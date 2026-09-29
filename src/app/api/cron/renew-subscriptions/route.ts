@@ -18,7 +18,9 @@ import {
 import {
   sendPaymentFailedEmail,
   sendTrialEndingEmail,
+  sendFoundingEndingEmail,
 } from "@/server/subscription-notifications";
+import { effectivePriceMinor, isFoundingNoticeDue } from "@/lib/founding";
 import { audit } from "@/lib/audit";
 import { logEvent } from "@/lib/log";
 import { asLocale } from "@/i18n/config";
@@ -176,6 +178,9 @@ export async function GET(req: Request) {
           recurringToken: true,
           payplusCustomerUid: true,
           currentPeriodEnd: true,
+          isFounding: true,
+          regularPriceMinor: true,
+          foundingEndsAt: true,
           dentist: { select: { clinicName: true, email: true, locale: true } },
         },
       })
@@ -208,11 +213,26 @@ export async function GET(req: Request) {
 
     // Checked after the cancel branch: a lapsed subscription should still be
     // cancelled even if its price is somehow unreadable.
-    const price = subscriptionPrice(sub);
-    if (!price) {
+    const snapshot = subscriptionPrice(sub);
+    if (!snapshot) {
       failed += 1;
       continue;
     }
+    // A founding clinic whose discounted year is over moves to its list price
+    // here, at the first renewal after the date. Written back so the row, the
+    // admin screen and every later renewal agree on what it now pays.
+    const dueMinor = effectivePriceMinor({ ...sub, priceMinor: snapshot.minor }, now);
+    if (dueMinor !== snapshot.minor) {
+      await db.clinicSubscription.update({ where: { id: sub.id }, data: { priceMinor: dueMinor } });
+      await audit({
+        actor: "system",
+        action: "subscription.founding_ended",
+        entity: "ClinicSubscription",
+        entityId: sub.id,
+        metadata: { fromMinor: snapshot.minor, toMinor: dueMinor },
+      });
+    }
+    const price = { minor: dueMinor, currency: snapshot.currency };
     const clinicT = await getDictionary(asLocale(sub.dentist.locale));
 
     try {
@@ -272,6 +292,51 @@ export async function GET(req: Request) {
     }
   }
 
+  // ── Pass 3: founding price-rise notices ────────────────────────────────────
+  // Every provider: Stripe ends the discount by itself, but the clinic still
+  // deserves the same month's warning a PayPlus clinic gets.
+  const foundingCandidates = await db.clinicSubscription.findMany({
+    where: {
+      isFounding: true,
+      foundingNoticeSentAt: null,
+      foundingEndsAt: { not: null },
+      regularPriceMinor: { not: null },
+      status: { in: ["ACTIVE", "PAST_DUE", "TRIALING"] },
+    },
+    select: {
+      id: true,
+      plan: true,
+      currency: true,
+      isFounding: true,
+      regularPriceMinor: true,
+      foundingEndsAt: true,
+      foundingNoticeSentAt: true,
+      dentist: { select: { clinicName: true, email: true, locale: true } },
+    },
+  });
+  let foundingNoticed = 0;
+  for (const sub of foundingCandidates) {
+    if (!isFoundingNoticeDue(sub, now) || !sub.foundingEndsAt || sub.regularPriceMinor === null) {
+      continue;
+    }
+    const sent = await sendFoundingEndingEmail({
+      email: sub.dentist.email,
+      clinicName: sub.dentist.clinicName,
+      endsAt: sub.foundingEndsAt,
+      regularPriceMinor: sub.regularPriceMinor,
+      currency: sub.currency,
+      plan: sub.plan as SubscriptionPlanType,
+      locale: asLocale(sub.dentist.locale),
+    });
+    if (sent) {
+      await db.clinicSubscription.update({
+        where: { id: sub.id },
+        data: { foundingNoticeSentAt: now },
+      });
+      foundingNoticed += 1;
+    }
+  }
+
   return NextResponse.json({
     // Reported so a run that did nothing can be told apart from a run that
     // could do nothing.
@@ -280,6 +345,7 @@ export async function GET(req: Request) {
     renewed,
     failed,
     canceled,
+    foundingNoticed,
     trials: {
       checked: trials.length,
       converted: trialsConverted,

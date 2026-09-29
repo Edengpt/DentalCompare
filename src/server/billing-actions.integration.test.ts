@@ -35,6 +35,8 @@ async function seedPendingSubscription(
     status?: "PENDING" | "TRIALING" | "ACTIVE";
     stripeSubscriptionId?: string;
     recurringToken?: string | null;
+    free?: boolean;
+    founding?: boolean;
   } = {},
 ) {
   const sfx = randomUUID().slice(0, 8);
@@ -63,6 +65,10 @@ async function seedPendingSubscription(
       status: overrides.status ?? "PENDING",
       stripeSubscriptionId: overrides.stripeSubscriptionId,
       recurringToken: overrides.recurringToken,
+      ...(overrides.free ? { tier: "FREE" as const, priceMinor: 0 } : {}),
+      ...(overrides.founding
+        ? { isFounding: true, priceMinor: 5300, regularPriceMinor: 7900 }
+        : {}),
     },
   });
   return setupToken;
@@ -81,6 +87,24 @@ describe.skipIf(!hasDb)("startPayment provider branching", () => {
     created.dentistIds = [];
     vi.clearAllMocks();
   }, DB_TIMEOUT);
+
+  it("never opens a payment page for the free tier", async () => {
+    const { createSubscriptionPaymentPage } = await import("@/lib/payplus");
+    const setupToken = await seedPendingSubscription("PAYPLUS", { status: "ACTIVE", free: true });
+    const result = await startPayment(setupToken);
+    expect(result.ok).toBe(false);
+    expect(createSubscriptionPaymentPage).not.toHaveBeenCalled();
+  });
+
+  it("bills a founding STRIPE clinic the list price with a coupon for the difference", async () => {
+    const { createSubscriptionCheckoutSession } = await import("@/lib/stripe");
+    const setupToken = await seedPendingSubscription("STRIPE", { founding: true });
+    const result = await startPayment(setupToken);
+    expect(result.ok).toBe(true);
+    const args = vi.mocked(createSubscriptionCheckoutSession).mock.calls[0][0];
+    expect(args.amountMinor).toBe(7900);
+    expect(args.discount).toEqual({ amountOffMinor: 2600, months: 14 });
+  });
 
   it("routes a STRIPE subscription to createSubscriptionCheckoutSession, not PayPlus", async () => {
     const { createSubscriptionPaymentPage } = await import("@/lib/payplus");

@@ -9,6 +9,15 @@ import type { SubscriptionProvider } from "@/generated/prisma/enums";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+/**
+ * Who bills a clinic, decided once from its country: PayPlus for Israel,
+ * Stripe everywhere else. Shared by registration (which records it) and the
+ * join page (which has to show the price in the currency that will be charged).
+ */
+export function providerForCountry(countryCode: string): SubscriptionProvider {
+  return countryCode === "IL" ? "PAYPLUS" : "STRIPE";
+}
+
 /** End of the free trial, counted from admin approval (PRD 4.4). */
 export function trialEndFrom(approvedAt: Date, trialDays: number): Date {
   return new Date(approvedAt.getTime() + trialDays * DAY_MS);

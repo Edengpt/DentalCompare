@@ -7,11 +7,13 @@ import {
   trialUnbilledAdminEmailHtml,
   documentsRejectedEmailHtml,
   clinicRejectedEmailHtml,
+  freeClinicLiveEmailHtml,
+  foundingEndingEmailHtml,
 } from "@/server/emails/templates";
 import { appUrl } from "@/lib/app-url";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { format } from "@/i18n/format";
-import { defaultLocale, type Locale } from "@/i18n/config";
+import { defaultLocale, intlLocale, type Locale } from "@/i18n/config";
 import { adminEmails } from "@/server/admin";
 import type { BillingBlocker } from "@/lib/subscription";
 
@@ -50,6 +52,81 @@ export async function sendPaymentSetupEmail(args: {
     return true;
   } catch (err) {
     console.error(`Failed to send payment setup email to ${args.email}:`, err);
+    return false;
+  }
+}
+
+/** Approval on the free tier: the clinic is live and there is nothing to set up. */
+export async function sendFreeClinicLiveEmail(args: {
+  email: string;
+  contactName: string | null;
+  clinicName: string;
+  locale: Locale;
+}): Promise<boolean> {
+  const t = (await getDictionary(args.locale)).emails;
+  const areaLink = `${appUrl()}/${args.locale}/clinics/dashboard`;
+  try {
+    const { error } = await getResend().emails.send({
+      from: fromAddress(),
+      to: args.email,
+      subject: t.subjectFreeLive,
+      html: freeClinicLiveEmailHtml({
+        locale: args.locale,
+        t,
+        contactName: args.contactName ?? "",
+        clinicName: args.clinicName,
+        areaLink,
+      }),
+    });
+    if (error) {
+      console.error(`Resend error for free-live ${args.email}:`, error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error(`Failed to send free-live email to ${args.email}:`, err);
+    return false;
+  }
+}
+
+/** The founding year ends in about a month; the list price follows. */
+export async function sendFoundingEndingEmail(args: {
+  email: string;
+  clinicName: string;
+  endsAt: Date;
+  regularPriceMinor: number;
+  currency: string;
+  plan: "MONTHLY" | "YEARLY";
+  locale: Locale;
+}): Promise<boolean> {
+  const t = (await getDictionary(args.locale)).emails;
+  const endsOn = new Intl.DateTimeFormat(intlLocale[args.locale], {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(args.endsAt);
+  try {
+    const { error } = await getResend().emails.send({
+      from: fromAddress(),
+      to: args.email,
+      subject: t.subjectFoundingEnding,
+      html: foundingEndingEmailHtml({
+        locale: args.locale,
+        t,
+        clinicName: args.clinicName,
+        endsOn,
+        regularPriceMinor: args.regularPriceMinor,
+        currency: args.currency,
+        planLabel: args.plan === "MONTHLY" ? t.planMonthly : t.planYearly,
+      }),
+    });
+    if (error) {
+      console.error(`Resend error for founding-ending ${args.email}:`, error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error(`Failed to send founding-ending email to ${args.email}:`, err);
     return false;
   }
 }

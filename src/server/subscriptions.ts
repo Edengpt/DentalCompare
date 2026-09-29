@@ -6,6 +6,7 @@ import { Prisma } from "@/generated/prisma/client";
 import type { SubscriptionProvider, SubscriptionTier } from "@/generated/prisma/enums";
 import type { SubscriptionPlanType } from "@/lib/constants";
 import { nextPeriodEnd } from "@/lib/subscription";
+import { foundingEndFrom } from "@/lib/founding";
 import { mapStripeSubscriptionStatus } from "@/lib/stripe";
 import type Stripe from "stripe";
 import { billingBlocker } from "@/lib/subscription";
@@ -28,6 +29,8 @@ export async function createPendingSubscription(
     monthlyRequestCap: number | null;
     provider: SubscriptionProvider;
     tier: SubscriptionTier;
+    isFounding?: boolean;
+    regularPriceMinor?: number | null;
   },
   client: Prisma.TransactionClient | typeof db = db,
 ): Promise<void> {
@@ -44,6 +47,8 @@ export async function createPendingSubscription(
       status: "PENDING",
       provider: args.provider,
       tier: args.tier,
+      isFounding: args.isFounding ?? false,
+      regularPriceMinor: args.regularPriceMinor ?? null,
     },
   });
 }
@@ -69,6 +74,8 @@ export async function activateSubscriptionBySetupToken(args: {
       currency: true,
       status: true,
       recurringToken: true,
+      isFounding: true,
+      foundingEndsAt: true,
     },
   });
   if (!sub) return { ok: false, error: e.subscriptionNotFound };
@@ -115,6 +122,8 @@ export async function activateSubscriptionBySetupToken(args: {
         payplusCustomerUid: args.customerUid ?? undefined,
         currentPeriodEnd: periodEnd,
         lastChargeAt: now,
+        // The founding year counts from the first money actually taken.
+        ...(sub.isFounding && !sub.foundingEndsAt ? { foundingEndsAt: foundingEndFrom(now) } : {}),
       },
     }),
     db.subscriptionCharge.create({
@@ -405,6 +414,13 @@ export async function recordStripeCharge(args: {
   });
   if (existing) return;
 
+  const founding = await db.clinicSubscription.findUnique({
+    where: { id: args.subscriptionId },
+    select: { isFounding: true, foundingEndsAt: true },
+  });
+  const startsFoundingYear =
+    founding?.isFounding === true && !founding.foundingEndsAt && args.amountMinor > 0;
+
   const now = new Date();
   await db.$transaction([
     db.clinicSubscription.update({
@@ -414,6 +430,8 @@ export async function recordStripeCharge(args: {
         currentPeriodEnd: args.periodEnd,
         lastChargeAt: now,
         paymentFailedNotifiedAt: null,
+        // Stripe's coupon ends on its own; this date is only for our notice.
+        ...(startsFoundingYear ? { foundingEndsAt: foundingEndFrom(args.periodStart) } : {}),
       },
     }),
     db.subscriptionCharge.create({

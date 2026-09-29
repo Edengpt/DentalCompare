@@ -1,6 +1,7 @@
 "use server";
 
 import { getDictionary } from "@/i18n/get-dictionary";
+import { stripeCouponMonths } from "@/lib/founding";
 import { getRequestLocale } from "@/i18n/request-locale";
 import { format } from "@/i18n/format";
 import { db } from "@/lib/db";
@@ -25,6 +26,8 @@ export async function startPayment(
       status: true,
       provider: true,
       trialDays: true,
+      isFounding: true,
+      regularPriceMinor: true,
       recurringToken: true,
       stripeSubscriptionId: true,
       dentist: { select: { clinicName: true, email: true, locale: true } },
@@ -45,6 +48,11 @@ export async function startPayment(
     console.error("startPayment: subscription has no price", { subscriptionId: sub.id });
     return { ok: false, error: e.subscriptionMisconfigured };
   }
+  // The free tier has nothing to pay. Its setup token still exists (every
+  // subscription gets one), so a stray link must not open a ₪0 checkout.
+  if (sub.priceMinor === 0) {
+    return { ok: false, error: e.subscriptionAlreadyActive };
+  }
 
   // The payment line item is built from the CLINIC's own saved locale, not
   // the ambient request locale — a Hebrew clinic must always see a Hebrew
@@ -60,9 +68,16 @@ export async function startPayment(
       return { ok: false, error: e.paymentsNotConfigured };
     }
     try {
+      const founding = sub.isFounding && sub.regularPriceMinor !== null;
       const { url } = await createSubscriptionCheckoutSession({
         setupToken,
-        amountMinor: sub.priceMinor,
+        amountMinor: founding ? sub.regularPriceMinor! : sub.priceMinor,
+        discount: founding
+          ? {
+              amountOffMinor: sub.regularPriceMinor! - sub.priceMinor,
+              months: stripeCouponMonths(sub.trialDays, sub.plan),
+            }
+          : undefined,
         currency: sub.currency,
         trialDays: sub.trialDays,
         intervalMonths: sub.plan === "MONTHLY" ? 1 : 12,

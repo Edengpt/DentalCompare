@@ -164,6 +164,56 @@ export function paymentSetupEmailHtml(opts: {
   );
 }
 
+/** Clinic approved on the free tier: it is live, nothing to pay. */
+export function freeClinicLiveEmailHtml(opts: {
+  locale: Locale;
+  t: EmailStrings;
+  contactName: string;
+  clinicName: string;
+  areaLink: string;
+}): string {
+  const { locale, t, contactName, clinicName, areaLink } = opts;
+
+  return shell(
+    locale,
+    `    <h2 style="color: #0e2f55;">${t.freeLiveHeading}</h2>
+    <p>${format(t.greeting, { name: escapeHtml(contactName) || t.clinicTeam })}</p>
+    <p>${format(t.freeLiveBody, { clinic: `<strong>${escapeHtml(clinicName)}</strong>` })}</p>
+    <p>${t.freeLiveUpgrade}</p>
+    <p style="margin: 24px 0;">
+      <a href="${areaLink}" style="background:#0e2f55;color:#fff;padding:12px 22px;border-radius:999px;text-decoration:none;">
+        ${t.freeLiveCta}
+      </a>
+    </p>
+    <p style="font-size: 12px; color: #777;">
+      ${t.questionsPrefix} <a href="mailto:${SITE_CONFIG.supportEmail}">${SITE_CONFIG.supportEmail}</a>
+    </p>`,
+  );
+}
+
+/** Founding clinic: the discounted year ends soon and the list price follows. */
+export function foundingEndingEmailHtml(opts: {
+  locale: Locale;
+  t: EmailStrings;
+  clinicName: string;
+  endsOn: string;
+  regularPriceMinor: number;
+  currency: string;
+  planLabel: string;
+}): string {
+  const { locale, t, clinicName, endsOn, regularPriceMinor, currency, planLabel } = opts;
+  const price = formatMoney(regularPriceMinor, currency, locale);
+
+  return shell(
+    locale,
+    `    <h2 style="color:#0e2f55;">${t.foundingEndingHeading}</h2>
+    <p>${format(t.greeting, { name: `<strong>${escapeHtml(clinicName)}</strong>` })}</p>
+    <p>${format(t.foundingEndingBody, { date: escapeHtml(endsOn), plan: escapeHtml(planLabel), price: `<strong>${price}</strong>` })}</p>
+    <p>${t.foundingEndingNoAction}</p>
+    <p style="font-size:12px;color:#777;">${t.trialCancelPrefix} <a href="mailto:${SITE_CONFIG.supportEmail}">${SITE_CONFIG.supportEmail}</a></p>`,
+  );
+}
+
 /** Clinic "your free trial is about to end" email. */
 export function trialEndingEmailHtml(opts: {
   locale: Locale;

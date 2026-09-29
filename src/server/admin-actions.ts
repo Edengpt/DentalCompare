@@ -12,6 +12,7 @@ import { requireAdmin } from "@/server/admin";
 import { del } from "@vercel/blob";
 import {
   sendPaymentSetupEmail,
+  sendFreeClinicLiveEmail,
   sendDocumentsRejectedEmail,
   sendClinicRejectedEmail,
 } from "@/server/subscription-notifications";
@@ -62,7 +63,9 @@ export async function approveClinic(dentistId: string): Promise<ActionResult> {
       contactName: true,
       clinicName: true,
       locale: true,
-      subscription: { select: { id: true, setupToken: true, status: true, trialDays: true } },
+      subscription: {
+        select: { id: true, setupToken: true, status: true, trialDays: true, tier: true },
+      },
     },
   });
   if (!dentist) return { ok: false, error: e.clinicNotFound };
@@ -79,6 +82,10 @@ export async function approveClinic(dentistId: string): Promise<ActionResult> {
   // registration: the clinic can't evaluate lead quality until it's actually
   // live in the directory, so trial days before approval would be worthless.
   const approvedAt = new Date();
+  // The free tier has no trial and nothing to bill: it goes straight to ACTIVE
+  // with no token and no period end, which the renewal cron already skips (the
+  // same shape as an admin-created complimentary subscription).
+  const isFree = dentist.subscription.tier === "FREE";
   await db.$transaction([
     // updateMany, not update: update throws when nothing matches, and
     // re-approving an already-approved clinic has to be a no-op on the stamps
@@ -101,7 +108,12 @@ export async function approveClinic(dentistId: string): Promise<ActionResult> {
     // not hand an ACTIVE or CANCELED one a fresh 60 free days.
     db.clinicSubscription.updateMany({
       where: { id: dentist.subscription.id, status: "PENDING" },
-      data: { status: "TRIALING", trialEndsAt: trialEndFrom(approvedAt, dentist.subscription.trialDays) },
+      data: isFree
+        ? { status: "ACTIVE" }
+        : {
+            status: "TRIALING",
+            trialEndsAt: trialEndFrom(approvedAt, dentist.subscription.trialDays),
+          },
     }),
   ]);
 
@@ -109,13 +121,17 @@ export async function approveClinic(dentistId: string): Promise<ActionResult> {
   // isActive included — so a re-approval still has to restore the listing.
   await db.dentist.update({ where: { id: dentistId }, data: { isActive: true } });
 
-  await sendPaymentSetupEmail({
+  const approvalEmail = {
     email: dentist.email,
     contactName: dentist.contactName,
     clinicName: dentist.clinicName,
-    setupToken: dentist.subscription.setupToken,
     locale: asLocale(dentist.locale),
-  });
+  };
+  if (isFree) {
+    await sendFreeClinicLiveEmail(approvalEmail);
+  } else {
+    await sendPaymentSetupEmail({ ...approvalEmail, setupToken: dentist.subscription.setupToken });
+  }
 
   await audit({
     actor: admin.email,
@@ -124,7 +140,10 @@ export async function approveClinic(dentistId: string): Promise<ActionResult> {
     entityId: dentistId,
     metadata: {
       clinicName: dentist.clinicName,
-      trialEndsAt: trialEndFrom(approvedAt, dentist.subscription.trialDays).toISOString(),
+      tier: dentist.subscription.tier,
+      trialEndsAt: isFree
+        ? null
+        : trialEndFrom(approvedAt, dentist.subscription.trialDays).toISOString(),
     },
   });
 
