@@ -541,6 +541,10 @@ const he = {
     newQuoteBody:
       "מרפאה הגישה הצעת מחיר לבקשה שלך ב-DentalCompare. היכנס/י כדי לראות את ההשוואה ולבחור.",
     newQuoteCta: "צפייה בהשוואה",
+    subjectQuoteReminder: "הצעות המחיר שלך מחכות לך",
+    quoteReminderHeading: "עוד לא ראית את ההצעות",
+    quoteReminderBody: { one: "מחכה לך הצעת מחיר אחת על תוכנית הטיפול שלך. אפשר לראות אותה באזור האישי ולהחליט בנחת.", other: "מחכות לך {count} הצעות מחיר על תוכנית הטיפול שלך. אפשר להשוות ביניהן זו לצד זו באזור האישי." },
+    quoteReminderNote: "אין שום התחייבות — אפשר גם לדחות את כל ההצעות.",
     quoteApprovedHeading: "המטופל בחר בכם 🎉",
     quoteApprovedBody: "{patient} אישר/ה את ההצעה שלכם. אפשר ליצור איתם קשר ולתאם המשך.",
     quoteApprovedCta: "לצפייה באזור שלי",

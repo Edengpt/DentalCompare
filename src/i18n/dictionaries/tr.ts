@@ -559,6 +559,14 @@ const tr: typeof he = {
     newQuoteBody:
       "Bir klinik, DentalCompare'deki talebiniz için teklif gönderdi. Karşılaştırmayı görmek ve seçim yapmak için giriş yapın.",
     newQuoteCta: "Karşılaştırmayı görüntüle",
+    subjectQuoteReminder: "Teklifleriniz sizi bekliyor",
+    quoteReminderHeading: "Tekliflerinize henüz bakmadınız",
+    quoteReminderBody: {
+      one: "Tedavi planınız için bir teklif sizi bekliyor. Hesabınızda görüp acele etmeden karar verebilirsiniz.",
+      other:
+        "Tedavi planınız için {count} teklif sizi bekliyor. Hesabınızda yan yana karşılaştırabilirsiniz.",
+    },
+    quoteReminderNote: "Hiçbir yükümlülük yok; tekliflerin hepsini reddedebilirsiniz.",
     quoteApprovedHeading: "Hasta sizi seçti 🎉",
     quoteApprovedBody:
       "{patient} adlı hasta teklifinizi onayladı. Hastayla iletişime geçip tedaviyi planlayabilirsiniz.",

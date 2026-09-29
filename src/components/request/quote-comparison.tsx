@@ -167,48 +167,90 @@ export function QuoteComparison({
     { label: d.rowNote, cell: (q) => q.note || notStated },
   ];
 
+  const [statusRow, priceRow, ...detailRows] = rows;
+
   return (
-    // The table scrolls inside this box; the page never scrolls sideways.
-    <div className="border-border/60 bg-card overflow-x-auto rounded-lg border">
-      <table className="w-full min-w-[560px] text-sm">
-        <thead>
-          <tr className="border-border/60 border-b">
-            <th className="text-muted-foreground w-32 px-4 py-3 text-start text-xs font-medium">
-              {d.rowClinic}
-            </th>
-            {quotes.map((q) => (
-              <th key={q.dentistId} className="px-4 py-3 text-start align-top">
-                <span className="text-foreground block font-semibold">{q.dentistName}</span>
-                <span className="text-muted-foreground block text-xs font-normal">
-                  {q.clinicName}
+    <>
+      {/* Phones: one card per clinic, stacked. A three-column table at 390px
+          meant scrolling sideways to compare and hunting for the approve
+          buttons at the far edge. */}
+      <ul className="space-y-4 sm:hidden">
+        {quotes.map((q) => (
+          <li key={q.dentistId} className="border-border/60 bg-card rounded-lg border p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-foreground font-semibold">{q.clinicName}</p>
+                <p className="text-muted-foreground text-xs">{q.dentistName}</p>
+              </div>
+              {q.dentistId === cheapestId && (
+                <span className="bg-teal-deep/10 text-teal-deep shrink-0 rounded-sm px-2 py-0.5 text-xs font-semibold">
+                  {d.cheapest}
                 </span>
-                {q.dentistId === cheapestId && (
-                  <span className="bg-teal-deep/10 text-teal-deep mt-1.5 inline-block rounded-sm px-2 py-0.5 text-xs font-semibold">
-                    {d.cheapest}
-                  </span>
-                )}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className="divide-border/60 divide-y">
-          {rows.map((row) => (
-            <tr key={row.label}>
-              <th
-                scope="row"
-                className="text-muted-foreground bg-muted/30 px-4 py-3 text-start align-top text-xs font-medium"
-              >
-                {row.label}
+              )}
+            </div>
+            {/* A clinic that hasn't answered yet has nothing to list: seven
+                "not stated" lines would bury the ones that did. */}
+            {q.status !== null && (
+              <>
+                <div className="mt-3">{priceRow.cell(q)}</div>
+                <dl className="divide-border/60 mt-3 divide-y text-sm">
+                  {detailRows.map((row) => (
+                    <div key={row.label} className="grid grid-cols-[7rem_1fr] gap-3 py-2">
+                      <dt className="text-muted-foreground text-xs">{row.label}</dt>
+                      <dd className="text-foreground">{row.cell(q)}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </>
+            )}
+            <div className="border-border/60 mt-3 border-t pt-3">{statusRow.cell(q)}</div>
+          </li>
+        ))}
+      </ul>
+
+      {/* From sm up: the side-by-side table. It scrolls inside this box; the
+        page never scrolls sideways. */}
+      <div className="border-border/60 bg-card hidden overflow-x-auto rounded-lg border sm:block">
+        <table className="w-full min-w-[560px] text-sm">
+          <thead>
+            <tr className="border-border/60 border-b">
+              <th className="text-muted-foreground w-32 px-4 py-3 text-start text-xs font-medium">
+                {d.rowClinic}
               </th>
               {quotes.map((q) => (
-                <td key={q.dentistId} className="text-foreground px-4 py-3 align-top">
-                  {row.cell(q)}
-                </td>
+                <th key={q.dentistId} className="px-4 py-3 text-start align-top">
+                  <span className="text-foreground block font-semibold">{q.clinicName}</span>
+                  <span className="text-muted-foreground block text-xs font-normal">
+                    {q.dentistName}
+                  </span>
+                  {q.dentistId === cheapestId && (
+                    <span className="bg-teal-deep/10 text-teal-deep mt-1.5 inline-block rounded-sm px-2 py-0.5 text-xs font-semibold">
+                      {d.cheapest}
+                    </span>
+                  )}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody className="divide-border/60 divide-y">
+            {rows.map((row) => (
+              <tr key={row.label}>
+                <th
+                  scope="row"
+                  className="text-muted-foreground bg-muted/30 px-4 py-3 text-start align-top text-xs font-medium"
+                >
+                  {row.label}
+                </th>
+                {quotes.map((q) => (
+                  <td key={q.dentistId} className="text-foreground px-4 py-3 align-top">
+                    {row.cell(q)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }

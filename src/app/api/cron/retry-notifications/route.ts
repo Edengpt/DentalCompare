@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { asLocale } from "@/i18n/config";
 import { sendNewQuoteEmail } from "@/server/quote-notifications";
+import { sendDueQuoteReminders } from "@/server/quote-reminders";
 import {
   sendQuoteApprovedEmail,
   sendQuoteRejectedEmail,
@@ -239,5 +240,15 @@ export async function GET(req: Request) {
     console.error("retry-notifications: completion-declined block failed:", err);
   }
 
-  return NextResponse.json({ checked, sent });
+  // Not a retry: the one reminder about quotes the patient hasn't opened.
+  // Lives in this daily run rather than its own cron so it goes out at the
+  // same civil hour as every other patient email.
+  let reminders = { checked: 0, sent: 0 };
+  try {
+    reminders = await sendDueQuoteReminders();
+  } catch (err) {
+    console.error("retry-notifications: quote-reminder block failed:", err);
+  }
+
+  return NextResponse.json({ checked, sent, reminders });
 }

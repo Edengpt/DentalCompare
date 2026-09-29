@@ -563,6 +563,14 @@ const fr: typeof he = {
     newQuoteBody:
       "Une clinique a soumis un devis pour votre demande sur DentalCompare. Connectez-vous pour voir la comparaison et faire votre choix.",
     newQuoteCta: "Voir la comparaison",
+    subjectQuoteReminder: "Vos devis vous attendent",
+    quoteReminderHeading: "Vous n'avez pas encore consulté vos devis",
+    quoteReminderBody: {
+      one: "Un devis pour votre plan de traitement vous attend. Vous pouvez le consulter dans votre espace et décider à votre rythme.",
+      other:
+        "{count} devis pour votre plan de traitement vous attendent. Vous pouvez les comparer côte à côte dans votre espace.",
+    },
+    quoteReminderNote: "Aucun engagement — vous pouvez refuser tous les devis.",
     quoteApprovedHeading: "Le patient vous a choisi 🎉",
     quoteApprovedBody:
       "{patient} a accepté votre devis. Vous pouvez le contacter pour planifier le traitement.",

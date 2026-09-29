@@ -557,6 +557,10 @@ const en: typeof he = {
     newQuoteBody:
       "A clinic has submitted a quote for your DentalCompare request. Sign in to see the comparison and choose.",
     newQuoteCta: "View the comparison",
+    subjectQuoteReminder: "Your quotes are waiting for you",
+    quoteReminderHeading: "You haven't looked at your quotes yet",
+    quoteReminderBody: { one: "One quote for your treatment plan is waiting for you. You can see it in your account and decide in your own time.", other: "{count} quotes for your treatment plan are waiting for you. You can compare them side by side in your account." },
+    quoteReminderNote: "There's no obligation — you're free to turn every quote down.",
     quoteApprovedHeading: "The patient chose you 🎉",
     quoteApprovedBody: "{patient} approved your quote. You can contact them and schedule the treatment.",
     quoteApprovedCta: "View my area",

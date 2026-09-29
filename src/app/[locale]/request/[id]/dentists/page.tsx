@@ -5,6 +5,7 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
+import { StepHeader } from "@/components/request/step-header";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { isLocale, defaultLocale } from "@/i18n/config";
 import { DentistDirectory } from "@/components/dentists/dentist-directory";
@@ -102,24 +103,21 @@ export default async function RequestDentistsPage({
     <>
       <Header />
       <main className="flex-1">
-        <section className="border-border/60 bg-muted/30 border-b py-12 lg:py-16">
-          <div className="mx-auto max-w-7xl px-6 lg:px-10">
-            <p className="eyebrow">{t.requestFlow.dentistsStep}</p>
-            <h1 className="font-display text-foreground mt-4 text-4xl font-bold tracking-tight text-balance sm:text-5xl">
-              {t.requestFlow.dentistsTitle}
-            </h1>
-            <p className="text-muted-foreground mt-4 max-w-2xl text-lg text-pretty">
-              {t.requestFlow.dentistsSubtitle}
-            </p>
+        <StepHeader
+          step={3}
+          wide
+          label={t.requestFlow.dentistsStep}
+          title={t.requestFlow.dentistsTitle}
+          subtitle={t.requestFlow.dentistsSubtitle}
+        >
             {/* The badge sits on every card, so it cannot explain itself. What
                 it means is a property of the whole directory, and belongs here
                 once rather than repeated on each clinic. */}
-            <p className="text-teal-deep mt-4 inline-flex max-w-2xl items-start gap-2 text-sm">
-              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-              {t.dentists.verifiedExplainer}
-            </p>
-          </div>
-        </section>
+          <p className="text-teal-deep mt-3 inline-flex max-w-2xl items-start gap-2 text-sm sm:mt-4">
+            <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+            {t.dentists.verifiedExplainer}
+          </p>
+        </StepHeader>
 
         <DentistDirectory
           dentists={dentists}
