@@ -11,6 +11,7 @@ import { StartSearchProvider } from "@/components/sections/start-search-context"
 import { getDictionary } from "@/i18n/get-dictionary";
 import { plural } from "@/i18n/format";
 import { countryName } from "@/lib/country-names";
+import { DESTINATION_PHOTOS } from "@/lib/destination-photos";
 import { getHomepageDestinations } from "@/lib/homepage-destinations";
 import { SPECIALTIES } from "@/lib/constants";
 import { translateSpecialty } from "@/lib/labels";
@@ -43,6 +44,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     name: d.name,
     clinicsLabel:
       d.clinics === 0 ? t.destinations.joiningSoon : plural(t.destinations.verified, d.clinics),
+    photo: DESTINATION_PHOTOS[d.code] ?? null,
   }));
 
   return (
