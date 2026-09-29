@@ -18,10 +18,10 @@ describe("negotiateLocale", () => {
     expect(negotiateLocale(undefined, "pt-BR,pt;q=0.9,de;q=0.8")).toBe("de");
   });
 
-  it("falls back to Hebrew when nothing matches", () => {
-    expect(negotiateLocale(undefined, "pt-BR,pt;q=0.9")).toBe("he");
-    expect(negotiateLocale(undefined, null)).toBe("he");
-    expect(negotiateLocale(undefined, "")).toBe("he");
+  it("falls back to English when nothing matches", () => {
+    expect(negotiateLocale(undefined, "pt-BR,pt;q=0.9")).toBe("en");
+    expect(negotiateLocale(undefined, null)).toBe("en");
+    expect(negotiateLocale(undefined, "")).toBe("en");
   });
 
   it("ignores a malformed cookie rather than trusting it", () => {
