@@ -506,6 +506,11 @@ const en: typeof he = {
   emails: {
     subjectNewQuote: "You've received a new quote 🎉",
     subjectQuoteRequest: "New quote request — DentalCompare",
+    subjectClinicQuoteReminder: "Reminder: a patient is waiting for your quote",
+    clinicReminderHeading: "A patient is still waiting for your quote",
+    clinicReminderBody: "Yesterday we sent you the treatment plan and x-ray of a patient who chose your clinic, and we haven't received a quote from you yet. The patient is comparing the quotes as they arrive — it's worth having yours among them.",
+    clinicReminderCta: "Submit your quote",
+    clinicReminderNote: "The treatment plan and x-ray are attached to the original request email. This is the only reminder for this request.",
     subjectPaymentSetup: "Clinic approved — activate your DentalCompare subscription",
     subjectFreeLive: "Your clinic is approved and live on DentalCompare",
     freeLiveHeading: "Your clinic is approved — and already listed",

@@ -172,6 +172,75 @@ describe.skipIf(!hasDb)("retry-notifications cron (integration, real DB)", () =>
     expect(h.state.sends.filter((m) => m.to === user.email)).toHaveLength(0);
   });
 
+  it("nudges a clinic once when it has not quoted a day after the request", async () => {
+    // A request with two clinics: one quoted, one silent for two days.
+    const twoDaysAgo = new Date(Date.now() - 48 * HOUR);
+    const { quote } = await seedQuote({ createdAt: twoDaysAgo, notifiedAt: twoDaysAgo });
+    const rd = await db.requestDentist.findUniqueOrThrow({ where: { id: quote.requestDentistId } });
+    const silent = await db.dentist.create({
+      data: {
+        clinicName: "שקטה",
+        dentistName: "ד״ר",
+        email: `silent_${randomUUID().slice(0, 8)}@example.com`,
+        phone: "03",
+        city: "חיפה",
+        address: "רחוב 3",
+        experienceYears: 3,
+      },
+    });
+    created.dentistIds.push(silent.id);
+    await db.requestDentist.create({
+      data: {
+        requestId: rd.requestId,
+        dentistId: silent.id,
+        emailSent: true,
+        sentAt: twoDaysAgo,
+        quoteToken: randomUUID(),
+      },
+    });
+
+    await call();
+    expect(h.state.sends.filter((m) => m.to === silent.email)).toHaveLength(1);
+
+    h.state.sends = [];
+    await call();
+    expect(h.state.sends.filter((m) => m.to === silent.email)).toHaveLength(0);
+  });
+
+  it("does not nudge a clinic once the patient chose another one", async () => {
+    const twoDaysAgo = new Date(Date.now() - 48 * HOUR);
+    const { quote } = await seedQuote({
+      createdAt: twoDaysAgo,
+      notifiedAt: twoDaysAgo,
+      quote: { status: "APPROVED", decidedAt: twoDaysAgo },
+    });
+    const rd = await db.requestDentist.findUniqueOrThrow({ where: { id: quote.requestDentistId } });
+    const silent = await db.dentist.create({
+      data: {
+        clinicName: "שקטה",
+        dentistName: "ד״ר",
+        email: `silent_${randomUUID().slice(0, 8)}@example.com`,
+        phone: "03",
+        city: "חיפה",
+        address: "רחוב 3",
+        experienceYears: 3,
+      },
+    });
+    created.dentistIds.push(silent.id);
+    await db.requestDentist.create({
+      data: {
+        requestId: rd.requestId,
+        dentistId: silent.id,
+        emailSent: true,
+        sentAt: twoDaysAgo,
+        quoteToken: randomUUID(),
+      },
+    });
+
+    await call();
+    expect(h.state.sends.filter((m) => m.to === silent.email)).toHaveLength(0);
+  });
+
   it("rejects a call without the cron secret", async () => {
     const res = await GET(new Request("http://x/api/cron/retry-notifications"));
     expect(res.status).toBe(401);
