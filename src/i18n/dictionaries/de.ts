@@ -1285,6 +1285,38 @@ const de: typeof he = {
     lastUpdated: "Juli 2026",
   },
 
+  treatments: {
+    patientMetaTitle: "Meine Behandlungen",
+    patientTitle: "Meine Behandlungen",
+    patientSubtitle:
+      "Jede Behandlung, der Sie zugestimmt haben, in jeder Klinik: was vereinbart wurde, wo sie steht und wie lange die Garantie läuft.",
+    patientEmpty:
+      "Noch keine Behandlungen. Sobald Sie einem Angebot zustimmen, wird hier eine Behandlungsakte angelegt.",
+    backToDashboard: "← Mein Konto",
+    dashboardLink: "Behandlungsakten: {count} – Vereinbarung, Stand, Garantie",
+    approvedOn: "Zugestimmt am {date}",
+    warrantyUntil: "Garantie bis {date}",
+    statusApproved: "Zugestimmt",
+    statusInTreatment: "In Behandlung",
+    statusCompleted: "Abgeschlossen",
+    fileMetaTitle: "Behandlungsakte",
+    fileTitle: "Behandlungsakte – {clinic}",
+    backToList: "← Alle Behandlungen",
+    warrantyActive:
+      "Garantie über {years} Jahre – gültig bis {date}. Diese Seite lohnt sich aufzubewahren.",
+    warrantyPending: "Garantie über {years} Jahre – sie beginnt mit dem Abschluss der Behandlung.",
+    agreedHeading: "Was vereinbart wurde",
+    documentsHeading: "Ihre Unterlagen",
+    clinicMetaTitle: "Meine Patienten",
+    clinicTitle: "Meine Patienten",
+    clinicSubtitle:
+      "Patienten, die sich für Sie entschieden haben, mit jeder Behandlung bei Ihnen. Behandlungen in anderen Kliniken werden hier nicht angezeigt.",
+    clinicEmpty:
+      "Noch keine Patienten. Sobald ein Patient einem Ihrer Angebote zustimmt, erscheint er hier.",
+    backToClinicArea: "← Klinikbereich",
+    clinicDashboardLink:
+      "Alle Patienten, die sich für Sie entschieden haben, mit ihrer Behandlungshistorie bei Ihnen",
+  },
   footer: {
     tagline: "Zahnarzt-Angebote weltweit vergleichen.",
     groupPatients: "Für Patienten",

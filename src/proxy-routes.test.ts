@@ -33,6 +33,9 @@ const PROTECTED = [
   "/admin",
   "/admin/clinics",
   "/clinics/dashboard",
+  // The shared treatment files: a patient's treatments, a clinic's patients.
+  "/dashboard/treatments/rd123",
+  "/clinics/dashboard/patients",
   // A patient's name, phone and medical files are on this page.
   "/clinics/requests/rd123",
 ];

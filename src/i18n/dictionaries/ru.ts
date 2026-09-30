@@ -1259,6 +1259,35 @@ const ru: typeof he = {
     lastUpdated: "Июль 2026",
   },
 
+  treatments: {
+    patientMetaTitle: "Мои лечения",
+    patientTitle: "Мои лечения",
+    patientSubtitle:
+      "Все одобренные вами лечения во всех клиниках: о чём договорились, на каком этапе лечение и до какого числа действует гарантия.",
+    patientEmpty:
+      "Пока здесь нет лечений. Как только вы одобрите предложение, здесь появится карта лечения.",
+    backToDashboard: "← Личный кабинет",
+    dashboardLink: "Карты лечения: {count} — договорённости, этапы, гарантия",
+    approvedOn: "Одобрено: {date}",
+    warrantyUntil: "Гарантия до {date}",
+    statusApproved: "Одобрено",
+    statusInTreatment: "Идёт лечение",
+    statusCompleted: "Завершено",
+    fileMetaTitle: "Карта лечения",
+    fileTitle: "Карта лечения — {clinic}",
+    backToList: "← Все лечения",
+    warrantyActive: "Гарантия (лет: {years}) действует до {date}. Сохраните эту страницу.",
+    warrantyPending: "Гарантия (лет: {years}) начнётся в день завершения лечения.",
+    agreedHeading: "О чём договорились",
+    documentsHeading: "Ваши документы",
+    clinicMetaTitle: "Мои пациенты",
+    clinicTitle: "Мои пациенты",
+    clinicSubtitle:
+      "Пациенты, выбравшие вас, со всеми их лечениями в вашей клинике. Лечение в других клиниках здесь не показывается.",
+    clinicEmpty: "Пациентов пока нет. Когда пациент одобрит ваше предложение, он появится здесь.",
+    backToClinicArea: "← Кабинет клиники",
+    clinicDashboardLink: "Все пациенты, выбравшие вас, с историей лечения в вашей клинике",
+  },
   footer: {
     tagline: "Сравнивайте предложения стоматологических клиник по всему миру.",
     groupPatients: "Пациентам",
