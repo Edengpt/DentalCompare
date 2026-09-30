@@ -1278,6 +1278,38 @@ const fr: typeof he = {
     lastUpdated: "Juillet 2026",
   },
 
+  treatments: {
+    patientMetaTitle: "Mes soins",
+    patientTitle: "Mes soins",
+    patientSubtitle:
+      "Tous les soins que vous avez acceptés, dans chaque clinique : ce qui a été convenu, où en est le traitement et jusqu'à quand court la garantie.",
+    patientEmpty:
+      "Aucun soin pour l'instant. Dès que vous acceptez un devis, un dossier de soins s'ouvre ici.",
+    backToDashboard: "← Mon espace",
+    dashboardLink: "Dossiers de soins : {count} — ce qui a été convenu, l'avancement, la garantie",
+    approvedOn: "Accepté le {date}",
+    warrantyUntil: "Garantie jusqu'au {date}",
+    statusApproved: "Accepté",
+    statusInTreatment: "En cours",
+    statusCompleted: "Terminé",
+    fileMetaTitle: "Dossier de soins",
+    fileTitle: "Dossier de soins — {clinic}",
+    backToList: "← Tous les soins",
+    warrantyActive: "Garantie de {years} ans — valable jusqu'au {date}. Gardez cette page.",
+    warrantyPending:
+      "Garantie de {years} ans — elle commence le jour où le traitement est terminé.",
+    agreedHeading: "Ce qui a été convenu",
+    documentsHeading: "Vos documents",
+    clinicMetaTitle: "Mes patients",
+    clinicTitle: "Mes patients",
+    clinicSubtitle:
+      "Les patients qui vous ont choisi, avec chaque soin réalisé chez vous. Les soins réalisés dans d'autres cliniques n'apparaissent pas ici.",
+    clinicEmpty:
+      "Aucun patient pour l'instant. Lorsqu'un patient accepte l'un de vos devis, il apparaît ici.",
+    backToClinicArea: "← Espace clinique",
+    clinicDashboardLink:
+      "Tous les patients qui vous ont choisi, avec leur historique de soins chez vous",
+  },
   footer: {
     tagline: "Comparez des devis de soins dentaires, partout dans le monde.",
     groupPatients: "Pour les patients",

@@ -14,6 +14,8 @@ import { db } from "@/lib/db";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { isLocale, defaultLocale } from "@/i18n/config";
 import { ForwardArrow } from "@/components/ui/forward-arrow";
+import { format } from "@/i18n/format";
+import { TREATMENT_STATUSES } from "@/server/treatments";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -62,6 +64,15 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
       })
     : [];
 
+  // Treatments the patient approved, across all requests — the way into the
+  // shared treatment files.
+  const treatmentCount = requests.reduce(
+    (n, r) =>
+      n +
+      r.requestDentists.filter((rd) => rd.quote && TREATMENT_STATUSES.includes(rd.quote.status))
+        .length,
+    0,
+  );
   const hasRequests = requests.length > 0;
 
   // A clinic asking the patient to confirm completion is the one thing that
@@ -142,6 +153,22 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
                     />
                   ))}
                 </div>
+              )}
+              {treatmentCount > 0 && (
+                <Link
+                  href="/dashboard/treatments"
+                  className="border-teal/30 bg-teal/5 hover:border-teal/60 mt-10 flex items-center justify-between gap-3 rounded-lg border p-4 transition-colors"
+                >
+                  <span>
+                    <span className="text-foreground block font-semibold">
+                      {t.treatments.patientTitle}
+                    </span>
+                    <span className="text-muted-foreground text-sm">
+                      {format(t.treatments.dashboardLink, { count: treatmentCount })}
+                    </span>
+                  </span>
+                  <ForwardArrow className="text-teal h-5 w-5 shrink-0" />
+                </Link>
               )}
               <RequestList
                 t={t}

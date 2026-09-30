@@ -261,7 +261,11 @@ export default async function ClinicDashboardPage({
             )}
             <p className="text-foreground">
               {subscription.status === "TRIALING" ? t.clinics.dashSubTrialing : null}
-              {trialLine ? (subscription.status === "TRIALING" ? ` · ${trialLine}` : trialLine) : ""}
+              {trialLine
+                ? subscription.status === "TRIALING"
+                  ? ` · ${trialLine}`
+                  : trialLine
+                : ""}
             </p>
 
             {/* The alert the clinic could never see before. Which of the two
@@ -379,6 +383,23 @@ export default async function ClinicDashboardPage({
           </Link>
         )}
       </section>
+
+      {clinic.approvedAt !== null && (
+        <Link
+          href="/clinics/dashboard/patients"
+          className="border-teal/30 bg-teal/5 hover:border-teal/60 flex items-center justify-between gap-3 rounded-lg border p-4 transition-colors"
+        >
+          <span>
+            <span className="text-foreground block font-semibold">{t.treatments.clinicTitle}</span>
+            <span className="text-muted-foreground text-sm">
+              {t.treatments.clinicDashboardLink}
+            </span>
+          </span>
+          <span aria-hidden="true" className="text-teal text-lg">
+            ›
+          </span>
+        </Link>
+      )}
 
       <section className="border-border/60 bg-card rounded-lg border p-6">
         <h2 className="text-foreground font-semibold">{t.clinics.dashLeadsHeading}</h2>

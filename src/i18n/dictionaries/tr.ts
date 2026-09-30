@@ -1264,6 +1264,36 @@ const tr: typeof he = {
     lastUpdated: "Temmuz 2026",
   },
 
+  treatments: {
+    patientMetaTitle: "Tedavilerim",
+    patientTitle: "Tedavilerim",
+    patientSubtitle:
+      "Onayladığınız her tedavi, her klinikte: ne üzerinde anlaşıldığı, hangi aşamada olduğu ve garantinin ne zamana kadar sürdüğü.",
+    patientEmpty:
+      "Henüz tedavi yok. Bir teklifi onayladığınız anda burada bir tedavi dosyası açılır.",
+    backToDashboard: "← Hesabım",
+    dashboardLink: "Tedavi dosyaları: {count} — anlaşma, aşama, garanti",
+    approvedOn: "Onay tarihi: {date}",
+    warrantyUntil: "Garanti bitişi: {date}",
+    statusApproved: "Onaylandı",
+    statusInTreatment: "Tedavi sürüyor",
+    statusCompleted: "Tamamlandı",
+    fileMetaTitle: "Tedavi dosyası",
+    fileTitle: "Tedavi dosyası — {clinic}",
+    backToList: "← Tüm tedaviler",
+    warrantyActive:
+      "Garanti süresi {years} yıl — geçerlilik bitişi: {date}. Bu sayfayı saklamanızı öneririz.",
+    warrantyPending: "Garanti süresi {years} yıl — tedavinin tamamlandığı gün başlar.",
+    agreedHeading: "Anlaşılan koşullar",
+    documentsHeading: "Belgeleriniz",
+    clinicMetaTitle: "Hastalarım",
+    clinicTitle: "Hastalarım",
+    clinicSubtitle:
+      "Sizi seçen hastalar ve kliniğinizde aldıkları her tedavi. Başka kliniklerdeki tedaviler burada gösterilmez.",
+    clinicEmpty: "Henüz hasta yok. Bir hasta teklifinizi onayladığında burada görünür.",
+    backToClinicArea: "← Klinik alanı",
+    clinicDashboardLink: "Sizi seçen tüm hastalar ve kliniğinizdeki tedavi geçmişleri",
+  },
   footer: {
     tagline: "Dünya genelinde diş tedavisi tekliflerini karşılaştırın.",
     groupPatients: "Hastalar için",
