@@ -1,8 +1,8 @@
 export const SITE_CONFIG = {
   name: "DentalCompare",
   url: "https://dentalcomparing.com",
-  supportEmail: "support@dentalcompare.co.il",
-  requestsEmail: "requests@dentalcompare.co.il",
+  supportEmail: "support@dentalcomparing.com",
+  requestsEmail: "requests@dentalcomparing.com",
 } as const;
 
 export const REQUEST_LIMITS = {
