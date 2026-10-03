@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { PROTECTED_PATTERNS } from "./proxy-routes";
 import { LOCALE_COOKIE, isLocale } from "./i18n/config";
 import { negotiateLocale, isUnsupportedLocaleSegment } from "./lib/locale-negotiation";
+import { legacyRedirect } from "./lib/canonical-host";
 
 // Patterns live in ./proxy-routes so they can be tested without pulling Clerk
 // into the node test environment. They carry an optional locale prefix — see
@@ -25,6 +26,11 @@ function isLocaleExempt(pathname: string): boolean {
 const LOCALE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 
 export default clerkMiddleware(async (auth, req) => {
+  // The old address first: a person opening it lands on the same page at the
+  // new one, signed out of nothing they could have been signed in to there.
+  const moved = legacyRedirect(new URL(req.url));
+  if (moved) return NextResponse.redirect(moved, 308);
+
   // Auth first, always. Locale handling below can redirect, and a redirect that
   // ran before the check would hand out an unauthenticated pass to a protected
   // page.

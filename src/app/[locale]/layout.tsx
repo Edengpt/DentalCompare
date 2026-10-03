@@ -53,7 +53,7 @@ export async function generateMetadata({
   const t = await getDictionary(locale);
 
   return {
-    metadataBase: new URL("https://dentalcompare.co.il"),
+    metadataBase: new URL("https://dentalcomparing.com"),
     title: { default: t.meta.title, template: "%s | DentalCompare" },
     description: t.meta.description,
     // Tells search engines these are translations of one another rather than

@@ -1,6 +1,6 @@
 export const SITE_CONFIG = {
   name: "DentalCompare",
-  url: "https://dentalcompare.co.il",
+  url: "https://dentalcomparing.com",
   supportEmail: "support@dentalcompare.co.il",
   requestsEmail: "requests@dentalcompare.co.il",
 } as const;
