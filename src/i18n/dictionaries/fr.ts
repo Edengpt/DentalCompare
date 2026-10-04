@@ -1052,6 +1052,7 @@ const fr: typeof he = {
     colProvider: "Prestataire",
     providerPayPlus: "PayPlus",
     providerStripe: "Stripe",
+    providerLemonSqueezy: "Lemon Squeezy",
     colCity: "Ville",
     colSpecialties: "Spécialités",
     colLanguages: "Langues",

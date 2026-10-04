@@ -44,6 +44,9 @@ enum SubscriptionStatus {
 enum SubscriptionProvider {
   PAYPLUS
   STRIPE
+  // Merchant of record for clinics outside Israel once enabled
+  // (LEMONSQUEEZY_ENABLED); handles VAT/sales tax and issues the receipts.
+  LEMONSQUEEZY
 }
 
 enum SubscriptionTier {
@@ -475,6 +478,9 @@ model ClinicSubscription {
   // webhook event (checkout.session.completed) that confirms Checkout finished.
   stripeCustomerId        String?
   stripeSubscriptionId    String?              @unique
+  // Lemon Squeezy's identifiers, linked from the first subscription webhook.
+  lemonSqueezySubscriptionId String?           @unique
+  lemonSqueezyCustomerId  String?
   // End of the free trial (approvedAt + TRIAL_DAYS). While TRIALING the clinic is
   // fully visible and receives leads; the renewal cron runs the first real charge
   // once this passes.
@@ -579,6 +585,8 @@ model SubscriptionCharge {
   status                PaymentStatus      @default(PENDING)
   payplusTransactionUid String?            @unique
   stripeInvoiceId       String?            @unique
+  // Lemon Squeezy subscription-invoice id; idempotency key for its webhook.
+  lemonSqueezyInvoiceId String?            @unique
   periodStart           DateTime
   periodEnd             DateTime
   paidAt                DateTime?

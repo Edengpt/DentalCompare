@@ -99,7 +99,10 @@ export default async function AdminSubscriptionsPage({
         </p>
       </header>
 
-      <PricingSettingsForm rows={pricingRows} />
+      {/* Lemon Squeezy has no rows of its own — it sells at the Stripe prices. */}
+      <PricingSettingsForm
+        rows={pricingRows.flatMap((r) => (r.provider === "LEMONSQUEEZY" ? [] : [{ ...r, provider: r.provider }]))}
+      />
 
       <div className="border-border/60 bg-card overflow-hidden rounded-lg border">
         <table className="w-full text-sm">
@@ -153,7 +156,11 @@ export default async function AdminSubscriptionsPage({
                     )}
                   </td>
                   <td className="text-muted-foreground px-4 py-3 text-xs">
-                    {s.provider === "STRIPE" ? t.admin.providerStripe : t.admin.providerPayPlus}
+                    {s.provider === "STRIPE"
+                      ? t.admin.providerStripe
+                      : s.provider === "LEMONSQUEEZY"
+                        ? t.admin.providerLemonSqueezy
+                        : t.admin.providerPayPlus}
                   </td>
                   <td className="text-muted-foreground px-4 py-3">
                     {validUntil(s) ? dateFmt.format(validUntil(s)!) : "—"}

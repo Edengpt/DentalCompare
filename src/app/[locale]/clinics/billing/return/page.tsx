@@ -38,6 +38,7 @@ export default async function BillingReturnPage({
           provider: true,
           recurringToken: true,
           stripeSubscriptionId: true,
+          lemonSqueezySubscriptionId: true,
         },
       })
     : null;
@@ -88,10 +89,30 @@ export default async function BillingReturnPage({
     }
   }
 
+  // Lemon Squeezy redirects here with nothing we can look up, so the only
+  // proof is its webhook — which usually lands within a second or two of the
+  // redirect. Give it a few seconds before calling the payment failed.
+  if (token && sub && !hasCompletedPaymentSetup(sub) && sub.provider === "LEMONSQUEEZY") {
+    for (let i = 0; i < 5; i++) {
+      await new Promise((r) => setTimeout(r, 1500));
+      const linked = await db.clinicSubscription.findUnique({
+        where: { setupToken: token },
+        select: { lemonSqueezySubscriptionId: true },
+      });
+      if (linked?.lemonSqueezySubscriptionId) break;
+    }
+  }
+
   const fresh = token
     ? await db.clinicSubscription.findUnique({
         where: { setupToken: token },
-        select: { status: true, provider: true, recurringToken: true, stripeSubscriptionId: true },
+        select: {
+          status: true,
+          provider: true,
+          recurringToken: true,
+          stripeSubscriptionId: true,
+          lemonSqueezySubscriptionId: true,
+        },
       })
     : null;
 

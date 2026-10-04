@@ -10,11 +10,12 @@ import type { SubscriptionProvider } from "@/generated/prisma/enums";
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 /**
- * Who bills a clinic, decided once from its country: PayPlus for Israel,
- * Stripe everywhere else. Shared by registration (which records it) and the
+ * Which market a clinic is in, decided once from its country: PayPlus for
+ * Israel, Stripe everywhere else (registration may hand the Stripe market to
+ * Lemon Squeezy instead — same prices, see clinic-registration.ts). Shared by registration (which records it) and the
  * join page (which has to show the price in the currency that will be charged).
  */
-export function providerForCountry(countryCode: string): SubscriptionProvider {
+export function providerForCountry(countryCode: string): "PAYPLUS" | "STRIPE" {
   return countryCode === "IL" ? "PAYPLUS" : "STRIPE";
 }
 
@@ -178,6 +179,9 @@ export function hasCompletedPaymentSetup(sub: {
   provider: SubscriptionProvider;
   recurringToken: string | null;
   stripeSubscriptionId: string | null;
+  lemonSqueezySubscriptionId?: string | null;
 }): boolean {
-  return sub.provider === "STRIPE" ? sub.stripeSubscriptionId !== null : sub.recurringToken !== null;
+  if (sub.provider === "STRIPE") return sub.stripeSubscriptionId !== null;
+  if (sub.provider === "LEMONSQUEEZY") return (sub.lemonSqueezySubscriptionId ?? null) !== null;
+  return sub.recurringToken !== null;
 }
