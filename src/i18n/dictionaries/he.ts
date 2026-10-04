@@ -998,6 +998,7 @@ const he = {
     colProvider: "ספק",
     providerPayPlus: "PayPlus",
     providerStripe: "Stripe",
+    providerLemonSqueezy: "Lemon Squeezy",
     colCity: "עיר",
     colSpecialties: "התמחויות",
     colLanguages: "שפות",

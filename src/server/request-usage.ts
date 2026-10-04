@@ -4,19 +4,21 @@ import { currentYearMonth } from "@/lib/date";
 import { logEvent } from "@/lib/log";
 import { isPayPlusConfigured } from "@/lib/payplus";
 import { endStripeTrialNow } from "@/lib/stripe";
+import { endLemonSqueezyTrialNow } from "@/lib/lemonsqueezy";
 import { convertPayPlusTrialToPaid } from "@/server/subscriptions";
 import type { SubscriptionPlanType } from "@/lib/constants";
 
 type TrialSubscriptionAfterIncrement = {
   id: string;
   status: string;
-  provider: "PAYPLUS" | "STRIPE";
+  provider: "PAYPLUS" | "STRIPE" | "LEMONSQUEEZY";
   plan: string;
   priceMinor: number | null;
   currency: string | null;
   recurringToken: string | null;
   payplusCustomerUid: string | null;
   stripeSubscriptionId: string | null;
+  lemonSqueezySubscriptionId: string | null;
   trialRequestCap: number;
   verifiedRequestCount: number;
   dentist: { clinicName: string; email: string; locale: string };
@@ -53,6 +55,7 @@ export async function recordVerifiedRequest(dentistId: string): Promise<void> {
         recurringToken: true,
         payplusCustomerUid: true,
         stripeSubscriptionId: true,
+        lemonSqueezySubscriptionId: true,
         trialRequestCap: true,
         verifiedRequestCount: true,
         dentist: { select: { clinicName: true, email: true, locale: true } },
@@ -94,6 +97,24 @@ async function attemptImmediateConversion(sub: TrialSubscriptionAfterIncrement):
       clinicName: sub.dentist.clinicName,
       payplusConfigured: isPayPlusConfigured(),
     });
+    return;
+  }
+
+  if (sub.provider === "LEMONSQUEEZY") {
+    // Same as Stripe below: the provider owns the subscription, so "convert
+    // now" means telling it the trial is over and letting it charge.
+    if (!sub.lemonSqueezySubscriptionId) {
+      logEvent("info", "subscription.trial_threshold_no_lemonsqueezy_subscription", { subscriptionId: sub.id });
+      return;
+    }
+    try {
+      await endLemonSqueezyTrialNow(sub.lemonSqueezySubscriptionId);
+    } catch (err) {
+      logEvent("error", "subscription.lemonsqueezy_trial_end_failed", {
+        subscriptionId: sub.id,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
     return;
   }
 

@@ -33,6 +33,7 @@ export default async function BillingSetupPage({
       provider: true,
       recurringToken: true,
       stripeSubscriptionId: true,
+      lemonSqueezySubscriptionId: true,
       dentist: { select: { clinicName: true } },
     },
   });

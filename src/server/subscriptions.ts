@@ -8,6 +8,7 @@ import type { SubscriptionPlanType } from "@/lib/constants";
 import { nextPeriodEnd } from "@/lib/subscription";
 import { foundingEndFrom } from "@/lib/founding";
 import { mapStripeSubscriptionStatus } from "@/lib/stripe";
+import { mapLemonSqueezyStatus } from "@/lib/lemonsqueezy";
 import type Stripe from "stripe";
 import { billingBlocker } from "@/lib/subscription";
 import { chargeByToken } from "@/lib/payplus";
@@ -441,6 +442,94 @@ export async function recordStripeCharge(args: {
         currency: args.currency,
         status: "PAID",
         stripeInvoiceId: args.stripeInvoiceId,
+        periodStart: args.periodStart,
+        periodEnd: args.periodEnd,
+        paidAt: now,
+      },
+    }),
+  ]);
+}
+
+/**
+ * Lemon Squeezy's counterpart to syncStripeSubscription: every subscription
+ * event carries the full subscription, so each one simply overwrites our
+ * copy. The first event finds the row by the setup token sent with the
+ * checkout; after that the subscription id is linked.
+ */
+export async function syncLemonSqueezySubscription(args: {
+  lemonSqueezySubscriptionId: string;
+  lemonSqueezyCustomerId: string;
+  status: string;
+  currentPeriodEnd?: Date | null;
+  trialEndsAt?: Date | null;
+  setupToken?: string;
+}): Promise<{ ok: true; subscriptionId: string } | { ok: false; error: string }> {
+  const existing = await db.clinicSubscription.findUnique({
+    where: { lemonSqueezySubscriptionId: args.lemonSqueezySubscriptionId },
+    select: { id: true },
+  });
+  const target =
+    existing ??
+    (args.setupToken
+      ? await db.clinicSubscription.findUnique({ where: { setupToken: args.setupToken }, select: { id: true } })
+      : null);
+  if (!target) return { ok: false, error: "subscription not found for Lemon Squeezy sync" };
+
+  await db.clinicSubscription.update({
+    where: { id: target.id },
+    data: {
+      status: mapLemonSqueezyStatus(args.status),
+      lemonSqueezySubscriptionId: args.lemonSqueezySubscriptionId,
+      lemonSqueezyCustomerId: args.lemonSqueezyCustomerId,
+      ...(args.currentPeriodEnd !== undefined ? { currentPeriodEnd: args.currentPeriodEnd } : {}),
+      ...(args.trialEndsAt !== undefined ? { trialEndsAt: args.trialEndsAt } : {}),
+    },
+  });
+  return { ok: true, subscriptionId: target.id };
+}
+
+/** Records a paid Lemon Squeezy invoice. Idempotent on the invoice id — webhooks are retried. */
+export async function recordLemonSqueezyCharge(args: {
+  subscriptionId: string;
+  lemonSqueezyInvoiceId: string;
+  amountMinor: number;
+  currency: string;
+  periodStart: Date;
+  periodEnd: Date;
+}): Promise<void> {
+  const existing = await db.subscriptionCharge.findUnique({
+    where: { lemonSqueezyInvoiceId: args.lemonSqueezyInvoiceId },
+    select: { id: true },
+  });
+  if (existing) return;
+
+  const founding = await db.clinicSubscription.findUnique({
+    where: { id: args.subscriptionId },
+    select: { isFounding: true, foundingEndsAt: true },
+  });
+  const startsFoundingYear =
+    founding?.isFounding === true && !founding.foundingEndsAt && args.amountMinor > 0;
+
+  const now = new Date();
+  await db.$transaction([
+    db.clinicSubscription.update({
+      where: { id: args.subscriptionId },
+      data: {
+        status: "ACTIVE",
+        currentPeriodEnd: args.periodEnd,
+        lastChargeAt: now,
+        paymentFailedNotifiedAt: null,
+        // The discount code ends on its own; this date is only for our notice.
+        ...(startsFoundingYear ? { foundingEndsAt: foundingEndFrom(args.periodStart) } : {}),
+      },
+    }),
+    db.subscriptionCharge.create({
+      data: {
+        subscriptionId: args.subscriptionId,
+        amountMinor: args.amountMinor,
+        currency: args.currency,
+        status: "PAID",
+        lemonSqueezyInvoiceId: args.lemonSqueezyInvoiceId,
         periodStart: args.periodStart,
         periodEnd: args.periodEnd,
         paidAt: now,

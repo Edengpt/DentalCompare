@@ -1057,6 +1057,7 @@ const de: typeof he = {
     colProvider: "Anbieter",
     providerPayPlus: "PayPlus",
     providerStripe: "Stripe",
+    providerLemonSqueezy: "Lemon Squeezy",
     colCity: "Stadt",
     colSpecialties: "Fachgebiete",
     colLanguages: "Sprachen",
