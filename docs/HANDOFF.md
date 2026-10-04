@@ -1,7 +1,70 @@
 # מאיפה ממשיכים
 
 > **קראו את הקובץ הזה ראשון בכל סשן חדש.** הוא מתעד מצב, לא היסטוריה.
-> עודכן לאחרונה: 2026-09-23.
+> עודכן לאחרונה: 2026-10-04.
+
+---
+
+## 2026-10-04 — מה השתנה מאז 23/9 (PRs #3–#30, הכול בפרודקשן)
+
+### דומיין ומיילים
+- **הכתובת הראשית היא `dentalcomparing.com`** (מאז 2026-10-03). ה-DNS שלה
+  מנוהל ב-Vercel (שרתי השמות הועברו מ-Internic, שעורך האזורים שלו נכשל בכל
+  שמירה) — עריכה דרך `npx vercel@latest dns ls|add|rm --scope team_Gz6uNkWXg5JgrGca0hgZ90nj`.
+- `dentalcompare.co.il` מפנה ב-308 ל-.com דרך `src/lib/canonical-host.ts`,
+  **חוץ מ-`/api/*`** — כדי ש-webhooks ישנים (PayPlus, Stripe) ימשיכו להגיע.
+- Clerk בפרודקשן עבר ל-.com (רשומות ה-CNAME שלו ב-Vercel DNS). לקח: שינוי
+  דומיין ב-Clerk שובר מיד את ההתחברות בדומיין הישן — מסיימים את המעבר באותה ישיבה.
+- `sitemap.xml` (7 עמודים ציבוריים × 7 שפות) ו-`robots.txt`; Google Search
+  Console מאומת ברשומת TXT. עוד לא נעשה: "Change of address" מ-.co.il ב-GSC.
+- **מיילים:** האתר שולח מ-`notifications@dentalcomparing.com` (Resend, הדומיין
+  מאומת). `support@` נכנס דרך ImprovMX (MX) ומועבר ל-Gmail של אדן; שליחה
+  כ-support מ-Gmail דרך `smtp.resend.com:465`.
+
+### תשלומים
+- **Lemon Squeezy (PR #30) — בנוי ו**כבוי**.** merchant of record למרפאות
+  מחוץ לישראל (גובה ומדווח מע"מ/מס בכל מדינה). כשהמתג
+  `LEMONSQUEEZY_ENABLED=true` דלוק, הרשמה בינלאומית חדשה מקבלת ספק
+  `LEMONSQUEEZY` במקום `STRIPE`, באותם מחירים (`getSubscriptionPricing` ממפה
+  אותו לשורות STRIPE בדולרים). קוד: `src/lib/lemonsqueezy.ts`,
+  `src/app/api/webhooks/lemonsqueezy/route.ts`,
+  `syncLemonSqueezySubscription`/`recordLemonSqueezyCharge` ב-`src/server/subscriptions.ts`.
+  - המחיר נשלח עם ה-checkout (`custom_price`); הנחת מייסדים = קוד הנחה
+    חד-פעמי לכל מרפאה, לאותו מספר חודשים כמו קופון Stripe.
+  - לווריאנט יש ניסיון קבוע של 60 יום; ה-webhook מיישר אותו ל-`trialDays`
+    של המרפאה ביצירת המנוי.
+  - **מצב החשבון:** חנות 489326 עדיין ב-test mode עד אימות הזהות של אדן.
+    מוצר 1410220, וריאנטים Monthly 2201650 / Yearly 2201672, webhook 139472.
+    המפתחות הנוכחיים בוורסל (Production) הם של test.
+  - **כדי להדליק:** אחרי אישור החנות — מפתח API ו-webhook חיים, החלפת
+    `LEMONSQUEEZY_API_KEY`/`LEMONSQUEEZY_WEBHOOK_SECRET`, הוספת
+    `LEMONSQUEEZY_ENABLED=true`, redeploy, ומעבר אחד מקצה לקצה (הרשמה →
+    checkout → webhook → מנוי TRIALING). **המעבר הזה טרם נבדק**; רק
+    ה-payloads של checkout והנחה אומתו מול ה-API (201).
+  - מרפאות שכבר נרשמו עם Stripe נשארות ב-Stripe.
+- **50 המרפאות המייסדות (PR #21):** 33% הנחה ל-12 חודשים מהחיוב הראשון, ואז
+  חזרה אוטומטית למחיר הרגיל (`src/lib/founding.ts`, `src/server/founding.ts`).
+  גם: מסלול חינמי (מוסתר כשנגמרה המכסה עד החודש הבא), שדרוג מחינמי
+  (`src/server/clinic-upgrade.ts`), ופאנל שימוש חודשי למרפאה.
+
+### מוצר ועיצוב
+- עמוד בית חדש לפי המוקאפ, בלי "מדינת בית" (אף מדינה לא ראשונה/ברירת מחדל),
+  תמונות בירה אמיתיות לכל מדינה (`public/destinations/*.webp`), אזרבייג'ן נוספה.
+- **7 שפות** (en ברירת מחדל, he, ru, fr, de, zh, tr) עם בורר נפתח; בדיקה
+  אוטומטית מוודאת אותם מפתחות/placeholders בכל המילונים.
+- כותרות חדות יותר ("מרפאה" ולא "רופא" בכל מה שהמטופל רואה), favicon, תיבת
+  חיפוש מותאמת לנייד.
+- תזכורות: למטופל על הצעות שמחכות, ולמרפאה על בקשות שלא נענו (דרך קרון
+  `retry-notifications`).
+- **תיק טיפול משותף, שלב 1 (PR #26):** מטופל ומרפאה רואים אותו תיק טיפול
+  (סטטוס, אחריות). שלב 2 ממתין לבדיקה משפטית.
+
+### פתוח
+- הדלקת Lemon Squeezy (למעלה).
+- לעדכן כתובת תמיכה/אתר בהגדרות העסק של Stripe ו-PayPlus (אדן).
+- GSC: "Change of address" מ-.co.il.
+- בדיקת עורך דין: תנאי המרפאות החדשים, מסלולי Pro/Featured, שלב 2 של תיק הטיפול.
+- מעבר ידני מחובר בדפדפן על מה שנבנה מאז 28/9 — עדיין חייב בן אדם (Clerk חוסם אוטומציה).
 
 ---
 
@@ -732,7 +795,11 @@ P0 (התשתית הבינלאומית) הושלם ונמצא בפרודקשן. �
   התיקון לנעילה: `npx npm@11.8.0 install --package-lock-only`.
 - **Middleware הוא `src/proxy.ts`**, לא `middleware.ts` — Next 16 שינה את השם.
   יצירת `middleware.ts` לצידו מפילה את הבילד.
-- **`PROTECTED_PATTERNS` ב-`src/proxy-routes.ts` נושא קידומת `(he|en)` אופציונלית
+- **אין בריפו כתובת `.co.il` חדשה.** כל קישור, מייל ו-metadata יוצאים מ-
+  `SITE_CONFIG.url` (`src/lib/constants.ts`) = `https://dentalcomparing.com`.
+- **Vercel דילג פעמיים על דיפלוי פרודקשן אחרי מיזוג.** אחרי כל מיזוג לבדוק
+  שיש deployment של Production לקומיט; אם אין — PR עם קומיט ריק.
+- **`PROTECTED_PATTERNS` ב-`src/proxy-routes.ts` נושא קידומת שפה אופציונלית
   על כל מסלול.** בלעדיה `auth.protect()` פשוט מפסיק לרוץ והאזור האדמיני נעשה
   ציבורי — בלי שגיאה ובלי בילד שנכשל. אומת בפרודקשן שזה עובד.
 - **DB מקומי הוא קונטיינר:** `docker start dentalcompare-db`. בלעדיו 11

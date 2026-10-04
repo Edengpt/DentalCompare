@@ -2,9 +2,9 @@
 
 A platform for comparing dental treatment quotes. The patient uploads their treatment plan and an x-ray once, sends the request to **up to 3 clinics** whose licence was reviewed by a person, and compares the written quotes side by side: price, what's included, number of trips and visits, and warranty. It's free for patients; clinics pay a subscription.
 
-It works across borders (dental tourism): clinics in several countries, prices in each clinic's currency, and a Hebrew and English interface.
+It works across borders (dental tourism): clinics in several countries, prices in each clinic's currency, and an interface in 7 languages (English by default, plus Hebrew, Russian, French, German, Chinese and Turkish).
 
-**Live site:** https://dentalcompare.co.il
+**Live site:** https://dentalcomparing.com (the old dentalcompare.co.il redirects there, except `/api/*`, which stays reachable for webhooks)
 
 ## Main flows
 
@@ -16,7 +16,7 @@ It works across borders (dental tourism): clinics in several countries, prices i
 
 ## Stack
 
-Next.js 16 (App Router) · React 19 · TypeScript · Prisma 7 · PostgreSQL (Neon) · Clerk (auth) · Vercel Blob (files: a private store for medical files and licences, a public one for logos) · Resend (email) · PayPlus + Stripe (clinic subscriptions) · Tailwind 4 · Vitest · Vercel.
+Next.js 16 (App Router) · React 19 · TypeScript · Prisma 7 · PostgreSQL (Neon) · Clerk (auth) · Vercel Blob (files: a private store for medical files and licences, a public one for logos) · Resend (email) · PayPlus (Israel) + Stripe / Lemon Squeezy (international) for clinic subscriptions · Tailwind 4 · Vitest · Vercel.
 
 ## Local development
 
