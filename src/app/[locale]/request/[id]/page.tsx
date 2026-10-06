@@ -1,5 +1,9 @@
 import { getConverter } from "@/lib/exchange-rates";
-import { patientCurrencyFor } from "@/lib/price-display";
+import {
+  chooseComparisonCurrency,
+  FALLBACK_PATIENT_CURRENCY,
+  patientCurrencyFor,
+} from "@/lib/price-display";
 import { QuoteComparison, type ConvertedPrice } from "@/components/request/quote-comparison";
 import { TreatmentCard } from "@/components/request/treatment-card";
 import { CompletionBanner } from "@/components/request/completion-banner";
@@ -52,7 +56,7 @@ export default async function RequestDetailPage({
 
   const user = await db.user.findUnique({
     where: { clerkUserId },
-    select: { id: true, country: { select: { currency: true } } },
+    select: { id: true, countryCode: true },
   });
   if (!user) redirect("/sign-in");
 
@@ -163,8 +167,19 @@ export default async function RequestDetailPage({
   // One converter per page load, handed to the table — which never touches the
   // database itself. Null for a quote with no honest rate: the patient still
   // sees exactly what the clinic named, and nothing beside it.
-  const patientCurrency = patientCurrencyFor(user.country?.currency);
-  const convertTo = await getConverter(patientCurrency);
+  const preferred = patientCurrencyFor(user.countryCode);
+  const toPreferred = await getConverter(preferred);
+  const toFallback =
+    preferred === FALLBACK_PATIENT_CURRENCY
+      ? toPreferred
+      : await getConverter(FALLBACK_PATIENT_CURRENCY);
+  const priced = quoteRows.flatMap((q) =>
+    q.amountMinor !== null && q.currency
+      ? [{ amountMinor: q.amountMinor, currency: q.currency }]
+      : [],
+  );
+  const patientCurrency = chooseComparisonCurrency(preferred, priced, toPreferred, toFallback);
+  const convertTo = patientCurrency === preferred ? toPreferred : toFallback;
 
   const converted: Record<string, ConvertedPrice> = {};
   for (const q of quoteRows) {

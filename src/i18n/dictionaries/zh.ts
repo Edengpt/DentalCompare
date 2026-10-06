@@ -204,6 +204,9 @@ const zh: typeof he = {
     travelSubtitle:
       "您所在的国家决定价格显示的货币；您愿意出行的范围决定您能看到哪些诊所——下次请求时您可以重新选择。",
     travelCountryLabel: "您的居住地",
+    travelCountryPlaceholder: "选择国家",
+    travelNoClinicsAtHome: "{country}暂无诊所",
+    travelPickCountryFirst: "请先选择您所在的国家",
     travelScopeLabel: "为此治疗您愿意去多远",
     travelScopeLocal: "仅限本国",
     travelScopeSelected: "指定的几个国家",
@@ -1260,6 +1263,7 @@ const zh: typeof he = {
     mustAcceptTerms: "注册前必须接受订阅条款",
     mustPickPlan: "请选择订阅方案",
     mustPickCountry: "请选择国家",
+    noClinicsAtHome: "您所在的国家暂无诊所，请选择其他目的地。",
     missingDocuments: "缺少文件：{kinds}",
     invalidDocument: "有一份文件不是通过此表单上传的。请重新上传。",
     documentRequired: "至少需要一份执照文件。",

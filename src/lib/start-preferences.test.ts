@@ -63,4 +63,18 @@ describe("travelDefaults", () => {
       destinations: [],
     });
   });
+
+  // A patient in Brazil has no clinics at home: "only in my country" would
+  // show nobody, so the default is anywhere.
+  it("defaults to ANY when the patient's country has no clinics", () => {
+    expect(travelDefaults(null, "BR", active)).toEqual({ scope: "ANY", destinations: [] });
+    expect(travelDefaults({ specialty: null, country: "GR" }, "BR", active)).toEqual({
+      scope: "ANY",
+      destinations: [],
+    });
+  });
+
+  it("defaults to ANY when the patient's country is unknown", () => {
+    expect(travelDefaults(null, null, active)).toEqual({ scope: "ANY", destinations: [] });
+  });
 });

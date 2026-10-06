@@ -5,6 +5,8 @@ import { auth } from "@clerk/nextjs/server";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { getRequestLocale } from "@/i18n/request-locale";
 import { db } from "@/lib/db";
+import { isPatientCountry } from "@/lib/patient-countries";
+import { canSearchLocally } from "@/lib/travel-scope";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -41,14 +43,19 @@ export async function saveTravelChoice(formData: FormData): Promise<ActionResult
     ),
   );
 
-  // The country decides which currency prices are shown in and which privacy
-  // regime applies. A value invented in the form does not get to decide that.
+  // The country decides which currency prices are compared in, so it must be a
+  // real one; any country, not only those with clinics: a patient in Brazil
+  // flying to Istanbul lives in Brazil.
   const countryCode = String(formData.get("countryCode") ?? "");
-  if (!activeCodes.has(countryCode)) return { ok: false, error: e.mustPickCountry };
+  if (!isPatientCountry(countryCode)) return { ok: false, error: e.mustPickCountry };
 
   const scopeRaw = String(formData.get("travelScope") ?? "");
   const travelScope =
     scopeRaw === "SELECTED" || scopeRaw === "ANY" || scopeRaw === "LOCAL" ? scopeRaw : "LOCAL";
+  // "Only in my country" where there are no clinics would find nobody.
+  if (travelScope === "LOCAL" && !canSearchLocally(countryCode, activeCodes)) {
+    return { ok: false, error: e.noClinicsAtHome };
+  }
 
   // Destinations are meaningless unless the patient said they would travel to
   // particular places, so every other scope stores none rather than carrying a

@@ -14,7 +14,9 @@ import type { TravelScope } from "@/generated/prisma/enums";
 export function destinationCountryCodes(
   scope: TravelScope,
   destinations: string[],
-  patientCountry: string,
+  patientCountry: string | null,
+  /** When given, a home country without clinics widens LOCAL to anywhere. */
+  activeCodes?: Set<string>,
 ): string[] | null {
   if (scope === "ANY") return null;
 
@@ -26,5 +28,16 @@ export function destinationCountryCodes(
     if (unique.length > 0) return unique;
   }
 
+  // The scope is saved per request but the country per user, so an old draft
+  // can say LOCAL for a country the patient has since moved away from.
+  if (!patientCountry || (activeCodes && !activeCodes.has(patientCountry))) return null;
   return [patientCountry];
+}
+
+/**
+ * Whether "only in my country" can show anyone. Patients can now live in any
+ * country, most of which have no clinics yet.
+ */
+export function canSearchLocally(patientCountry: string | null, activeCodes: Set<string>): boolean {
+  return !!patientCountry && activeCodes.has(patientCountry);
 }

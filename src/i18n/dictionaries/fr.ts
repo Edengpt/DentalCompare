@@ -213,6 +213,9 @@ const fr: typeof he = {
     travelSubtitle:
       "Votre pays détermine la devise dans laquelle nous affichons les prix. La distance que vous êtes prêt à parcourir détermine les cliniques proposées — et vous pourrez répondre différemment lors de votre prochaine demande.",
     travelCountryLabel: "Votre pays de résidence",
+    travelCountryPlaceholder: "Choisissez un pays",
+    travelNoClinicsAtHome: "Pas encore de cliniques dans ce pays : {country}",
+    travelPickCountryFirst: "Choisissez d'abord votre pays",
     travelScopeLabel: "Jusqu'où iriez-vous pour ce traitement",
     travelScopeLocal: "Uniquement dans mon pays",
     travelScopeSelected: "Dans certains pays",
@@ -1344,6 +1347,7 @@ const fr: typeof he = {
     mustAcceptTerms: "Vous devez accepter les conditions d'abonnement pour vous inscrire",
     mustPickPlan: "Veuillez choisir une formule d'abonnement",
     mustPickCountry: "Veuillez choisir un pays",
+    noClinicsAtHome: "Il n'y a pas encore de cliniques dans votre pays. Choisissez une autre destination.",
     missingDocuments: "Documents manquants : {kinds}",
     invalidDocument:
       "L'un des documents n'a pas été téléversé via ce formulaire. Veuillez le téléverser à nouveau.",

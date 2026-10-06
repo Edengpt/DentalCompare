@@ -213,6 +213,9 @@ const tr: typeof he = {
     travelSubtitle:
       "Fiyatların hangi para biriminde gösterileceğini ülkeniz belirler. Ne kadar uzağa gidebileceğiniz ise hangi klinikleri göreceğinizi belirler; bir sonraki talebinizde farklı yanıt verebilirsiniz.",
     travelCountryLabel: "Yaşadığınız ülke",
+    travelCountryPlaceholder: "Bir ülke seçin",
+    travelNoClinicsAtHome: "{country} için henüz klinik yok",
+    travelPickCountryFirst: "Önce ülkenizi seçin",
     travelScopeLabel: "Bu tedavi için ne kadar uzağa gidebilirsiniz",
     travelScopeLocal: "Yalnızca kendi ülkemde",
     travelScopeSelected: "Belirli ülkelere",
@@ -1334,6 +1337,7 @@ const tr: typeof he = {
     mustAcceptTerms: "Kayıt olmak için abonelik koşullarını kabul etmelisiniz",
     mustPickPlan: "Lütfen bir abonelik planı seçin",
     mustPickCountry: "Lütfen bir ülke seçin",
+    noClinicsAtHome: "Ülkenizde henüz klinik yok. Lütfen başka bir hedef seçin.",
     missingDocuments: "Eksik belgeler: {kinds}",
     invalidDocument: "Belgelerden biri bu form üzerinden yüklenmedi. Lütfen yeniden yükleyin.",
     documentRequired: "En az bir lisans belgesi gereklidir.",

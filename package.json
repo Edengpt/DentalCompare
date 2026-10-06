@@ -32,6 +32,7 @@
     "@vercel/blob": "^2.4.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "country-to-currency": "^3.0.1",
     "libphonenumber-js": "^1.13.11",
     "lucide-react": "^1.21.0",
     "next": "16.2.11",

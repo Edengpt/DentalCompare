@@ -81,7 +81,6 @@ model Country {
   updatedAt     DateTime @updatedAt
 
   dentists Dentist[]
-  users    User[]
 
   @@index([isActive])
 }
@@ -109,10 +108,10 @@ model User {
   // index over verified rows only.
   phone           String?
   phoneVerifiedAt DateTime?
-  // Where the patient is. Defaults to IL so every existing row is correct the
-  // moment the column exists; new sign-ups take it from the active locale.
-  countryCode     String    @default("IL")
-  country         Country   @relation(fields: [countryCode], references: [code])
+  // Where the patient lives: any ISO 3166-1 country, not only the Country table
+  // (which lists where clinics operate). Null until the patient says so in the
+  // travel step; it sets the currency quotes are compared in (USD when null).
+  countryCode     String?
   // Language for outgoing email. The site locale is in the URL, but a cron
   // sending a renewal notice at 4am has no request to read it from.
   locale          String    @default("he")

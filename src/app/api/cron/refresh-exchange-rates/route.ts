@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { logEvent } from "@/lib/log";
-import { ratesToFetch } from "@/lib/price-display";
+import { patientCurrencyFor, ratesToFetch } from "@/lib/price-display";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
  * clinic named — converting at save time would commit the platform to a price
  * it doesn't control and can't honour once the rate moves.
  *
- * frankfurter.app is keyless and ECB-sourced. It does not cover every currency;
+ * Frankfurter (api.frankfurter.dev) is keyless and ECB-sourced. It does not cover every currency;
  * a currency it omits is logged and skipped rather than failing the whole run,
  * because one unsupported market must not blank out conversion for the rest.
  */
@@ -31,15 +31,20 @@ export async function GET(req: Request) {
     where: { isActive: true },
     select: { currency: true },
   });
-  // Active clinic currencies plus the patient fallback (USD). Only when there is
-  // nothing to convert between is the run skipped, and that is a success.
-  const toFetch = ratesToFetch(active.map((c) => c.currency));
-  if (!toFetch) {
-    return NextResponse.json({ ok: true, skipped: "fewer than two currencies" });
-  }
+  // Patients live anywhere, so their currencies are fetched too, or a patient
+  // in Brazil would compare in dollars for want of a real rate.
+  const patientCountries = await db.user.findMany({
+    where: { countryCode: { not: null } },
+    distinct: ["countryCode"],
+    select: { countryCode: true },
+  });
 
-  const { base, quotes } = toFetch;
-  const url = `https://api.frankfurter.app/latest?base=${base}&symbols=${quotes.join(",")}`;
+  // Clinic currencies, patient currencies and the fallback (USD), against EUR.
+  const { base, quotes } = ratesToFetch([
+    ...active.map((c) => c.currency),
+    ...patientCountries.map((u) => patientCurrencyFor(u.countryCode)),
+  ]);
+  const url = `https://api.frankfurter.dev/v1/latest?base=${base}&symbols=${quotes.join(",")}`;
 
   let payload: { rates?: Record<string, number> };
   try {

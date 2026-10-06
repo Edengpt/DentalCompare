@@ -69,4 +69,20 @@ describe("findRate", () => {
     const old = [{ base: "EUR", quote: "ILS", rate: 4, fetchedAt: new Date("2020-01-01") }];
     expect(findRate(old, "ILS", "ILS", now)?.rate).toBe(1);
   });
+
+  // The base can change (a new currency sorts first, or the cron is pinned to
+  // EUR); the old base's rows stay fresh for days. Pivoting through the wrong
+  // base finds no route, or worse, mixes two fetches.
+  it("pivots through the newest base when rows of an older base linger", () => {
+    const earlier = new Date("2026-08-20T04:00:00Z");
+    const mixed = [
+      { base: "AUD", quote: "EUR", rate: 0.6, fetchedAt: earlier },
+      { base: "AUD", quote: "TRY", rate: 30, fetchedAt: earlier },
+      { base: "EUR", quote: "TRY", rate: 40, fetchedAt: fresh },
+      { base: "EUR", quote: "ILS", rate: 4, fetchedAt: fresh },
+    ];
+    const found = findRate(mixed, "TRY", "ILS", now);
+    expect(found?.rate).toBeCloseTo(0.1);
+    expect(found?.fetchedAt).toEqual(fresh);
+  });
 });

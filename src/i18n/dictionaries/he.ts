@@ -215,6 +215,9 @@ const he = {
     travelSubtitle:
       "המדינה שלכם קובעת באיזה מטבע נציג מחירים. מרחק הנכונות קובע אילו מרפאות תראו — ואפשר לענות אחרת בבקשה הבאה.",
     travelCountryLabel: "איפה אתם גרים",
+    travelCountryPlaceholder: "בחרו מדינה",
+    travelNoClinicsAtHome: "עדיין אין מרפאות במדינה שבחרתם",
+    travelPickCountryFirst: "בחרו קודם את המדינה שלכם",
     travelScopeLabel: "עד לאן תיסעו עבור הטיפול הזה",
     travelScopeLocal: "רק במדינה שלי",
     travelScopeSelected: "למדינות מסוימות",
@@ -1283,6 +1286,7 @@ const he = {
     mustAcceptTerms: "יש לאשר את תנאי המנוי כדי להירשם",
     mustPickPlan: "יש לבחור מסלול מנוי",
     mustPickCountry: "יש לבחור מדינה",
+    noClinicsAtHome: "אין עדיין מרפאות במדינה שבחרתם. בחרו יעד אחר.",
     missingDocuments: "חסרים מסמכים: {kinds}",
     invalidDocument: "אחד המסמכים לא הועלה דרך הטופס הזה. העלו אותו מחדש.",
     documentRequired: "צריך לצרף לפחות מסמך רישיון אחד.",

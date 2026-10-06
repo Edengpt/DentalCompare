@@ -3,8 +3,8 @@ import { isRateStale } from "./money";
 /**
  * Finding a usable rate among the ones actually stored.
  *
- * The refresh cron picks the alphabetically first active currency as the base
- * and stores only `base → quote`. There is never a reverse row and never a row
+ * The refresh cron stores only `base → quote`, with EUR as the base (earlier
+ * runs used whichever currency sorted first, so other bases may linger). There is never a reverse row and never a row
  * between two non-base currencies. A lookup that assumes a direct row exists
  * therefore returns "no rate" almost every time — and the failure is invisible,
  * because the price simply renders without a conversion and looks exactly like
@@ -55,12 +55,19 @@ export function findRate(
   // can never rewrite an amount. Mirrors the same guard in convert().
   if (from === to) return { rate: 1, fetchedAt: now };
 
-  const usable = rates.filter((r) => !isRateStale(r.fetchedAt, now));
+  const fresh = rates.filter((r) => !isRateStale(r.fetchedAt, now));
+  // One fetch, one base. Rows of an earlier base stay fresh for days after the
+  // base changes; only the newest base's rows form a consistent set.
+  const newest = fresh.reduce<StoredRate | null>(
+    (a, r) => (!a || r.fetchedAt > a.fetchedAt ? r : a),
+    null,
+  );
+  const usable = newest ? fresh.filter((r) => r.base === newest.base) : [];
 
   const oneHop = direct(usable, from, to) ?? inverse(usable, from, to);
   if (oneHop) return oneHop;
 
-  // Neither side is the base: go from → base → to. Every stored row shares the
+  // Neither side is the base: go from → base → to. Every usable row shares the
   // same base, so that base is the only possible pivot.
   const base = usable[0]?.base;
   if (!base) return null;
