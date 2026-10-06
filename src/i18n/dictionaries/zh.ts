@@ -101,6 +101,18 @@ const zh: typeof he = {
     clinicCVisits: "2次行程，就诊5次",
     clinicCWarranty: "5年",
   },
+  trust: {
+    title: "为什么可以信任我们",
+    subtitle: "我们做了四件事，让您在国外选择诊所时不必承担不必要的风险。",
+    checkedTitle: "每家诊所都经过核查",
+    checkedBody: "诊所上传执业许可证，由我们团队的工作人员核查后才会显示。未经核查的诊所不会出现在您面前。",
+    warrantyTitle: "事先书面写明保修",
+    warrantyBody: "报价表会询问每家诊所的保修期，以及您回国后出现问题时诊所会如何处理，让您在选择之前就能看到。",
+    neutralTitle: "免费且中立",
+    neutralBody: "诊所支付固定订阅费，而不是按患者收费，所以我们没有理由偏向任何一家诊所。",
+    filesTitle: "您的文件受到保护",
+    filesBody: "您的X光片和治疗方案保存在私密存储中，只发送给您选择的诊所。",
+  },
 
   faq: {
     eyebrow: "常见问题",

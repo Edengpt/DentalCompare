@@ -105,6 +105,18 @@ const de: typeof he = {
     clinicCVisits: "2 Reisen, 5 Termine",
     clinicCWarranty: "5 Jahre",
   },
+  trust: {
+    title: "Warum Sie uns vertrauen können",
+    subtitle: "Vier Dinge, die wir gebaut haben, damit Sie eine Klinik im Ausland ohne unnötiges Risiko wählen können.",
+    checkedTitle: "Jede Klinik wird geprüft",
+    checkedBody: "Die Klinik lädt ihre Berufszulassung hoch, und ein Mitglied unseres Teams prüft sie, bevor die Klinik erscheint. Eine ungeprüfte Klinik erreicht Sie nie.",
+    warrantyTitle: "Gewährleistung schriftlich, vorab",
+    warrantyBody: "Das Angebotsformular fragt jede Klinik nach ihrer Gewährleistung und danach, was sie tut, wenn nach Ihrer Heimreise etwas schiefgeht – so sehen Sie es vor der Wahl.",
+    neutralTitle: "Kostenlos und neutral",
+    neutralBody: "Kliniken zahlen ein festes Abonnement, keine Gebühr pro Patient – wir haben also keinen Grund, eine bestimmte Klinik zu bevorzugen.",
+    filesTitle: "Ihre Dateien bleiben privat",
+    filesBody: "Ihr Röntgenbild und Ihr Behandlungsplan werden privat gespeichert und nur an die Kliniken gesendet, die Sie auswählen.",
+  },
 
   faq: {
     eyebrow: "FAQ",

@@ -106,6 +106,18 @@ const fr: typeof he = {
     clinicCVisits: "2 voyages, 5 rendez-vous",
     clinicCWarranty: "5 ans",
   },
+  trust: {
+    title: "Pourquoi vous pouvez nous faire confiance",
+    subtitle: "Quatre choses que nous avons construites pour que vous choisissiez une clinique à l'étranger sans risque inutile.",
+    checkedTitle: "Chaque clinique est vérifiée",
+    checkedBody: "La clinique dépose son autorisation d'exercer, et une personne de notre équipe la vérifie avant que la clinique n'apparaisse. Une clinique non vérifiée ne vous parvient jamais.",
+    warrantyTitle: "Une garantie écrite, dès le départ",
+    warrantyBody: "Le formulaire de devis demande à chaque clinique sa garantie et ce qu'elle fait si un problème survient après votre retour, pour que vous le voyiez avant de choisir.",
+    neutralTitle: "Gratuit et neutre",
+    neutralBody: "Les cliniques paient un abonnement fixe, pas une commission par patient : nous n'avons aucune raison de favoriser une clinique.",
+    filesTitle: "Vos fichiers restent privés",
+    filesBody: "Votre radio et votre plan de traitement sont conservés dans un stockage privé et envoyés uniquement aux cliniques que vous choisissez.",
+  },
 
   faq: {
     eyebrow: "FAQ",

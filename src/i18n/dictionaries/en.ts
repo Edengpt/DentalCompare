@@ -115,6 +115,18 @@ const en: typeof he = {
     clinicCVisits: "2 trips, 5 visits",
     clinicCWarranty: "5 years",
   },
+  trust: {
+    title: "Why you can trust this",
+    subtitle: "Four things we built so you can choose a clinic abroad without taking a needless risk.",
+    checkedTitle: "Every clinic is checked",
+    checkedBody: "A clinic uploads its licence to practise, and a person on our team checks it before the clinic appears. A clinic that wasn't checked never reaches you.",
+    warrantyTitle: "Warranty in writing, up front",
+    warrantyBody: "The quote form asks every clinic for its warranty and what it does if something fails after you fly home, so you see it before you choose.",
+    neutralTitle: "Free and neutral",
+    neutralBody: "Clinics pay a flat subscription, not a fee per patient, so we have no reason to push any clinic.",
+    filesTitle: "Your files stay private",
+    filesBody: "Your x-ray and treatment plan are kept in private storage and sent only to the clinics you choose.",
+  },
 
 
 

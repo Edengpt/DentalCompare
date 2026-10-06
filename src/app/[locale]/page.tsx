@@ -4,6 +4,7 @@ import { Hero } from "@/components/sections/hero";
 import { HowItWorks } from "@/components/sections/how-it-works";
 import { ExampleComparison } from "@/components/sections/example-comparison";
 import { Faq } from "@/components/sections/faq";
+import { Trust } from "@/components/sections/trust";
 import { FinalCta } from "@/components/sections/final-cta";
 import { PopularTreatments } from "@/components/sections/popular-treatments";
 import { Destinations } from "@/components/sections/destinations";
@@ -91,6 +92,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           }}
           locale={locale}
         />
+        <Trust t={t.trust} />
         <Faq t={t.faq} />
         <FinalCta t={t.finalCta} />
       </main>
