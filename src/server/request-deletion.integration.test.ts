@@ -124,4 +124,44 @@ describe.skipIf(!hasDb)("deleteRequest", () => {
     expect(await db.quote.findFirst({ where: { requestDentistId: rd.id } })).toBeNull();
     await db.dentist.delete({ where: { id: dentist.id } });
   });
+
+  it("removes the documents clinics attached to their quotes", async () => {
+    const request = await seedRequest();
+    const sfx = randomUUID().slice(0, 8);
+    const dentist = await db.dentist.create({
+      data: {
+        clinicName: `C ${sfx}`,
+        dentistName: `Dr ${sfx}`,
+        email: `dela_${sfx}@example.com`,
+        phone: "+972500000001",
+        city: "Tel Aviv",
+        address: "1 St",
+        experienceYears: 5,
+      },
+    });
+    const rd = await db.requestDentist.create({
+      data: { requestId: request.id, dentistId: dentist.id },
+    });
+    const blobUrl = `https://blob/quote_doc_${sfx}`;
+    await db.quoteAttachment.create({
+      data: {
+        requestDentistId: rd.id,
+        blobUrl,
+        contentType: "application/pdf",
+        sizeBytes: 10,
+        originalName: "plan.pdf",
+      },
+    });
+
+    // A failing attachment delete stops the whole deletion, like an x-ray's.
+    h.failFor.add(blobUrl);
+    expect((await deleteRequest(request.id)).ok).toBe(false);
+    expect(await db.request.findUnique({ where: { id: request.id } })).not.toBeNull();
+
+    h.failFor.clear();
+    expect(await deleteRequest(request.id)).toEqual({ ok: true });
+    expect(h.deleted).toContain(blobUrl);
+    expect(await db.quoteAttachment.count({ where: { requestDentistId: rd.id } })).toBe(0);
+    await db.dentist.delete({ where: { id: dentist.id } });
+  });
 });

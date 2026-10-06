@@ -37,11 +37,20 @@ export async function deleteRequest(requestId: string): Promise<ActionResult> {
 
   const request = await db.request.findUnique({
     where: { id: requestId },
-    select: { id: true, userId: true, treatmentFileUrl: true, xrayFileUrl: true },
+    select: {
+      id: true,
+      userId: true,
+      treatmentFileUrl: true,
+      xrayFileUrl: true,
+      // Documents the clinics attached to their quotes live in the same
+      // private store and would otherwise outlive the request.
+      requestDentists: { select: { attachments: { select: { blobUrl: true } } } },
+    },
   });
   if (!request || request.userId !== user.id) return { ok: false, error: e.requestNotFound };
 
-  for (const url of [request.treatmentFileUrl, request.xrayFileUrl]) {
+  const quoteFiles = request.requestDentists.flatMap((rd) => rd.attachments.map((a) => a.blobUrl));
+  for (const url of [request.treatmentFileUrl, request.xrayFileUrl, ...quoteFiles]) {
     if (!url) continue;
     try {
       await del(url);
@@ -53,7 +62,7 @@ export async function deleteRequest(requestId: string): Promise<ActionResult> {
     }
   }
 
-  // RequestDentist and Quote go with it — onDelete: Cascade in the schema.
+  // RequestDentist, Quote and QuoteAttachment go with it — onDelete: Cascade in the schema.
   await db.request.delete({ where: { id: request.id } });
 
   await audit({

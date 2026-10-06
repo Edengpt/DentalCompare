@@ -91,3 +91,13 @@ export function sanitizeAttachmentName(name: string): string {
   const ext = dot > 0 && clean.length - dot <= 6 ? clean.slice(dot) : "";
   return clean.slice(0, ATTACHMENT_NAME_MAX - ext.length) + ext;
 }
+
+/**
+ * A `Content-Disposition` that survives a Hebrew or Russian file name: an
+ * ASCII fallback for old clients plus the RFC 5987 UTF-8 form modern browsers
+ * prefer.
+ */
+export function contentDisposition(kind: "inline" | "attachment", name: string): string {
+  const ascii = name.replace(/[^\x20-\x7e]/g, "_").replace(/["\\]/g, "_");
+  return `${kind}; filename="${ascii}"; filename*=UTF-8''${encodeURIComponent(name)}`;
+}

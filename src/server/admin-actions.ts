@@ -252,6 +252,10 @@ export async function rejectClinic(dentistId: string, reason?: string): Promise<
       clinicName: true,
       locale: true,
       documents: { select: { blobUrl: true } },
+      // A pending clinic normally has no requests, but the cascade would take
+      // any quote documents with it — remove their files first, the same rule
+      // as the licences.
+      requestDentists: { select: { attachments: { select: { blobUrl: true } } } },
     },
   });
   if (!dentist) return { ok: false, error: e.clinicNotFound };
@@ -262,9 +266,13 @@ export async function rejectClinic(dentistId: string, reason?: string): Promise<
     return { ok: false, error: e.onlyPendingCanBeRejected };
   }
 
-  for (const doc of dentist.documents) {
+  const blobUrls = [
+    ...dentist.documents.map((d) => d.blobUrl),
+    ...dentist.requestDentists.flatMap((rd) => rd.attachments.map((a) => a.blobUrl)),
+  ];
+  for (const blobUrl of blobUrls) {
     try {
-      await del(doc.blobUrl);
+      await del(blobUrl);
     } catch (err) {
       console.error(`rejectClinic: could not delete document for ${dentistId}:`, err);
       return { ok: false, error: e.deleteFailed };
@@ -334,9 +342,13 @@ export async function createDentist(formData: FormData): Promise<ActionResult> {
   // with no document would make "every listed clinic has had its licence seen"
   // false on day one — and after publicDentistWhere requires the stamp, it
   // would create clinics that never appear at all, with no error anywhere.
-  const docKinds = formData.getAll("documentKind").filter((v): v is string => typeof v === "string");
+  const docKinds = formData
+    .getAll("documentKind")
+    .filter((v): v is string => typeof v === "string");
   const docUrls = formData.getAll("documentUrl").filter((v): v is string => typeof v === "string");
-  const docTypes = formData.getAll("documentType").filter((v): v is string => typeof v === "string");
+  const docTypes = formData
+    .getAll("documentType")
+    .filter((v): v is string => typeof v === "string");
   const documents = docKinds
     .map((kind, i) => ({ kind, url: docUrls[i] ?? "", contentType: docTypes[i] ?? "" }))
     .filter((d) => d.url !== "");
