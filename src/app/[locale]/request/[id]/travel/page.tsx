@@ -1,3 +1,4 @@
+import { isPatientCountry, patientCountries } from "@/lib/patient-countries";
 import { notFound, redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { auth } from "@clerk/nextjs/server";
@@ -53,12 +54,12 @@ export default async function TravelPage({
 
   const countries = await getActiveCountries();
 
-  // A guess, not a conclusion. The phone gives a good default; an Israeli living
-  // in London keeps an Israeli mobile, so the patient changes it in one click if
-  // the number is misleading. Ignored when it names a country we don't operate in.
+  // What the patient said last time wins; otherwise the phone is a good guess.
+  // An Israeli living in London keeps an Israeli mobile, so it is only a
+  // default, changed in one click. Any country counts, not only clinic ones.
   const guessed = countryFromPhone(user.phone);
   const defaultCountry =
-    guessed && countries.some((c) => c.code === guessed) ? guessed : user.countryCode;
+    user.countryCode ?? (guessed && isPatientCountry(guessed) ? guessed : null);
 
   // The "where?" answer from the homepage search box, if there was one. A
   // default for the radio, never an answer on the patient's behalf.
@@ -84,6 +85,7 @@ export default async function TravelPage({
           <div className="mx-auto max-w-3xl px-6 lg:px-10">
             <TravelStep
               requestId={request.id}
+              homeCountries={patientCountries(locale)}
               countries={withCountryNames(countries, locale).map((c) => ({ code: c.code, name: c.name }))}
               defaultCountry={defaultCountry}
               defaultScope={defaults.scope}

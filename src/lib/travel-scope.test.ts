@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { destinationCountryCodes } from "./travel-scope";
+import { canSearchLocally, destinationCountryCodes } from "./travel-scope";
 
 describe("destinationCountryCodes", () => {
   it("LOCAL returns the patient's own country and nothing else", () => {
@@ -32,5 +32,26 @@ describe("destinationCountryCodes", () => {
 
   it("keeps the patient's own country when they chose it as a destination too", () => {
     expect(destinationCountryCodes("SELECTED", ["IL", "TR"], "IL")).toEqual(["IL", "TR"]);
+  });
+
+  // A patient from before countries were asked has none on file. "Near me"
+  // means nothing then, so there is no filter rather than an empty one.
+  it("LOCAL without a patient country applies no filter", () => {
+    expect(destinationCountryCodes("LOCAL", [], null)).toBeNull();
+  });
+});
+
+describe("canSearchLocally", () => {
+  it("is true when the patient's country has active clinics", () => {
+    expect(canSearchLocally("TR", new Set(["TR", "HU"]))).toBe(true);
+  });
+
+  // A patient in Brazil can now say so; "only in my country" would show nothing.
+  it("is false when the patient's country has no clinics yet", () => {
+    expect(canSearchLocally("BR", new Set(["TR", "HU"]))).toBe(false);
+  });
+
+  it("is false without a country", () => {
+    expect(canSearchLocally(null, new Set(["TR"]))).toBe(false);
   });
 });

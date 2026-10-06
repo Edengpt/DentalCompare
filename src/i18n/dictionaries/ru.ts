@@ -212,6 +212,8 @@ const ru: typeof he = {
     travelSubtitle:
       "От страны проживания зависит валюта, в которой мы показываем цены. От готовности к поездке — какие клиники вы увидите. В следующем запросе можно ответить иначе.",
     travelCountryLabel: "Страна проживания",
+    travelCountryPlaceholder: "Выберите страну",
+    travelNoClinicsAtHome: "В стране {country} пока нет клиник",
     travelScopeLabel: "Как далеко вы готовы поехать на это лечение",
     travelScopeLocal: "Только в своей стране",
     travelScopeSelected: "В определённые страны",
@@ -1328,6 +1330,7 @@ const ru: typeof he = {
     mustAcceptTerms: "Для регистрации необходимо принять условия подписки",
     mustPickPlan: "Выберите тариф подписки",
     mustPickCountry: "Выберите страну",
+    noClinicsAtHome: "В вашей стране пока нет клиник. Выберите другое направление.",
     missingDocuments: "Не хватает документов: {kinds}",
     invalidDocument: "Один из документов был загружен не через эту форму. Загрузите его ещё раз.",
     documentRequired: "Нужен хотя бы один лицензионный документ.",

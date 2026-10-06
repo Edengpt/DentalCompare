@@ -72,9 +72,36 @@ describe.skipIf(!hasDb)("saveTravelChoice", () => {
     expect(after?.user?.countryCode).toBe("IL");
   });
 
-  // The country decides which currency prices appear in and which privacy
-  // regime applies. A value invented in the form does not get to decide that.
-  it("refuses a country that is not active in the database", async () => {
+  // A patient in Brazil flying to Istanbul lives in Brazil, clinics or not.
+  it("accepts a home country that has no clinics", async () => {
+    const request = await seedRequest();
+
+    const result = await saveTravelChoice(
+      form({ requestId: request.id, countryCode: "BR", travelScope: "ANY" }),
+    );
+
+    expect(result).toEqual({ ok: true });
+    const after = await db.request.findUnique({
+      where: { id: request.id },
+      include: { user: { select: { countryCode: true } } },
+    });
+    expect(after?.user?.countryCode).toBe("BR");
+  });
+
+  // "Only in my country" with no clinics there would find nobody.
+  it("refuses LOCAL where the home country has no clinics", async () => {
+    const request = await seedRequest();
+
+    const result = await saveTravelChoice(
+      form({ requestId: request.id, countryCode: "BR", travelScope: "LOCAL" }),
+    );
+
+    expect(result.ok).toBe(false);
+  });
+
+  // The country decides which currency prices are compared in. A value
+  // invented in the form does not get to decide that.
+  it("refuses a code that is not a real country", async () => {
     const request = await seedRequest();
 
     const result = await saveTravelChoice(

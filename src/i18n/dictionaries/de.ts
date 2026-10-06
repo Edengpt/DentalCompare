@@ -212,6 +212,8 @@ const de: typeof he = {
     travelSubtitle:
       "Ihr Land bestimmt die Währung, in der wir Preise anzeigen. Ihre Reisebereitschaft bestimmt, welche Kliniken Sie sehen – bei Ihrer nächsten Anfrage können Sie anders antworten.",
     travelCountryLabel: "Ihr Wohnland",
+    travelCountryPlaceholder: "Land auswählen",
+    travelNoClinicsAtHome: "Noch keine Kliniken in {country}",
     travelScopeLabel: "Wie weit würden Sie für diese Behandlung reisen?",
     travelScopeLocal: "Nur im eigenen Land",
     travelScopeSelected: "In bestimmte Länder",
@@ -1350,6 +1352,7 @@ const de: typeof he = {
     mustAcceptTerms: "Für die Registrierung müssen Sie die Abobedingungen akzeptieren",
     mustPickPlan: "Bitte wählen Sie einen Abotarif",
     mustPickCountry: "Bitte wählen Sie ein Land",
+    noClinicsAtHome: "In Ihrem Land gibt es noch keine Kliniken. Bitte wählen Sie ein anderes Ziel.",
     missingDocuments: "Fehlende Dokumente: {kinds}",
     invalidDocument:
       "Eines der Dokumente wurde nicht über dieses Formular hochgeladen. Bitte laden Sie es erneut hoch.",

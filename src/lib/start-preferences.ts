@@ -63,18 +63,21 @@ export type TravelDefaults = {
  *
  * The patient's home country is LOCAL, any other active country is SELECTED
  * with that one destination ticked, and "anywhere" is ANY. With no cookie at
- * all the step keeps its usual LOCAL default.
+ * all the default is LOCAL, or ANY when the patient's country has no clinics.
  */
 export function travelDefaults(
   prefs: StartPreferences | null,
-  homeCountry: string,
+  homeCountry: string | null,
   activeCodes: readonly string[],
 ): TravelDefaults {
-  if (!prefs) return { scope: "LOCAL", destinations: [] };
+  // "Only in my country" is the default only where it can show someone.
+  const near: TravelDefaults =
+    homeCountry && activeCodes.includes(homeCountry)
+      ? { scope: "LOCAL", destinations: [] }
+      : { scope: "ANY", destinations: [] };
+  if (!prefs) return near;
   const { country } = prefs;
   if (country === null) return { scope: "ANY", destinations: [] };
-  if (country === homeCountry || !activeCodes.includes(country)) {
-    return { scope: "LOCAL", destinations: [] };
-  }
+  if (country === homeCountry || !activeCodes.includes(country)) return near;
   return { scope: "SELECTED", destinations: [country] };
 }

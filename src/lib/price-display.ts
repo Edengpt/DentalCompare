@@ -1,3 +1,5 @@
+import countryToCurrency from "country-to-currency";
+
 /**
  * What the comparison table puts in a quote's price cell.
  *
@@ -42,21 +44,48 @@ export function comparisonPrice(
  */
 export const FALLBACK_PATIENT_CURRENCY = "USD";
 
-export function patientCurrencyFor(countryCurrency: string | null | undefined): string {
-  return countryCurrency ?? FALLBACK_PATIENT_CURRENCY;
+/**
+ * The currency of the country the patient lives in. Any country in the world,
+ * not only those with clinics, so it comes from an ISO country→currency map
+ * rather than the Country table.
+ */
+export function patientCurrencyFor(countryCode: string | null | undefined): string {
+  if (!countryCode) return FALLBACK_PATIENT_CURRENCY;
+  return (countryToCurrency as Record<string, string>)[countryCode] ?? FALLBACK_PATIENT_CURRENCY;
 }
 
 /**
- * Which rates the daily refresh asks for: every active clinic currency, plus
- * the fallback, so a patient without a country can always compare. The first
- * currency alphabetically is the base, as before. Null when there is nothing
- * to convert between.
+ * Which rates the daily refresh asks for: every currency in use, plus the
+ * fallback, so a patient without a country can always compare. The base is
+ * always EUR (the source is the ECB): a base that followed the alphabet would
+ * change the day a currency sorting before it appeared.
  */
-export function ratesToFetch(
-  activeCurrencies: string[],
-): { base: string; quotes: string[] } | null {
-  const currencies = [...new Set([...activeCurrencies, FALLBACK_PATIENT_CURRENCY])].sort();
-  if (currencies.length < 2) return null;
-  const [base, ...quotes] = currencies;
-  return { base, quotes };
+export const RATE_BASE = "EUR";
+
+export function ratesToFetch(currencies: string[]): { base: string; quotes: string[] } {
+  const quotes = [...new Set([...currencies, FALLBACK_PATIENT_CURRENCY])]
+    .filter((c) => c !== RATE_BASE)
+    .sort();
+  return { base: RATE_BASE, quotes };
+}
+
+type Convert = (minor: number, from: string) => { minor: number; fetchedAt: Date } | null;
+
+/**
+ * The currency the table compares in. The patient's own, if every quote can be
+ * converted into it; otherwise US dollars, if that works. The rate source
+ * covers about thirty currencies, and a patient whose currency isn't one of
+ * them would otherwise get no comparison at all.
+ */
+export function chooseComparisonCurrency(
+  preferred: string,
+  quotes: { amountMinor: number; currency: string }[],
+  toPreferred: Convert,
+  toFallback: Convert,
+): string {
+  const allConvert = (to: string, convert: Convert) =>
+    quotes.every((q) => q.currency === to || convert(q.amountMinor, q.currency) !== null);
+  if (allConvert(preferred, toPreferred)) return preferred;
+  if (allConvert(FALLBACK_PATIENT_CURRENCY, toFallback)) return FALLBACK_PATIENT_CURRENCY;
+  return preferred;
 }

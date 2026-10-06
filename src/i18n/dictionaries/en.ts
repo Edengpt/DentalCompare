@@ -222,6 +222,8 @@ const en: typeof he = {
     travelSubtitle:
       "Your country sets the currency we show prices in. How far you'll travel sets which clinics you see — and you can answer differently on your next request.",
     travelCountryLabel: "Where you live",
+    travelCountryPlaceholder: "Choose a country",
+    travelNoClinicsAtHome: "No clinics in {country} yet",
     travelScopeLabel: "How far you'd travel for this treatment",
     travelScopeLocal: "Only in my own country",
     travelScopeSelected: "To particular countries",
@@ -1312,6 +1314,7 @@ const en: typeof he = {
     mustAcceptTerms: "You must accept the subscription terms to register",
     mustPickPlan: "Please choose a subscription plan",
     mustPickCountry: "Please choose a country",
+    noClinicsAtHome: "There are no clinics in your country yet. Please choose another destination.",
     missingDocuments: "Missing documents: {kinds}",
     invalidDocument:
       "One of the documents was not uploaded through this form. Please upload it again.",

@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { useT } from "@/i18n/provider";
 import { saveTravelChoice } from "@/server/travel-actions";
 import { cn } from "@/lib/utils";
+import { format } from "@/i18n/format";
+import { canSearchLocally } from "@/lib/travel-scope";
 import { buttonVariants } from "@/components/ui/button";
 
 const inputClass =
@@ -13,6 +15,7 @@ const inputClass =
 
 export function TravelStep({
   requestId,
+  homeCountries,
   countries,
   defaultCountry,
   defaultScope = "LOCAL",
@@ -20,8 +23,11 @@ export function TravelStep({
   locale,
 }: {
   requestId: string;
+  /** Every country, for "where do you live?". */
+  homeCountries: { code: string; name: string }[];
+  /** Countries with clinics, for the destinations. */
   countries: { code: string; name: string }[];
-  defaultCountry: string;
+  defaultCountry: string | null;
   /** Pre-selected radio, e.g. from the homepage search box. */
   defaultScope?: "LOCAL" | "SELECTED" | "ANY";
   /** Countries pre-ticked when the scope is SELECTED. */
@@ -32,6 +38,11 @@ export function TravelStep({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [scope, setScope] = useState<"LOCAL" | "SELECTED" | "ANY">(defaultScope);
+  const [home, setHome] = useState(defaultCountry ?? "");
+  const activeCodes = new Set(countries.map((c) => c.code));
+  // Most countries have no clinics yet; "only in my country" would show nobody.
+  const localOk = canSearchLocally(home || null, activeCodes);
+  const homeName = homeCountries.find((c) => c.code === home)?.name ?? "";
 
   const SCOPES = [
     { value: "LOCAL", label: t.requestFlow.travelScopeLocal },
@@ -58,8 +69,21 @@ export function TravelStep({
 
       <label className="flex max-w-sm flex-col gap-1.5 text-sm">
         <span className="text-foreground font-medium">{t.requestFlow.travelCountryLabel}</span>
-        <select name="countryCode" defaultValue={defaultCountry} className={inputClass}>
-          {countries.map((c) => (
+        <select
+          name="countryCode"
+          required
+          value={home}
+          onChange={(e) => {
+            const next = e.target.value;
+            setHome(next);
+            if (scope === "LOCAL" && !canSearchLocally(next || null, activeCodes)) setScope("ANY");
+          }}
+          className={inputClass}
+        >
+          <option value="" disabled>
+            {t.requestFlow.travelCountryPlaceholder}
+          </option>
+          {homeCountries.map((c) => (
             <option key={c.code} value={c.code}>
               {c.name}
             </option>
@@ -71,19 +95,36 @@ export function TravelStep({
         <legend className="text-foreground text-sm font-medium">
           {t.requestFlow.travelScopeLabel}
         </legend>
-        {SCOPES.map((s) => (
-          <label key={s.value} className="flex cursor-pointer items-center gap-3 text-sm">
-            <input
-              type="radio"
-              name="travelScope"
-              value={s.value}
-              checked={scope === s.value}
-              onChange={() => setScope(s.value)}
-              className="accent-teal-deep h-4 w-4"
-            />
-            <span className="text-foreground">{s.label}</span>
-          </label>
-        ))}
+        {SCOPES.map((s) => {
+          const disabled = s.value === "LOCAL" && !localOk;
+          return (
+            <label
+              key={s.value}
+              className={cn(
+                "flex items-center gap-3 text-sm",
+                disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer",
+              )}
+            >
+              <input
+                type="radio"
+                name="travelScope"
+                value={s.value}
+                checked={scope === s.value}
+                disabled={disabled}
+                onChange={() => setScope(s.value)}
+                className="accent-teal-deep h-4 w-4"
+              />
+              <span className="text-foreground">
+                {s.label}
+                {disabled && homeName && (
+                  <span className="text-muted-foreground block text-xs">
+                    {format(t.requestFlow.travelNoClinicsAtHome, { country: homeName })}
+                  </span>
+                )}
+              </span>
+            </label>
+          );
+        })}
       </fieldset>
 
       {/* Only rendered for SELECTED. An always-visible country list would read as
