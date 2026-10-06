@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
-import { get, del } from "@vercel/blob";
+import { del } from "@vercel/blob";
 import { headers } from "next/headers";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { getRequestLocale } from "@/i18n/request-locale";
 import { db } from "@/lib/db";
+import { readBlobHead } from "@/lib/blob-head";
 import { rateLimit } from "@/lib/rate-limit";
 import { RATE_LIMITS } from "@/lib/constants";
-import { headMatchesType, SIGNATURE_BYTES } from "@/lib/storage";
+import { headMatchesType } from "@/lib/storage";
 import { isClinicDocumentBlobUrl } from "@/lib/clinic-documents";
 
 export const runtime = "nodejs";
@@ -61,7 +62,7 @@ export async function POST(request: Request) {
   // executable with a spoofed MIME type and extension passes every check that
   // trusts the browser. The bytes do not lie. The type they are checked against
   // is the one the store recorded, since that is what an admin will be served.
-  const stored = await readHead(url);
+  const stored = await readBlobHead(url);
   if (!stored || !headMatchesType(stored.head, stored.contentType)) {
     // Refused, so nothing may point at it — and an unattached object in the
     // private store is exactly what the DELETE below exists to prevent.
@@ -72,35 +73,6 @@ export async function POST(request: Request) {
   return NextResponse.json({ url });
 }
 
-/**
- * First bytes of a stored private blob and the type the store has on record,
- * or null when it cannot be read.
- */
-async function readHead(url: string): Promise<{ head: Uint8Array; contentType: string } | null> {
-  try {
-    const result = await get(url, { access: "private" });
-    if (!result || result.statusCode !== 200) return null;
-    const reader = result.stream.getReader();
-    const head = new Uint8Array(SIGNATURE_BYTES);
-    let filled = 0;
-    // Read until the signature is covered rather than trusting one chunk to
-    // carry it: a short first chunk would otherwise look like a bad signature
-    // and get a real document deleted.
-    while (filled < SIGNATURE_BYTES) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      if (!value) continue;
-      const take = value.subarray(0, SIGNATURE_BYTES - filled);
-      head.set(take, filled);
-      filled += take.length;
-    }
-    await reader.cancel().catch(() => {});
-    if (filled < SIGNATURE_BYTES) return null;
-    return { head, contentType: result.blob.contentType };
-  } catch {
-    return null;
-  }
-}
 
 /**
  * Removes a document uploaded during a registration that was never submitted —

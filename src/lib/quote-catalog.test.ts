@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
+import he from "@/i18n/dictionaries/he";
 import {
+  QUOTE_TRANSFERS,
+  allCatalogVariants,
   TREATMENT_CATEGORIES,
   catalogTreatments,
   catalogVariants,
@@ -62,5 +65,18 @@ describe("isCatalogItem", () => {
     expect(
       isCatalogItem({ category: "SURGICAL", treatment: "OTHER", customLabel: "x".repeat(81) }),
     ).toBe(false);
+  });
+});
+
+describe("catalog labels", () => {
+  // Other locales are held to he's keys by their `typeof he` annotation, and to
+  // non-blank values by dictionaries.test.ts — so covering he covers all seven.
+  it("has a label for every category, treatment, variant and transfer", () => {
+    const l = he.labels;
+    for (const c of TREATMENT_CATEGORIES) expect(l.quoteCategories).toHaveProperty(c);
+    for (const t of [...allCatalogTreatments(), "OTHER"])
+      expect(l.quoteTreatments).toHaveProperty(t);
+    for (const v of allCatalogVariants()) expect(l.quoteVariants).toHaveProperty(v);
+    for (const k of QUOTE_TRANSFERS) expect(l.transfers).toHaveProperty(k);
   });
 });

@@ -90,7 +90,9 @@ describe.skipIf(!hasDb)("replaceClinicDocuments (integration, real DB)", () => {
 
       const result = await replaceClinicDocuments(replaceForm(token, docId));
       expect(result.ok).toBe(false);
-      expect((await db.clinicDocument.findUnique({ where: { id: docId } }))!.rejectedAt).not.toBeNull();
+      expect(
+        (await db.clinicDocument.findUnique({ where: { id: docId } }))!.rejectedAt,
+      ).not.toBeNull();
     },
     DB_TIMEOUT,
   );

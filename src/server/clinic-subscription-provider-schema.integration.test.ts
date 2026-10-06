@@ -17,7 +17,9 @@ describe.skipIf(!hasDb)("ClinicSubscription.provider", () => {
         clinicName: `Clinic ${sfx}`,
         dentistName: `Dr ${sfx}`,
         email: `prov_${sfx}@example.com`,
-        phone: `+9725${Math.floor(Math.random() * 1e8).toString().padStart(8, "0")}`,
+        phone: `+9725${Math.floor(Math.random() * 1e8)
+          .toString()
+          .padStart(8, "0")}`,
         city: "Tel Aviv",
         address: "1 Main St",
         experienceYears: 5,

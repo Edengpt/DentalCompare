@@ -57,7 +57,9 @@ async function seedDentist(sfx: string) {
       clinicName: `Clinic ${sfx}`,
       dentistName: `Dr ${sfx}`,
       email: `qd_${sfx}@example.com`,
-      phone: `+9725${Math.floor(Math.random() * 1e8).toString().padStart(8, "0")}`,
+      phone: `+9725${Math.floor(Math.random() * 1e8)
+        .toString()
+        .padStart(8, "0")}`,
       city: "Tel Aviv",
       address: "1 Main St",
       experienceYears: 5,
@@ -82,8 +84,12 @@ async function seedRequestWithTwoQuotes() {
 
   const dentistA = await seedDentist(`${sfx}a`);
   const dentistB = await seedDentist(`${sfx}b`);
-  const rdA = await db.requestDentist.create({ data: { requestId: request.id, dentistId: dentistA.id } });
-  const rdB = await db.requestDentist.create({ data: { requestId: request.id, dentistId: dentistB.id } });
+  const rdA = await db.requestDentist.create({
+    data: { requestId: request.id, dentistId: dentistA.id },
+  });
+  const rdB = await db.requestDentist.create({
+    data: { requestId: request.id, dentistId: dentistB.id },
+  });
   const quoteA = await db.quote.create({
     data: { requestDentistId: rdA.id, amountMinor: 100000, currency: "ILS" },
   });
@@ -98,8 +104,13 @@ describe.skipIf(!hasDb)("patient quote decisions", () => {
 
   beforeAll(async () => {
     ({ db } = await import("@/lib/db"));
-    ({ approveQuote, rejectQuote, markTreatmentStarted, requestCompletionConfirmation, confirmCompletion } =
-      await import("@/server/quote-decisions"));
+    ({
+      approveQuote,
+      rejectQuote,
+      markTreatmentStarted,
+      requestCompletionConfirmation,
+      confirmCompletion,
+    } = await import("@/server/quote-decisions"));
     ({ submitQuote } = await import("@/server/quotes"));
   }, DB_TIMEOUT);
 
@@ -169,7 +180,11 @@ describe.skipIf(!hasDb)("patient quote decisions", () => {
     // trips the earlier userNotSynced check instead).
     const sfx = randomUUID().slice(0, 8);
     const otherUser = await db.user.create({
-      data: { clerkUserId: `qp_other_${sfx}`, fullName: "Not The Owner", email: `qp_other_${sfx}@example.com` },
+      data: {
+        clerkUserId: `qp_other_${sfx}`,
+        fullName: "Not The Owner",
+        email: `qp_other_${sfx}@example.com`,
+      },
     });
     created.userIds.push(otherUser.id);
     authState.clerkUserId = otherUser.clerkUserId;
@@ -188,7 +203,10 @@ describe.skipIf(!hasDb)("patient quote decisions", () => {
     const { rdA, rdB, dentistA } = await seedRequestWithTwoQuotes();
     await approveQuote(rdA.id);
 
-    await db.dentist.update({ where: { id: dentistA.id }, data: { clerkUserId: `clinic_${dentistA.id}` } });
+    await db.dentist.update({
+      where: { id: dentistA.id },
+      data: { clerkUserId: `clinic_${dentistA.id}` },
+    });
     authState.clerkUserId = `clinic_${dentistA.id}`;
 
     // rdB belongs to dentistB, not the signed-in dentistA — this fails at
@@ -209,7 +227,10 @@ describe.skipIf(!hasDb)("patient quote decisions", () => {
   it("refuses to mark treatment started on the owning clinic's own quote while it is still PENDING_DECISION", async () => {
     const { rdA, dentistA } = await seedRequestWithTwoQuotes();
     // Never approved — rdA's quote is still PENDING_DECISION.
-    await db.dentist.update({ where: { id: dentistA.id }, data: { clerkUserId: `clinic_${dentistA.id}` } });
+    await db.dentist.update({
+      where: { id: dentistA.id },
+      data: { clerkUserId: `clinic_${dentistA.id}` },
+    });
     authState.clerkUserId = `clinic_${dentistA.id}`;
 
     const result = await markTreatmentStarted(rdA.id);
@@ -223,7 +244,10 @@ describe.skipIf(!hasDb)("patient quote decisions", () => {
     const { rdA, user, dentistA } = await seedRequestWithTwoQuotes();
     await approveQuote(rdA.id);
 
-    await db.dentist.update({ where: { id: dentistA.id }, data: { clerkUserId: `clinic_${dentistA.id}` } });
+    await db.dentist.update({
+      where: { id: dentistA.id },
+      data: { clerkUserId: `clinic_${dentistA.id}` },
+    });
     authState.clerkUserId = `clinic_${dentistA.id}`;
     await markTreatmentStarted(rdA.id);
 
@@ -244,7 +268,10 @@ describe.skipIf(!hasDb)("patient quote decisions", () => {
     const { rdA, user, dentistA } = await seedRequestWithTwoQuotes();
     await approveQuote(rdA.id);
 
-    await db.dentist.update({ where: { id: dentistA.id }, data: { clerkUserId: `clinic_${dentistA.id}` } });
+    await db.dentist.update({
+      where: { id: dentistA.id },
+      data: { clerkUserId: `clinic_${dentistA.id}` },
+    });
     authState.clerkUserId = `clinic_${dentistA.id}`;
     await markTreatmentStarted(rdA.id);
 
@@ -295,7 +322,10 @@ describe.skipIf(!hasDb)("patient quote decisions", () => {
       data: { requestId: request.id, dentistId: dentistC.id, quoteToken: token },
     });
 
-    const submitResult = await submitQuote({ token, amountMajor: 3000 });
+    const submitResult = await submitQuote({
+      token,
+      items: [{ category: "SURGICAL", treatment: "IMPLANT", quantity: 1, unitPriceMajor: 3000 }],
+    });
     expect(submitResult.ok).toBe(false);
     const cAfterSubmit = await db.quote.findUnique({ where: { requestDentistId: rdC.id } });
     expect(cAfterSubmit).toBeNull(); // never created

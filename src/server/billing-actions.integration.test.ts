@@ -8,7 +8,9 @@ vi.mock("@/lib/stripe", async (orig) => {
   return {
     ...actual,
     isStripeConfigured: () => true,
-    createSubscriptionCheckoutSession: vi.fn(async () => ({ url: "https://checkout.stripe.com/test-session" })),
+    createSubscriptionCheckoutSession: vi.fn(async () => ({
+      url: "https://checkout.stripe.com/test-session",
+    })),
   };
 });
 
@@ -45,7 +47,9 @@ async function seedPendingSubscription(
       clinicName: `Clinic ${sfx}`,
       dentistName: `Dr ${sfx}`,
       email: `bill_${sfx}@example.com`,
-      phone: `+9725${Math.floor(Math.random() * 1e8).toString().padStart(8, "0")}`,
+      phone: `+9725${Math.floor(Math.random() * 1e8)
+        .toString()
+        .padStart(8, "0")}`,
       city: "Tel Aviv",
       address: "1 Main St",
       experienceYears: 5,

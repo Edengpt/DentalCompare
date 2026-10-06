@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
-import { get, del } from "@vercel/blob";
+import { del } from "@vercel/blob";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
+import { blobPathnameOf, readBlobHead } from "@/lib/blob-head";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { getRequestLocale } from "@/i18n/request-locale";
 import {
   headMatchesType,
   isOwnRequestBlobPath,
-  SIGNATURE_BYTES,
   type UploadKind,
 } from "@/lib/storage";
 
@@ -78,7 +78,7 @@ export async function POST(request: Request) {
   // The type checked against is the one the store recorded, not one the client
   // restates here: that stored type is what will be served to the clinic, so
   // it is the type the bytes have to agree with.
-  const stored = await readHead(url);
+  const stored = await readBlobHead(url);
   if (!stored || !headMatchesType(stored.head, stored.contentType)) {
     // Nothing references this object, and a file we just refused must not be
     // left sitting in private storage.
@@ -93,49 +93,4 @@ export async function POST(request: Request) {
   });
 
   return NextResponse.json({ url, kind, request: updated });
-}
-
-/** The stored pathname a blob URL refers to, or null if it is not one of ours. */
-function blobPathnameOf(url: string): string | null {
-  let parsed: URL;
-  try {
-    parsed = new URL(url);
-  } catch {
-    return null;
-  }
-  if (parsed.protocol !== "https:" || !/\.blob\.vercel-storage\.com$/i.test(parsed.hostname)) {
-    return null;
-  }
-  return decodeURIComponent(parsed.pathname).slice(1) || null;
-}
-
-/**
- * First bytes of a stored private blob and the type the store has on record,
- * or null when it cannot be read.
- */
-async function readHead(url: string): Promise<{ head: Uint8Array; contentType: string } | null> {
-  try {
-    const result = await get(url, { access: "private" });
-    if (!result || result.statusCode !== 200) return null;
-    const reader = result.stream.getReader();
-    const head = new Uint8Array(SIGNATURE_BYTES);
-    let filled = 0;
-    // Read until the signature is covered rather than trusting one chunk to
-    // carry it: a short first chunk would otherwise look like a bad signature
-    // and get a real file deleted.
-    while (filled < SIGNATURE_BYTES) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      if (!value) continue;
-      const take = value.subarray(0, SIGNATURE_BYTES - filled);
-      head.set(take, filled);
-      filled += take.length;
-    }
-    // Stop pulling as soon as the head is in hand — the file may be 20MB.
-    await reader.cancel().catch(() => {});
-    if (filled < SIGNATURE_BYTES) return null;
-    return { head, contentType: result.blob.contentType };
-  } catch {
-    return null;
-  }
 }

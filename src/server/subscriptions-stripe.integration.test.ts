@@ -19,7 +19,9 @@ async function seedStripePendingSubscription() {
       clinicName: `Clinic ${sfx}`,
       dentistName: `Dr ${sfx}`,
       email: `strp_${sfx}@example.com`,
-      phone: `+3620${Math.floor(Math.random() * 1e7).toString().padStart(7, "0")}`,
+      phone: `+3620${Math.floor(Math.random() * 1e7)
+        .toString()
+        .padStart(7, "0")}`,
       city: "Budapest",
       address: "1 Main St",
       experienceYears: 5,
