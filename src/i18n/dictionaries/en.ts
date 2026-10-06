@@ -62,6 +62,8 @@ const en: typeof he = {
     subtitle: "Every clinic here had its licence checked by a person on our team.",
     verified: { one: "1 verified clinic", other: "{count} verified clinics" },
     joiningSoon: "Clinics joining soon",
+    showAll: "Show all {count} countries",
+    showLess: "Show fewer",
   },
 
   howItWorks: {
@@ -83,9 +85,6 @@ const en: typeof he = {
     artCity1: "Baku",
     artCity2: "Tirana",
     artCity3: "Tbilisi",
-    verifiedTitle: "Every clinic here has been checked",
-    verifiedPromise:
-      "Every clinic you see here uploaded its licence to practise, and a person on our team looked at it before the clinic appeared. A clinic whose licence was not checked never reaches you.",
   },
   exampleComparison: {
     title: "Same plan, three quotes, side by side",
@@ -112,6 +111,18 @@ const en: typeof he = {
     clinicCIncluded: "Implant, crown, 4 nights' stay",
     clinicCVisits: "2 trips, 5 visits",
     clinicCWarranty: "5 years",
+  },
+  trust: {
+    title: "Why you can trust this",
+    subtitle: "Four things we built so you can choose a clinic abroad without taking a needless risk.",
+    checkedTitle: "Every clinic is checked",
+    checkedBody: "A clinic uploads its licence to practise, and a person on our team checks it before the clinic appears. A clinic that wasn't checked never reaches you.",
+    warrantyTitle: "See the warranty before you choose",
+    warrantyBody: "The quote form asks every clinic for its warranty and what it does if something fails after you fly home, so you see it before you choose.",
+    neutralTitle: "Free for you, no commissions",
+    neutralBody: "You never pay us. We earn from clinic subscriptions, never from a commission on your treatment.",
+    filesTitle: "Your files stay private",
+    filesBody: "Your x-ray and treatment plan are kept in private storage. No clinic you didn't choose ever sees them.",
   },
 
 

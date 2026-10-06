@@ -1,4 +1,3 @@
-import { ShieldCheck } from "lucide-react";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import type { Locale } from "@/i18n/config";
 import { format } from "@/i18n/format";
@@ -11,11 +10,9 @@ import { EXAMPLE_QUOTES, formatExampleMoney } from "@/lib/example-quotes";
  */
 export function ExampleComparison({
   t,
-  verifiedPromise,
   locale,
 }: {
   t: Dictionary["exampleComparison"];
-  verifiedPromise: { title: string; body: string };
   locale: Locale;
 }) {
   const [quoteA, quoteB, quoteC] = EXAMPLE_QUOTES;
@@ -126,19 +123,6 @@ export function ExampleComparison({
               ))}
             </tbody>
           </table>
-        </div>
-
-        {/* The verified badge appears on every clinic, so on its own it reads as
-            decoration. What it actually means is a property of the directory as
-            a whole, and this is where a patient meets that claim first. */}
-        <div className="bg-sand mt-8 flex items-start gap-3 rounded-lg p-5">
-          <ShieldCheck className="text-teal-deep mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
-          <div>
-            <p className="text-foreground font-bold">{verifiedPromise.title}</p>
-            <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-              {verifiedPromise.body}
-            </p>
-          </div>
         </div>
       </div>
     </section>

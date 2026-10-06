@@ -4,12 +4,13 @@ import { Hero } from "@/components/sections/hero";
 import { HowItWorks } from "@/components/sections/how-it-works";
 import { ExampleComparison } from "@/components/sections/example-comparison";
 import { Faq } from "@/components/sections/faq";
+import { Trust } from "@/components/sections/trust";
 import { FinalCta } from "@/components/sections/final-cta";
 import { PopularTreatments } from "@/components/sections/popular-treatments";
 import { Destinations } from "@/components/sections/destinations";
 import { StartSearchProvider } from "@/components/sections/start-search-context";
 import { getDictionary } from "@/i18n/get-dictionary";
-import { plural } from "@/i18n/format";
+import { format, plural } from "@/i18n/format";
 import { countryName } from "@/lib/country-names";
 import { DESTINATION_PHOTOS } from "@/lib/destination-photos";
 import { getHomepageDestinations } from "@/lib/homepage-destinations";
@@ -78,17 +79,13 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <Destinations
             title={t.destinations.title}
             subtitle={t.destinations.subtitle}
+            showAllLabel={format(t.destinations.showAll, { count: tiles.length })}
+            showLessLabel={t.destinations.showLess}
             destinations={tiles}
           />
         </StartSearchProvider>
-        <ExampleComparison
-          t={t.exampleComparison}
-          verifiedPromise={{
-            title: t.howItWorks.verifiedTitle,
-            body: t.howItWorks.verifiedPromise,
-          }}
-          locale={locale}
-        />
+        <ExampleComparison t={t.exampleComparison} locale={locale} />
+        <Trust t={t.trust} />
         <Faq t={t.faq} />
         <FinalCta t={t.finalCta} />
       </main>

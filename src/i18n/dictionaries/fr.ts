@@ -51,6 +51,8 @@ const fr: typeof he = {
       "L'autorisation d'exercer de chaque clinique présentée ici a été contrôlée par un membre de notre équipe.",
     verified: { one: "1 clinique vérifiée", other: "{count} cliniques vérifiées" },
     joiningSoon: "Des cliniques arrivent bientôt",
+    showAll: "Voir les {count} pays",
+    showLess: "Voir moins",
   },
 
   howItWorks: {
@@ -73,9 +75,6 @@ const fr: typeof he = {
     artCity1: "Bakou",
     artCity2: "Tirana",
     artCity3: "Tbilissi",
-    verifiedTitle: "Chaque clinique présentée ici a été vérifiée",
-    verifiedPromise:
-      "Chaque clinique que vous voyez ici a téléversé son autorisation d'exercer, et un membre de notre équipe l'a examinée avant sa mise en ligne. Une clinique dont l'autorisation n'a pas été vérifiée ne vous est jamais proposée.",
   },
   exampleComparison: {
     title: "Même plan, trois devis, côte à côte",
@@ -103,6 +102,18 @@ const fr: typeof he = {
     clinicCIncluded: "Implant, couronne, 4 nuits d'hébergement",
     clinicCVisits: "2 voyages, 5 rendez-vous",
     clinicCWarranty: "5 ans",
+  },
+  trust: {
+    title: "Pourquoi vous pouvez nous faire confiance",
+    subtitle: "Quatre choses que nous avons construites pour que vous choisissiez une clinique à l'étranger sans risque inutile.",
+    checkedTitle: "Chaque clinique est vérifiée",
+    checkedBody: "La clinique dépose son autorisation d'exercer, et une personne de notre équipe la vérifie avant que la clinique n'apparaisse. Une clinique non vérifiée ne vous parvient jamais.",
+    warrantyTitle: "La garantie avant de choisir",
+    warrantyBody: "Le formulaire de devis demande à chaque clinique sa garantie et ce qu'elle fait si un problème survient après votre retour, pour que vous le voyiez avant de choisir.",
+    neutralTitle: "Gratuit pour vous, sans commission",
+    neutralBody: "Vous ne nous payez rien. Nous sommes rémunérés par l'abonnement des cliniques, jamais par une commission sur votre traitement.",
+    filesTitle: "Vos fichiers restent privés",
+    filesBody: "Votre radio et votre plan de traitement sont conservés dans un stockage privé. Aucune clinique que vous n'avez pas choisie ne les voit.",
   },
 
   faq: {

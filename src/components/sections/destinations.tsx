@@ -1,8 +1,10 @@
 "use client";
 
 import Image from "next/image";
+import { useId, useRef, useState } from "react";
 import { ShieldCheck } from "lucide-react";
 import type { DestinationPhoto } from "@/lib/destination-photos";
+import { splitDestinations } from "@/lib/split-destinations";
 import { useStartSearch } from "./start-search-context";
 
 export type DestinationTile = {
@@ -22,24 +24,35 @@ export type DestinationTile = {
  * Where there is a photograph of the capital it sits behind the name under a
  * navy scrim, so the white text stays readable over any picture. A country
  * without one keeps the plain navy tile.
+ *
+ * Only the first three rows show at first; the rest wait behind "Show all".
+ * They stay in the HTML (hidden), so search engines still see every link.
  */
 export function Destinations({
   title,
   subtitle,
+  showAllLabel,
+  showLessLabel,
   destinations,
 }: {
   title: string;
   subtitle: string;
+  /** Already formatted with the number of countries. */
+  showAllLabel: string;
+  showLessLabel: string;
   destinations: DestinationTile[];
 }) {
   const { start } = useStartSearch();
+  const [expanded, setExpanded] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+  const listId = useId();
   if (destinations.length === 0) return null;
 
-  const [first, second, ...rest] = destinations;
-  const wide = [first, second].filter(Boolean);
+  const { wide, shown, hidden, hasMore } = splitDestinations(destinations);
 
-  const tile = (d: DestinationTile, big: boolean, index: number) => (
-    <li key={d.code} className="relative">
+  // `hidden` keeps a collapsed tile in the HTML and out of the tab order.
+  const tile = (d: DestinationTile, big: boolean, index: number, hiddenTile = false) => (
+    <li key={d.code} className="relative" hidden={hiddenTile}>
       <button
         type="button"
         onClick={() => start({ country: d.code })}
@@ -95,15 +108,31 @@ export function Destinations({
   );
 
   return (
-    <section className="py-14 sm:py-16">
+    <section ref={sectionRef} className="scroll-mt-20 py-14 sm:py-16">
       <div className="mx-auto max-w-6xl px-6 lg:px-10">
         <h2 className="font-display text-foreground text-2xl font-bold sm:text-3xl">{title}</h2>
         <p className="text-muted-foreground mt-1 text-sm sm:text-base">{subtitle}</p>
         <ul className="mt-6 grid gap-4 sm:grid-cols-2">{wide.map((d, i) => tile(d, true, i))}</ul>
-        {rest.length > 0 && (
-          <ul className="mt-4 grid gap-4 sm:grid-cols-3">
-            {rest.map((d, i) => tile(d, false, i + 2))}
+        {shown.length > 0 && (
+          <ul id={listId} className="mt-4 grid gap-4 sm:grid-cols-3">
+            {shown.map((d, i) => tile(d, false, i + 2))}
+            {hidden.map((d, i) => tile(d, false, i + 2 + shown.length, !expanded))}
           </ul>
+        )}
+        {hasMore && (
+          <button
+            type="button"
+            aria-expanded={expanded}
+            aria-controls={listId}
+            onClick={() => {
+              if (expanded)
+                sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+              setExpanded(!expanded);
+            }}
+            className="border-border text-teal-deep hover:bg-sand mt-6 rounded-md border px-4 py-2 text-sm font-semibold"
+          >
+            {expanded ? showLessLabel : showAllLabel}
+          </button>
         )}
       </div>
     </section>

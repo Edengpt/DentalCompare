@@ -50,6 +50,8 @@ const de: typeof he = {
       "Bei jeder Klinik hier hat ein Mitglied unseres Teams die Zulassung persönlich geprüft.",
     verified: { one: "1 geprüfte Klinik", other: "{count} geprüfte Kliniken" },
     joiningSoon: "Kliniken kommen bald hinzu",
+    showAll: "Alle Länder anzeigen ({count})",
+    showLess: "Weniger anzeigen",
   },
 
   howItWorks: {
@@ -72,9 +74,6 @@ const de: typeof he = {
     artCity1: "Baku",
     artCity2: "Tirana",
     artCity3: "Tiflis",
-    verifiedTitle: "Jede Klinik hier ist geprüft",
-    verifiedPromise:
-      "Jede Klinik, die Sie hier sehen, hat ihre Berufszulassung hochgeladen, und ein Mitglied unseres Teams hat sie geprüft, bevor die Klinik sichtbar wurde. Eine Klinik ohne geprüfte Zulassung wird Ihnen nie angezeigt.",
   },
   exampleComparison: {
     title: "Ein Plan, drei Angebote – direkt im Vergleich",
@@ -102,6 +101,18 @@ const de: typeof he = {
     clinicCIncluded: "Implantat, Krone, 4 Übernachtungen",
     clinicCVisits: "2 Reisen, 5 Termine",
     clinicCWarranty: "5 Jahre",
+  },
+  trust: {
+    title: "Warum Sie uns vertrauen können",
+    subtitle: "Vier Dinge, die wir gebaut haben, damit Sie eine Klinik im Ausland ohne unnötiges Risiko wählen können.",
+    checkedTitle: "Jede Klinik wird geprüft",
+    checkedBody: "Die Klinik lädt ihre Berufszulassung hoch, und ein Mitglied unseres Teams prüft sie, bevor die Klinik erscheint. Eine ungeprüfte Klinik erreicht Sie nie.",
+    warrantyTitle: "Die Garantie vor der Wahl sehen",
+    warrantyBody: "Das Angebotsformular fragt jede Klinik nach ihrer Garantie und danach, was sie tut, wenn nach Ihrer Heimreise etwas schiefgeht – so sehen Sie es vor der Wahl.",
+    neutralTitle: "Für Sie kostenlos, ohne Provision",
+    neutralBody: "Sie zahlen uns nichts. Wir verdienen an den Abonnements der Kliniken, nie an einer Provision auf Ihre Behandlung.",
+    filesTitle: "Ihre Dateien bleiben privat",
+    filesBody: "Ihr Röntgenbild und Ihr Behandlungsplan werden privat gespeichert. Keine Klinik, die Sie nicht ausgewählt haben, bekommt sie zu sehen.",
   },
 
   faq: {

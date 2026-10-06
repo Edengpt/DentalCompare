@@ -49,6 +49,8 @@ const zh: typeof he = {
     subtitle: "这里每家诊所的执照，都经过我们团队的人工核验。",
     verified: { one: "1家认证诊所", other: "{count}家认证诊所" },
     joiningSoon: "诊所即将入驻",
+    showAll: "显示全部 {count} 个国家",
+    showLess: "收起",
   },
 
   howItWorks: {
@@ -69,9 +71,6 @@ const zh: typeof he = {
     artCity1: "巴库",
     artCity2: "地拉那",
     artCity3: "第比利斯",
-    verifiedTitle: "这里的每家诊所都经过核验",
-    verifiedPromise:
-      "您在这里看到的每家诊所都上传了执业执照，并在上线前经我们团队人工审核。执照未经核验的诊所，绝不会出现在您面前。",
   },
   exampleComparison: {
     title: "同一方案，三份报价，并排比较",
@@ -98,6 +97,18 @@ const zh: typeof he = {
     clinicCIncluded: "种植体、牙冠、4晚住宿",
     clinicCVisits: "2次行程，就诊5次",
     clinicCWarranty: "5年",
+  },
+  trust: {
+    title: "为什么可以信任我们",
+    subtitle: "我们做了四件事，让您在国外选择诊所时不必承担不必要的风险。",
+    checkedTitle: "每家诊所都经过核查",
+    checkedBody: "诊所上传执业许可证，由我们团队的工作人员核查后才会显示。未经核查的诊所不会出现在您面前。",
+    warrantyTitle: "选择前先看保修",
+    warrantyBody: "报价表会询问每家诊所的保修期，以及您回国后出现问题时诊所会如何处理，让您在选择之前就能看到。",
+    neutralTitle: "对您免费，不收佣金",
+    neutralBody: "您无需向我们支付任何费用。我们的收入来自诊所订阅，从不从您的治疗中抽取佣金。",
+    filesTitle: "您的文件受到保护",
+    filesBody: "您的X光片和治疗方案保存在私密存储中，您未选择的诊所看不到它们。",
   },
 
   faq: {

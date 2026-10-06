@@ -53,6 +53,8 @@ const tr: typeof he = {
     subtitle: "Buradaki her kliniğin lisansı ekibimizden biri tarafından kontrol edildi.",
     verified: { one: "1 doğrulanmış klinik", other: "{count} doğrulanmış klinik" },
     joiningSoon: "Klinikler yakında eklenecek",
+    showAll: "Tüm ülkeleri göster ({count})",
+    showLess: "Daha az göster",
   },
 
   howItWorks: {
@@ -74,9 +76,6 @@ const tr: typeof he = {
     artCity1: "Bakü",
     artCity2: "Tiran",
     artCity3: "Tiflis",
-    verifiedTitle: "Buradaki her klinik kontrol edildi",
-    verifiedPromise:
-      "Burada gördüğünüz her klinik meslek lisansını yükledi ve klinik listelenmeden önce ekibimizden biri bu lisansı inceledi. Lisansı kontrol edilmemiş bir klinik size asla ulaşmaz.",
   },
   exampleComparison: {
     title: "Aynı plan, üç teklif, yan yana",
@@ -104,6 +103,18 @@ const tr: typeof he = {
     clinicCIncluded: "İmplant, kron, 4 gece konaklama",
     clinicCVisits: "2 seyahat, 5 seans",
     clinicCWarranty: "5 yıl",
+  },
+  trust: {
+    title: "Neden güvenebilirsiniz",
+    subtitle: "Yurt dışında gereksiz risk almadan klinik seçebilmeniz için kurduğumuz dört şey.",
+    checkedTitle: "Her klinik kontrol edilir",
+    checkedBody: "Klinik çalışma ruhsatını yükler ve ekibimizden biri, klinik görünmeden önce onu kontrol eder. Kontrol edilmemiş bir klinik size asla ulaşmaz.",
+    warrantyTitle: "Seçmeden önce garantiyi görün",
+    warrantyBody: "Teklif formu her kliniğe garantisini ve eve döndükten sonra bir sorun çıkarsa ne yapacağını sorar; böylece seçmeden önce görürsünüz.",
+    neutralTitle: "Sizin için ücretsiz, komisyon yok",
+    neutralBody: "Bize hiçbir şey ödemezsiniz. Gelirimiz kliniklerin aboneliklerinden gelir; tedavinizden asla komisyon almayız.",
+    filesTitle: "Dosyalarınız gizli kalır",
+    filesBody: "Röntgeniniz ve tedavi planınız özel depolamada tutulur. Seçmediğiniz hiçbir klinik onları göremez.",
   },
 
   faq: {
