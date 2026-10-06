@@ -496,7 +496,7 @@ const he = {
     subtotal: "סכום טיפולים {amount}",
     packageDiscount: "הנחת חבילה −{amount}",
     rowTravel: "טיסות, לינה והעברות",
-    flightsFor: "טיסות כלולות ({tickets} כרטיסים)",
+    flightsFor: "טיסות כלולות · כרטיסים: {tickets}",
     flightsNotIncluded: "טיסות לא כלולות",
     lodgingNights: "לינה: {nights} לילות",
     lodgingNotIncluded: "לינה לא כלולה",
@@ -1308,7 +1308,7 @@ const he = {
     noLineItems: "יש להוסיף לפחות טיפול אחד עם מחיר",
     invalidLineItem: "אחד הטיפולים אינו תקין — בדקו סוג, כמות ומחיר",
     invalidDiscount: "ההנחה חייבת להיות קטנה מסכום הטיפולים",
-    attachmentLimit: "אפשר לצרף עד 5 קבצים להצעה",
+    attachmentLimit: "אפשר לצרף עד {max} קבצים להצעה",
   },
 
   legal: {

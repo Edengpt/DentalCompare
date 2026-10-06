@@ -509,7 +509,7 @@ const tr: typeof he = {
     subtotal: "Ara toplam {amount}",
     packageDiscount: "Paket indirimi −{amount}",
     rowTravel: "Uçuş, konaklama, transfer",
-    flightsFor: "Uçuş dahil ({tickets} bilet)",
+    flightsFor: "Uçuş dahil · bilet: {tickets}",
     flightsNotIncluded: "Uçuş dahil değil",
     lodgingNights: "Konaklama: {nights} gece",
     lodgingNotIncluded: "Konaklama dahil değil",
@@ -1361,7 +1361,7 @@ const tr: typeof he = {
     noLineItems: "En az bir fiyatlı tedavi ekleyin",
     invalidLineItem: "Tedavilerden biri geçersiz — tür, adet ve fiyatı kontrol edin",
     invalidDiscount: "İndirim, tedavi ara toplamından az olmalıdır",
-    attachmentLimit: "Bir teklife en fazla 5 dosya eklenebilir",
+    attachmentLimit: "Bir teklife en fazla {max} dosya eklenebilir",
   },
 
   legal: {

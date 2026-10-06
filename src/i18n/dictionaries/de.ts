@@ -516,7 +516,7 @@ const de: typeof he = {
     subtotal: "Zwischensumme {amount}",
     packageDiscount: "Paketrabatt −{amount}",
     rowTravel: "Flüge, Unterkunft & Transfers",
-    flightsFor: "Flüge inklusive ({tickets} Tickets)",
+    flightsFor: "Flüge inklusive · Tickets: {tickets}",
     flightsNotIncluded: "Flüge nicht inklusive",
     lodgingNights: "Unterkunft: {nights} Nächte",
     lodgingNotIncluded: "Unterkunft nicht inklusive",
@@ -1382,7 +1382,7 @@ const de: typeof he = {
     noLineItems: "Fügen Sie mindestens eine Behandlung mit Preis hinzu",
     invalidLineItem: "Eine Behandlung ist ungültig — prüfen Sie Art, Menge und Preis",
     invalidDiscount: "Der Rabatt muss unter der Zwischensumme liegen",
-    attachmentLimit: "Ein Angebot kann bis zu 5 Dateien enthalten",
+    attachmentLimit: "Ein Angebot kann bis zu {max} Dateien enthalten",
   },
 
   legal: {

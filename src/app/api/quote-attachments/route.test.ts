@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-const { get, del, loadEditableTarget, count, create } = vi.hoisted(() => ({
+const { get, del, loadEditableTarget, count, create, findExisting, lock } = vi.hoisted(() => ({
+  findExisting: vi.fn(),
+  lock: vi.fn(),
   get: vi.fn(),
   del: vi.fn(),
   loadEditableTarget: vi.fn(),
@@ -11,8 +13,13 @@ const { get, del, loadEditableTarget, count, create } = vi.hoisted(() => ({
 vi.mock("@vercel/blob", () => ({ get, del }));
 vi.mock("@/server/quote-target", () => ({ loadEditableTarget }));
 vi.mock("@/lib/db", () => {
-  const tx = { quoteAttachment: { count, create } };
-  return { db: { $transaction: (fn: (t: typeof tx) => unknown) => fn(tx) } };
+  const tx = { $queryRaw: lock, quoteAttachment: { count, create } };
+  return {
+    db: {
+      quoteAttachment: { findUnique: findExisting },
+      $transaction: (fn: (t: typeof tx) => unknown) => fn(tx),
+    },
+  };
 });
 
 import { POST } from "./route";
@@ -49,6 +56,8 @@ describe("POST /api/quote-attachments", () => {
     get.mockResolvedValue(stored(PDF_BYTES));
     del.mockResolvedValue(undefined);
     count.mockResolvedValue(0);
+    findExisting.mockResolvedValue(null);
+    lock.mockResolvedValue([]);
     create.mockImplementation(async ({ data }) => ({
       id: "att-1",
       originalName: data.originalName,
@@ -116,5 +125,30 @@ describe("POST /api/quote-attachments", () => {
     expect(res.status).toBe(400);
     expect(create).not.toHaveBeenCalled();
     expect(del).toHaveBeenCalledWith(OWN_URL);
+  });
+
+  it("locks the clinic's row before counting, so the cap holds under a race", async () => {
+    const order: string[] = [];
+    lock.mockImplementation(async () => void order.push("lock"));
+    count.mockImplementation(async () => (order.push("count"), 0));
+    await confirm(OWN_URL);
+    expect(order).toEqual(["lock", "count"]);
+  });
+
+  // At the cap, the failure branch deletes the blob — which must never hit a
+  // file a live row already points at.
+  it("answers a re-confirmed url with its existing row and deletes nothing", async () => {
+    findExisting.mockResolvedValue({
+      id: "att-0",
+      originalName: "plan.pdf",
+      contentType: "application/pdf",
+      sizeBytes: 1000,
+    });
+    count.mockResolvedValue(5);
+    const res = await confirm(OWN_URL);
+    expect(res.status).toBe(200);
+    expect((await res.json()).attachment.id).toBe("att-0");
+    expect(del).not.toHaveBeenCalled();
+    expect(create).not.toHaveBeenCalled();
   });
 });

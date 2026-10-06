@@ -7,6 +7,7 @@ const h = vi.hoisted(() => ({
   clerkUserId: { value: "" },
   deleted: [] as string[],
   failFor: new Set<string>(),
+  orphans: [] as string[],
 }));
 
 vi.mock("@clerk/nextjs/server", () => ({
@@ -14,6 +15,11 @@ vi.mock("@clerk/nextjs/server", () => ({
 }));
 vi.mock("next/cache", () => ({ revalidatePath: () => {} }));
 vi.mock("@vercel/blob", () => ({
+  // The folder sweep finds the orphans each test plants in h.orphans.
+  list: async ({ prefix }: { prefix: string }) => ({
+    blobs: h.orphans.filter((u) => u.includes(prefix)).map((url) => ({ url })),
+    hasMore: false,
+  }),
   del: async (url: string) => {
     if (h.failFor.has(url)) throw new Error("blob store unavailable");
     h.deleted.push(url);
@@ -56,6 +62,7 @@ describe.skipIf(!hasDb)("deleteRequest", () => {
     createdUsers.length = 0;
     h.deleted.length = 0;
     h.failFor.clear();
+    h.orphans.length = 0;
   });
 
   it("removes the request", async () => {
@@ -163,5 +170,14 @@ describe.skipIf(!hasDb)("deleteRequest", () => {
     expect(h.deleted).toContain(blobUrl);
     expect(await db.quoteAttachment.count({ where: { requestDentistId: rd.id } })).toBe(0);
     await db.dentist.delete({ where: { id: dentist.id } });
+  });
+
+  it("also removes an uploaded quote document that never got a row", async () => {
+    const request = await seedRequest();
+    const orphan = `https://x.blob.vercel-storage.com/requests/${request.id}/quote-attachments/rd/abc.pdf`;
+    h.orphans.push(orphan);
+
+    expect(await deleteRequest(request.id)).toEqual({ ok: true });
+    expect(h.deleted).toContain(orphan);
   });
 });

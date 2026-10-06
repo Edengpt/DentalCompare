@@ -510,7 +510,7 @@ const en: typeof he = {
     subtotal: "Subtotal {amount}",
     packageDiscount: "Package discount −{amount}",
     rowTravel: "Flights, stay & transfers",
-    flightsFor: "Flights included ({tickets} tickets)",
+    flightsFor: "Flights included · tickets: {tickets}",
     flightsNotIncluded: "Flights not included",
     lodgingNights: "Accommodation: {nights} nights",
     lodgingNotIncluded: "Accommodation not included",
@@ -1340,7 +1340,7 @@ const en: typeof he = {
     noLineItems: "Add at least one priced treatment",
     invalidLineItem: "One of the treatments is invalid — check its type, quantity and price",
     invalidDiscount: "The discount must be less than the treatments subtotal",
-    attachmentLimit: "A quote can have up to 5 files",
+    attachmentLimit: "A quote can have up to {max} files",
   },
 
   legal: {

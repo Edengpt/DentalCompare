@@ -3,6 +3,7 @@ import { del } from "@vercel/blob";
 import { db } from "@/lib/db";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { getRequestLocale } from "@/i18n/request-locale";
+import { format } from "@/i18n/format";
 import { fileValidationMessage } from "@/i18n/validation-message";
 import { blobPathnameOf, readBlobHead } from "@/lib/blob-head";
 import { headMatchesType } from "@/lib/storage";
@@ -68,9 +69,28 @@ export async function POST(request: Request) {
     );
   }
 
-  // Count and create together, so two confirms racing past the token route's
-  // count can't both land a sixth file.
+  // A URL already attached is answered as a no-op, never as a failure: the
+  // failure branch below deletes the blob, which a live row points at.
+  const existing = await db.quoteAttachment.findUnique({
+    where: { blobUrl: url },
+    select: { id: true, originalName: true, contentType: true, sizeBytes: true },
+  });
+  if (existing) {
+    return NextResponse.json({
+      attachment: {
+        id: existing.id,
+        name: existing.originalName,
+        contentType: existing.contentType,
+        sizeBytes: existing.sizeBytes,
+      },
+    });
+  }
+
+  // Count and create under a lock on the clinic's row, so two confirms racing
+  // past the token route's count can't both land a sixth file — a plain
+  // transaction at READ COMMITTED would let both see four.
   const attachment = await db.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT 1 FROM "RequestDentist" WHERE id = ${rd.id} FOR UPDATE`;
     const count = await tx.quoteAttachment.count({ where: { requestDentistId: rd.id } });
     if (count >= QUOTE_LIMITS.maxAttachments) return null;
     return tx.quoteAttachment.create({
@@ -86,7 +106,10 @@ export async function POST(request: Request) {
   });
   if (!attachment) {
     void del(url).catch(() => {});
-    return NextResponse.json({ error: dict.errors.attachmentLimit }, { status: 400 });
+    return NextResponse.json(
+      { error: format(dict.errors.attachmentLimit, { max: QUOTE_LIMITS.maxAttachments }) },
+      { status: 400 },
+    );
   }
 
   return NextResponse.json({

@@ -108,7 +108,11 @@ export function QuoteForm({
     }
     if (!totals.ok) {
       setError(
-        totals.error === "BAD_DISCOUNT" ? t.quoteForm.discountTooHigh : t.errors.invalidLineItem,
+        totals.error === "BAD_DISCOUNT"
+          ? t.quoteForm.discountTooHigh
+          : totals.error === "TOO_HIGH"
+            ? t.errors.invalidPrice
+            : t.errors.invalidLineItem,
       );
       return;
     }

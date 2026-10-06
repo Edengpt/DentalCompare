@@ -26,7 +26,8 @@ export const runtime = "nodejs";
  * at the confirm step, which reads them back out.
  */
 export async function POST(request: Request) {
-  const body = (await request.json()) as HandleUploadBody;
+  const body = (await request.json().catch(() => null)) as HandleUploadBody | null;
+  if (!body) return NextResponse.json({ error: "Invalid body" }, { status: 400 });
 
   try {
     const result = await handleUpload({

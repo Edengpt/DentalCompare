@@ -1,6 +1,8 @@
 "use server";
 
 import { getDictionary } from "@/i18n/get-dictionary";
+import { quoteAttachmentDir } from "@/lib/quote-attachments";
+import { blobUrlsUnder } from "./blob-sweep";
 import { getRequestLocale } from "@/i18n/request-locale";
 import { format } from "@/i18n/format";
 import { asLocale } from "@/i18n/config";
@@ -255,7 +257,9 @@ export async function rejectClinic(dentistId: string, reason?: string): Promise<
       // A pending clinic normally has no requests, but the cascade would take
       // any quote documents with it — remove their files first, the same rule
       // as the licences.
-      requestDentists: { select: { attachments: { select: { blobUrl: true } } } },
+      requestDentists: {
+        select: { id: true, requestId: true, attachments: { select: { blobUrl: true } } },
+      },
     },
   });
   if (!dentist) return { ok: false, error: e.clinicNotFound };
@@ -266,10 +270,24 @@ export async function rejectClinic(dentistId: string, reason?: string): Promise<
     return { ok: false, error: e.onlyPendingCanBeRejected };
   }
 
-  const blobUrls = [
-    ...dentist.documents.map((d) => d.blobUrl),
-    ...dentist.requestDentists.flatMap((rd) => rd.attachments.map((a) => a.blobUrl)),
-  ];
+  let blobUrls: string[];
+  try {
+    const swept = (
+      await Promise.all(
+        dentist.requestDentists.map((rd) => blobUrlsUnder(quoteAttachmentDir(rd.requestId, rd.id))),
+      )
+    ).flat();
+    blobUrls = [
+      ...new Set([
+        ...dentist.documents.map((d) => d.blobUrl),
+        ...dentist.requestDentists.flatMap((rd) => rd.attachments.map((a) => a.blobUrl)),
+        ...swept,
+      ]),
+    ];
+  } catch (err) {
+    console.error(`rejectClinic: could not list quote documents for ${dentistId}:`, err);
+    return { ok: false, error: e.deleteFailed };
+  }
   for (const blobUrl of blobUrls) {
     try {
       await del(blobUrl);

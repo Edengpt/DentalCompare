@@ -428,7 +428,7 @@ model QuoteAttachment {
   id               String         @id @default(uuid())
   requestDentistId String
   requestDentist   RequestDentist @relation(fields: [requestDentistId], references: [id], onDelete: Cascade)
-  blobUrl          String
+  blobUrl          String         @unique
   contentType      String
   sizeBytes        Int
   originalName     String

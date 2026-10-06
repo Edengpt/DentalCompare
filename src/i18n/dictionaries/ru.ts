@@ -502,7 +502,7 @@ const ru: typeof he = {
     subtotal: "Сумма {amount}",
     packageDiscount: "Скидка на пакет −{amount}",
     rowTravel: "Перелёт, проживание, трансфер",
-    flightsFor: "Перелёт включён (билетов: {tickets})",
+    flightsFor: "Перелёт включён · билетов: {tickets}",
     flightsNotIncluded: "Перелёт не включён",
     lodgingNights: "Проживание: ночей — {nights}",
     lodgingNotIncluded: "Проживание не включено",
@@ -1356,7 +1356,7 @@ const ru: typeof he = {
     noLineItems: "Добавьте хотя бы одну процедуру с ценой",
     invalidLineItem: "Одна из процедур указана неверно — проверьте тип, количество и цену",
     invalidDiscount: "Скидка должна быть меньше суммы за лечение",
-    attachmentLimit: "К предложению можно прикрепить до 5 файлов",
+    attachmentLimit: "К предложению можно прикрепить до {max} файлов",
   },
 
   legal: {

@@ -476,7 +476,7 @@ const zh: typeof he = {
     subtotal: "小计 {amount}",
     packageDiscount: "套餐折扣 −{amount}",
     rowTravel: "机票、住宿与接送",
-    flightsFor: "含机票（{tickets} 张）",
+    flightsFor: "含机票 · 张数：{tickets}",
     flightsNotIncluded: "不含机票",
     lodgingNights: "住宿：{nights} 晚",
     lodgingNotIncluded: "不含住宿",
@@ -1285,7 +1285,7 @@ const zh: typeof he = {
     noLineItems: "请至少添加一项有价格的治疗",
     invalidLineItem: "某项治疗无效——请检查类型、数量和价格",
     invalidDiscount: "折扣必须低于治疗小计",
-    attachmentLimit: "每份报价最多 5 个文件",
+    attachmentLimit: "每份报价最多 {max} 个文件",
   },
 
   legal: {

@@ -512,7 +512,7 @@ const fr: typeof he = {
     subtotal: "Sous-total {amount}",
     packageDiscount: "Remise forfaitaire −{amount}",
     rowTravel: "Vols, séjour et transferts",
-    flightsFor: "Vols inclus ({tickets} billets)",
+    flightsFor: "Vols inclus · billets : {tickets}",
     flightsNotIncluded: "Vols non inclus",
     lodgingNights: "Hébergement : {nights} nuits",
     lodgingNotIncluded: "Hébergement non inclus",
@@ -1375,7 +1375,7 @@ const fr: typeof he = {
     noLineItems: "Ajoutez au moins un soin avec un prix",
     invalidLineItem: "Un des soins est invalide — vérifiez le type, la quantité et le prix",
     invalidDiscount: "La remise doit être inférieure au sous-total des soins",
-    attachmentLimit: "Un devis peut contenir jusqu'à 5 fichiers",
+    attachmentLimit: "Un devis peut contenir jusqu'à {max} fichiers",
   },
 
   legal: {

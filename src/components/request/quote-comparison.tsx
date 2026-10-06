@@ -332,7 +332,7 @@ export function QuoteComparison({
                 <div className="mt-3">{priceRow.cell(q)}</div>
                 <dl className="divide-border/60 mt-3 divide-y text-sm">
                   {detailRows.map((row) => (
-                    <div key={row.label} className="grid grid-cols-[7rem_1fr] gap-3 py-2">
+                    <div key={row.label} className="grid grid-cols-[7rem_minmax(0,1fr)] gap-3 py-2">
                       <dt className="text-muted-foreground text-xs">{row.label}</dt>
                       <dd className="text-foreground">{row.cell(q)}</dd>
                     </div>
