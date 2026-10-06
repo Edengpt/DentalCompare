@@ -4,8 +4,11 @@ import type { Dictionary } from "@/i18n/get-dictionary";
 /**
  * Four answers to "but can I trust this?", each one true of the system as it
  * stands: licence checks gate the directory, the quote form asks for the
- * warranty, revenue is a flat clinic subscription, and medical files sit in
- * private storage. No numbers, no reviews — there are none to show yet.
+ * warranty (it is optional, hence "asks"), we earn from clinic subscriptions
+ * and never a commission, and medical files sit in private storage that no
+ * unchosen clinic can reach. No numbers, no reviews — there are none yet.
+ * Paid placement (the FEATURED plan) would make "no commission" the only
+ * neutrality claim left standing; don't add a stronger one.
  */
 export function Trust({ t }: { t: Dictionary["trust"] }) {
   const cards = [

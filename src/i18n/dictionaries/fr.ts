@@ -108,12 +108,12 @@ const fr: typeof he = {
     subtitle: "Quatre choses que nous avons construites pour que vous choisissiez une clinique à l'étranger sans risque inutile.",
     checkedTitle: "Chaque clinique est vérifiée",
     checkedBody: "La clinique dépose son autorisation d'exercer, et une personne de notre équipe la vérifie avant que la clinique n'apparaisse. Une clinique non vérifiée ne vous parvient jamais.",
-    warrantyTitle: "Une garantie écrite, dès le départ",
+    warrantyTitle: "La garantie avant de choisir",
     warrantyBody: "Le formulaire de devis demande à chaque clinique sa garantie et ce qu'elle fait si un problème survient après votre retour, pour que vous le voyiez avant de choisir.",
-    neutralTitle: "Gratuit et neutre",
-    neutralBody: "Les cliniques paient un abonnement fixe, pas une commission par patient : nous n'avons aucune raison de favoriser une clinique.",
+    neutralTitle: "Gratuit pour vous, sans commission",
+    neutralBody: "Vous ne nous payez rien. Nous sommes rémunérés par l'abonnement des cliniques, jamais par une commission sur votre traitement.",
     filesTitle: "Vos fichiers restent privés",
-    filesBody: "Votre radio et votre plan de traitement sont conservés dans un stockage privé et envoyés uniquement aux cliniques que vous choisissez.",
+    filesBody: "Votre radio et votre plan de traitement sont conservés dans un stockage privé. Aucune clinique que vous n'avez pas choisie ne les voit.",
   },
 
   faq: {

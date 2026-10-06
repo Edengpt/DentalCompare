@@ -117,12 +117,12 @@ const en: typeof he = {
     subtitle: "Four things we built so you can choose a clinic abroad without taking a needless risk.",
     checkedTitle: "Every clinic is checked",
     checkedBody: "A clinic uploads its licence to practise, and a person on our team checks it before the clinic appears. A clinic that wasn't checked never reaches you.",
-    warrantyTitle: "Warranty in writing, up front",
+    warrantyTitle: "See the warranty before you choose",
     warrantyBody: "The quote form asks every clinic for its warranty and what it does if something fails after you fly home, so you see it before you choose.",
-    neutralTitle: "Free and neutral",
-    neutralBody: "Clinics pay a flat subscription, not a fee per patient, so we have no reason to push any clinic.",
+    neutralTitle: "Free for you, no commissions",
+    neutralBody: "You never pay us. We earn from clinic subscriptions, never from a commission on your treatment.",
     filesTitle: "Your files stay private",
-    filesBody: "Your x-ray and treatment plan are kept in private storage and sent only to the clinics you choose.",
+    filesBody: "Your x-ray and treatment plan are kept in private storage. No clinic you didn't choose ever sees them.",
   },
 
 

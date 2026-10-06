@@ -109,12 +109,12 @@ const tr: typeof he = {
     subtitle: "Yurt dışında gereksiz risk almadan klinik seçebilmeniz için kurduğumuz dört şey.",
     checkedTitle: "Her klinik kontrol edilir",
     checkedBody: "Klinik çalışma ruhsatını yükler ve ekibimizden biri, klinik görünmeden önce onu kontrol eder. Kontrol edilmemiş bir klinik size asla ulaşmaz.",
-    warrantyTitle: "Garanti baştan yazılı",
+    warrantyTitle: "Seçmeden önce garantiyi görün",
     warrantyBody: "Teklif formu her kliniğe garantisini ve eve döndükten sonra bir sorun çıkarsa ne yapacağını sorar; böylece seçmeden önce görürsünüz.",
-    neutralTitle: "Ücretsiz ve tarafsız",
-    neutralBody: "Klinikler hasta başına ücret değil, sabit bir abonelik öder; bu yüzden herhangi bir kliniği öne çıkarmak için bir nedenimiz yok.",
+    neutralTitle: "Sizin için ücretsiz, komisyon yok",
+    neutralBody: "Bize hiçbir şey ödemezsiniz. Gelirimiz kliniklerin aboneliklerinden gelir; tedavinizden asla komisyon almayız.",
     filesTitle: "Dosyalarınız gizli kalır",
-    filesBody: "Röntgeniniz ve tedavi planınız özel depolamada tutulur ve yalnızca seçtiğiniz kliniklere gönderilir.",
+    filesBody: "Röntgeniniz ve tedavi planınız özel depolamada tutulur. Seçmediğiniz hiçbir klinik onları göremez.",
   },
 
   faq: {
