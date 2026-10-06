@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { comparisonPrice, patientCurrencyFor } from "./price-display";
+import { comparisonPrice, patientCurrencyFor, ratesToFetch } from "./price-display";
 
 const fetchedAt = new Date("2026-10-04T04:00:00Z");
 
@@ -49,8 +49,26 @@ describe("patientCurrencyFor", () => {
     expect(patientCurrencyFor("GBP")).toBe("GBP");
   });
 
-  it("uses euros when the patient has no country, never a home market's currency", () => {
-    expect(patientCurrencyFor(null)).toBe("EUR");
-    expect(patientCurrencyFor(undefined)).toBe("EUR");
+  it("uses US dollars when the patient has no country, never a home market's currency", () => {
+    expect(patientCurrencyFor(null)).toBe("USD");
+    expect(patientCurrencyFor(undefined)).toBe("USD");
+  });
+});
+
+describe("ratesToFetch", () => {
+  it("always includes the fallback currency, even when no clinic country uses it", () => {
+    expect(ratesToFetch(["TRY", "EUR", "GBP", "EUR"])).toEqual({
+      base: "EUR",
+      quotes: ["GBP", "TRY", "USD"],
+    });
+  });
+
+  it("still fetches when only one clinic currency is active", () => {
+    expect(ratesToFetch(["HUF"])).toEqual({ base: "HUF", quotes: ["USD"] });
+  });
+
+  it("has nothing to fetch when the only currency is the fallback itself", () => {
+    expect(ratesToFetch(["USD"])).toBeNull();
+    expect(ratesToFetch([])).toBeNull();
   });
 });

@@ -36,9 +36,27 @@ export function comparisonPrice(
 }
 
 /**
- * The currency a patient compares in. A patient who hasn't set a country gets
- * euros: the site serves patients worldwide and has no home market to default to.
+ * The currency a patient compares in when they haven't set a country. US
+ * dollars: the site serves patients worldwide and has no home market, and the
+ * dollar is the currency most people abroad can read a price in.
  */
+export const FALLBACK_PATIENT_CURRENCY = "USD";
+
 export function patientCurrencyFor(countryCurrency: string | null | undefined): string {
-  return countryCurrency ?? "EUR";
+  return countryCurrency ?? FALLBACK_PATIENT_CURRENCY;
+}
+
+/**
+ * Which rates the daily refresh asks for: every active clinic currency, plus
+ * the fallback, so a patient without a country can always compare. The first
+ * currency alphabetically is the base, as before. Null when there is nothing
+ * to convert between.
+ */
+export function ratesToFetch(
+  activeCurrencies: string[],
+): { base: string; quotes: string[] } | null {
+  const currencies = [...new Set([...activeCurrencies, FALLBACK_PATIENT_CURRENCY])].sort();
+  if (currencies.length < 2) return null;
+  const [base, ...quotes] = currencies;
+  return { base, quotes };
 }

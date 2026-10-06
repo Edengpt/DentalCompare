@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { logEvent } from "@/lib/log";
+import { ratesToFetch } from "@/lib/price-display";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -30,15 +31,14 @@ export async function GET(req: Request) {
     where: { isActive: true },
     select: { currency: true },
   });
-  const currencies = [...new Set(active.map((c) => c.currency))].sort();
-
-  // With one active currency there is nothing to convert between. This is the
-  // normal state today (Israel only), so it's a success, not a failure.
-  if (currencies.length < 2) {
-    return NextResponse.json({ ok: true, skipped: "fewer than two active currencies" });
+  // Active clinic currencies plus the patient fallback (USD). Only when there is
+  // nothing to convert between is the run skipped, and that is a success.
+  const toFetch = ratesToFetch(active.map((c) => c.currency));
+  if (!toFetch) {
+    return NextResponse.json({ ok: true, skipped: "fewer than two currencies" });
   }
 
-  const [base, ...quotes] = currencies;
+  const { base, quotes } = toFetch;
   const url = `https://api.frankfurter.app/latest?base=${base}&symbols=${quotes.join(",")}`;
 
   let payload: { rates?: Record<string, number> };
