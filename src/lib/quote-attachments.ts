@@ -83,7 +83,6 @@ export function isQuoteAttachmentBlobPath(
  */
 export function sanitizeAttachmentName(name: string): string {
   const base = name.split(/[\\/]/).pop() ?? "";
-  // eslint-disable-next-line no-control-regex
   const clean = base.replace(/[\u0000-\u001f\u007f"]/g, "").trim();
   if (!clean) return "document";
   if (clean.length <= ATTACHMENT_NAME_MAX) return clean;

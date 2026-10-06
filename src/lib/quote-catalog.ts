@@ -145,3 +145,11 @@ export const QUOTE_LIMITS = {
   maxAttachments: 5,
   attachmentMaxMB: 10,
 } as const;
+
+/**
+ * The inclusion chips the form offers. ACCOMMODATION is asked in the travel
+ * section (with its nights), and AIRPORT_TRANSFER is legacy — transfers have
+ * their own field — so neither is a chip any more. Both stay in
+ * QUOTE_INCLUSIONS so old quotes keep their labels.
+ */
+export const QUOTE_FORM_INCLUSIONS = ["XRAYS", "ANESTHESIA", "TEMP_CROWN", "FOLLOW_UP"] as const;

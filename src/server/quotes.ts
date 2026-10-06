@@ -2,7 +2,6 @@
 
 import { getDictionary } from "@/i18n/get-dictionary";
 import { getRequestLocale } from "@/i18n/request-locale";
-import { format } from "@/i18n/format";
 import { db } from "@/lib/db";
 import { rateLimit } from "@/lib/rate-limit";
 import { asLocale } from "@/i18n/config";
