@@ -70,6 +70,10 @@ const he = {
     step3Title: "מקבלים הצעות כתובות ומשווים",
     step3Description: "כל מרפאה משיבה הצעת מחיר כתובה. משווים בנחת ובוחרים, בלי שום התחייבות.",
     step3Detail: "היעד: תוך 48 שעות",
+    // City names inside the animated "How it works" illustration.
+    artCity1: "באקו",
+    artCity2: "טירנה",
+    artCity3: "טביליסי",
     verifiedTitle: "כל מרפאה כאן נבדקה",
     verifiedPromise:
       "כל מרפאה שתראו כאן העלתה את רישיון העיסוק שלה, ואדם מהצוות שלנו הסתכל עליו לפני שהיא הופיעה במאגר. מרפאה בלי רישיון שנבדק לא מגיעה אליכם.",

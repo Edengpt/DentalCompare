@@ -53,6 +53,27 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <main className="flex-1">
         <StartSearchProvider>
           <Hero t={t.hero} specialties={specialties} countries={countries} />
+          <HowItWorks
+            t={t.howItWorks}
+            locale={locale}
+            art={{
+              treatmentPlan: t.upload.treatmentPlanTitle,
+              xray: t.upload.xrayTitle,
+              verified: t.dentists.verifiedBadge,
+              price: t.exampleComparison.rowPrice,
+              warranty: t.exampleComparison.rowWarranty,
+              clinics: [
+                t.exampleComparison.clinicA,
+                t.exampleComparison.clinicB,
+                t.exampleComparison.clinicC,
+              ],
+              warranties: [
+                t.exampleComparison.clinicAWarranty,
+                t.exampleComparison.clinicBWarranty,
+                t.exampleComparison.clinicCWarranty,
+              ],
+            }}
+          />
           <PopularTreatments title={t.hero.popularTreatments} specialties={specialties} />
           <Destinations
             title={t.destinations.title}
@@ -60,7 +81,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             destinations={tiles}
           />
         </StartSearchProvider>
-        <HowItWorks t={t.howItWorks} />
         <ExampleComparison
           t={t.exampleComparison}
           verifiedPromise={{

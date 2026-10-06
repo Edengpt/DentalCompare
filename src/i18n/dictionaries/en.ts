@@ -79,6 +79,10 @@ const en: typeof he = {
     step3Description:
       "Each clinic replies with a written quote. Compare them in your own time and choose, with no obligation.",
     step3Detail: "Target: within 48 hours",
+    // City names inside the animated "How it works" illustration.
+    artCity1: "Baku",
+    artCity2: "Tirana",
+    artCity3: "Tbilisi",
     verifiedTitle: "Every clinic here has been checked",
     verifiedPromise:
       "Every clinic you see here uploaded its licence to practise, and a person on our team looked at it before the clinic appeared. A clinic whose licence was not checked never reaches you.",

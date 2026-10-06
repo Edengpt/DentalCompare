@@ -65,6 +65,10 @@ const zh: typeof he = {
     step3Title: "获取书面报价并比较",
     step3Description: "每家诊所都会回复一份书面报价。您可以从容比较、自主选择，没有任何义务。",
     step3Detail: "目标：48小时内",
+    // City names inside the animated "How it works" illustration.
+    artCity1: "巴库",
+    artCity2: "地拉那",
+    artCity3: "第比利斯",
     verifiedTitle: "这里的每家诊所都经过核验",
     verifiedPromise:
       "您在这里看到的每家诊所都上传了执业执照，并在上线前经我们团队人工审核。执照未经核验的诊所，绝不会出现在您面前。",

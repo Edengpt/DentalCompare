@@ -68,6 +68,10 @@ const de: typeof he = {
     step3Description:
       "Jede Klinik antwortet mit einem schriftlichen Angebot. Vergleichen Sie in Ruhe und entscheiden Sie – ganz ohne Verpflichtung.",
     step3Detail: "Ziel: innerhalb von 48 Stunden",
+    // City names inside the animated "How it works" illustration.
+    artCity1: "Baku",
+    artCity2: "Tirana",
+    artCity3: "Tiflis",
     verifiedTitle: "Jede Klinik hier ist geprüft",
     verifiedPromise:
       "Jede Klinik, die Sie hier sehen, hat ihre Berufszulassung hochgeladen, und ein Mitglied unseres Teams hat sie geprüft, bevor die Klinik sichtbar wurde. Eine Klinik ohne geprüfte Zulassung wird Ihnen nie angezeigt.",

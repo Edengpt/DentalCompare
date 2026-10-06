@@ -70,6 +70,10 @@ const tr: typeof he = {
     step3Description:
       "Her klinik yazılı bir teklifle yanıt verir. Teklifleri acele etmeden karşılaştırın ve hiçbir yükümlülük altına girmeden karar verin.",
     step3Detail: "Hedef: 48 saat içinde",
+    // City names inside the animated "How it works" illustration.
+    artCity1: "Bakü",
+    artCity2: "Tiran",
+    artCity3: "Tiflis",
     verifiedTitle: "Buradaki her klinik kontrol edildi",
     verifiedPromise:
       "Burada gördüğünüz her klinik meslek lisansını yükledi ve klinik listelenmeden önce ekibimizden biri bu lisansı inceledi. Lisansı kontrol edilmemiş bir klinik size asla ulaşmaz.",
