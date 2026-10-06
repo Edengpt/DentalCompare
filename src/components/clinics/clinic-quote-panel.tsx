@@ -12,10 +12,12 @@ export function ClinicQuotePanel({
   token,
   currencyLabel,
   initial,
+  attachmentTarget,
 }: {
   token: string;
   currencyLabel: string;
   initial: QuoteFormInitial;
+  attachmentTarget: { requestId: string; requestDentistId: string };
 }) {
   const router = useRouter();
   return (
@@ -23,6 +25,9 @@ export function ClinicQuotePanel({
       token={token}
       currencyLabel={currencyLabel}
       initial={initial}
+      attachmentTarget={attachmentTarget}
+      // A signed-in clinic can open its own documents; see QuoteAttachments.
+      canPreviewAttachments
       onSubmitted={() => router.refresh()}
     />
   );

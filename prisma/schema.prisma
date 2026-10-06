@@ -293,6 +293,9 @@ model RequestDentist {
 
   quoteToken String? @unique // per-recipient magic-link token for the quote form
   quote      Quote?
+  /// Documents the clinic attached to its quote. Hang off this row rather than
+  /// Quote so a clinic can upload before its first submit, when no Quote exists.
+  attachments QuoteAttachment[]
   // The one "a patient is still waiting for your quote" nudge to the clinic,
   // sent a day after the request if no quote came (see clinic-reminders.ts).
   clinicReminderSentAt DateTime?
@@ -351,6 +354,22 @@ model Quote {
   /// something goes wrong after they have flown home.
   warrantyYears                 Int?
   warrantyNote                  String?     @db.Text
+
+  // --- Structured quote (line items + travel) ---
+  //
+  // amountMinor stays the FINAL price so sorting, "cheapest" and conversion
+  // keep working unchanged. Subtotal is derived as amountMinor + discountMinor,
+  // never stored, so the two can't drift.
+  items                         QuoteItem[]
+  /// Package discount off the line-item subtotal. Null = none (or a legacy quote).
+  discountMinor                 Int?
+  /// Null = a legacy quote that never answered the question; new submissions
+  /// always write true or false.
+  flightsIncluded               Boolean?
+  /// Forced null unless flightsIncluded.
+  flightTickets                 Int?
+  /// Canonical keys (QUOTE_TRANSFERS).
+  transfers                     String[]    @default([])
   // When the patient "you got a new quote" email was successfully sent. Null =
   // not yet notified (first send failed) — the retry cron picks these up.
   patientNotifiedAt             DateTime?
@@ -380,6 +399,42 @@ model Quote {
 
   @@index([requestDentistId])
   @@index([status])
+}
+
+/// One treatment line on a quote: category -> treatment -> optional variant,
+/// all canonical keys from TREATMENT_CATALOG (lib/quote-catalog.ts).
+model QuoteItem {
+  id             String  @id @default(uuid())
+  quoteId        String
+  quote          Quote   @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  /// Display order as the clinic built it.
+  position       Int
+  category       String
+  treatment      String
+  variant        String?
+  /// The clinic's own wording, required only when treatment is "OTHER".
+  customLabel    String?
+  quantity       Int
+  /// In the quote's currency — never a currency of its own.
+  unitPriceMinor Int
+
+  @@index([quoteId])
+}
+
+/// A file (PDF/JPG/PNG) a clinic attached to its quote. Lives in the PRIVATE
+/// blob store; blobUrl is never sent to a browser — files are served through
+/// /api/quote-attachments/[id] after an ownership check.
+model QuoteAttachment {
+  id               String         @id @default(uuid())
+  requestDentistId String
+  requestDentist   RequestDentist @relation(fields: [requestDentistId], references: [id], onDelete: Cascade)
+  blobUrl          String         @unique
+  contentType      String
+  sizeBytes        Int
+  originalName     String
+  uploadedAt       DateTime       @default(now())
+
+  @@index([requestDentistId])
 }
 
 // The Payment model (patient flat fee) was removed with the free-patient pivot.

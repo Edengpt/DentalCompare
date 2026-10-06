@@ -6,6 +6,11 @@ import type { submitQuote as SubmitQuoteFn } from "@/server/quotes";
 vi.mock("@/server/quote-notifications", () => ({ sendNewQuoteEmail: async () => true }));
 
 const hasDb = Boolean(process.env.DATABASE_URL);
+
+/** A one-line quote whose final price is `major`. */
+function priced(major: number) {
+  return [{ category: "SURGICAL", treatment: "IMPLANT", quantity: 1, unitPriceMajor: major }];
+}
 let db: typeof Db;
 let submitQuote: typeof SubmitQuoteFn;
 const created = { dentistIds: [] as string[], userIds: [] as string[], requestIds: [] as string[] };
@@ -16,7 +21,9 @@ async function seedDentist(sfx: string) {
       clinicName: `Clinic ${sfx}`,
       dentistName: `Dr ${sfx}`,
       email: `sqd_${sfx}@example.com`,
-      phone: `+9725${Math.floor(Math.random() * 1e8).toString().padStart(8, "0")}`,
+      phone: `+9725${Math.floor(Math.random() * 1e8)
+        .toString()
+        .padStart(8, "0")}`,
       city: "Tel Aviv",
       address: "1 Main St",
       experienceYears: 5,
@@ -67,7 +74,7 @@ describe.skipIf(!hasDb)("submitQuote locking", () => {
       data: { requestDentistId: rd.id, amountMinor: 100000, currency: "ILS", status: "APPROVED" },
     });
 
-    const result = await submitQuote({ token, amountMajor: 2000 });
+    const result = await submitQuote({ token, items: priced(2000) });
 
     expect(result).toEqual({ ok: false, error: expect.any(String) });
     const quote = await db.quote.findUniqueOrThrow({ where: { requestDentistId: rd.id } });
@@ -80,7 +87,7 @@ describe.skipIf(!hasDb)("submitQuote locking", () => {
       data: { requestDentistId: rd.id, amountMinor: 100000, currency: "ILS" },
     });
 
-    const result = await submitQuote({ token, amountMajor: 2000 });
+    const result = await submitQuote({ token, items: priced(2000) });
 
     expect(result.ok).toBe(true);
     const quote = await db.quote.findUniqueOrThrow({ where: { requestDentistId: rd.id } });
@@ -99,10 +106,15 @@ describe.skipIf(!hasDb)("submitQuote locking", () => {
       data: { requestId: request.id, dentistId: otherDentist.id },
     });
     await db.quote.create({
-      data: { requestDentistId: otherRd.id, amountMinor: 100000, currency: "ILS", status: "APPROVED" },
+      data: {
+        requestDentistId: otherRd.id,
+        amountMinor: 100000,
+        currency: "ILS",
+        status: "APPROVED",
+      },
     });
 
-    const result = await submitQuote({ token, amountMajor: 2000 });
+    const result = await submitQuote({ token, items: priced(2000) });
 
     expect(result).toEqual({ ok: false, error: expect.any(String) });
     const quote = await db.quote.findUnique({ where: { requestDentistId: rd.id } });
@@ -120,10 +132,15 @@ describe.skipIf(!hasDb)("submitQuote locking", () => {
       data: { requestId: request.id, dentistId: otherDentist.id },
     });
     await db.quote.create({
-      data: { requestDentistId: otherRd.id, amountMinor: 150000, currency: "ILS", status: "APPROVED" },
+      data: {
+        requestDentistId: otherRd.id,
+        amountMinor: 150000,
+        currency: "ILS",
+        status: "APPROVED",
+      },
     });
 
-    const result = await submitQuote({ token, amountMajor: 2000 });
+    const result = await submitQuote({ token, items: priced(2000) });
 
     expect(result).toEqual({ ok: false, error: expect.any(String) });
     const quote = await db.quote.findUniqueOrThrow({ where: { requestDentistId: rd.id } });
@@ -153,7 +170,7 @@ describe.skipIf(!hasDb)("submitQuote package fields", () => {
 
     const result = await submitQuote({
       token,
-      amountMajor: 2000,
+      items: priced(2000),
       includes: ["XRAYS"],
       accommodationNights: 5,
     });
@@ -168,7 +185,7 @@ describe.skipIf(!hasDb)("submitQuote package fields", () => {
 
     const result = await submitQuote({
       token,
-      amountMajor: 2000,
+      items: priced(2000),
       includes: ["ACCOMMODATION"],
       accommodationNights: 500,
     });
@@ -183,7 +200,7 @@ describe.skipIf(!hasDb)("submitQuote package fields", () => {
 
     const result = await submitQuote({
       token,
-      amountMajor: 2000,
+      items: priced(2000),
       includes: ["ACCOMMODATION"],
     });
 
@@ -195,7 +212,7 @@ describe.skipIf(!hasDb)("submitQuote package fields", () => {
   it("defaults sessionsRequired to 1 and forces weeksBetweenSessions to null for a single session", async () => {
     const { rd, token } = await seed();
 
-    const result = await submitQuote({ token, amountMajor: 2000 });
+    const result = await submitQuote({ token, items: priced(2000) });
 
     expect(result.ok).toBe(true);
     const quote = await db.quote.findUniqueOrThrow({ where: { requestDentistId: rd.id } });
@@ -208,7 +225,7 @@ describe.skipIf(!hasDb)("submitQuote package fields", () => {
 
     const result = await submitQuote({
       token,
-      amountMajor: 2000,
+      items: priced(2000),
       sessionsRequired: 99,
       weeksBetweenSessions: 999,
     });
@@ -217,5 +234,126 @@ describe.skipIf(!hasDb)("submitQuote package fields", () => {
     const quote = await db.quote.findUniqueOrThrow({ where: { requestDentistId: rd.id } });
     expect(quote.sessionsRequired).toBe(10);
     expect(quote.weeksBetweenSessions).toBe(104);
+  });
+});
+
+describe.skipIf(!hasDb)("submitQuote line items", () => {
+  const DB_TIMEOUT = 60_000;
+
+  beforeAll(async () => {
+    ({ db } = await import("@/lib/db"));
+    ({ submitQuote } = await import("@/server/quotes"));
+  }, DB_TIMEOUT);
+
+  afterEach(async () => {
+    for (const id of created.requestIds) await db.request.delete({ where: { id } }).catch(() => {});
+    for (const id of created.dentistIds) await db.dentist.delete({ where: { id } }).catch(() => {});
+    for (const id of created.userIds) await db.user.delete({ where: { id } }).catch(() => {});
+    created.requestIds = [];
+    created.dentistIds = [];
+    created.userIds = [];
+  }, DB_TIMEOUT);
+
+  const lines = [
+    { category: "SURGICAL", treatment: "IMPLANT", quantity: 3, unitPriceMajor: 800 },
+    {
+      category: "RESTORATIVE",
+      treatment: "CROWN",
+      variant: "ZIRCONIA",
+      quantity: 3,
+      unitPriceMajor: 300,
+    },
+    {
+      category: "PREVENTIVE",
+      treatment: "OTHER",
+      customLabel: " CT scan ",
+      quantity: 1,
+      unitPriceMajor: 0,
+    },
+  ];
+
+  it("stores the lines and a server-computed final price after the discount", async () => {
+    const { rd, token } = await seed();
+
+    const result = await submitQuote({ token, items: lines, discountMajor: 300 });
+
+    expect(result.ok).toBe(true);
+    const quote = await db.quote.findUniqueOrThrow({
+      where: { requestDentistId: rd.id },
+      include: { items: { orderBy: { position: "asc" } } },
+    });
+    const scale = quote.currency === "JPY" ? 1 : 100;
+    expect(quote.amountMinor).toBe(3000 * scale);
+    expect(quote.discountMinor).toBe(300 * scale);
+    expect(quote.items.map((i) => [i.treatment, i.variant, i.customLabel, i.quantity])).toEqual([
+      ["IMPLANT", null, null, 3],
+      ["CROWN", "ZIRCONIA", null, 3],
+      ["OTHER", null, "CT scan", 1],
+    ]);
+  });
+
+  it("replaces the lines on edit rather than appending", async () => {
+    const { rd, token } = await seed();
+    await submitQuote({ token, items: lines });
+
+    const result = await submitQuote({ token, items: priced(1500) });
+
+    expect(result.ok).toBe(true);
+    const quote = await db.quote.findUniqueOrThrow({
+      where: { requestDentistId: rd.id },
+      include: { items: true },
+    });
+    expect(quote.items).toHaveLength(1);
+    expect(quote.discountMinor).toBeNull();
+  });
+
+  it("leaves the lines untouched when the quote was already decided", async () => {
+    const { rd, token } = await seed();
+    await submitQuote({ token, items: lines });
+    await db.quote.update({ where: { requestDentistId: rd.id }, data: { status: "APPROVED" } });
+
+    const result = await submitQuote({ token, items: priced(1) });
+
+    expect(result.ok).toBe(false);
+    expect(await db.quoteItem.count({ where: { quote: { requestDentistId: rd.id } } })).toBe(3);
+  });
+
+  it("refuses empty items, unknown catalog keys, and a discount that wipes out the price", async () => {
+    const { rd, token } = await seed();
+
+    for (const bad of [
+      { items: [] },
+      { items: [{ category: "SURGICAL", treatment: "TELEPORT", quantity: 1, unitPriceMajor: 1 }] },
+      { items: [{ category: "RESTORATIVE", treatment: "CROWN", quantity: 1, unitPriceMajor: 1 }] },
+      { items: priced(100), discountMajor: 100 },
+    ]) {
+      expect((await submitQuote({ token, ...bad })).ok).toBe(false);
+    }
+    expect(await db.quote.findUnique({ where: { requestDentistId: rd.id } })).toBeNull();
+  });
+
+  it("stores travel answers, forcing tickets to null when flights aren't included", async () => {
+    const { rd, token } = await seed();
+
+    await submitQuote({
+      token,
+      items: priced(100),
+      flightsIncluded: false,
+      flightTickets: 2,
+      transfers: ["AIRPORT_HOTEL", "AIRPORT_HOTEL", "TAXI_TO_MOON"],
+      includes: ["XRAYS", "AIRPORT_TRANSFER"],
+    });
+
+    let quote = await db.quote.findUniqueOrThrow({ where: { requestDentistId: rd.id } });
+    expect(quote.flightsIncluded).toBe(false);
+    expect(quote.flightTickets).toBeNull();
+    expect(quote.transfers).toEqual(["AIRPORT_HOTEL"]);
+    // Legacy key: transfers have their own field now.
+    expect(quote.includes).toEqual(["XRAYS"]);
+
+    await submitQuote({ token, items: priced(100), flightsIncluded: true, flightTickets: 2 });
+    quote = await db.quote.findUniqueOrThrow({ where: { requestDentistId: rd.id } });
+    expect(quote.flightsIncluded).toBe(true);
+    expect(quote.flightTickets).toBe(2);
   });
 });

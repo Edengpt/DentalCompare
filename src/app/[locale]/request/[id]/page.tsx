@@ -16,6 +16,11 @@ import {
 } from "lucide-react";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
+import {
+  QUOTE_DETAIL_SELECT,
+  QUOTE_ROW_ATTACHMENTS_SELECT,
+  quoteDetailFields,
+} from "@/server/quote-rows";
 import { sortByPrice, cheapestDentistId, responseCounts, type QuoteRow } from "@/lib/quotes";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
@@ -65,8 +70,10 @@ export default async function RequestDetailPage({
           id: true,
           emailSent: true,
           sentAt: true,
+          attachments: QUOTE_ROW_ATTACHMENTS_SELECT,
           quote: {
             select: {
+              ...QUOTE_DETAIL_SELECT,
               amountMinor: true,
               currency: true,
               note: true,
@@ -150,6 +157,7 @@ export default async function RequestDetailPage({
     warrantyNote: rd.quote?.warrantyNote ?? null,
     note: rd.quote?.note ?? null,
     rejectedAuto: rd.quote?.rejectedAuto ?? false,
+    ...quoteDetailFields(rd.quote, rd.attachments),
   }));
   // One converter per page load, handed to the table — which never touches the
   // database itself. Null for a quote with no honest rate: the patient still
@@ -251,11 +259,7 @@ export default async function RequestDetailPage({
                 address: chosen.dentist.address,
                 city: chosen.dentist.city,
                 country: chosen.dentist.country
-                  ? countryName(
-                      chosen.dentist.country.code,
-                      locale,
-                      chosen.dentist.country.nameEn,
-                    )
+                  ? countryName(chosen.dentist.country.code, locale, chosen.dentist.country.nameEn)
                   : null,
               }}
               timeline={{

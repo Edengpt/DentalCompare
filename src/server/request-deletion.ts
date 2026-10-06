@@ -8,6 +8,8 @@ import { getRequestLocale } from "@/i18n/request-locale";
 import { db } from "@/lib/db";
 import { audit } from "@/lib/audit";
 import { logEvent } from "@/lib/log";
+import { requestBlobDir } from "@/lib/storage";
+import { blobUrlsUnder } from "./blob-sweep";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -37,12 +39,37 @@ export async function deleteRequest(requestId: string): Promise<ActionResult> {
 
   const request = await db.request.findUnique({
     where: { id: requestId },
-    select: { id: true, userId: true, treatmentFileUrl: true, xrayFileUrl: true },
+    select: {
+      id: true,
+      userId: true,
+      treatmentFileUrl: true,
+      xrayFileUrl: true,
+      // Documents the clinics attached to their quotes live in the same
+      // private store and would otherwise outlive the request.
+      requestDentists: { select: { attachments: { select: { blobUrl: true } } } },
+    },
   });
   if (!request || request.userId !== user.id) return { ok: false, error: e.requestNotFound };
 
-  for (const url of [request.treatmentFileUrl, request.xrayFileUrl]) {
-    if (!url) continue;
+  const quoteFiles = request.requestDentists.flatMap((rd) => rd.attachments.map((a) => a.blobUrl));
+  let urls: string[];
+  try {
+    // Rows plus whatever else sits in the request's folder: a clinic upload
+    // that never reached its confirm step has no row, and would otherwise
+    // outlive the request.
+    const swept = await blobUrlsUnder(requestBlobDir(request.id));
+    urls = [
+      ...new Set(
+        [request.treatmentFileUrl, request.xrayFileUrl, ...quoteFiles, ...swept].filter(
+          (u): u is string => Boolean(u),
+        ),
+      ),
+    ];
+  } catch (err) {
+    logEvent("error", "request.delete_blob_failed", { requestId, error: String(err) });
+    return { ok: false, error: e.deleteFailed };
+  }
+  for (const url of urls) {
     try {
       await del(url);
     } catch (err) {
@@ -53,7 +80,7 @@ export async function deleteRequest(requestId: string): Promise<ActionResult> {
     }
   }
 
-  // RequestDentist and Quote go with it — onDelete: Cascade in the schema.
+  // RequestDentist, Quote and QuoteAttachment go with it — onDelete: Cascade in the schema.
   await db.request.delete({ where: { id: request.id } });
 
   await audit({

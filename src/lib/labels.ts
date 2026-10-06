@@ -33,3 +33,28 @@ export function translateInclusion(t: Labels, value: string): string {
 export function translateLanguage(t: Labels, value: string): string {
   return t.languages[value as keyof Labels["languages"]] ?? value;
 }
+
+export function translateQuoteCategory(t: Labels, value: string): string {
+  return t.quoteCategories[value as keyof Labels["quoteCategories"]] ?? value;
+}
+
+export function translateTransfer(t: Labels, value: string): string {
+  return t.transfers[value as keyof Labels["transfers"]] ?? value;
+}
+
+/**
+ * How one quote line reads: "Crown — Zirconia", or the clinic's own wording
+ * for an OTHER line. One rule for the form and the comparison table, so the
+ * clinic sees exactly the name the patient will.
+ */
+export function quoteItemName(
+  t: Labels,
+  item: { treatment: string; variant?: string | null; customLabel?: string | null },
+): string {
+  if (item.treatment === "OTHER" && item.customLabel) return item.customLabel;
+  const name =
+    t.quoteTreatments[item.treatment as keyof Labels["quoteTreatments"]] ?? item.treatment;
+  if (!item.variant) return name;
+  const variant = t.quoteVariants[item.variant as keyof Labels["quoteVariants"]] ?? item.variant;
+  return `${name} — ${variant}`;
+}

@@ -71,7 +71,10 @@ describe.skipIf(!hasDb)("attachCapStatus", () => {
     const yearMonth = new Date().toISOString().slice(0, 7);
     await db.monthlyRequestUsage.create({ data: { dentistId: clinic.id, yearMonth, count: 999 } });
 
-    const [dentist] = await db.dentist.findMany({ where: { id: clinic.id }, select: PUBLIC_DENTIST_SELECT });
+    const [dentist] = await db.dentist.findMany({
+      where: { id: clinic.id },
+      select: PUBLIC_DENTIST_SELECT,
+    });
     const [withStatus] = await attachCapStatus([dentist]);
     expect(withStatus.isAtCap).toBe(false);
 
@@ -83,7 +86,10 @@ describe.skipIf(!hasDb)("attachCapStatus", () => {
     const yearMonth = new Date().toISOString().slice(0, 7);
     await db.monthlyRequestUsage.create({ data: { dentistId: clinic.id, yearMonth, count: 3 } });
 
-    const [dentist] = await db.dentist.findMany({ where: { id: clinic.id }, select: PUBLIC_DENTIST_SELECT });
+    const [dentist] = await db.dentist.findMany({
+      where: { id: clinic.id },
+      select: PUBLIC_DENTIST_SELECT,
+    });
     const [withStatus] = await attachCapStatus([dentist]);
     expect(withStatus.isAtCap).toBe(false);
 
@@ -95,7 +101,10 @@ describe.skipIf(!hasDb)("attachCapStatus", () => {
     const yearMonth = new Date().toISOString().slice(0, 7);
     await db.monthlyRequestUsage.create({ data: { dentistId: clinic.id, yearMonth, count: 10 } });
 
-    const [dentist] = await db.dentist.findMany({ where: { id: clinic.id }, select: PUBLIC_DENTIST_SELECT });
+    const [dentist] = await db.dentist.findMany({
+      where: { id: clinic.id },
+      select: PUBLIC_DENTIST_SELECT,
+    });
     const [withStatus] = await attachCapStatus([dentist]);
     expect(withStatus.isAtCap).toBe(true);
 
@@ -105,7 +114,10 @@ describe.skipIf(!hasDb)("attachCapStatus", () => {
   it("a clinic with a cap but no MonthlyRequestUsage row yet is not at cap (treated as 0 used)", async () => {
     const clinic = await seedClinic(3);
 
-    const [dentist] = await db.dentist.findMany({ where: { id: clinic.id }, select: PUBLIC_DENTIST_SELECT });
+    const [dentist] = await db.dentist.findMany({
+      where: { id: clinic.id },
+      select: PUBLIC_DENTIST_SELECT,
+    });
     const [withStatus] = await attachCapStatus([dentist]);
     expect(withStatus.isAtCap).toBe(false);
 

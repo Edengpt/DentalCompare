@@ -2,12 +2,12 @@
 
 import { getDictionary } from "@/i18n/get-dictionary";
 import { getRequestLocale } from "@/i18n/request-locale";
-import { format } from "@/i18n/format";
 import { db } from "@/lib/db";
 import { rateLimit } from "@/lib/rate-limit";
 import { asLocale } from "@/i18n/config";
 import { RATE_LIMITS, QUOTE_INCLUSIONS, type QuoteInclusion } from "@/lib/constants";
-import { toMinor } from "@/lib/money";
+import { QUOTE_LIMITS, QUOTE_TRANSFERS, OTHER_TREATMENT, isCatalogItem } from "@/lib/quote-catalog";
+import { computeQuoteTotals } from "@/lib/quote-pricing";
 
 /** Keeps a submitted count inside a sane range instead of trusting the form. */
 function clampInt(value: unknown, fallback: number, min: number, max: number): number {
@@ -16,20 +16,44 @@ function clampInt(value: unknown, fallback: number, min: number, max: number): n
   return Math.min(max, Math.max(min, n));
 }
 import { sendNewQuoteEmail } from "./quote-notifications";
+import { loadEditableTarget } from "./quote-target";
+
+/**
+ * The shape of one treatment line as the form sends it. Prices in major units,
+ * the way the clinic typed them.
+ */
+export type QuoteItemInput = {
+  category: string;
+  treatment: string;
+  variant?: string | null;
+  customLabel?: string | null;
+  quantity: number;
+  unitPriceMajor: number;
+};
 
 /**
  * Records a clinic's quote.
  *
- * `amountMajor` is what the clinic typed — 4000, not 400000. It is converted to
- * minor units here, once, against the currency of the clinic's own country: a
- * quote is always denominated where the treatment happens, and any conversion
- * into the patient's currency is display-only (see lib/money).
+ * The price is built from treatment lines (quantity x unit price) minus an
+ * optional package discount, and computed HERE with computeQuoteTotals — the
+ * form shows the same number, but a total the browser sent is never trusted.
+ * Prices arrive in major units (4000, not 400000) and are converted once,
+ * against the currency of the clinic's own country: a quote is always
+ * denominated where the treatment happens, and any conversion into the
+ * patient's currency is display-only (see lib/money).
+ *
+ * amountMinor keeps holding the FINAL price, so sorting, "cheapest" and the
+ * approval flow are untouched by the line items.
  */
 export async function submitQuote(input: {
   token: string;
-  amountMajor: number;
+  items: QuoteItemInput[];
+  discountMajor?: number | null;
   note?: string;
   includes?: string[];
+  flightsIncluded?: boolean;
+  flightTickets?: number | null;
+  transfers?: string[];
   tripsRequired?: number;
   daysPerTrip?: number;
   weeksBetweenTrips?: number | null;
@@ -49,63 +73,92 @@ export async function submitQuote(input: {
     return { ok: false, error: e.tooManyAttempts };
   }
 
-  // Bounds are checked in major units, the way the clinic entered them, so the
-  // ceiling means the same thing whatever the currency's minor-unit scale is.
-  const major = input.amountMajor;
-  if (!Number.isFinite(major) || major <= 0 || major > 1_000_000) {
-    return { ok: false, error: e.invalidPrice };
+  const rawItems = Array.isArray(input.items) ? input.items : [];
+  if (rawItems.length === 0 || rawItems.length > QUOTE_LIMITS.maxItems) {
+    return { ok: false, error: e.noLineItems };
   }
+  // Only catalog combinations are stored, so the patient compares a Turkish
+  // and a Hungarian crown on the same axis.
+  const items = rawItems.map((i) => ({
+    category: String(i?.category ?? ""),
+    treatment: String(i?.treatment ?? ""),
+    variant: i?.variant ? String(i.variant) : null,
+    customLabel: i?.treatment === OTHER_TREATMENT ? String(i?.customLabel ?? "").trim() : null,
+    quantity: Number(i?.quantity),
+    unitPriceMajor: Number(i?.unitPriceMajor),
+  }));
+  if (!items.every(isCatalogItem)) return { ok: false, error: e.invalidLineItem };
 
-  const rd = await db.requestDentist.findUnique({
-    where: { quoteToken: input.token },
-    select: {
-      id: true,
-      requestId: true,
-      quote: { select: { id: true, status: true } },
-      // The quote is denominated in the clinic's own country's currency.
-      dentist: { select: { country: { select: { currency: true } } } },
-      request: {
-        select: { id: true, user: { select: { fullName: true, email: true, locale: true } } },
-      },
-    },
-  });
-  if (!rd) return { ok: false, error: e.invalidLink };
-  if (rd.quote && rd.quote.status !== "PENDING_DECISION") {
-    return { ok: false, error: e.quoteAlreadyDecided };
+  const target = await loadEditableTarget(input.token);
+  if (!target.ok) {
+    return {
+      ok: false,
+      error: target.error === "INVALID_LINK" ? e.invalidLink : e.quoteAlreadyDecided,
+    };
   }
+  const rd = target.rd;
+  const currency = rd.dentist.country.currency;
 
-  // A sibling quote on the same request may have already been approved (or
-  // gone further) between the patient's decision and this submit — approval
-  // is exclusive per request, so no other clinic may still create or edit a
-  // quote once that has happened.
-  const decidedSibling = await db.quote.findFirst({
-    where: {
-      requestDentist: { requestId: rd.requestId },
-      status: { in: ["APPROVED", "IN_TREATMENT", "COMPLETION_REQUESTED", "COMPLETED"] },
-    },
-    select: { id: true },
-  });
-  if (decidedSibling) {
-    return { ok: false, error: e.quoteAlreadyDecided };
+  const discountMajor =
+    input.discountMajor === null || input.discountMajor === undefined
+      ? null
+      : Number(input.discountMajor);
+  const totals = computeQuoteTotals(items, discountMajor, currency);
+  if (!totals.ok) {
+    return {
+      ok: false,
+      error:
+        totals.error === "BAD_DISCOUNT"
+          ? e.invalidDiscount
+          : totals.error === "BAD_LINE"
+            ? e.invalidLineItem
+            : totals.error === "NO_LINES"
+              ? e.noLineItems
+              : e.invalidPrice,
+    };
   }
+  const amountMinor = totals.finalMinor;
+  const discountMinor = totals.discountMinor > 0 ? totals.discountMinor : null;
+  const itemRows = items.map((i, position) => ({
+    position,
+    category: i.category,
+    treatment: i.treatment,
+    variant: i.variant,
+    customLabel: i.customLabel,
+    quantity: i.quantity,
+    unitPriceMinor: totals.lines[position].unitPriceMinor,
+  }));
 
   const isNew = !rd.quote;
   const note = input.note?.trim() || null;
-  const currency = rd.dentist.country.currency;
-  const amountMinor = toMinor(major, currency);
 
   // Only canonical inclusion keys are stored, so the patient compares clinics
   // on the same axis instead of reading two differently-worded notes.
-  const includes = (input.includes ?? []).filter((k): k is QuoteInclusion =>
-    (QUOTE_INCLUSIONS as readonly string[]).includes(k),
-  );
+  // AIRPORT_TRANSFER is legacy: transfers now have their own field.
+  const includes = [
+    ...new Set(
+      (input.includes ?? []).filter(
+        (k): k is QuoteInclusion =>
+          (QUOTE_INCLUSIONS as readonly string[]).includes(k) && k !== "AIRPORT_TRANSFER",
+      ),
+    ),
+  ];
+  const transfers = [
+    ...new Set(
+      (input.transfers ?? []).filter((k) => (QUOTE_TRANSFERS as readonly string[]).includes(k)),
+    ),
+  ];
+  // Always answered on a new-format quote; null is reserved for legacy rows.
+  const flightsIncluded = input.flightsIncluded === true;
+  const flightTickets = flightsIncluded
+    ? clampInt(input.flightTickets, 1, 1, QUOTE_LIMITS.maxFlightTickets)
+    : null;
 
   const tripsRequired = clampInt(input.tripsRequired, 1, 1, 10);
   const daysPerTrip = clampInt(input.daysPerTrip, 1, 1, 60);
   // Only meaningful with more than one trip; forced null otherwise so the two
   // fields can never contradict each other.
-  const weeksBetweenTrips =
-    tripsRequired > 1 ? clampInt(input.weeksBetweenTrips, 1, 1, 104) : null;
+  const weeksBetweenTrips = tripsRequired > 1 ? clampInt(input.weeksBetweenTrips, 1, 1, 104) : null;
   // Only meaningful once the clinic has checked ACCOMMODATION itself; forced
   // null otherwise, same rule as weeksBetweenTrips above.
   const accommodationNights = includes.includes("ACCOMMODATION")
@@ -121,6 +174,25 @@ export async function submitQuote(input: {
     input.warrantyYears == null ? null : clampInt(input.warrantyYears, 0, 0, 50);
   const warrantyNote = input.warrantyNote?.trim() || null;
 
+  const fields = {
+    amountMinor,
+    currency,
+    discountMinor,
+    note,
+    includes,
+    flightsIncluded,
+    flightTickets,
+    transfers,
+    tripsRequired,
+    daysPerTrip,
+    weeksBetweenTrips,
+    accommodationNights,
+    sessionsRequired,
+    weeksBetweenSessions,
+    warrantyYears,
+    warrantyNote,
+  };
+
   let quoteId: string;
   if (isNew) {
     // No race risk here: a duplicate create would hit the `@unique`
@@ -128,49 +200,30 @@ export async function submitQuote(input: {
     // — two concurrent first-submits from the same clinic link is not a
     // scenario the spec needs to protect against.
     const quote = await db.quote.create({
-      data: {
-        requestDentistId: rd.id,
-        amountMinor,
-        currency,
-        note,
-        includes,
-        tripsRequired,
-        daysPerTrip,
-        weeksBetweenTrips,
-        accommodationNights,
-        sessionsRequired,
-        weeksBetweenSessions,
-        warrantyYears,
-        warrantyNote,
-      },
+      data: { requestDentistId: rd.id, ...fields, items: { create: itemRows } },
       select: { id: true },
     });
     quoteId = quote.id;
   } else {
+    quoteId = rd.quote!.id;
     // Conditional on the quote's own status, so a clinic's edit landing at
     // nearly the same instant as the patient's approval can't silently
-    // overwrite the price on a quote that just got decided.
-    const result = await db.quote.updateMany({
-      where: { requestDentistId: rd.id, status: "PENDING_DECISION" },
-      data: {
-        amountMinor,
-        currency,
-        note,
-        includes,
-        tripsRequired,
-        daysPerTrip,
-        weeksBetweenTrips,
-        accommodationNights,
-        sessionsRequired,
-        weeksBetweenSessions,
-        warrantyYears,
-        warrantyNote,
-      },
+    // overwrite the price on a quote that just got decided. The lines are
+    // replaced in the same transaction, so a refused edit leaves them as they
+    // were and the price always matches its lines.
+    const updated = await db.$transaction(async (tx) => {
+      const result = await tx.quote.updateMany({
+        where: { requestDentistId: rd.id, status: "PENDING_DECISION" },
+        data: fields,
+      });
+      if (result.count === 0) return false;
+      await tx.quoteItem.deleteMany({ where: { quoteId } });
+      await tx.quoteItem.createMany({ data: itemRows.map((r) => ({ ...r, quoteId })) });
+      return true;
     });
-    if (result.count === 0) {
+    if (!updated) {
       return { ok: false, error: e.quoteAlreadyDecided };
     }
-    quoteId = rd.quote!.id;
   }
 
   // Notify the patient — unless their account was deleted (user set to null),

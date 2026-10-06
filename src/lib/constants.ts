@@ -125,6 +125,9 @@ export const RATE_LIMITS = {
   // uploads several documents, and a clinic that mis-shoots a photo retries.
   clinicDocument: { limit: 20, windowMs: HOUR_MS },
   submitQuote: { limit: 10, windowMs: HOUR_MS }, // per quote token
+  // Per quote token. Covers uploads and removals: a clinic swapping five files
+  // a couple of times is normal, hundreds an hour is not.
+  quoteAttachment: { limit: 30, windowMs: HOUR_MS },
   fileUpload: { limit: 20, windowMs: HOUR_MS }, // per request
   createRequest: { limit: 10, windowMs: HOUR_MS }, // per user — caps request spam
 } as const;

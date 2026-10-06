@@ -13,8 +13,10 @@ import { format } from "./format";
 export function fileValidationMessage(
   t: Dictionary["validation"],
   err: FileValidationError,
+  /** The limit that was broken, when it isn't the patient-upload one. */
+  mb: number = REQUEST_LIMITS.maxFileSizeMB,
 ): string {
-  return err === "TYPE" ? t.fileType : format(t.fileSize, { mb: REQUEST_LIMITS.maxFileSizeMB });
+  return err === "TYPE" ? t.fileType : format(t.fileSize, { mb });
 }
 
 export function logoValidationMessage(

@@ -2,8 +2,16 @@ import type { Dictionary } from "@/i18n/get-dictionary";
 import type { Locale } from "@/i18n/config";
 import type { QuoteRow } from "@/lib/quotes";
 import { formatMoney } from "@/lib/money";
-import { translateInclusion, translateLanguage } from "@/lib/labels";
+import { Download, Eye, FileText, Image as ImageIcon } from "lucide-react";
+import {
+  quoteItemName,
+  translateInclusion,
+  translateLanguage,
+  translateTransfer,
+} from "@/lib/labels";
 import { format } from "@/i18n/format";
+
+const TRAVEL_INCLUSIONS = ["ACCOMMODATION", "AIRPORT_TRANSFER"];
 import { QuoteDecisionButtons } from "./quote-decision-buttons";
 import { StatusBadge } from "./status-badge";
 
@@ -75,6 +83,20 @@ export function QuoteComparison({
         <span className="text-foreground text-lg font-bold">
           {formatMoney(q.amountMinor, q.currency, locale)}
         </span>
+        {/* The package discount is shown, not folded away: "3,300 less 300"
+            tells the patient what the treatments are worth on their own. */}
+        {q.discountMinor ? (
+          <span className="text-muted-foreground mt-1 block text-xs">
+            {format(d.subtotal, {
+              amount: formatMoney(q.amountMinor + q.discountMinor, q.currency, locale),
+            })}
+            <span className="text-teal-deep block font-medium">
+              {format(d.packageDiscount, {
+                amount: formatMoney(q.discountMinor, q.currency, locale),
+              })}
+            </span>
+          </span>
+        ) : null}
         {/* Only when the rate is current. A converted figure is a courtesy; a
             stale one presented beside a real price is a claim. */}
         {conversion && q.currency !== patientCurrency && (
@@ -90,6 +112,117 @@ export function QuoteComparison({
           </span>
         )}
       </>
+    );
+  };
+
+  // One line per treatment: what, how many, at what unit price. Empty on a
+  // legacy quote, which priced the whole job as one number.
+  const treatmentsCell = (q: QuoteRow) => {
+    if (q.items.length === 0 || !q.currency) return notStated;
+    const currency = q.currency;
+    return (
+      <ul className="space-y-2">
+        {q.items.map((item, i) => (
+          <li key={i} className="text-sm leading-snug">
+            {/* <bdi>: a clinic's own wording may be in another script than
+                the page ("צילום CT" on an English page), and must not drag
+                the quantity to its side. */}
+            <span className="text-foreground font-medium">
+              {item.quantity} × <bdi>{quoteItemName(t.labels, item)}</bdi>
+            </span>
+            <span className="text-muted-foreground block text-xs">
+              {format(d.eachPrice, { price: formatMoney(item.unitPriceMinor, currency, locale) })}
+              {item.quantity > 1 &&
+                ` · ${formatMoney(item.unitPriceMinor * item.quantity, currency, locale)}`}
+            </span>
+          </li>
+        ))}
+      </ul>
+    );
+  };
+
+  // Flights, accommodation, transfers. A legacy quote never answered the
+  // flights question, so its silence is left out rather than read as "no";
+  // its old ACCOMMODATION / AIRPORT_TRANSFER inclusions still show here.
+  const travelCell = (q: QuoteRow) => {
+    if (q.amountMinor === null) return notStated;
+    const answered = q.flightsIncluded !== null;
+    const transfers = [...q.transfers];
+    if (q.includes.includes("AIRPORT_TRANSFER") && !transfers.includes("AIRPORT_HOTEL")) {
+      transfers.push("AIRPORT_HOTEL");
+    }
+    const parts: React.ReactNode[] = [];
+    if (q.flightsIncluded === true) {
+      parts.push(format(d.flightsFor, { tickets: q.flightTickets ?? 1 }));
+    } else if (q.flightsIncluded === false) {
+      parts.push(<span className="text-muted-foreground">{d.flightsNotIncluded}</span>);
+    }
+    if (q.includes.includes("ACCOMMODATION")) {
+      parts.push(
+        q.accommodationNights
+          ? format(d.lodgingNights, { nights: q.accommodationNights })
+          : translateInclusion(t.labels, "ACCOMMODATION"),
+      );
+    } else if (answered) {
+      parts.push(<span className="text-muted-foreground">{d.lodgingNotIncluded}</span>);
+    }
+    if (transfers.length > 0) {
+      parts.push(
+        format(d.transfersLabel, {
+          list: transfers.map((k) => translateTransfer(t.labels, k)).join(", "),
+        }),
+      );
+    } else if (answered) {
+      parts.push(<span className="text-muted-foreground">{d.transfersNone}</span>);
+    }
+    if (parts.length === 0) return notStated;
+    return (
+      <ul className="space-y-1 text-sm">
+        {parts.map((p, i) => (
+          <li key={i}>{p}</li>
+        ))}
+      </ul>
+    );
+  };
+
+  // Each document opens in a new tab or downloads — the route checks that this
+  // patient owns the request before streaming a byte.
+  const documentsCell = (q: QuoteRow) => {
+    if (q.attachments.length === 0) return notStated;
+    return (
+      <ul className="space-y-2">
+        {q.attachments.map((a) => {
+          const Icon = a.contentType === "application/pdf" ? FileText : ImageIcon;
+          return (
+            <li key={a.id} className="text-sm">
+              <span className="text-foreground flex items-center gap-1.5">
+                <Icon className="text-teal-deep h-3.5 w-3.5 shrink-0" />
+                <span className="min-w-0 truncate" dir="auto" title={a.name}>
+                  {a.name}
+                </span>
+              </span>
+              <span className="mt-0.5 flex gap-3 ps-5 text-xs">
+                <a
+                  href={`/api/quote-attachments/${a.id}`}
+                  target="_blank"
+                  rel="noopener"
+                  className="text-teal-deep inline-flex items-center gap-1 font-medium underline"
+                >
+                  <Eye className="h-3 w-3" />
+                  {d.viewDocument}
+                </a>
+                <a
+                  href={`/api/quote-attachments/${a.id}?download=1`}
+                  className="text-teal-deep inline-flex items-center gap-1 font-medium underline"
+                >
+                  <Download className="h-3 w-3" />
+                  {d.downloadDocument}
+                </a>
+              </span>
+            </li>
+          );
+        })}
+      </ul>
     );
   };
 
@@ -114,31 +247,34 @@ export function QuoteComparison({
         ),
     },
     { label: d.rowPrice, cell: priceCell },
+    { label: d.rowTreatments, cell: treatmentsCell },
     {
       label: d.rowLocation,
       cell: (q) => [q.country, q.city].filter(Boolean).join(" ✦ ") || notStated,
     },
     {
       label: d.rowIncludes,
-      cell: (q) =>
-        q.includes.length ? (
+      cell: (q) => {
+        // Accommodation and the airport pickup are shown under travel, with
+        // their details, rather than twice.
+        const keys = q.includes.filter((k) => !TRAVEL_INCLUSIONS.includes(k));
+        return keys.length ? (
           <span className="flex flex-wrap gap-1.5">
-            {q.includes.map((key) => (
+            {keys.map((key) => (
               <span
                 key={key}
                 className="bg-teal-deep/10 text-teal-deep rounded-sm px-2 py-0.5 text-xs"
               >
                 {translateInclusion(t.labels, key)}
-                {key === "ACCOMMODATION" && q.accommodationNights
-                  ? format(d.accommodationNights, { nights: q.accommodationNights })
-                  : ""}
               </span>
             ))}
           </span>
         ) : (
           notStated
-        ),
+        );
+      },
     },
+    { label: d.rowTravel, cell: travelCell },
     { label: d.rowTrips, cell: tripsCell },
     { label: d.rowSessions, cell: sessionsCell },
     {
@@ -164,6 +300,7 @@ export function QuoteComparison({
           ? q.spokenLanguages.map((l) => translateLanguage(t.labels, l)).join(" ✦ ")
           : notStated,
     },
+    { label: d.rowDocuments, cell: documentsCell },
     { label: d.rowNote, cell: (q) => q.note || notStated },
   ];
 
@@ -188,14 +325,14 @@ export function QuoteComparison({
                 </span>
               )}
             </div>
-            {/* A clinic that hasn't answered yet has nothing to list: seven
-                "not stated" lines would bury the ones that did. */}
+            {/* A clinic that hasn't answered yet has nothing to list: a column
+                of "not stated" lines would bury the ones that did. */}
             {q.status !== null && (
               <>
                 <div className="mt-3">{priceRow.cell(q)}</div>
                 <dl className="divide-border/60 mt-3 divide-y text-sm">
                   {detailRows.map((row) => (
-                    <div key={row.label} className="grid grid-cols-[7rem_1fr] gap-3 py-2">
+                    <div key={row.label} className="grid grid-cols-[7rem_minmax(0,1fr)] gap-3 py-2">
                       <dt className="text-muted-foreground text-xs">{row.label}</dt>
                       <dd className="text-foreground">{row.cell(q)}</dd>
                     </div>

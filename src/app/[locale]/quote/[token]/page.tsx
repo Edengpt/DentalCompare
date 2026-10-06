@@ -1,13 +1,17 @@
 import { getDictionary } from "@/i18n/get-dictionary";
 import { isLocale, defaultLocale } from "@/i18n/config";
 import { format } from "@/i18n/format";
-import { toMajor } from "@/lib/money";
 import { notFound } from "next/navigation";
 import { FileText, Image as ImageIcon } from "lucide-react";
 import { db } from "@/lib/db";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
 import { QuoteForm } from "@/components/quote/quote-form";
+import {
+  QUOTE_ATTACHMENTS_SELECT,
+  QUOTE_FORM_SELECT,
+  toQuoteFormInitial,
+} from "@/server/quote-form-initial";
 
 export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
@@ -26,23 +30,10 @@ export default async function QuotePage({
   const rd = await db.requestDentist.findUnique({
     where: { quoteToken: token },
     select: {
-      quote: {
-        select: {
-          amountMinor: true,
-          currency: true,
-          note: true,
-          includes: true,
-          accommodationNights: true,
-          tripsRequired: true,
-          daysPerTrip: true,
-          weeksBetweenTrips: true,
-          sessionsRequired: true,
-          weeksBetweenSessions: true,
-          warrantyYears: true,
-          warrantyNote: true,
-          status: true,
-        },
-      },
+      id: true,
+      requestId: true,
+      quote: { select: QUOTE_FORM_SELECT },
+      attachments: QUOTE_ATTACHMENTS_SELECT,
       // The quote is priced in the clinic's own country's currency, so the form
       // has to label the field with it rather than assume shekels.
       dentist: { select: { country: { select: { currency: true } } } },
@@ -103,19 +94,9 @@ export default async function QuotePage({
             <QuoteForm
               token={token}
               currencyLabel={currency}
-              initial={{
-                amount: rd.quote ? toMajor(rd.quote.amountMinor, currency) : null,
-                note: rd.quote?.note ?? null,
-                includes: rd.quote?.includes ?? [],
-                accommodationNights: rd.quote?.accommodationNights ?? null,
-                tripsRequired: rd.quote?.tripsRequired ?? 1,
-                daysPerTrip: rd.quote?.daysPerTrip ?? 1,
-                weeksBetweenTrips: rd.quote?.weeksBetweenTrips ?? null,
-                sessionsRequired: rd.quote?.sessionsRequired ?? 1,
-                weeksBetweenSessions: rd.quote?.weeksBetweenSessions ?? null,
-                warrantyYears: rd.quote?.warrantyYears ?? null,
-                warrantyNote: rd.quote?.warrantyNote ?? null,
-              }}
+              initial={toQuoteFormInitial(rd.quote, rd.attachments)}
+              attachmentTarget={{ requestId: rd.requestId, requestDentistId: rd.id }}
+              canPreviewAttachments={false}
             />
           )}
         </div>

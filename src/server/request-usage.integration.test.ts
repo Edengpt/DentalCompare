@@ -54,7 +54,9 @@ describe.skipIf(!hasDb)("recordVerifiedRequest", () => {
         clinicName: `Clinic ${sfx}`,
         dentistName: `Dr ${sfx}`,
         email: `usage_${sfx}@example.com`,
-        phone: `+9725${Math.floor(Math.random() * 1e8).toString().padStart(8, "0")}`,
+        phone: `+9725${Math.floor(Math.random() * 1e8)
+          .toString()
+          .padStart(8, "0")}`,
         city: "Tel Aviv",
         address: "1 Main St",
         experienceYears: 5,
@@ -104,15 +106,26 @@ describe.skipIf(!hasDb)("recordVerifiedRequest", () => {
   });
 
   it("does not attempt conversion below the threshold", async () => {
-    const dentistId = await seedTrialing({ provider: "PAYPLUS", trialRequestCap: 3, recurringToken: "tok_1" });
+    const dentistId = await seedTrialing({
+      provider: "PAYPLUS",
+      trialRequestCap: 3,
+      recurringToken: "tok_1",
+    });
     await recordVerifiedRequest(dentistId);
     await recordVerifiedRequest(dentistId);
     expect(chargeByToken).not.toHaveBeenCalled();
   });
 
   it("PayPlus: crossing the threshold charges immediately and marks ACTIVE", async () => {
-    chargeByToken.mockResolvedValue({ ok: true, transactionUid: `txn_${randomUUID().slice(0, 8)}` });
-    const dentistId = await seedTrialing({ provider: "PAYPLUS", trialRequestCap: 2, recurringToken: "tok_1" });
+    chargeByToken.mockResolvedValue({
+      ok: true,
+      transactionUid: `txn_${randomUUID().slice(0, 8)}`,
+    });
+    const dentistId = await seedTrialing({
+      provider: "PAYPLUS",
+      trialRequestCap: 2,
+      recurringToken: "tok_1",
+    });
     await recordVerifiedRequest(dentistId);
     expect(chargeByToken).not.toHaveBeenCalled();
     await recordVerifiedRequest(dentistId);
@@ -122,8 +135,15 @@ describe.skipIf(!hasDb)("recordVerifiedRequest", () => {
   });
 
   it("PayPlus: a request beyond the threshold does not charge a second time", async () => {
-    chargeByToken.mockResolvedValue({ ok: true, transactionUid: `txn_${randomUUID().slice(0, 8)}` });
-    const dentistId = await seedTrialing({ provider: "PAYPLUS", trialRequestCap: 1, recurringToken: "tok_1" });
+    chargeByToken.mockResolvedValue({
+      ok: true,
+      transactionUid: `txn_${randomUUID().slice(0, 8)}`,
+    });
+    const dentistId = await seedTrialing({
+      provider: "PAYPLUS",
+      trialRequestCap: 1,
+      recurringToken: "tok_1",
+    });
     await recordVerifiedRequest(dentistId);
     expect(chargeByToken).toHaveBeenCalledTimes(1);
     await recordVerifiedRequest(dentistId);
@@ -149,7 +169,11 @@ describe.skipIf(!hasDb)("recordVerifiedRequest", () => {
 
   it("PayPlus: a declined immediate charge leaves the clinic retryable, not stuck", async () => {
     chargeByToken.mockResolvedValue({ ok: false, error: "declined" });
-    const dentistId = await seedTrialing({ provider: "PAYPLUS", trialRequestCap: 1, recurringToken: "tok_1" });
+    const dentistId = await seedTrialing({
+      provider: "PAYPLUS",
+      trialRequestCap: 1,
+      recurringToken: "tok_1",
+    });
     const before = new Date();
     await recordVerifiedRequest(dentistId);
     const sub = await db.clinicSubscription.findUniqueOrThrow({ where: { dentistId } });
@@ -162,10 +186,17 @@ describe.skipIf(!hasDb)("recordVerifiedRequest", () => {
     chargeByToken.mockImplementation(
       () =>
         new Promise((resolve) =>
-          setTimeout(() => resolve({ ok: true, transactionUid: `txn_${randomUUID().slice(0, 8)}` }), 20),
+          setTimeout(
+            () => resolve({ ok: true, transactionUid: `txn_${randomUUID().slice(0, 8)}` }),
+            20,
+          ),
         ),
     );
-    const dentistId = await seedTrialing({ provider: "PAYPLUS", trialRequestCap: 1, recurringToken: "tok_1" });
+    const dentistId = await seedTrialing({
+      provider: "PAYPLUS",
+      trialRequestCap: 1,
+      recurringToken: "tok_1",
+    });
     // Two "different requests to the same clinic, fulfilled around the same
     // moment" — the exact scenario that raced before this fix.
     await Promise.all([recordVerifiedRequest(dentistId), recordVerifiedRequest(dentistId)]);

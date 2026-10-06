@@ -33,6 +33,24 @@ export type QuoteRow = {
   warrantyNote: string | null;
   /** Declined by the system when the patient approved another quote, not by the patient. */
   rejectedAuto: boolean;
+  /** Treatment lines, in the clinic's order. Empty on a legacy quote. */
+  items: {
+    category: string;
+    treatment: string;
+    variant: string | null;
+    customLabel: string | null;
+    quantity: number;
+    /** In `currency`. */
+    unitPriceMinor: number;
+  }[];
+  /** Package discount; the subtotal is amountMinor + discountMinor. */
+  discountMinor: number | null;
+  /** Null on a legacy quote that never answered. */
+  flightsIncluded: boolean | null;
+  flightTickets: number | null;
+  transfers: string[];
+  /** Documents the clinic attached; served by /api/quote-attachments/[id]. */
+  attachments: { id: string; name: string; contentType: string }[];
 };
 
 /**

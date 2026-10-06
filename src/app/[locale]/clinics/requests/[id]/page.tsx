@@ -5,7 +5,6 @@ import { isLocale, defaultLocale } from "@/i18n/config";
 import { LocaleLink as Link } from "@/i18n/locale-link";
 import { format } from "@/i18n/format";
 import { db } from "@/lib/db";
-import { toMajor } from "@/lib/money";
 import { formatPhoneForDisplay } from "@/lib/phone";
 import {
   clinicLeadStage,
@@ -16,6 +15,11 @@ import { getClinicForCurrentUser } from "@/server/clinic-account";
 import { StatusBadge } from "@/components/request/status-badge";
 import { QuoteStatusActions } from "@/components/clinics/quote-status-actions";
 import { ClinicQuotePanel } from "@/components/clinics/clinic-quote-panel";
+import {
+  QUOTE_ATTACHMENTS_SELECT,
+  QUOTE_FORM_SELECT,
+  toQuoteFormInitial,
+} from "@/server/quote-form-initial";
 import { MedicalFileViewer, medicalFileKind } from "@/components/clinics/medical-file-viewer";
 import { ClinicTreatmentCard } from "@/components/clinics/clinic-treatment-card";
 
@@ -57,19 +61,7 @@ export default async function ClinicRequestPage({
       quoteToken: true,
       quote: {
         select: {
-          status: true,
-          amountMinor: true,
-          currency: true,
-          note: true,
-          includes: true,
-          accommodationNights: true,
-          tripsRequired: true,
-          daysPerTrip: true,
-          weeksBetweenTrips: true,
-          sessionsRequired: true,
-          weeksBetweenSessions: true,
-          warrantyYears: true,
-          warrantyNote: true,
+          ...QUOTE_FORM_SELECT,
           decidedAt: true,
           treatmentStartedAt: true,
           treatmentStartedBy: true,
@@ -78,6 +70,7 @@ export default async function ClinicRequestPage({
           completionDeclinedAt: true,
         },
       },
+      attachments: QUOTE_ATTACHMENTS_SELECT,
       dentist: { select: { country: { select: { currency: true } } } },
       request: {
         select: {
@@ -239,19 +232,8 @@ export default async function ClinicRequestPage({
             <ClinicQuotePanel
               token={rd.quoteToken!}
               currencyLabel={currency}
-              initial={{
-                amount: rd.quote ? toMajor(rd.quote.amountMinor, currency) : null,
-                note: rd.quote?.note ?? null,
-                includes: rd.quote?.includes ?? [],
-                accommodationNights: rd.quote?.accommodationNights ?? null,
-                tripsRequired: rd.quote?.tripsRequired ?? 1,
-                daysPerTrip: rd.quote?.daysPerTrip ?? 1,
-                weeksBetweenTrips: rd.quote?.weeksBetweenTrips ?? null,
-                sessionsRequired: rd.quote?.sessionsRequired ?? 1,
-                weeksBetweenSessions: rd.quote?.weeksBetweenSessions ?? null,
-                warrantyYears: rd.quote?.warrantyYears ?? null,
-                warrantyNote: rd.quote?.warrantyNote ?? null,
-              }}
+              initial={toQuoteFormInitial(rd.quote, rd.attachments)}
+              attachmentTarget={{ requestId: rd.request.id, requestDentistId: rd.id }}
             />
           ) : (
             <div className="border-border/60 bg-card space-y-3 rounded-lg border p-5 text-sm">
