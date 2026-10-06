@@ -214,6 +214,7 @@ const de: typeof he = {
     travelCountryLabel: "Ihr Wohnland",
     travelCountryPlaceholder: "Land auswählen",
     travelNoClinicsAtHome: "Noch keine Kliniken in {country}",
+    travelPickCountryFirst: "Wählen Sie zuerst Ihr Land",
     travelScopeLabel: "Wie weit würden Sie für diese Behandlung reisen?",
     travelScopeLocal: "Nur im eigenen Land",
     travelScopeSelected: "In bestimmte Länder",

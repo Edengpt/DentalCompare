@@ -215,6 +215,7 @@ const tr: typeof he = {
     travelCountryLabel: "Yaşadığınız ülke",
     travelCountryPlaceholder: "Bir ülke seçin",
     travelNoClinicsAtHome: "{country} için henüz klinik yok",
+    travelPickCountryFirst: "Önce ülkenizi seçin",
     travelScopeLabel: "Bu tedavi için ne kadar uzağa gidebilirsiniz",
     travelScopeLocal: "Yalnızca kendi ülkemde",
     travelScopeSelected: "Belirli ülkelere",

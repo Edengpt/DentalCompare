@@ -206,6 +206,7 @@ const zh: typeof he = {
     travelCountryLabel: "您的居住地",
     travelCountryPlaceholder: "选择国家",
     travelNoClinicsAtHome: "{country}暂无诊所",
+    travelPickCountryFirst: "请先选择您所在的国家",
     travelScopeLabel: "为此治疗您愿意去多远",
     travelScopeLocal: "仅限本国",
     travelScopeSelected: "指定的几个国家",

@@ -97,6 +97,7 @@ export function TravelStep({
         </legend>
         {SCOPES.map((s) => {
           const disabled = s.value === "LOCAL" && !localOk;
+          const hintId = `${s.value}-hint`;
           return (
             <label
               key={s.value}
@@ -111,14 +112,17 @@ export function TravelStep({
                 value={s.value}
                 checked={scope === s.value}
                 disabled={disabled}
+                aria-describedby={disabled ? hintId : undefined}
                 onChange={() => setScope(s.value)}
                 className="accent-teal-deep h-4 w-4"
               />
               <span className="text-foreground">
                 {s.label}
-                {disabled && homeName && (
-                  <span className="text-muted-foreground block text-xs">
-                    {format(t.requestFlow.travelNoClinicsAtHome, { country: homeName })}
+                {disabled && (
+                  <span id={hintId} className="text-muted-foreground block text-xs">
+                    {homeName
+                      ? format(t.requestFlow.travelNoClinicsAtHome, { country: homeName })
+                      : t.requestFlow.travelPickCountryFirst}
                   </span>
                 )}
               </span>

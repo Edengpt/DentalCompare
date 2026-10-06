@@ -15,6 +15,8 @@ export function destinationCountryCodes(
   scope: TravelScope,
   destinations: string[],
   patientCountry: string | null,
+  /** When given, a home country without clinics widens LOCAL to anywhere. */
+  activeCodes?: Set<string>,
 ): string[] | null {
   if (scope === "ANY") return null;
 
@@ -26,7 +28,10 @@ export function destinationCountryCodes(
     if (unique.length > 0) return unique;
   }
 
-  return patientCountry ? [patientCountry] : null;
+  // The scope is saved per request but the country per user, so an old draft
+  // can say LOCAL for a country the patient has since moved away from.
+  if (!patientCountry || (activeCodes && !activeCodes.has(patientCountry))) return null;
+  return [patientCountry];
 }
 
 /**

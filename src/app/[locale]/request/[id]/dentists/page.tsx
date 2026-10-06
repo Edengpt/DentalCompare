@@ -60,6 +60,11 @@ export default async function RequestDentistsPage({
   if (!request.treatmentFileUrl || !request.xrayFileUrl) {
     redirect(`/request/${id}/upload`);
   }
+  // So is the travel step: without a country, "only in my country" means
+  // nothing and the list would silently widen to every clinic.
+  if (!user.countryCode) redirect(`/request/${id}/travel`);
+
+  const countries = await getActiveCountries();
 
   // What the patient said they would do, not a list frozen when they said it:
   // ANY returns null and therefore adds no condition, so a country activated
@@ -68,6 +73,7 @@ export default async function RequestDentistsPage({
     request.travelScope,
     request.destinationCountries,
     user.countryCode,
+    new Set(countries.map((c) => c.code)),
   );
 
   const dentistsWithoutCapStatus = await db.dentist.findMany({
@@ -81,7 +87,6 @@ export default async function RequestDentistsPage({
   const dentists = await attachCapStatus(dentistsWithoutCapStatus);
 
   // Names, not codes: the filter and the card both read "Israel" rather than "IL".
-  const countries = await getActiveCountries();
   const countryNames = Object.fromEntries(
     withCountryNames(countries, locale).map((c) => [c.code, c.name]),
   );

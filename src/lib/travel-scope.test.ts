@@ -41,6 +41,18 @@ describe("destinationCountryCodes", () => {
   });
 });
 
+describe("destinationCountryCodes with active countries", () => {
+  // A draft saved as "only in my country" while home was Israel, after the
+  // patient said they now live in Brazil: an empty list helps nobody.
+  it("widens LOCAL to anywhere when home has no clinics", () => {
+    expect(destinationCountryCodes("LOCAL", [], "BR", new Set(["IL", "TR"]))).toBeNull();
+  });
+
+  it("keeps LOCAL when home has clinics", () => {
+    expect(destinationCountryCodes("LOCAL", [], "TR", new Set(["IL", "TR"]))).toEqual(["TR"]);
+  });
+});
+
 describe("canSearchLocally", () => {
   it("is true when the patient's country has active clinics", () => {
     expect(canSearchLocally("TR", new Set(["TR", "HU"]))).toBe(true);

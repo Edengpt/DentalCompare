@@ -215,6 +215,7 @@ const fr: typeof he = {
     travelCountryLabel: "Votre pays de résidence",
     travelCountryPlaceholder: "Choisissez un pays",
     travelNoClinicsAtHome: "Pas encore de cliniques dans ce pays : {country}",
+    travelPickCountryFirst: "Choisissez d'abord votre pays",
     travelScopeLabel: "Jusqu'où iriez-vous pour ce traitement",
     travelScopeLocal: "Uniquement dans mon pays",
     travelScopeSelected: "Dans certains pays",

@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
  * clinic named — converting at save time would commit the platform to a price
  * it doesn't control and can't honour once the rate moves.
  *
- * frankfurter.app is keyless and ECB-sourced. It does not cover every currency;
+ * Frankfurter (api.frankfurter.dev) is keyless and ECB-sourced. It does not cover every currency;
  * a currency it omits is logged and skipped rather than failing the whole run,
  * because one unsupported market must not blank out conversion for the rest.
  */
@@ -44,7 +44,7 @@ export async function GET(req: Request) {
     ...active.map((c) => c.currency),
     ...patientCountries.map((u) => patientCurrencyFor(u.countryCode)),
   ]);
-  const url = `https://api.frankfurter.app/latest?base=${base}&symbols=${quotes.join(",")}`;
+  const url = `https://api.frankfurter.dev/v1/latest?base=${base}&symbols=${quotes.join(",")}`;
 
   let payload: { rates?: Record<string, number> };
   try {

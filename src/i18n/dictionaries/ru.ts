@@ -214,6 +214,7 @@ const ru: typeof he = {
     travelCountryLabel: "Страна проживания",
     travelCountryPlaceholder: "Выберите страну",
     travelNoClinicsAtHome: "В стране {country} пока нет клиник",
+    travelPickCountryFirst: "Сначала выберите свою страну",
     travelScopeLabel: "Как далеко вы готовы поехать на это лечение",
     travelScopeLocal: "Только в своей стране",
     travelScopeSelected: "В определённые страны",
