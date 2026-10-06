@@ -5,9 +5,9 @@ import { QUOTE_LIMITS } from "./quote-catalog";
  * The most any price field can hold, in minor units, whatever the currency.
  *
  * The columns are Postgres INTEGER (max 2,147,483,647); this leaves headroom
- * below that. It is the binding limit for currencies with many units to the
- * euro — in forint it is 20 million (about €50,000), still above any dental
- * quote we have seen there.
+ * below that. It can bind before the euro limit for currencies with many units
+ * to the euro and two decimals — e.g. forint where the runtime's ICU gives it
+ * two (20 million, about €50,000; still above any dental quote seen there).
  */
 export const DB_SAFE_MAX_MINOR = 2_000_000_000;
 

@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { computeQuoteTotals, DB_SAFE_MAX_MINOR, priceCeilingMinor } from "./quote-pricing";
+import { toMinor } from "./money";
 
 describe("computeQuoteTotals", () => {
   it("sums lines in minor units", () => {
@@ -105,16 +106,19 @@ describe("computeQuoteTotals", () => {
 
   // The bug this replaced: a flat 1,000,000 in the clinic's own currency is
   // about EUR 2,500 in forint. A full mouth of implants in Budapest is far more.
+  //
+  // Written against minorUnitDigits rather than a literal: ICU builds disagree
+  // on whether HUF has 0 or 2 decimals (Windows dev says 2, the Linux CI 0).
   it("lets a Hungarian clinic quote a full-mouth job in forint", () => {
     const r = computeQuoteTotals([{ quantity: 8, unitPriceMajor: 1_500_000 }], null, "HUF");
-    expect(r).toMatchObject({ ok: true, finalMinor: 1_200_000_000 });
+    expect(r).toMatchObject({ ok: true, finalMinor: toMinor(12_000_000, "HUF") });
   });
 
   it("never lets a price outgrow the database column", () => {
-    expect(computeQuoteTotals([{ quantity: 1, unitPriceMajor: 25_000_000 }], null, "HUF")).toEqual({
-      ok: false,
-      error: "TOO_HIGH",
-    });
+    // Over 2e9 minor units at either scale.
+    expect(
+      computeQuoteTotals([{ quantity: 1, unitPriceMajor: 2_500_000_000 }], null, "HUF"),
+    ).toEqual({ ok: false, error: "TOO_HIGH" });
   });
 });
 
