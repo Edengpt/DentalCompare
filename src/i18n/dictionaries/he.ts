@@ -76,9 +76,6 @@ const he = {
     artCity1: "באקו",
     artCity2: "טירנה",
     artCity3: "טביליסי",
-    verifiedTitle: "כל מרפאה כאן נבדקה",
-    verifiedPromise:
-      "כל מרפאה שתראו כאן העלתה את רישיון העיסוק שלה, ואדם מהצוות שלנו הסתכל עליו לפני שהיא הופיעה במאגר. מרפאה בלי רישיון שנבדק לא מגיעה אליכם.",
   },
   // Made-up clinics, prices and ratings that show what a comparison looks like.
   // The subtitle must keep saying so.

@@ -75,9 +75,6 @@ const fr: typeof he = {
     artCity1: "Bakou",
     artCity2: "Tirana",
     artCity3: "Tbilissi",
-    verifiedTitle: "Chaque clinique présentée ici a été vérifiée",
-    verifiedPromise:
-      "Chaque clinique que vous voyez ici a téléversé son autorisation d'exercer, et un membre de notre équipe l'a examinée avant sa mise en ligne. Une clinique dont l'autorisation n'a pas été vérifiée ne vous est jamais proposée.",
   },
   exampleComparison: {
     title: "Même plan, trois devis, côte à côte",

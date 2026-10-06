@@ -84,14 +84,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             destinations={tiles}
           />
         </StartSearchProvider>
-        <ExampleComparison
-          t={t.exampleComparison}
-          verifiedPromise={{
-            title: t.howItWorks.verifiedTitle,
-            body: t.howItWorks.verifiedPromise,
-          }}
-          locale={locale}
-        />
+        <ExampleComparison t={t.exampleComparison} locale={locale} />
         <Trust t={t.trust} />
         <Faq t={t.faq} />
         <FinalCta t={t.finalCta} />

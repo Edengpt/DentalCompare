@@ -71,9 +71,6 @@ const zh: typeof he = {
     artCity1: "巴库",
     artCity2: "地拉那",
     artCity3: "第比利斯",
-    verifiedTitle: "这里的每家诊所都经过核验",
-    verifiedPromise:
-      "您在这里看到的每家诊所都上传了执业执照，并在上线前经我们团队人工审核。执照未经核验的诊所，绝不会出现在您面前。",
   },
   exampleComparison: {
     title: "同一方案，三份报价，并排比较",

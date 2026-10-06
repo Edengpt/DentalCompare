@@ -76,9 +76,6 @@ const tr: typeof he = {
     artCity1: "Bakü",
     artCity2: "Tiran",
     artCity3: "Tiflis",
-    verifiedTitle: "Buradaki her klinik kontrol edildi",
-    verifiedPromise:
-      "Burada gördüğünüz her klinik meslek lisansını yükledi ve klinik listelenmeden önce ekibimizden biri bu lisansı inceledi. Lisansı kontrol edilmemiş bir klinik size asla ulaşmaz.",
   },
   exampleComparison: {
     title: "Aynı plan, üç teklif, yan yana",

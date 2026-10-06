@@ -74,9 +74,6 @@ const de: typeof he = {
     artCity1: "Baku",
     artCity2: "Tirana",
     artCity3: "Tiflis",
-    verifiedTitle: "Jede Klinik hier ist geprüft",
-    verifiedPromise:
-      "Jede Klinik, die Sie hier sehen, hat ihre Berufszulassung hochgeladen, und ein Mitglied unseres Teams hat sie geprüft, bevor die Klinik sichtbar wurde. Eine Klinik ohne geprüfte Zulassung wird Ihnen nie angezeigt.",
   },
   exampleComparison: {
     title: "Ein Plan, drei Angebote – direkt im Vergleich",
