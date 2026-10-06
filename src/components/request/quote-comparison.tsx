@@ -124,8 +124,11 @@ export function QuoteComparison({
       <ul className="space-y-2">
         {q.items.map((item, i) => (
           <li key={i} className="text-sm leading-snug">
-            <span className="text-foreground font-medium" dir="auto">
-              {item.quantity} × {quoteItemName(t.labels, item)}
+            {/* <bdi>: a clinic's own wording may be in another script than
+                the page ("צילום CT" on an English page), and must not drag
+                the quantity to its side. */}
+            <span className="text-foreground font-medium">
+              {item.quantity} × <bdi>{quoteItemName(t.labels, item)}</bdi>
             </span>
             <span className="text-muted-foreground block text-xs">
               {format(d.eachPrice, { price: formatMoney(item.unitPriceMinor, currency, locale) })}
@@ -322,8 +325,8 @@ export function QuoteComparison({
                 </span>
               )}
             </div>
-            {/* A clinic that hasn't answered yet has nothing to list: seven
-                "not stated" lines would bury the ones that did. */}
+            {/* A clinic that hasn't answered yet has nothing to list: a column
+                of "not stated" lines would bury the ones that did. */}
             {q.status !== null && (
               <>
                 <div className="mt-3">{priceRow.cell(q)}</div>

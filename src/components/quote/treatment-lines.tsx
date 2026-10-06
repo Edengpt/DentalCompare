@@ -43,7 +43,9 @@ export function TreatmentLines({
         return (
           <li key={line.key} className="space-y-2 p-3">
             <div className="flex items-start justify-between gap-2">
-              <p className="text-foreground text-sm font-medium">{quoteItemName(t.labels, line)}</p>
+              <p className="text-foreground text-sm font-medium" dir="auto">
+                {quoteItemName(t.labels, line)}
+              </p>
               <button
                 type="button"
                 onClick={() => onRemove(line.key)}
