@@ -54,6 +54,8 @@ const he = {
     subtitle: "כל מרפאה כאן עברה בדיקת רישיון על ידי אדם מהצוות שלנו.",
     verified: { one: "מרפאה מאומתת אחת", other: "{count} מרפאות מאומתות" },
     joiningSoon: "מרפאות מצטרפות בקרוב",
+    showAll: "הצג את כל {count} המדינות",
+    showLess: "הצג פחות",
   },
 
   howItWorks: {

@@ -62,6 +62,8 @@ const en: typeof he = {
     subtitle: "Every clinic here had its licence checked by a person on our team.",
     verified: { one: "1 verified clinic", other: "{count} verified clinics" },
     joiningSoon: "Clinics joining soon",
+    showAll: "Show all {count} countries",
+    showLess: "Show fewer",
   },
 
   howItWorks: {

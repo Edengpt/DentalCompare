@@ -53,6 +53,8 @@ const tr: typeof he = {
     subtitle: "Buradaki her kliniğin lisansı ekibimizden biri tarafından kontrol edildi.",
     verified: { one: "1 doğrulanmış klinik", other: "{count} doğrulanmış klinik" },
     joiningSoon: "Klinikler yakında eklenecek",
+    showAll: "Tüm ülkeleri göster ({count})",
+    showLess: "Daha az göster",
   },
 
   howItWorks: {

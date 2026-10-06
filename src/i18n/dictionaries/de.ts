@@ -50,6 +50,8 @@ const de: typeof he = {
       "Bei jeder Klinik hier hat ein Mitglied unseres Teams die Zulassung persönlich geprüft.",
     verified: { one: "1 geprüfte Klinik", other: "{count} geprüfte Kliniken" },
     joiningSoon: "Kliniken kommen bald hinzu",
+    showAll: "Alle Länder anzeigen ({count})",
+    showLess: "Weniger anzeigen",
   },
 
   howItWorks: {

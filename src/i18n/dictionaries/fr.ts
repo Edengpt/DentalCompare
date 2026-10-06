@@ -51,6 +51,8 @@ const fr: typeof he = {
       "L'autorisation d'exercer de chaque clinique présentée ici a été contrôlée par un membre de notre équipe.",
     verified: { one: "1 clinique vérifiée", other: "{count} cliniques vérifiées" },
     joiningSoon: "Des cliniques arrivent bientôt",
+    showAll: "Voir les {count} pays",
+    showLess: "Voir moins",
   },
 
   howItWorks: {

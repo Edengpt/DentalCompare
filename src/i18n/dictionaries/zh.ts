@@ -49,6 +49,8 @@ const zh: typeof he = {
     subtitle: "这里每家诊所的执照，都经过我们团队的人工核验。",
     verified: { one: "1家认证诊所", other: "{count}家认证诊所" },
     joiningSoon: "诊所即将入驻",
+    showAll: "显示全部 {count} 个国家",
+    showLess: "收起",
   },
 
   howItWorks: {

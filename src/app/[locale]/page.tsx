@@ -9,7 +9,7 @@ import { PopularTreatments } from "@/components/sections/popular-treatments";
 import { Destinations } from "@/components/sections/destinations";
 import { StartSearchProvider } from "@/components/sections/start-search-context";
 import { getDictionary } from "@/i18n/get-dictionary";
-import { plural } from "@/i18n/format";
+import { format, plural } from "@/i18n/format";
 import { countryName } from "@/lib/country-names";
 import { DESTINATION_PHOTOS } from "@/lib/destination-photos";
 import { getHomepageDestinations } from "@/lib/homepage-destinations";
@@ -78,6 +78,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <Destinations
             title={t.destinations.title}
             subtitle={t.destinations.subtitle}
+            showAllLabel={format(t.destinations.showAll, { count: tiles.length })}
+            showLessLabel={t.destinations.showLess}
             destinations={tiles}
           />
         </StartSearchProvider>
