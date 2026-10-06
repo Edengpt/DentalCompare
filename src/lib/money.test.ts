@@ -128,9 +128,15 @@ describe("isRateStale", () => {
     ).toBe(false);
   });
 
-  it("rejects a rate older than 48 hours", () => {
+  it("keeps a few days' old rate, so a failed refresh doesn't blank every comparison", () => {
     expect(
       isRateStale(new Date("2026-08-17T09:00:00Z"), new Date("2026-08-20T12:00:00Z")),
+    ).toBe(false);
+  });
+
+  it("rejects a rate older than 14 days", () => {
+    expect(
+      isRateStale(new Date("2026-08-06T11:00:00Z"), new Date("2026-08-20T12:00:00Z")),
     ).toBe(true);
   });
 });

@@ -42,8 +42,8 @@ function older(a: Date, b: Date): Date {
  * The rate to multiply a `from` amount by to express it in `to`.
  *
  * Returns null when there is no route, or when any leg of the route is stale.
- * Null means "show no conversion", which is the honest answer — a figure
- * presented to a patient as a price should not be two days old.
+ * Null means "show no conversion", which is the honest answer once a rate is
+ * past the window in RATE_STALE_MS.
  */
 export function findRate(
   rates: StoredRate[],

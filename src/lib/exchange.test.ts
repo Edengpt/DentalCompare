@@ -38,15 +38,15 @@ describe("findRate", () => {
     expect(findRate(rates, "JPY", "ILS", now)).toBeNull();
   });
 
-  // A figure shown to a patient as a price must not be two days old.
+  // Past the window the rate is a guess, not a price.
   it("refuses a rate older than the staleness window", () => {
-    const old = [{ base: "EUR", quote: "ILS", rate: 4, fetchedAt: new Date("2026-08-20") }];
+    const old = [{ base: "EUR", quote: "ILS", rate: 4, fetchedAt: new Date("2026-08-01") }];
     expect(findRate(old, "EUR", "ILS", now)).toBeNull();
   });
 
   it("refuses a triangulation when either leg is stale", () => {
     const oneStale = [
-      { base: "EUR", quote: "ILS", rate: 4, fetchedAt: new Date("2026-08-20") },
+      { base: "EUR", quote: "ILS", rate: 4, fetchedAt: new Date("2026-08-01") },
       { base: "EUR", quote: "TRY", rate: 40, fetchedAt: fresh },
     ];
     expect(findRate(oneStale, "ILS", "TRY", now)).toBeNull();

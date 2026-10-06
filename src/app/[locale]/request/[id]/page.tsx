@@ -1,4 +1,5 @@
 import { getConverter } from "@/lib/exchange-rates";
+import { patientCurrencyFor } from "@/lib/price-display";
 import { QuoteComparison, type ConvertedPrice } from "@/components/request/quote-comparison";
 import { TreatmentCard } from "@/components/request/treatment-card";
 import { CompletionBanner } from "@/components/request/completion-banner";
@@ -162,7 +163,7 @@ export default async function RequestDetailPage({
   // One converter per page load, handed to the table — which never touches the
   // database itself. Null for a quote with no honest rate: the patient still
   // sees exactly what the clinic named, and nothing beside it.
-  const patientCurrency = user.country?.currency ?? "ILS";
+  const patientCurrency = patientCurrencyFor(user.country?.currency);
   const convertTo = await getConverter(patientCurrency);
 
   const converted: Record<string, ConvertedPrice> = {};

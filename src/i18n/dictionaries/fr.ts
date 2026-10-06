@@ -432,6 +432,7 @@ const fr: typeof he = {
     rowNote: "Note de la clinique",
     notStated: "Non précisé",
     approxRate: "Approximatif · taux du {date}",
+    clinicCharges: "La clinique facture {amount}",
     oneTrip: "Un voyage · {days} jours",
     manyTrips: "{trips} voyages · {days} jours chacun",
     weeksBetween: " · à {weeks} semaines d'intervalle",

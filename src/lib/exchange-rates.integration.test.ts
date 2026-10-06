@@ -96,7 +96,7 @@ describe.skipIf(!hasDb)("getConverter", () => {
   });
 
   it("returns null when the only rate is too old to quote", async () => {
-    const stale = [{ base: "EUR", quote: "ILS", rate: 4, fetchedAt: new Date("2026-08-20") }];
+    const stale = [{ base: "EUR", quote: "ILS", rate: 4, fetchedAt: new Date("2026-08-01") }];
     const result = await withRates(stale, async (tx) => {
       const convertTo = await getConverter("ILS", now, tx);
       return convertTo(10_000, "EUR");

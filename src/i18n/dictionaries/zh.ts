@@ -404,6 +404,7 @@ const zh: typeof he = {
     rowNote: "诊所备注",
     notStated: "未注明",
     approxRate: "约数 · 按{date}汇率",
+    clinicCharges: "诊所收费 {amount}",
     oneTrip: "1次行程 · {days}天",
     manyTrips: "{trips}次行程 · 每次{days}天",
     weeksBetween: " · 间隔{weeks}周",
