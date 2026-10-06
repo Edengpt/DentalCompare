@@ -432,6 +432,7 @@ const tr: typeof he = {
     rowNote: "Kliniğin notu",
     notStated: "Belirtilmedi",
     approxRate: "Yaklaşık · kur tarihi: {date}",
+    clinicCharges: "Kliniğin fiyatı: {amount}",
     oneTrip: "Tek seyahat · {days} gün",
     manyTrips: "{trips} seyahat · her biri {days} gün",
     weeksBetween: " · aralarında {weeks} hafta",

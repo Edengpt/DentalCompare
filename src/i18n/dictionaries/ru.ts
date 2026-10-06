@@ -425,6 +425,7 @@ const ru: typeof he = {
     rowNote: "Комментарий клиники",
     notStated: "Не указано",
     approxRate: "Приблизительно · по курсу на {date}",
+    clinicCharges: "Цена клиники: {amount}",
     oneTrip: "Одна поездка · {days} дн.",
     manyTrips: "Поездок: {trips} · по {days} дн.",
     weeksBetween: " · с интервалом {weeks} нед.",

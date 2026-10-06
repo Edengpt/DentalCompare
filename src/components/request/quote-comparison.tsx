@@ -10,6 +10,7 @@ import {
   translateTransfer,
 } from "@/lib/labels";
 import { format } from "@/i18n/format";
+import { comparisonPrice } from "@/lib/price-display";
 
 const TRAVEL_INCLUSIONS = ["ACCOMMODATION", "AIRPORT_TRANSFER"];
 import { QuoteDecisionButtons } from "./quote-decision-buttons";
@@ -27,9 +28,11 @@ import { StatusBadge } from "./status-badge";
  *
  *  - **A blank is not a zero.** A clinic that didn't state a warranty shows
  *    "not stated", never "0 years". One of those is an accusation.
- *  - **The clinic's own currency is always the figure.** Any conversion is
- *    secondary, marked approximate and dated, and disappears entirely rather
- *    than being shown stale.
+ *  - **Compare in one currency, never hide what is charged.** The headline is
+ *    the price in the patient's currency, marked approximate and dated, so
+ *    three quotes in three currencies line up; the clinic's own figure, the
+ *    one actually paid, sits right under it. With no usable rate the clinic's
+ *    figure is the headline (see comparisonPrice).
  */
 
 export type ConvertedPrice = { minor: number; fetchedAt: Date } | null;
@@ -77,12 +80,31 @@ export function QuoteComparison({
     if (q.amountMinor === null || !q.currency) {
       return <span className="text-muted-foreground text-xs">{d.awaitingQuote}</span>;
     }
-    const conversion = converted[q.dentistId];
+    const p = comparisonPrice(
+      { amountMinor: q.amountMinor, currency: q.currency },
+      converted[q.dentistId],
+      patientCurrency,
+    );
     return (
       <>
         <span className="text-foreground text-lg font-bold">
-          {formatMoney(q.amountMinor, q.currency, locale)}
+          {p.approximate && "≈ "}
+          {formatMoney(p.headline.minor, p.headline.currency, locale)}
         </span>
+        {p.rateDate && (
+          <span className="text-muted-foreground block text-xs">
+            {format(d.approxRate, {
+              date: new Intl.DateTimeFormat(locale, { dateStyle: "short" }).format(p.rateDate),
+            })}
+          </span>
+        )}
+        {p.clinicPrice && (
+          <span className="text-foreground mt-1 block text-xs font-medium">
+            {format(d.clinicCharges, {
+              amount: formatMoney(p.clinicPrice.minor, p.clinicPrice.currency, locale),
+            })}
+          </span>
+        )}
         {/* The package discount is shown, not folded away: "3,300 less 300"
             tells the patient what the treatments are worth on their own. */}
         {q.discountMinor ? (
@@ -97,20 +119,6 @@ export function QuoteComparison({
             </span>
           </span>
         ) : null}
-        {/* Only when the rate is current. A converted figure is a courtesy; a
-            stale one presented beside a real price is a claim. */}
-        {conversion && q.currency !== patientCurrency && (
-          <span className="text-muted-foreground mt-1 block text-xs">
-            ≈ {formatMoney(conversion.minor, patientCurrency, locale)}
-            <span className="block">
-              {format(d.approxRate, {
-                date: new Intl.DateTimeFormat(locale, { dateStyle: "short" }).format(
-                  conversion.fetchedAt,
-                ),
-              })}
-            </span>
-          </span>
-        )}
       </>
     );
   };

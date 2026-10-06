@@ -422,6 +422,7 @@ const he = {
     rowNote: "הערת המרפאה",
     notStated: "לא צוין",
     approxRate: "המרה מקורבת · שער {date}",
+    clinicCharges: "המרפאה גובה {amount}",
     oneTrip: "נסיעה אחת · {days} ימים",
     manyTrips: "{trips} נסיעות · {days} ימים כל אחת",
     weeksBetween: " · {weeks} שבועות ביניהן",

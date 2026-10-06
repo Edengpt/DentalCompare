@@ -92,13 +92,14 @@ export function formatMoney(minor: number, currency: string, locale: string): st
 }
 
 /**
- * How old a rate may be before it is no longer shown.
+ * How old a rate may be before it is no longer used.
  *
- * 48 hours rather than 24: the refresh runs daily, and a single missed run
- * shouldn't blank out every converted price on the site. Two missed runs
- * should.
+ * The refresh runs daily, but the comparison table leads with the converted
+ * price, and without it three quotes in three currencies can't be compared at
+ * all. A rate a few days old, shown with its date, is far better than nothing;
+ * two weeks without a refresh means something is broken, and then it goes.
  */
-export const RATE_STALE_MS = 48 * 60 * 60 * 1000;
+export const RATE_STALE_MS = 14 * 24 * 60 * 60 * 1000;
 
 export function isRateStale(fetchedAt: Date, now: Date = new Date()): boolean {
   return now.getTime() - fetchedAt.getTime() > RATE_STALE_MS;
