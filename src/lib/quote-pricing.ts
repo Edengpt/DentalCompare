@@ -1,6 +1,27 @@
 import { toMinor } from "./money";
 import { QUOTE_LIMITS } from "./quote-catalog";
 
+/**
+ * The most any price field can hold, in minor units, whatever the currency.
+ *
+ * The columns are Postgres INTEGER (max 2,147,483,647); this leaves headroom
+ * below that. It can bind before the euro limit for currencies with many units
+ * to the euro and two decimals — e.g. forint where the runtime's ICU gives it
+ * two (20 million, about €50,000; still above any dental quote seen there).
+ */
+export const DB_SAFE_MAX_MINOR = 2_000_000_000;
+
+/**
+ * The ceiling for one currency: the euro limit converted at today's rate, but
+ * never above what the database can hold. Without a usable rate the database
+ * limit alone applies — a missing rate must not block a clinic from quoting.
+ */
+export function priceCeilingMinor(eurLimitInCurrencyMinor: number | null): number {
+  return eurLimitInCurrencyMinor === null
+    ? DB_SAFE_MAX_MINOR
+    : Math.min(eurLimitInCurrencyMinor, DB_SAFE_MAX_MINOR);
+}
+
 export type PricingError = "NO_LINES" | "BAD_LINE" | "BAD_DISCOUNT" | "TOO_HIGH";
 
 export type QuoteTotals = {
@@ -29,10 +50,11 @@ export function computeQuoteTotals(
   lines: { quantity: number; unitPriceMajor: number }[],
   discountMajor: number | null,
   currency: string,
+  /** From priceCeilingMinor. The form passes nothing; the server is authoritative. */
+  ceilingMinor: number = DB_SAFE_MAX_MINOR,
 ): QuoteTotals | { ok: false; error: PricingError } {
   if (lines.length === 0) return { ok: false, error: "NO_LINES" };
   if (lines.length > QUOTE_LIMITS.maxItems) return { ok: false, error: "BAD_LINE" };
-  const ceilingMinor = toMinor(QUOTE_LIMITS.maxPriceMajor, currency);
 
   const priced: QuoteTotals["lines"] = [];
   let subtotalMinor = 0;

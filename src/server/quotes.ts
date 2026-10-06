@@ -7,7 +7,9 @@ import { rateLimit } from "@/lib/rate-limit";
 import { asLocale } from "@/i18n/config";
 import { RATE_LIMITS, QUOTE_INCLUSIONS, type QuoteInclusion } from "@/lib/constants";
 import { QUOTE_LIMITS, QUOTE_TRANSFERS, OTHER_TREATMENT, isCatalogItem } from "@/lib/quote-catalog";
-import { computeQuoteTotals } from "@/lib/quote-pricing";
+import { computeQuoteTotals, priceCeilingMinor } from "@/lib/quote-pricing";
+import { getConverter } from "@/lib/exchange-rates";
+import { toMinor } from "@/lib/money";
 
 /** Keeps a submitted count inside a sane range instead of trusting the form. */
 function clampInt(value: unknown, fallback: number, min: number, max: number): number {
@@ -103,7 +105,14 @@ export async function submitQuote(input: {
     input.discountMajor === null || input.discountMajor === undefined
       ? null
       : Number(input.discountMajor);
-  const totals = computeQuoteTotals(items, discountMajor, currency);
+  const toCurrency = await getConverter(currency);
+  const eurLimit = toCurrency(toMinor(QUOTE_LIMITS.maxPriceEUR, "EUR"), "EUR");
+  const totals = computeQuoteTotals(
+    items,
+    discountMajor,
+    currency,
+    priceCeilingMinor(eurLimit?.minor ?? null),
+  );
   if (!totals.ok) {
     return {
       ok: false,
