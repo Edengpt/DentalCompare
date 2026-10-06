@@ -139,8 +139,13 @@ export type QuoteTransfer = (typeof QUOTE_TRANSFERS)[number];
 export const QUOTE_LIMITS = {
   maxItems: 30,
   maxQuantity: 99,
-  /** Per unit, per subtotal and per final price, in major units. */
-  maxPriceMajor: 1_000_000,
+  /**
+   * The highest a quote may be, in euros — converted into the clinic's
+   * currency at today's rate. It used to be 1,000,000 in the clinic's own
+   * currency, which is a quarter-million in euros but about €2,500 in forint:
+   * a Hungarian clinic couldn't quote a full mouth of implants.
+   */
+  maxPriceEUR: 250_000,
   maxFlightTickets: 20,
   maxAttachments: 5,
   attachmentMaxMB: 10,

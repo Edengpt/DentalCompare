@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { computeQuoteTotals } from "./quote-pricing";
+import { computeQuoteTotals, DB_SAFE_MAX_MINOR, priceCeilingMinor } from "./quote-pricing";
 
 describe("computeQuoteTotals", () => {
   it("sums lines in minor units", () => {
@@ -82,14 +82,50 @@ describe("computeQuoteTotals", () => {
     expect(computeQuoteTotals(lines, 0, "EUR")).toMatchObject({ ok: true, discountMinor: 0 });
   });
 
-  it("enforces the price ceiling on the subtotal", () => {
-    expect(computeQuoteTotals([{ quantity: 2, unitPriceMajor: 600_000 }], null, "EUR")).toEqual({
+  it("enforces the ceiling it is given on unit price and subtotal", () => {
+    const ceiling = 100_000; // EUR 1,000.00
+    expect(
+      computeQuoteTotals([{ quantity: 2, unitPriceMajor: 600 }], null, "EUR", ceiling),
+    ).toEqual({
       ok: false,
       error: "TOO_HIGH",
     });
-    expect(computeQuoteTotals([{ quantity: 1, unitPriceMajor: 1_000_001 }], null, "EUR")).toEqual({
+    expect(
+      computeQuoteTotals([{ quantity: 1, unitPriceMajor: 1001 }], null, "EUR", ceiling),
+    ).toEqual({
       ok: false,
       error: "TOO_HIGH",
     });
+    expect(
+      computeQuoteTotals([{ quantity: 1, unitPriceMajor: 1000 }], null, "EUR", ceiling),
+    ).toMatchObject({
+      ok: true,
+    });
+  });
+
+  // The bug this replaced: a flat 1,000,000 in the clinic's own currency is
+  // about EUR 2,500 in forint. A full mouth of implants in Budapest is far more.
+  it("lets a Hungarian clinic quote a full-mouth job in forint", () => {
+    const r = computeQuoteTotals([{ quantity: 8, unitPriceMajor: 1_500_000 }], null, "HUF");
+    expect(r).toMatchObject({ ok: true, finalMinor: 1_200_000_000 });
+  });
+
+  it("never lets a price outgrow the database column", () => {
+    expect(computeQuoteTotals([{ quantity: 1, unitPriceMajor: 25_000_000 }], null, "HUF")).toEqual({
+      ok: false,
+      error: "TOO_HIGH",
+    });
+  });
+});
+
+describe("priceCeilingMinor", () => {
+  it("uses the euro limit converted into the currency", () => {
+    expect(priceCeilingMinor(25_000_000)).toBe(25_000_000);
+  });
+  it("caps at what the database column holds", () => {
+    expect(priceCeilingMinor(9_000_000_000)).toBe(DB_SAFE_MAX_MINOR);
+  });
+  it("falls back to the database limit when there is no usable rate", () => {
+    expect(priceCeilingMinor(null)).toBe(DB_SAFE_MAX_MINOR);
   });
 });
