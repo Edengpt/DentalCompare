@@ -1,4 +1,5 @@
 import "server-only";
+import { QUOTE_DETAIL_SELECT, QUOTE_ROW_ATTACHMENTS_SELECT, quoteDetailFields } from "./quote-rows";
 import { db } from "@/lib/db";
 import type { QuoteStatus } from "@/generated/prisma/enums";
 import type { QuoteRow } from "@/lib/quotes";
@@ -20,6 +21,7 @@ export const TREATMENT_STATUSES: QuoteStatus[] = [
 ];
 
 const QUOTE_SELECT = {
+  ...QUOTE_DETAIL_SELECT,
   status: true,
   amountMinor: true,
   currency: true,
@@ -82,6 +84,7 @@ export async function getPatientTreatment(userId: string, requestDentistId: stri
       request: { select: { id: true, treatmentFileUrl: true, xrayFileUrl: true } },
       dentist: { select: DENTIST_SELECT },
       quote: { select: QUOTE_SELECT },
+      attachments: QUOTE_ROW_ATTACHMENTS_SELECT,
     },
   });
 }
@@ -155,5 +158,6 @@ export function toQuoteRow(row: TreatmentRow, locale: string): QuoteRow {
     warrantyNote: q.warrantyNote,
     note: q.note,
     rejectedAuto: q.rejectedAuto,
+    ...quoteDetailFields(q, row.attachments),
   };
 }
