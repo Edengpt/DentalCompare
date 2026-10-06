@@ -2,6 +2,7 @@ import { ShieldCheck } from "lucide-react";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import type { Locale } from "@/i18n/config";
 import { format } from "@/i18n/format";
+import { EXAMPLE_QUOTES, formatExampleMoney } from "@/lib/example-quotes";
 
 /**
  * What a comparison looks like once the quotes are in. Every clinic, price and
@@ -17,19 +18,16 @@ export function ExampleComparison({
   verifiedPromise: { title: string; body: string };
   locale: Locale;
 }) {
-  const money = (amount: number, currency: string) =>
-    new Intl.NumberFormat(locale, {
-      style: "currency",
-      currency,
-      maximumFractionDigits: 0,
-    }).format(amount);
+  const [quoteA, quoteB, quoteC] = EXAMPLE_QUOTES;
+  const money = (q: (typeof EXAMPLE_QUOTES)[number]) =>
+    formatExampleMoney(locale, q.amount, q.currency);
 
   const clinics = [
     {
       name: t.clinicA,
       place: t.clinicAPlace,
-      rating: 4.8,
-      price: money(2400, "GBP"),
+      rating: quoteA.rating,
+      price: money(quoteA),
       included: t.clinicAIncluded,
       visits: t.clinicAVisits,
       warranty: t.clinicAWarranty,
@@ -37,8 +35,8 @@ export function ExampleComparison({
     {
       name: t.clinicB,
       place: t.clinicBPlace,
-      rating: 4.6,
-      price: money(950, "EUR"),
+      rating: quoteB.rating,
+      price: money(quoteB),
       included: t.clinicBIncluded,
       visits: t.clinicBVisits,
       warranty: t.clinicBWarranty,
@@ -46,8 +44,8 @@ export function ExampleComparison({
     {
       name: t.clinicC,
       place: t.clinicCPlace,
-      rating: null,
-      price: money(1450, "EUR"),
+      rating: quoteC.rating,
+      price: money(quoteC),
       included: t.clinicCIncluded,
       visits: t.clinicCVisits,
       warranty: t.clinicCWarranty,

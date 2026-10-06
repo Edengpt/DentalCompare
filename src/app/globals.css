@@ -223,3 +223,79 @@
     mix-blend-mode: multiply;
   }
 }
+
+/*
+ * "How it works" illustrations. Each element's resting style is its finished
+ * state (file uploaded, box ticked, row shown), so the picture reads correctly
+ * with no motion at all. The loop only runs while <PlayWhenVisible> reports the
+ * section on screen, and never for people who ask for reduced motion.
+ * --hiw-delay staggers the items within one illustration.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  [data-playing="true"] .hiw-file {
+    animation: hiw-file 4s ease-out infinite;
+    animation-delay: var(--hiw-delay, 0s);
+    /* hold the first frame during the stagger delay, not the finished one */
+    animation-fill-mode: backwards;
+  }
+  [data-playing="true"] .hiw-tick {
+    animation: hiw-tick 4s ease-out infinite;
+    animation-delay: var(--hiw-delay, 0s);
+    /* hold the first frame during the stagger delay, not the finished one */
+    animation-fill-mode: backwards;
+  }
+  [data-playing="true"] .hiw-row {
+    animation: hiw-row 4s ease-out infinite;
+    animation-delay: var(--hiw-delay, 0s);
+    /* hold the first frame during the stagger delay, not the finished one */
+    animation-fill-mode: backwards;
+  }
+}
+
+@keyframes hiw-file {
+  0%,
+  12% {
+    transform: translateY(100%);
+  }
+  28%,
+  88% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes hiw-tick {
+  0%,
+  10% {
+    transform: scale(0);
+  }
+  18% {
+    transform: scale(1.2);
+  }
+  24%,
+  88% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(0);
+  }
+}
+
+@keyframes hiw-row {
+  0%,
+  8% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  22%,
+  88% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+}
