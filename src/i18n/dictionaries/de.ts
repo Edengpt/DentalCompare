@@ -944,10 +944,10 @@ const de: typeof he = {
     pendingEmail:
       "Sobald wir fertig sind, schreiben wir an {email}. Fehlt ein Dokument oder ist ein Foto unleserlich, senden wir Ihnen einen Link zum erneuten Hochladen – das Formular müssen Sie nicht neu ausfüllen.",
     terms: [
-      "Die Klinik wählt einen Abotarif: {monthly} pro Monat oder {yearly} pro Jahr, für die Aufnahme in das DentalCompare-Verzeichnis und den Erhalt von Patientenanfragen.",
+      "Die Klinik wählt einen Abotarif für die Aufnahme in das DentalCompare-Verzeichnis und den Erhalt von Patientenanfragen: Basis für {basicMonthly} pro Monat oder {basicYearly} pro Jahr, oder Pro für {proMonthly} pro Monat oder {proYearly} pro Jahr. Die Tarife unterscheiden sich nur in der Zahl der Anfragen pro Monat; keiner verändert die Position der Klinik in den Suchergebnissen.",
       "Kostenloser Tarif: Die Klinik erscheint im Verzeichnis und erhält bis zu {freeCap} Anfragen pro Monat, ohne Kosten und ohne hinterlegtes Zahlungsmittel. Ist das monatliche Kontingent ausgeschöpft, wird die Klinik Patienten bis zum Beginn des nächsten Monats nicht mehr angezeigt. Ein Wechsel zu einem bezahlten Abo ist jederzeit möglich.",
       "Gründungsangebot: Eine Klinik, die einen Gründungsplatz in einem bezahlten Tarif erhalten hat, erhält für 12 Monate ab der ersten Abbuchung ein Drittel Rabatt auf den Listenpreis. Danach läuft das Abo zum Listenpreis weiter, mit einer Benachrichtigung per E-Mail etwa 30 Tage im Voraus.",
-      "Die Klinik erhält einen kostenlosen Testzeitraum von {trialDays} Tagen, der mit der Freigabe durch das DentalCompare-Team beginnt. In diesem Zeitraum erscheint die Klinik kostenlos im Verzeichnis und erhält Anfragen.",
+      "Die Klinik erhält einen kostenlosen Testzeitraum von {trialDays} Tagen, der mit der Freigabe durch das DentalCompare-Team beginnt. In diesem Zeitraum erscheint die Klinik kostenlos im Verzeichnis und erhält Anfragen, unabhängig von deren Anzahl.",
       "Bei der Registrierung wird eine Zahlungsmethode hinterlegt; die erste Abbuchung erfolgt automatisch nach Ablauf des {trialDays}-tägigen Testzeitraums. Vor dieser ersten Abbuchung wird eine Benachrichtigung per E-Mail versendet.",
       "Das Abo kann während des Testzeitraums jederzeit gekündigt werden; in diesem Fall wird nichts berechnet.",
       "Das Abo verlängert sich am Ende jedes Abrechnungszeitraums automatisch über die hinterlegte Zahlungsmethode, bis die Klinik kündigt.",
@@ -961,13 +961,19 @@ const de: typeof he = {
     joinTitle: "Anfragen von Patienten, die bereits einen Behandlungsplan haben.",
     joinSubtitle:
       "Patienten aus aller Welt senden einen Behandlungsplan und ein Röntgenbild und bitten um ein schriftliches Angebot. Geprüfte Kliniken erscheinen im Verzeichnis und erhalten diese Anfragen direkt. Starten Sie kostenlos oder mit einem bezahlten Abo inklusive Testzeitraum.",
-    planMonthlyTitle: "Monatstarif",
     planMonthlyPer: "pro Monat",
-    planMonthlyNote: "Keine Bindung – jederzeit kündbar",
-    planYearlyTitle: "Jahrestarif",
     planYearlyPer: "pro Jahr",
-    planYearlyNote: "Deutlich günstiger als monatlich",
-    itemSubscription: "DentalCompare ({plan})",
+    planBillingLabel: "Abrechnungszeitraum",
+    planBillMonthly: "Monatlich",
+    planBillYearly: "Jährlich – 2 Monate gratis",
+    planBasicTitle: "Basis",
+    planBasicNote: "Keine Bindung – jederzeit kündbar",
+    planProTitle: "Pro",
+    planProNote: "Für ausgelastete Kliniken: mehr Anfragen, gleiche Position in den Ergebnissen.",
+    planTrialLine: "Die ersten {days} Tage kostenlos",
+    planCapUnlimited: "Unbegrenzte Anfragen",
+    dashSubPlan: "Tarif {tier} ({plan})",
+    itemSubscription: "DentalCompare {tier} ({plan})",
     chargeDescription: "DentalCompare-Abo – {clinic}",
     renewalDescription: "Verlängerung DentalCompare-Abo – {clinic}",
     payRedirecting: "Weiterleitung zur Zahlung…",
@@ -975,7 +981,7 @@ const de: typeof he = {
     billingMetaTitle: "Abo aktivieren",
     billingTitle: "Aktivieren Sie Ihr Abo",
     billingAlreadyActive: "Ihr Abo ist bereits aktiv. Die Klinik ist im Verzeichnis gelistet.",
-    billingPlanLine: "{plan} – {price}",
+    billingPlanLine: "Tarif {tier} ({plan}) – {price}",
     billingAfterPayment:
       "Nach Abschluss der Zahlung erscheint Ihre Klinik im Verzeichnis und erhält Anfragen. Das Abo verlängert sich zum Ende jedes Zeitraums automatisch.",
     returnMetaTitle: "Zahlungsstatus",
@@ -1002,13 +1008,12 @@ const de: typeof he = {
     dashFoundingActive: "Gründungsklinik: Sie zahlen {price} statt {regular} bis zum {date}.",
     dashFoundingPending:
       "Gründungsklinik: {price} statt {regular} für 12 Monate ab der ersten Abbuchung.",
-    dashUpgradeTitle: "Auf den Basis-Tarif upgraden",
-    dashUpgradeBody:
-      "Bis zu {cap} Anfragen pro Monat, für {monthly} im Monat oder {yearly} im Jahr.",
+    dashUpgradeTitle: "Auf einen kostenpflichtigen Tarif wechseln",
+    dashUpgradeBody: "{tier}: bis zu {cap} Anfragen pro Monat, für {monthly} pro Monat oder {yearly} pro Jahr.",
     dashUpgradeFounding:
       "Gründungspreis: {monthly} im Monat für 12 Monate – noch {left} Plätze frei",
-    dashUpgradeMonthly: "Upgrade – monatlich",
-    dashUpgradeYearly: "Upgrade – jährlich",
+    dashUpgradeMonthly: "{tier} – monatlich",
+    dashUpgradeYearly: "{tier} – jährlich",
     planFreeTitle: "Kostenlos",
     planFreeNote: "Keine Karte nötig. Jederzeit upgraden.",
     planCapLine: "Bis zu {cap} Anfragen pro Monat",
@@ -1306,7 +1311,6 @@ const de: typeof he = {
     fieldYearlyPrice: "Jahrespreis",
     fieldTrialDays: "Testtage",
     fieldMonthlyRequestCap: "Monatliches Anfragelimit",
-    fieldTrialRequestCap: "Anfrageschwelle im Testzeitraum",
     requestCapUnlimited: "Unbegrenzt",
     tierFree: "Kostenloser Eintrag",
     tierBasic: "Basic",
@@ -1403,7 +1407,7 @@ const de: typeof he = {
 
   legal: {
     updatedLabel: "Zuletzt aktualisiert:",
-    lastUpdated: "Juli 2026",
+    lastUpdated: "Oktober 2026",
   },
 
   treatments: {

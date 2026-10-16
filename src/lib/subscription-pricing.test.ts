@@ -6,7 +6,6 @@ const BASIC = {
   yearlyPriceMajor: "1990",
   trialDays: "60",
   monthlyRequestCap: "10",
-  trialRequestCap: "5",
 };
 
 describe("parsePricingInput", () => {
@@ -19,7 +18,6 @@ describe("parsePricingInput", () => {
         yearlyPriceMinor: 199000,
         trialDays: 60,
         monthlyRequestCap: 10,
-        trialRequestCap: 5,
       },
     });
   });
@@ -104,16 +102,5 @@ describe("parsePricingInput", () => {
   it("floors a fractional monthlyRequestCap", () => {
     const result = parsePricingInput({ ...BASIC, monthlyRequestCap: "10.9" }, "ILS", "BASIC");
     expect(result.ok && result.value.monthlyRequestCap).toBe(10);
-  });
-
-  it("rejects trialRequestCap outside 1-1000", () => {
-    expect(parsePricingInput({ ...BASIC, trialRequestCap: "0" }, "ILS", "BASIC")).toEqual({
-      ok: false,
-      field: "trialRequestCap",
-    });
-    expect(parsePricingInput({ ...BASIC, trialRequestCap: "1001" }, "ILS", "BASIC")).toEqual({
-      ok: false,
-      field: "trialRequestCap",
-    });
   });
 });

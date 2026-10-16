@@ -113,9 +113,10 @@ export const PAST_DUE_GRACE_DAYS = 3;
 // Days-remaining marks at which the "your trial is ending" email goes out.
 export const TRIAL_WARNING_DAYS_BEFORE = [15, 2] as const;
 
-// Bumped when SUBSCRIPTION_TERMS_HE changes materially — v2 adds the 60-day free
-// trial, so clinics that signed v1 agreed to different terms.
-export const SUBSCRIPTION_CONTRACT_VERSION = "2026-09-sub-v3";
+// Bumped when the clinic terms change materially — v2 added the free trial;
+// v4 (2026-10-16) adds the Pro plan and makes the trial a plain number of days,
+// never cut short by the number of requests a clinic receives.
+export const SUBSCRIPTION_CONTRACT_VERSION = "2026-10-sub-v4";
 
 // --- Rate limits (DB-backed, fixed window) ---
 const HOUR_MS = 60 * 60 * 1000;

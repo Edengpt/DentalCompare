@@ -9,7 +9,7 @@ import { withCountryNames } from "@/lib/country-names";
 import { getSubscriptionPricing } from "@/lib/subscription-pricing";
 import { foundingPriceMinor } from "@/lib/founding";
 import { foundingSlotsLeft } from "@/server/founding";
-import type { PlanOffer } from "@/components/clinics/plan-picker";
+import type { PlanOffer, TierOffer } from "@/components/clinics/plan-picker";
 
 export const dynamic = "force-dynamic";
 
@@ -32,32 +32,39 @@ export default async function ClinicJoinPage({
   const countries = await getActiveCountries();
   // Both providers' offers go to the form: the price has to follow the country
   // the clinic picks, in the currency it will actually be charged in.
-  const [foundingLeft, payplusFree, payplusBasic, stripeFree, stripeBasic] = await Promise.all([
-    foundingSlotsLeft(),
-    getSubscriptionPricing("PAYPLUS", "FREE"),
-    getSubscriptionPricing("PAYPLUS", "BASIC"),
-    getSubscriptionPricing("STRIPE", "FREE"),
-    getSubscriptionPricing("STRIPE", "BASIC"),
-  ]);
-  const offer = (free: typeof payplusFree, basic: typeof payplusBasic): PlanOffer => ({
-    currency: basic.currency,
-    freeCap: free.monthlyRequestCap,
-    basicCap: basic.monthlyRequestCap,
-    monthlyMinor: basic.monthlyPriceMinor,
-    yearlyMinor: basic.yearlyPriceMinor,
-    trialDays: basic.trialDays,
+  const foundingLeft = await foundingSlotsLeft();
+  type Row = Awaited<ReturnType<typeof getSubscriptionPricing>>;
+  const tierOffer = (row: Row): TierOffer => ({
+    cap: row.monthlyRequestCap,
+    monthlyMinor: row.monthlyPriceMinor,
+    yearlyMinor: row.yearlyPriceMinor,
     founding:
       foundingLeft > 0
         ? {
-            monthlyMinor: foundingPriceMinor(basic.monthlyPriceMinor, basic.currency),
-            yearlyMinor: foundingPriceMinor(basic.yearlyPriceMinor, basic.currency),
+            monthlyMinor: foundingPriceMinor(row.monthlyPriceMinor, row.currency),
+            yearlyMinor: foundingPriceMinor(row.yearlyPriceMinor, row.currency),
           }
         : null,
   });
-  const pricing = {
-    PAYPLUS: offer(payplusFree, payplusBasic),
-    STRIPE: offer(stripeFree, stripeBasic),
+  const offer = async (provider: "PAYPLUS" | "STRIPE"): Promise<PlanOffer> => {
+    const [free, basic, pro] = await Promise.all([
+      getSubscriptionPricing(provider, "FREE"),
+      getSubscriptionPricing(provider, "BASIC"),
+      getSubscriptionPricing(provider, "PRO"),
+    ]);
+    return {
+      currency: basic.currency,
+      freeCap: free.monthlyRequestCap,
+      // Each paid row carries its own trialDays; the cards and the terms name
+      // one trial, so the two paid rows are kept equal (see the 2026-10-16
+      // pricing migration). Basic's is the one shown.
+      trialDays: basic.trialDays,
+      BASIC: tierOffer(basic),
+      PRO: tierOffer(pro),
+    };
   };
+  const [payplus, stripe] = await Promise.all([offer("PAYPLUS"), offer("STRIPE")]);
+  const pricing = { PAYPLUS: payplus, STRIPE: stripe };
 
   return (
     <>

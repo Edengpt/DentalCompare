@@ -84,6 +84,7 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
     address,
     experienceYears,
     plan,
+    tier: chosenTier,
   } = parsed.data;
 
   // Optional logo: only accept a URL produced by our own blob upload endpoint.
@@ -152,7 +153,9 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
   const market = providerForCountry(country.code);
   const provider: SubscriptionProvider =
     market === "STRIPE" && isLemonSqueezyEnabled() ? "LEMONSQUEEZY" : market;
-  const tier: SubscriptionTier = plan === "FREE" ? "FREE" : "BASIC";
+  // Pro is sold on volume alone: more requests a month, never a better place
+  // in results. Featured (paid exposure) is not offered here.
+  const tier: SubscriptionTier = plan === "FREE" || chosenTier === "FREE" ? "FREE" : chosenTier;
   const billingPlan = plan === "YEARLY" ? "YEARLY" : "MONTHLY";
   const pricing = await getSubscriptionPricing(provider, tier);
 

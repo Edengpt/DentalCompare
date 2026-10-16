@@ -940,10 +940,10 @@ const fr: typeof he = {
     pendingEmail:
       "Nous écrirons à {email} dès que ce sera fait. Si un document manque ou qu'une photo est illisible, nous vous enverrons un lien pour le renvoyer — inutile de remplir à nouveau le formulaire.",
     terms: [
-      "La clinique choisit une formule d'abonnement : {monthly} par mois ou {yearly} par an, pour figurer dans l'annuaire DentalCompare et recevoir des demandes de patients.",
+      "La clinique choisit une formule d'abonnement pour figurer dans l'annuaire DentalCompare et recevoir des demandes de patients : Basic à {basicMonthly} par mois ou {basicYearly} par an, ou Pro à {proMonthly} par mois ou {proYearly} par an. Les formules ne diffèrent que par le nombre de demandes par mois ; aucune ne modifie la position de la clinique dans les résultats de recherche.",
       "Formule gratuite : la clinique apparaît dans l'annuaire et reçoit jusqu'à {freeCap} demandes par mois, sans frais et sans moyen de paiement. Une fois le quota mensuel atteint, la clinique n'est plus présentée aux patients jusqu'au début du mois suivant. La clinique peut passer à un abonnement payant à tout moment.",
       "Offre fondateurs : une clinique ayant obtenu une place de fondateur sur une formule payante paie un tiers de moins que le prix catalogue pendant 12 mois à compter de son premier prélèvement. Ensuite, l'abonnement se poursuit au prix catalogue, avec un préavis par e-mail environ 30 jours à l'avance.",
-      "La clinique bénéficie d'un essai gratuit de {trialDays} jours, qui débute dès son approbation par l'équipe DentalCompare. Pendant cette période, la clinique figure dans l'annuaire et reçoit des demandes sans frais.",
+      "La clinique bénéficie d'un essai gratuit de {trialDays} jours, qui débute dès son approbation par l'équipe DentalCompare. Pendant cette période, la clinique figure dans l'annuaire et reçoit des demandes sans frais, quel que soit leur nombre.",
       "Un moyen de paiement est enregistré lors de l'inscription, et le premier prélèvement est effectué automatiquement à la fin de l'essai de {trialDays} jours. Un avis est envoyé par e-mail avant ce premier prélèvement.",
       "L'abonnement peut être résilié à tout moment pendant l'essai, auquel cas rien n'est prélevé.",
       "L'abonnement est renouvelé automatiquement à la fin de chaque période par prélèvement sur le moyen de paiement enregistré, jusqu'à sa résiliation par la clinique.",
@@ -957,13 +957,19 @@ const fr: typeof he = {
     joinTitle: "Recevez des demandes de patients qui ont déjà un plan de traitement.",
     joinSubtitle:
       "Des patients du monde entier envoient un plan de traitement et une radio et demandent un devis écrit. Une clinique vérifiée apparaît dans l'annuaire et reçoit directement ces demandes. Commencez avec la formule gratuite, ou avec un abonnement payant et une période d'essai.",
-    planMonthlyTitle: "Formule mensuelle",
     planMonthlyPer: "par mois",
-    planMonthlyNote: "Sans engagement — résiliable à tout moment",
-    planYearlyTitle: "Formule annuelle",
     planYearlyPer: "par an",
-    planYearlyNote: "Nettement moins cher que la formule mensuelle",
-    itemSubscription: "Abonnement DentalCompare ({plan})",
+    planBillingLabel: "Période de facturation",
+    planBillMonthly: "Mensuel",
+    planBillYearly: "Annuel — 2 mois offerts",
+    planBasicTitle: "Basic",
+    planBasicNote: "Sans engagement — résiliable à tout moment",
+    planProTitle: "Pro",
+    planProNote: "Pour les cliniques très sollicitées : plus de demandes, la même place dans les résultats.",
+    planTrialLine: "{days} premiers jours gratuits",
+    planCapUnlimited: "Demandes illimitées",
+    dashSubPlan: "Formule {tier} ({plan})",
+    itemSubscription: "Abonnement DentalCompare {tier} ({plan})",
     chargeDescription: "Abonnement DentalCompare — {clinic}",
     renewalDescription: "Renouvellement de l'abonnement DentalCompare — {clinic}",
     payRedirecting: "Redirection vers le paiement…",
@@ -971,7 +977,7 @@ const fr: typeof he = {
     billingMetaTitle: "Activer l'abonnement",
     billingTitle: "Activez votre abonnement",
     billingAlreadyActive: "Votre abonnement est déjà actif. La clinique figure dans l'annuaire.",
-    billingPlanLine: "Formule {plan} — {price}",
+    billingPlanLine: "Formule {tier} ({plan}) — {price}",
     billingAfterPayment:
       "Une fois le paiement effectué, votre clinique apparaît dans l'annuaire et commence à recevoir des demandes. L'abonnement est renouvelé automatiquement à la fin de chaque période.",
     returnMetaTitle: "Statut du paiement",
@@ -999,12 +1005,12 @@ const fr: typeof he = {
       "Clinique fondatrice : vous payez {price} au lieu de {regular} jusqu'au {date}.",
     dashFoundingPending:
       "Clinique fondatrice : {price} au lieu de {regular} pendant 12 mois à compter du premier prélèvement.",
-    dashUpgradeTitle: "Passer à la formule Basic",
-    dashUpgradeBody: "Jusqu'à {cap} demandes par mois, pour {monthly} par mois ou {yearly} par an.",
+    dashUpgradeTitle: "Passer à une formule payante",
+    dashUpgradeBody: "{tier} : jusqu'à {cap} demandes par mois, pour {monthly} par mois ou {yearly} par an.",
     dashUpgradeFounding:
       "Prix fondateur : {monthly} par mois pendant 12 mois — il ne reste que {left} places",
-    dashUpgradeMonthly: "Passer à Basic — mensuel",
-    dashUpgradeYearly: "Passer à Basic — annuel",
+    dashUpgradeMonthly: "{tier} — mensuel",
+    dashUpgradeYearly: "{tier} — annuel",
     planFreeTitle: "Gratuit",
     planFreeNote: "Sans carte bancaire. Passez à la formule payante quand vous voulez.",
     planCapLine: "Jusqu'à {cap} demandes par mois",
@@ -1301,7 +1307,6 @@ const fr: typeof he = {
     fieldYearlyPrice: "Prix annuel",
     fieldTrialDays: "Jours d'essai",
     fieldMonthlyRequestCap: "Plafond mensuel de demandes",
-    fieldTrialRequestCap: "Seuil de demandes pendant l'essai",
     requestCapUnlimited: "Illimité",
     tierFree: "Référencement gratuit",
     tierBasic: "Basique",
@@ -1396,7 +1401,7 @@ const fr: typeof he = {
 
   legal: {
     updatedLabel: "Dernière mise à jour :",
-    lastUpdated: "Juillet 2026",
+    lastUpdated: "Octobre 2026",
   },
 
   treatments: {

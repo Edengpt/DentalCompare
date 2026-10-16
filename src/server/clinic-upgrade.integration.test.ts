@@ -78,7 +78,7 @@ describe.skipIf(!hasDb)("upgradeToPaid (integration, real DB)", () => {
         where: { provider_tier: { provider: "PAYPLUS", tier: "BASIC" } },
       });
 
-      const result = await upgradeToPaid("YEARLY");
+      const result = await upgradeToPaid("BASIC", "YEARLY");
       expect(result).toEqual({ ok: true, setupToken: expect.any(String) });
 
       const sub = await db.clinicSubscription.findUniqueOrThrow({
@@ -89,9 +89,39 @@ describe.skipIf(!hasDb)("upgradeToPaid (integration, real DB)", () => {
       expect(sub.status).toBe("TRIALING");
       expect(sub.monthlyRequestCap).toBe(basic.monthlyRequestCap);
       expect(sub.isFounding ? sub.regularPriceMinor : sub.priceMinor).toBe(basic.yearlyPriceMinor);
-      // Converts after the next few delivered requests, not on the first one.
-      expect(sub.trialRequestCap).toBe(3 + basic.trialRequestCap);
       expect(sub.trialEndsAt).not.toBeNull();
+    },
+    DB_TIMEOUT,
+  );
+
+  it(
+    "moves a free clinic onto Pro at the Pro price and cap",
+    async () => {
+      const dentist = await seedClinic("FREE");
+      currentClinic.value = { id: dentist.id, email: dentist.email };
+      const pro = await db.subscriptionPricing.findUniqueOrThrow({
+        where: { provider_tier: { provider: "PAYPLUS", tier: "PRO" } },
+      });
+
+      expect((await upgradeToPaid("PRO", "MONTHLY")).ok).toBe(true);
+
+      const sub = await db.clinicSubscription.findUniqueOrThrow({
+        where: { dentistId: dentist.id },
+      });
+      expect(sub.tier).toBe("PRO");
+      expect(sub.monthlyRequestCap).toBe(pro.monthlyRequestCap);
+      expect(sub.isFounding ? sub.regularPriceMinor : sub.priceMinor).toBe(pro.monthlyPriceMinor);
+    },
+    DB_TIMEOUT,
+  );
+
+  it(
+    "refuses Featured, which is not sold",
+    async () => {
+      const dentist = await seedClinic("FREE");
+      currentClinic.value = { id: dentist.id, email: dentist.email };
+      const result = await upgradeToPaid("FEATURED" as "PRO", "MONTHLY");
+      expect(result.ok).toBe(false);
     },
     DB_TIMEOUT,
   );
@@ -101,11 +131,11 @@ describe.skipIf(!hasDb)("upgradeToPaid (integration, real DB)", () => {
     async () => {
       const paid = await seedClinic("BASIC");
       currentClinic.value = { id: paid.id, email: paid.email };
-      expect((await upgradeToPaid("MONTHLY")).ok).toBe(false);
+      expect((await upgradeToPaid("BASIC", "MONTHLY")).ok).toBe(false);
 
       const pending = await seedClinic("FREE", "PENDING");
       currentClinic.value = { id: pending.id, email: pending.email };
-      expect((await upgradeToPaid("MONTHLY")).ok).toBe(false);
+      expect((await upgradeToPaid("BASIC", "MONTHLY")).ok).toBe(false);
     },
     DB_TIMEOUT,
   );
@@ -113,7 +143,7 @@ describe.skipIf(!hasDb)("upgradeToPaid (integration, real DB)", () => {
   it(
     "refuses a visitor who is not a clinic",
     async () => {
-      expect((await upgradeToPaid("MONTHLY")).ok).toBe(false);
+      expect((await upgradeToPaid("BASIC", "MONTHLY")).ok).toBe(false);
     },
     DB_TIMEOUT,
   );

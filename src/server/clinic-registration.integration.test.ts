@@ -137,6 +137,55 @@ describe.skipIf(!hasDb)("registerClinic documents (integration, real DB)", () =>
   );
 
   it(
+    "registers a Pro clinic on the Pro row: its price, its cap, its trial",
+    async () => {
+      const pro = await db.subscriptionPricing.findUniqueOrThrow({
+        where: { provider_tier: { provider: "STRIPE", tier: "PRO" } },
+      });
+      const sfx = randomUUID().slice(0, 8);
+      const fd = baseForm(sfx);
+      fd.set("tier", "PRO");
+      for (const kind of ["Licence", "Insurance"]) {
+        fd.append("documentKind", kind);
+        fd.append("documentUrl", `${DOC_URL}?k=${kind}`);
+        fd.append("documentType", "application/pdf");
+      }
+
+      const result = await registerClinic(fd);
+      expect(result.ok).toBe(true);
+
+      const dentist = await db.dentist.findUnique({
+        where: { email: `reg_${sfx}@example.com` },
+        include: { subscription: true },
+      });
+      created.push(dentist!.id);
+      const sub = dentist!.subscription!;
+      expect(sub.tier).toBe("PRO");
+      expect(sub.plan).toBe("MONTHLY");
+      const listPrice = sub.isFounding ? sub.regularPriceMinor : sub.priceMinor;
+      expect(listPrice).toBe(pro.monthlyPriceMinor);
+      expect(sub.monthlyRequestCap).toBe(pro.monthlyRequestCap);
+      expect(sub.trialDays).toBe(pro.trialDays);
+    },
+    DB_TIMEOUT,
+  );
+
+  it(
+    "refuses a Featured signup, which is not sold",
+    async () => {
+      const sfx = randomUUID().slice(0, 8);
+      const fd = baseForm(sfx);
+      fd.set("tier", "FEATURED");
+      const result = await registerClinic(fd);
+      expect(result.ok).toBe(false);
+      expect(
+        await db.dentist.findUnique({ where: { email: `reg_${sfx}@example.com` } }),
+      ).toBeNull();
+    },
+    DB_TIMEOUT,
+  );
+
+  it(
     "registers the free tier at no charge with its own request cap",
     async () => {
       const free = await db.subscriptionPricing.findUniqueOrThrow({

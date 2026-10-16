@@ -10,12 +10,6 @@ vi.mock("@/lib/payplus", async (orig) => {
   return { ...actual, chargeByToken, isPayPlusConfigured };
 });
 
-const endStripeTrialNow = vi.fn(async () => {});
-vi.mock("@/lib/stripe", async (orig) => {
-  const actual = (await orig()) as object;
-  return { ...actual, endStripeTrialNow };
-});
-
 vi.mock("@/server/subscription-notifications", () => ({
   sendPaymentFailedEmail: vi.fn(async () => true),
   sendTrialUnbilledAdminEmail: vi.fn(async () => true),
@@ -39,7 +33,6 @@ describe.skipIf(!hasDb)("recordVerifiedRequest", () => {
     created.dentistIds = [];
     chargeByToken.mockReset();
     isPayPlusConfigured.mockReset().mockReturnValue(true);
-    endStripeTrialNow.mockClear();
   }, DB_TIMEOUT);
 
   async function seedTrialing(args: {
@@ -105,104 +98,38 @@ describe.skipIf(!hasDb)("recordVerifiedRequest", () => {
     expect(usage.count).toBe(2);
   });
 
-  it("does not attempt conversion below the threshold", async () => {
-    const dentistId = await seedTrialing({
-      provider: "PAYPLUS",
-      trialRequestCap: 3,
-      recurringToken: "tok_1",
-    });
-    await recordVerifiedRequest(dentistId);
-    await recordVerifiedRequest(dentistId);
-    expect(chargeByToken).not.toHaveBeenCalled();
-  });
-
-  it("PayPlus: crossing the threshold charges immediately and marks ACTIVE", async () => {
-    chargeByToken.mockResolvedValue({
-      ok: true,
-      transactionUid: `txn_${randomUUID().slice(0, 8)}`,
-    });
-    const dentistId = await seedTrialing({
-      provider: "PAYPLUS",
-      trialRequestCap: 2,
-      recurringToken: "tok_1",
-    });
-    await recordVerifiedRequest(dentistId);
-    expect(chargeByToken).not.toHaveBeenCalled();
-    await recordVerifiedRequest(dentistId);
-    expect(chargeByToken).toHaveBeenCalledTimes(1);
-    const sub = await db.clinicSubscription.findUniqueOrThrow({ where: { dentistId } });
-    expect(sub.status).toBe("ACTIVE");
-  });
-
-  it("PayPlus: a request beyond the threshold does not charge a second time", async () => {
-    chargeByToken.mockResolvedValue({
-      ok: true,
-      transactionUid: `txn_${randomUUID().slice(0, 8)}`,
-    });
+  // The trial is a number of days from approval and nothing else (2026-10-16).
+  // A clinic that gets more requests than the old threshold of 5 during its
+  // trial must not be charged early.
+  it("PayPlus: requests past the old trial threshold never charge during the trial", async () => {
     const dentistId = await seedTrialing({
       provider: "PAYPLUS",
       trialRequestCap: 1,
       recurringToken: "tok_1",
     });
-    await recordVerifiedRequest(dentistId);
-    expect(chargeByToken).toHaveBeenCalledTimes(1);
-    await recordVerifiedRequest(dentistId);
-    expect(chargeByToken).toHaveBeenCalledTimes(1);
+    for (let i = 0; i < 6; i++) await recordVerifiedRequest(dentistId);
+    expect(chargeByToken).not.toHaveBeenCalled();
+    const sub = await db.clinicSubscription.findUniqueOrThrow({ where: { dentistId } });
+    expect(sub.status).toBe("TRIALING");
+    expect(sub.verifiedRequestCount).toBe(6);
   });
 
-  it("Stripe: crossing the threshold ends the trial early via the Stripe API", async () => {
+  it("Stripe: requests past the old trial threshold never end the trial early", async () => {
     const dentistId = await seedTrialing({
       provider: "STRIPE",
       trialRequestCap: 1,
       stripeSubscriptionId: "sub_test123",
     });
     await recordVerifiedRequest(dentistId);
-    expect(endStripeTrialNow).toHaveBeenCalledWith("sub_test123");
-    expect(chargeByToken).not.toHaveBeenCalled();
-  });
-
-  it("Stripe: crossing the threshold with no stripeSubscriptionId yet does nothing (not an error)", async () => {
-    const dentistId = await seedTrialing({ provider: "STRIPE", trialRequestCap: 1 });
-    await expect(recordVerifiedRequest(dentistId)).resolves.toBeUndefined();
-    expect(endStripeTrialNow).not.toHaveBeenCalled();
-  });
-
-  it("PayPlus: a declined immediate charge leaves the clinic retryable, not stuck", async () => {
-    chargeByToken.mockResolvedValue({ ok: false, error: "declined" });
-    const dentistId = await seedTrialing({
-      provider: "PAYPLUS",
-      trialRequestCap: 1,
-      recurringToken: "tok_1",
-    });
-    const before = new Date();
     await recordVerifiedRequest(dentistId);
     const sub = await db.clinicSubscription.findUniqueOrThrow({ where: { dentistId } });
-    expect(sub.status).toBe("PAST_DUE");
-    expect(sub.currentPeriodEnd).not.toBeNull();
-    expect(sub.currentPeriodEnd!.getTime()).toBeGreaterThanOrEqual(before.getTime() - 1000);
+    expect(sub.status).toBe("TRIALING");
   });
 
-  it("PayPlus: two concurrent calls at the threshold charge exactly once, not twice", async () => {
-    chargeByToken.mockImplementation(
-      () =>
-        new Promise((resolve) =>
-          setTimeout(
-            () => resolve({ ok: true, transactionUid: `txn_${randomUUID().slice(0, 8)}` }),
-            20,
-          ),
-        ),
-    );
-    const dentistId = await seedTrialing({
-      provider: "PAYPLUS",
-      trialRequestCap: 1,
-      recurringToken: "tok_1",
-    });
-    // Two "different requests to the same clinic, fulfilled around the same
-    // moment" — the exact scenario that raced before this fix.
+  it("two concurrent calls both count", async () => {
+    const dentistId = await seedTrialing({ provider: "PAYPLUS", trialRequestCap: 1 });
     await Promise.all([recordVerifiedRequest(dentistId), recordVerifiedRequest(dentistId)]);
-    expect(chargeByToken).toHaveBeenCalledTimes(1);
     const sub = await db.clinicSubscription.findUniqueOrThrow({ where: { dentistId } });
     expect(sub.verifiedRequestCount).toBe(2);
-    expect(sub.status).toBe("ACTIVE");
   });
 });

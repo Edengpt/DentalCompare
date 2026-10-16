@@ -69,6 +69,18 @@ describe("clinicPlanSchema", () => {
     expect(fieldErrors(r)).toEqual({ plan: "mustPickPlan" });
   });
 
+  it("reads a Pro choice, and treats a missing tier as Basic", () => {
+    const pro = clinicPlanSchema.safeParse({ plan: "YEARLY", tier: "PRO", agreeToTerms: "on" });
+    expect(pro.success && pro.data.tier).toBe("PRO");
+    const old = clinicPlanSchema.safeParse({ plan: "MONTHLY", tier: "", agreeToTerms: "on" });
+    expect(old.success && old.data.tier).toBe("BASIC");
+  });
+
+  it("refuses a plan that is not sold at signup", () => {
+    const r = clinicPlanSchema.safeParse({ plan: "MONTHLY", tier: "FEATURED", agreeToTerms: "on" });
+    expect(fieldErrors(r)).toEqual({ tier: "mustPickPlan" });
+  });
+
   it("refuses when the terms were not accepted", () => {
     const r = clinicPlanSchema.safeParse({ plan: "MONTHLY", agreeToTerms: "" });
     expect(fieldErrors(r)).toEqual({ agreeToTerms: "mustAcceptTerms" });

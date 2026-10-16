@@ -1,4 +1,5 @@
 import { getDictionary } from "@/i18n/get-dictionary";
+import { periodName, tierName } from "@/lib/plan-names";
 import { isLocale, defaultLocale } from "@/i18n/config";
 import { format } from "@/i18n/format";
 import { formatMoney } from "@/lib/money";
@@ -27,6 +28,7 @@ export default async function BillingSetupPage({
     where: { setupToken: token },
     select: {
       plan: true,
+      tier: true,
       priceMinor: true,
       currency: true,
       status: true,
@@ -39,7 +41,7 @@ export default async function BillingSetupPage({
   });
   if (!sub) notFound();
 
-  const planLabel = sub.plan === "MONTHLY" ? t.emails.planMonthly : t.emails.planYearly;
+  const planLabel = periodName(t, sub.plan);
 
   return (
     <>
@@ -56,6 +58,7 @@ export default async function BillingSetupPage({
           <div className="border-border/60 bg-card mt-8 rounded-lg border p-6">
             <p className="text-foreground text-lg font-semibold">
               {format(t.clinics.billingPlanLine, {
+                tier: tierName(t, sub.tier),
                 plan: planLabel,
                 price: formatMoney(sub.priceMinor ?? 0, sub.currency ?? "ILS", locale),
               })}

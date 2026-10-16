@@ -22,7 +22,6 @@ type PricingRow = {
   yearlyPriceMinor: number;
   monthlyRequestCap: number | null;
   trialDays: number;
-  trialRequestCap: number;
   updatedAt: Date;
   updatedBy: string | null;
 };
@@ -160,20 +159,6 @@ function PricingRowForm({ row }: { row: PricingRow }) {
           max="10000"
           placeholder={t.admin.requestCapUnlimited}
           defaultValue={row.monthlyRequestCap ?? ""}
-          className={inputClass}
-        />
-      </label>
-
-      <label className="flex flex-col gap-1 text-xs">
-        <span className="text-muted-foreground">{t.admin.fieldTrialRequestCap}</span>
-        <input
-          name="trialRequestCap"
-          type="number"
-          step="1"
-          min="1"
-          max="1000"
-          required
-          defaultValue={row.trialRequestCap}
           className={inputClass}
         />
       </label>
