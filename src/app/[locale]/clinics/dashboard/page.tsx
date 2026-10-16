@@ -19,6 +19,7 @@ import { foundingPriceMinor } from "@/lib/founding";
 import { getSubscriptionPricing } from "@/lib/subscription-pricing";
 import { foundingSlotsLeft } from "@/server/founding";
 import { UpgradePanel } from "@/components/clinics/upgrade-panel";
+import { periodName, tierName } from "@/lib/plan-names";
 
 export const dynamic = "force-dynamic";
 
@@ -141,17 +142,28 @@ export default async function ClinicDashboardPage({
   const upgradeOffer =
     subscription && isFree && subscription.status === "ACTIVE"
       ? await (async () => {
-          const [basic, left] = await Promise.all([
+          const [basic, pro, left] = await Promise.all([
             getSubscriptionPricing(subscription.provider, "BASIC"),
+            getSubscriptionPricing(subscription.provider, "PRO"),
             foundingSlotsLeft(),
           ]);
           const fmt = (m: number) => formatMoney(m, basic.currency, locale);
-          return {
+          const option = (tier: "BASIC" | "PRO", row: typeof basic, name: string) => ({
+            tier,
             body: format(t.clinics.dashUpgradeBody, {
-              cap: basic.monthlyRequestCap ?? "∞",
-              monthly: fmt(basic.monthlyPriceMinor),
-              yearly: fmt(basic.yearlyPriceMinor),
+              tier: name,
+              cap: row.monthlyRequestCap ?? "∞",
+              monthly: fmt(row.monthlyPriceMinor),
+              yearly: fmt(row.yearlyPriceMinor),
             }),
+            monthlyLabel: format(t.clinics.dashUpgradeMonthly, { tier: name }),
+            yearlyLabel: format(t.clinics.dashUpgradeYearly, { tier: name }),
+          });
+          return {
+            options: [
+              option("BASIC", basic, t.clinics.planBasicTitle),
+              option("PRO", pro, t.clinics.planProTitle),
+            ],
             foundingNote:
               left > 0
                 ? format(t.clinics.dashUpgradeFounding, {
@@ -254,9 +266,16 @@ export default async function ClinicDashboardPage({
           <p className="text-muted-foreground mt-3 text-sm">{t.clinics.dashSubNone}</p>
         ) : (
           <div className="mt-3 space-y-3 text-sm">
-            {isFree && (
+            {isFree ? (
               <p className="text-foreground">
                 {format(t.clinics.dashSubFree, { cap: subscription.monthlyRequestCap ?? 0 })}
+              </p>
+            ) : (
+              <p className="text-foreground">
+                {format(t.clinics.dashSubPlan, {
+                  tier: tierName(t, subscription.tier),
+                  plan: periodName(t, subscription.plan),
+                })}
               </p>
             )}
             <p className="text-foreground">
@@ -341,10 +360,8 @@ export default async function ClinicDashboardPage({
           {upgradeOffer && (
             <div className="mt-4">
               <UpgradePanel
-                body={upgradeOffer.body}
+                options={upgradeOffer.options}
                 foundingNote={upgradeOffer.foundingNote}
-                monthlyLabel={t.clinics.dashUpgradeMonthly}
-                yearlyLabel={t.clinics.dashUpgradeYearly}
               />
             </div>
           )}

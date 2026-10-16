@@ -253,7 +253,7 @@ export function RegistrationForm({
   // clinic types, so a fixed field stops shouting before the next "Continue".
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submittedEmail, setSubmittedEmail] = useState<string | null>(null);
-  const [planChoice, setPlanChoice] = useState<PlanChoice>("MONTHLY");
+  const [planChoice, setPlanChoice] = useState<PlanChoice>({ tier: "BASIC", billing: "MONTHLY" });
   const [agreed, setAgreed] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [logoUploading, setLogoUploading] = useState(false);
@@ -415,7 +415,7 @@ export function RegistrationForm({
     return (
       <PendingReview
         email={submittedEmail}
-        trialDays={planChoice === "FREE" ? null : offer.trialDays}
+        trialDays={planChoice.tier === "FREE" ? null : offer.trialDays}
       />
     );
   }
@@ -612,7 +612,7 @@ export function RegistrationForm({
         <p className="text-muted-foreground mt-2 text-sm">{t.clinics.regPlanIntro}</p>
 
         <div className="mt-5">
-          {offer.founding && (
+          {offer.BASIC.founding && (
             <p className="bg-highlight/30 text-foreground mb-4 rounded-lg p-3 text-sm">
               {format(t.clinics.foundingBanner, { left: foundingLeft })}
             </p>
@@ -629,8 +629,10 @@ export function RegistrationForm({
               </span>
               <span className="text-pretty">
                 {format(clause, {
-                  monthly: formatMoney(offer.monthlyMinor, offer.currency, locale),
-                  yearly: formatMoney(offer.yearlyMinor, offer.currency, locale),
+                  basicMonthly: formatMoney(offer.BASIC.monthlyMinor, offer.currency, locale),
+                  basicYearly: formatMoney(offer.BASIC.yearlyMinor, offer.currency, locale),
+                  proMonthly: formatMoney(offer.PRO.monthlyMinor, offer.currency, locale),
+                  proYearly: formatMoney(offer.PRO.yearlyMinor, offer.currency, locale),
                   trialDays: offer.trialDays,
                   freeCap: offer.freeCap ?? 0,
                 })}

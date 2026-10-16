@@ -22,7 +22,6 @@ export type RawPricingInput = {
   trialDays: string;
   /** Empty string parses to unlimited (null). */
   monthlyRequestCap: string;
-  trialRequestCap: string;
 };
 
 export type PricingField = keyof RawPricingInput;
@@ -32,7 +31,6 @@ export type ParsedPricing = {
   yearlyPriceMinor: number;
   trialDays: number;
   monthlyRequestCap: number | null;
-  trialRequestCap: number;
 };
 
 export type ParseResult = { ok: true; value: ParsedPricing } | { ok: false; field: PricingField };
@@ -46,10 +44,9 @@ export type ParseResult = { ok: true; value: ParsedPricing } | { ok: false; fiel
 // fat-fingered extra zero (e.g. "2990" instead of "299") before it gets
 // audited and charged to every clinic that registers after it.
 const MAX_PRICE_MAJOR = 100_000;
-// Same fat-finger guard for request caps and the trial threshold — generous
-// enough that no real value would ever hit it.
+// Same fat-finger guard for request caps — generous enough that no real value
+// would ever hit it.
 const MAX_REQUEST_CAP = 10_000;
-const MAX_TRIAL_REQUEST_CAP = 1_000;
 
 export function parsePricingInput(
   raw: RawPricingInput,
@@ -92,11 +89,6 @@ export function parsePricingInput(
     monthlyRequestCap = cap;
   }
 
-  const trialRequestCap = Math.floor(Number(raw.trialRequestCap));
-  if (!Number.isFinite(trialRequestCap) || trialRequestCap < 1 || trialRequestCap > MAX_TRIAL_REQUEST_CAP) {
-    return { ok: false, field: "trialRequestCap" };
-  }
-
   return {
     ok: true,
     value: {
@@ -104,7 +96,6 @@ export function parsePricingInput(
       yearlyPriceMinor: toMinor(yearlyMajor, currency),
       trialDays,
       monthlyRequestCap,
-      trialRequestCap,
     },
   };
 }

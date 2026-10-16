@@ -29,7 +29,6 @@ function fieldLabel(t: Dictionary, field: PricingField): string {
     yearlyPriceMajor: t.admin.fieldYearlyPrice,
     trialDays: t.admin.fieldTrialDays,
     monthlyRequestCap: t.admin.fieldMonthlyRequestCap,
-    trialRequestCap: t.admin.fieldTrialRequestCap,
   };
   return labels[field];
 }
@@ -64,7 +63,6 @@ export async function updatePricing(formData: FormData): Promise<ActionResult> {
       yearlyPriceMajor: String(formData.get("yearlyPriceMajor") ?? ""),
       trialDays: String(formData.get("trialDays") ?? ""),
       monthlyRequestCap: String(formData.get("monthlyRequestCap") ?? ""),
-      trialRequestCap: String(formData.get("trialRequestCap") ?? ""),
     },
     existing.currency,
     tier,
@@ -92,7 +90,6 @@ export async function updatePricing(formData: FormData): Promise<ActionResult> {
         yearlyPriceMinor: existing.yearlyPriceMinor,
         trialDays: existing.trialDays,
         monthlyRequestCap: existing.monthlyRequestCap,
-        trialRequestCap: existing.trialRequestCap,
       },
       new: parsed.value,
     },

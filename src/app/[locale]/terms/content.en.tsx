@@ -1,4 +1,3 @@
-import { formatMoney } from "@/lib/money";
 import { SITE_CONFIG, REQUEST_LIMITS } from "@/lib/constants";
 import { getSubscriptionPricing } from "@/lib/subscription-pricing";
 import { Section, P, List, Ph } from "@/components/legal/legal-layout";
@@ -71,7 +70,7 @@ export default async function TermsContentEn() {
         <List
           items={[
             "Patients: the service is entirely free. No payment is taken and no payment details are requested at any stage — neither for sending a request nor for receiving quotes.",
-            `Clinics: a monthly subscription (${formatMoney(pricing.monthlyPriceMinor, pricing.currency, "en")}) or an annual one (${formatMoney(pricing.yearlyPriceMinor, pricing.currency, "en")}) for appearing in the directory and receiving enquiries, following a free ${pricing.trialDays}-day trial.`,
+            `Clinics: a paid subscription on the Basic or Pro plan, billed monthly or annually at the prices shown on the clinic registration page at the time of joining, for appearing in the directory and receiving enquiries, following a free ${pricing.trialDays}-day trial. The plans differ only in the number of requests a month and do not affect a clinic's position in results. A free plan with a limited number of requests a month is also available.`,
             "The subscription pays for visibility and listing in the directory only. Nothing is charged based on the number of enquiries received, the identity of a patient, or whether any treatment actually takes place.",
             "The cancellation and refund policy is set out on its own page.",
           ]}

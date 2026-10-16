@@ -1,4 +1,3 @@
-import { formatMoney } from "@/lib/money";
 import { SITE_CONFIG } from "@/lib/constants";
 import { getSubscriptionPricing } from "@/lib/subscription-pricing";
 import { Section, P, List } from "@/components/legal/legal-layout";
@@ -32,7 +31,7 @@ export default async function RefundsContentEn() {
         <List
           items={[
             `Every new clinic receives a free ${pricing.trialDays}-day trial. Cancelling during that period incurs no charge at all.`,
-            `Billing begins when the trial ends: a monthly plan (${formatMoney(pricing.monthlyPriceMinor, pricing.currency, "en")}) or an annual plan (${formatMoney(pricing.yearlyPriceMinor, pricing.currency, "en")}), renewing automatically at the end of each period.`,
+            `Billing begins when the trial ends, on the plan the clinic chose (Basic or Pro, monthly or annual) at the price shown on the clinic registration page when it joined, renewing automatically at the end of each period. However many requests arrive during the trial, nothing is charged before it ends.`,
             "A subscription can be cancelled at any time. Cancellation takes effect at the end of the period already paid for, and the clinic is not charged for the following one.",
             "No pro-rata refund is given for a paid period that was not used in full.",
           ]}

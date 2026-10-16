@@ -1,6 +1,7 @@
 "use server";
 
 import { getDictionary } from "@/i18n/get-dictionary";
+import { periodName, tierName } from "@/lib/plan-names";
 import { stripeCouponMonths } from "@/lib/founding";
 import { getRequestLocale } from "@/i18n/request-locale";
 import { format } from "@/i18n/format";
@@ -22,6 +23,7 @@ export async function startPayment(
     select: {
       id: true,
       plan: true,
+      tier: true,
       priceMinor: true,
       currency: true,
       status: true,
@@ -62,7 +64,8 @@ export async function startPayment(
   // different locale segment than the one the clinic registered under.
   const clinicT = await getDictionary(asLocale(sub.dentist.locale));
   const itemName = format(clinicT.clinics.itemSubscription, {
-    plan: sub.plan === "MONTHLY" ? clinicT.emails.planMonthly : clinicT.emails.planYearly,
+    tier: tierName(clinicT, sub.tier),
+    plan: periodName(clinicT, sub.plan),
   });
 
   if (sub.provider === "LEMONSQUEEZY") {

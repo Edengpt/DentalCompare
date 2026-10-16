@@ -61,14 +61,14 @@ async function main() {
   // push` (which skips migration files entirely) needs this table seeded here
   // too, not just by the migration.
   const PRICING_SEED = [
-    { provider: "PAYPLUS", tier: "FREE", currency: "ILS", monthlyPriceMinor: 0, yearlyPriceMinor: 0, monthlyRequestCap: 3, trialDays: 60, trialRequestCap: 5 },
-    { provider: "PAYPLUS", tier: "BASIC", currency: "ILS", monthlyPriceMinor: 29900, yearlyPriceMinor: 199000, monthlyRequestCap: 10, trialDays: 60, trialRequestCap: 5 },
-    { provider: "PAYPLUS", tier: "PRO", currency: "ILS", monthlyPriceMinor: 44900, yearlyPriceMinor: 449000, monthlyRequestCap: 30, trialDays: 60, trialRequestCap: 5 },
-    { provider: "PAYPLUS", tier: "FEATURED", currency: "ILS", monthlyPriceMinor: 89900, yearlyPriceMinor: 899000, monthlyRequestCap: null, trialDays: 60, trialRequestCap: 5 },
-    { provider: "STRIPE", tier: "FREE", currency: "USD", monthlyPriceMinor: 0, yearlyPriceMinor: 0, monthlyRequestCap: 3, trialDays: 60, trialRequestCap: 5 },
-    { provider: "STRIPE", tier: "BASIC", currency: "USD", monthlyPriceMinor: 7900, yearlyPriceMinor: 53000, monthlyRequestCap: 10, trialDays: 60, trialRequestCap: 5 },
-    { provider: "STRIPE", tier: "PRO", currency: "USD", monthlyPriceMinor: 17900, yearlyPriceMinor: 149000, monthlyRequestCap: 30, trialDays: 60, trialRequestCap: 5 },
-    { provider: "STRIPE", tier: "FEATURED", currency: "USD", monthlyPriceMinor: 35900, yearlyPriceMinor: 299000, monthlyRequestCap: null, trialDays: 60, trialRequestCap: 5 },
+    { provider: "PAYPLUS", tier: "FREE", currency: "ILS", monthlyPriceMinor: 0, yearlyPriceMinor: 0, monthlyRequestCap: 3, trialDays: 30, trialRequestCap: 5 },
+    { provider: "PAYPLUS", tier: "BASIC", currency: "ILS", monthlyPriceMinor: 29900, yearlyPriceMinor: 299000, monthlyRequestCap: 10, trialDays: 30, trialRequestCap: 5 },
+    { provider: "PAYPLUS", tier: "PRO", currency: "ILS", monthlyPriceMinor: 44900, yearlyPriceMinor: 449000, monthlyRequestCap: 30, trialDays: 30, trialRequestCap: 5 },
+    { provider: "PAYPLUS", tier: "FEATURED", currency: "ILS", monthlyPriceMinor: 89900, yearlyPriceMinor: 899000, monthlyRequestCap: null, trialDays: 30, trialRequestCap: 5 },
+    { provider: "STRIPE", tier: "FREE", currency: "USD", monthlyPriceMinor: 0, yearlyPriceMinor: 0, monthlyRequestCap: 3, trialDays: 30, trialRequestCap: 5 },
+    { provider: "STRIPE", tier: "BASIC", currency: "USD", monthlyPriceMinor: 7900, yearlyPriceMinor: 79000, monthlyRequestCap: 10, trialDays: 30, trialRequestCap: 5 },
+    { provider: "STRIPE", tier: "PRO", currency: "USD", monthlyPriceMinor: 17900, yearlyPriceMinor: 179000, monthlyRequestCap: 30, trialDays: 30, trialRequestCap: 5 },
+    { provider: "STRIPE", tier: "FEATURED", currency: "USD", monthlyPriceMinor: 35900, yearlyPriceMinor: 359000, monthlyRequestCap: null, trialDays: 30, trialRequestCap: 5 },
   ] as const;
 
   for (const row of PRICING_SEED) {

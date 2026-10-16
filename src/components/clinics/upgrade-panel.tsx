@@ -6,31 +6,36 @@ import { toast } from "sonner";
 import { useLocale, useT } from "@/i18n/provider";
 import { upgradeToPaid } from "@/server/clinic-upgrade";
 
-/**
- * The free clinic's way onto the paid tier: pick monthly or yearly, and go
- * straight to the payment page. Prices are worded on the server and passed in.
- */
-export function UpgradePanel({
-  body,
-  foundingNote,
-  monthlyLabel,
-  yearlyLabel,
-}: {
+export type UpgradeOption = {
+  tier: "BASIC" | "PRO";
+  /** One line: the plan, its request allowance and both prices. */
   body: string;
-  foundingNote: string | null;
   monthlyLabel: string;
   yearlyLabel: string;
+};
+
+/**
+ * The free clinic's way onto a paid plan: pick Basic or Pro, monthly or
+ * yearly, and go straight to the payment page. Prices are worded on the
+ * server and passed in.
+ */
+export function UpgradePanel({
+  options,
+  foundingNote,
+}: {
+  options: UpgradeOption[];
+  foundingNote: string | null;
 }) {
   const t = useT();
   const locale = useLocale();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [chosen, setChosen] = useState<"MONTHLY" | "YEARLY" | null>(null);
+  const [chosen, setChosen] = useState<string | null>(null);
 
-  const upgrade = (plan: "MONTHLY" | "YEARLY") => {
-    setChosen(plan);
+  const upgrade = (tier: "BASIC" | "PRO", plan: "MONTHLY" | "YEARLY") => {
+    setChosen(`${tier}:${plan}`);
     startTransition(async () => {
-      const result = await upgradeToPaid(plan);
+      const result = await upgradeToPaid(tier, plan);
       if (!result.ok) {
         toast.error(result.error);
         setChosen(null);
@@ -46,29 +51,34 @@ export function UpgradePanel({
   return (
     <div className="border-teal/30 bg-teal/5 rounded-lg border p-4">
       <p className="text-foreground font-semibold">{t.clinics.dashUpgradeTitle}</p>
-      <p className="text-muted-foreground mt-1 text-sm">{body}</p>
       {foundingNote && (
-        <p className="bg-highlight text-on-highlight mt-3 inline-block rounded-sm px-2 py-1 text-xs font-semibold">
+        <p className="bg-highlight text-on-highlight mt-2 inline-block rounded-sm px-2 py-1 text-xs font-semibold">
           {foundingNote}
         </p>
       )}
-      <div className="mt-4 flex flex-wrap gap-2">
-        <button
-          type="button"
-          disabled={pending}
-          onClick={() => upgrade("MONTHLY")}
-          className={button}
-        >
-          {pending && chosen === "MONTHLY" ? t.selection.saving : monthlyLabel}
-        </button>
-        <button
-          type="button"
-          disabled={pending}
-          onClick={() => upgrade("YEARLY")}
-          className={button}
-        >
-          {pending && chosen === "YEARLY" ? t.selection.saving : yearlyLabel}
-        </button>
+      <div className="mt-3 space-y-4">
+        {options.map((o) => (
+          <div key={o.tier}>
+            <p className="text-muted-foreground text-sm">{o.body}</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {(["MONTHLY", "YEARLY"] as const).map((plan) => (
+                <button
+                  key={plan}
+                  type="button"
+                  disabled={pending}
+                  onClick={() => upgrade(o.tier, plan)}
+                  className={button}
+                >
+                  {pending && chosen === `${o.tier}:${plan}`
+                    ? t.selection.saving
+                    : plan === "MONTHLY"
+                      ? o.monthlyLabel
+                      : o.yearlyLabel}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

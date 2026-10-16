@@ -23,7 +23,6 @@ const BASIC_FIELDS = {
   yearlyPriceMajor: "2200",
   trialDays: "45",
   monthlyRequestCap: "12",
-  trialRequestCap: "6",
 };
 
 describe.skipIf(!hasDb)("updatePricing", () => {
@@ -83,7 +82,6 @@ describe.skipIf(!hasDb)("updatePricing", () => {
     expect(row.yearlyPriceMinor).toBe(220000);
     expect(row.trialDays).toBe(45);
     expect(row.monthlyRequestCap).toBe(12);
-    expect(row.trialRequestCap).toBe(6);
   });
 
   it("saves an empty monthlyRequestCap as null (unlimited), not 0", async () => {
@@ -135,7 +133,6 @@ describe.skipIf(!hasDb)("updatePricing", () => {
         yearlyPriceMajor: "0",
         trialDays: "45",
         monthlyRequestCap: "3",
-        trialRequestCap: "5",
       }),
     );
     expect(result.ok).toBe(false);

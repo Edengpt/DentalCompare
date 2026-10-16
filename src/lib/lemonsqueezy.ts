@@ -151,12 +151,6 @@ export async function setLemonSqueezyTrialEnd(subscriptionId: string, endsAt: Da
   });
 }
 
-/** Ends a trial early — the outcome-based trial's "convert now" for this provider. */
-export async function endLemonSqueezyTrialNow(subscriptionId: string): Promise<void> {
-  // Lemon Squeezy only takes a future date; a minute ahead is "now".
-  await setLemonSqueezyTrialEnd(subscriptionId, new Date(Date.now() + 60_000));
-}
-
 /** Verifies the X-Signature header: hex HMAC-SHA256 of the raw body. */
 export function verifyLemonSqueezySignature(raw: string, signature: string | null): boolean {
   const secret = process.env.LEMONSQUEEZY_WEBHOOK_SECRET;

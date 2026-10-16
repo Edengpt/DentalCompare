@@ -1,4 +1,3 @@
-import { formatMoney } from "@/lib/money";
 import { SITE_CONFIG, REQUEST_LIMITS } from "@/lib/constants";
 import { getSubscriptionPricing } from "@/lib/subscription-pricing";
 import { Section, P, List, Ph } from "@/components/legal/legal-layout";
@@ -69,7 +68,7 @@ export default async function TermsContentHe() {
         <List
           items={[
             "מטופל: השירות חינמי לחלוטין. לא נגבה תשלום, ולא יידרשו פרטי אמצעי תשלום בשום שלב — לא עבור שליחת הבקשה ולא עבור קבלת ההצעות.",
-            `מרפאה: מנוי חודשי (${formatMoney(pricing.monthlyPriceMinor, pricing.currency, "he")}) או שנתי (${formatMoney(pricing.yearlyPriceMinor, pricing.currency, "he")}) עבור הופעה במאגר וקבלת פניות, לאחר תקופת התנסות חינם של ${pricing.trialDays} יום.`,
+            `מרפאה: מנוי בתשלום, במסלול בסיס או Pro ובחיוב חודשי או שנתי, במחירים המוצגים בעמוד הצטרפות המרפאות בעת ההרשמה, עבור הופעה במאגר וקבלת פניות, לאחר תקופת התנסות חינם של ${pricing.trialDays} יום. המסלולים נבדלים רק במספר הבקשות בחודש ואינם משפיעים על מיקום המרפאה בתוצאות. קיים גם מסלול חינם עם מספר מוגבל של בקשות בחודש.`,
             "התשלום עבור המנוי הוא עבור נראות ופרסום במאגר בלבד. אין תשלום הנגזר ממספר הפניות שהתקבלו, מזהות המטופל או מביצוע טיפול כלשהו בפועל.",
             "מדיניות הביטולים וההחזרים מפורטת בעמוד ייעודי.",
           ]}

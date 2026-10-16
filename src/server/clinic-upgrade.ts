@@ -18,21 +18,22 @@ import { foundingSlotsLeft } from "@/server/founding";
 const UPGRADE_GRACE_DAYS = 7;
 
 /**
- * Moves a free clinic onto the paid tier and hands back its payment link.
+ * Moves a free clinic onto Basic or Pro and hands back its payment link.
  *
  * The subscription row is rewritten in place (tier, price, cap, plan) and
  * re-enters TRIALING with a short grace period, so everything downstream —
- * the payment page, the trial cron, the immediate conversion on the request
- * counter — treats it exactly like a clinic that registered on the paid tier.
- * A founding place is offered here too while any remain.
+ * the payment page and the trial cron — treats it exactly like a clinic that
+ * registered on the paid tier. A founding place is offered here too while any
+ * remain.
  */
 export async function upgradeToPaid(
+  tier: "BASIC" | "PRO",
   plan: "MONTHLY" | "YEARLY",
 ): Promise<{ ok: true; setupToken: string } | { ok: false; error: string }> {
   const e = (await getDictionary(await getRequestLocale())).errors;
   const clinic = await getClinicForCurrentUser();
   if (!clinic) return { ok: false, error: e.clinicNotFound };
-  if (plan !== "MONTHLY" && plan !== "YEARLY")
+  if ((plan !== "MONTHLY" && plan !== "YEARLY") || (tier !== "BASIC" && tier !== "PRO"))
     return { ok: false, error: e.subscriptionMisconfigured };
 
   const sub = await db.clinicSubscription.findUnique({
@@ -43,7 +44,6 @@ export async function upgradeToPaid(
       status: true,
       provider: true,
       setupToken: true,
-      verifiedRequestCount: true,
     },
   });
   if (!sub) return { ok: false, error: e.clinicNoSubscription };
@@ -53,7 +53,7 @@ export async function upgradeToPaid(
     return { ok: false, error: e.subscriptionAlreadyActive };
   }
 
-  const pricing = await getSubscriptionPricing(sub.provider, "BASIC");
+  const pricing = await getSubscriptionPricing(sub.provider, tier);
   const regularMinor = plan === "MONTHLY" ? pricing.monthlyPriceMinor : pricing.yearlyPriceMinor;
   const now = new Date();
 
@@ -62,7 +62,7 @@ export async function upgradeToPaid(
     await tx.clinicSubscription.update({
       where: { id: sub.id },
       data: {
-        tier: "BASIC",
+        tier,
         plan,
         status: "TRIALING",
         priceMinor: founding ? foundingPriceMinor(regularMinor, pricing.currency) : regularMinor,
@@ -72,9 +72,6 @@ export async function upgradeToPaid(
         monthlyRequestCap: pricing.monthlyRequestCap,
         trialDays: UPGRADE_GRACE_DAYS,
         trialEndsAt: trialEndFrom(now, UPGRADE_GRACE_DAYS),
-        // Converts on the next few delivered requests at the latest, the same
-        // outcome-based trigger a new paid clinic gets.
-        trialRequestCap: sub.verifiedRequestCount + pricing.trialRequestCap,
         trialWarningSentDays: null,
         trialEndedUnbilledAt: null,
       },
@@ -87,7 +84,7 @@ export async function upgradeToPaid(
     action: "subscription.upgraded",
     entity: "ClinicSubscription",
     entityId: sub.id,
-    metadata: { plan, isFounding },
+    metadata: { tier, plan, isFounding },
   });
 
   return { ok: true, setupToken: sub.setupToken };
