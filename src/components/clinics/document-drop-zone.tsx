@@ -12,6 +12,7 @@ import { uploadClinicDocument } from "@/lib/upload-clinic-document";
 import { useT } from "@/i18n/provider";
 import { format } from "@/i18n/format";
 import { cn } from "@/lib/utils";
+import { translateDocKind } from "@/lib/labels";
 
 export type UploadedDoc = { url: string; contentType: string; fileName: string };
 
@@ -68,7 +69,7 @@ export function DocumentDropZone({
       <div className="border-teal-deep/40 bg-teal-deep/5 flex items-center gap-3 rounded-lg border px-4 py-3">
         <CheckCircle2 className="text-teal-deep h-5 w-5 shrink-0" />
         <div className="min-w-0 flex-1">
-          <p className="text-foreground text-sm font-medium">{kind}</p>
+          <p className="text-foreground text-sm font-medium">{translateDocKind(t.labels, kind)}</p>
           <p className="text-muted-foreground truncate text-xs">{doc.fileName}</p>
         </div>
         <span className="text-teal-deep text-xs font-medium">{t.clinics.regDocUploaded}</span>
@@ -107,7 +108,7 @@ export function DocumentDropZone({
       )}
     >
       <p className="text-foreground text-sm font-medium">
-        {kind}
+        {translateDocKind(t.labels, kind)}
         <span className="text-alert"> *</span>
       </p>
       {busy ? (

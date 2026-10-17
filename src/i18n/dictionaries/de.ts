@@ -680,6 +680,12 @@ const de: typeof he = {
   },
 
   labels: {
+    // Machine keys for licence documents (GENERIC_DOC_KIND and the
+    // popular-countries default). Kinds an admin typed show as typed.
+    docKinds: {
+      licence: "Zulassung",
+      dental_licence: "Zahnärztliche Approbation",
+    },
     specialties: {
       Implantology: "Implantologie",
       Endodontics: "Wurzelbehandlung",
