@@ -20,7 +20,6 @@ import { getSubscriptionPricing } from "@/lib/subscription-pricing";
 import type { SubscriptionProvider, SubscriptionTier } from "@/generated/prisma/enums";
 import { foundingPriceMinor } from "@/lib/founding";
 import { providerForCountry } from "@/lib/subscription";
-import { isLemonSqueezyEnabled } from "@/lib/lemonsqueezy";
 import { foundingSlotsLeft } from "@/server/founding";
 import { requiredDocKinds, missingDocKinds, isClinicDocumentBlobUrl } from "@/lib/clinic-documents";
 import {
@@ -148,11 +147,7 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
   }
 
   const setupToken = randomUUID();
-  // Outside Israel, Lemon Squeezy takes over from Stripe once it is switched
-  // on; the clinic sees the same USD price either way.
-  const market = providerForCountry(country.code);
-  const provider: SubscriptionProvider =
-    market === "STRIPE" && isLemonSqueezyEnabled() ? "LEMONSQUEEZY" : market;
+  const provider: SubscriptionProvider = providerForCountry(country.code);
   // Pro is sold on volume alone: more requests a month, never a better place
   // in results. Featured (paid exposure) is not offered here.
   const tier: SubscriptionTier = plan === "FREE" || chosenTier === "FREE" ? "FREE" : chosenTier;

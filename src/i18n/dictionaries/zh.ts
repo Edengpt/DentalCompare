@@ -1100,7 +1100,6 @@ const zh: typeof he = {
     colProvider: "服务商",
     providerPayPlus: "PayPlus",
     providerStripe: "Stripe",
-    providerLemonSqueezy: "Lemon Squeezy",
     colCity: "城市",
     colSpecialties: "专科",
     colLanguages: "语言",

@@ -1159,7 +1159,6 @@ const ru: typeof he = {
     colProvider: "Провайдер",
     providerPayPlus: "PayPlus",
     providerStripe: "Stripe",
-    providerLemonSqueezy: "Lemon Squeezy",
     colCity: "Город",
     colSpecialties: "Специализации",
     colLanguages: "Языки",

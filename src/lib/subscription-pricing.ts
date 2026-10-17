@@ -10,10 +10,7 @@ import type { SubscriptionProvider, SubscriptionTier } from "@/generated/prisma/
  * defect worth a loud crash rather than a silently-free subscription.
  */
 export async function getSubscriptionPricing(provider: SubscriptionProvider, tier: SubscriptionTier) {
-  // Lemon Squeezy replaces Stripe for the same international clinics, in the
-  // same USD prices — one table row per market, not per payment company.
-  const row = provider === "LEMONSQUEEZY" ? "STRIPE" : provider;
-  return db.subscriptionPricing.findUniqueOrThrow({ where: { provider_tier: { provider: row, tier } } });
+  return db.subscriptionPricing.findUniqueOrThrow({ where: { provider_tier: { provider, tier } } });
 }
 
 export type RawPricingInput = {

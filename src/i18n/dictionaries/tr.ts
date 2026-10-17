@@ -1166,7 +1166,6 @@ const tr: typeof he = {
     colProvider: "Sağlayıcı",
     providerPayPlus: "PayPlus",
     providerStripe: "Stripe",
-    providerLemonSqueezy: "Lemon Squeezy",
     colCity: "Şehir",
     colSpecialties: "Uzmanlık alanları",
     colLanguages: "Diller",
