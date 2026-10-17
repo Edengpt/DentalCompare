@@ -830,6 +830,7 @@ const zh: typeof he = {
     regLanguages: "团队使用的语言",
     regLogo: "Logo / 诊所照片",
     regOptional: "（选填）",
+    regRequiredNote: "标有 * 的字段为必填项。",
     regLogoAlt: "Logo预览",
     regDocs: "执照及相关文件",
     regDocsHint: "诊所上线前，我们需要查看执照。手机拍照即可——PDF、JPG或PNG，不超过{mb}MB。",

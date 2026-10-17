@@ -66,9 +66,16 @@ export function TravelStep({
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       <input type="hidden" name="requestId" value={requestId} />
+      <p className="text-muted-foreground text-sm">
+        <span className="text-alert">* </span>
+        {t.clinics.regRequiredNote}
+      </p>
 
       <label className="flex max-w-sm flex-col gap-1.5 text-sm">
-        <span className="text-foreground font-medium">{t.requestFlow.travelCountryLabel}</span>
+        <span className="text-foreground font-medium">
+          {t.requestFlow.travelCountryLabel}
+          <span className="text-alert"> *</span>
+        </span>
         <select
           name="countryCode"
           required
@@ -94,6 +101,7 @@ export function TravelStep({
       <fieldset className="space-y-3">
         <legend className="text-foreground text-sm font-medium">
           {t.requestFlow.travelScopeLabel}
+          <span className="text-alert"> *</span>
         </legend>
         {SCOPES.map((s) => {
           const disabled = s.value === "LOCAL" && !localOk;

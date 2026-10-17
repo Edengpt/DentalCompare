@@ -883,6 +883,7 @@ const fr: typeof he = {
     regLanguages: "Langues parlées par votre équipe",
     regLogo: "Logo / photo de la clinique",
     regOptional: " (facultatif)",
+    regRequiredNote: "Les champs marqués d’un * sont obligatoires.",
     regLogoAlt: "Aperçu du logo",
     regDocs: "Autorisation d'exercer et documents",
     regDocsHint:

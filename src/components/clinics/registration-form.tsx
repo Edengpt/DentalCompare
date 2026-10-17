@@ -433,6 +433,10 @@ export function RegistrationForm({
       className="scroll-mt-24 space-y-8"
     >
       <StepIndicator step={step} labels={stepLabels} onJump={goTo} />
+      <p className="text-muted-foreground text-sm">
+        <span className="text-alert">* </span>
+        {t.clinics.regRequiredNote}
+      </p>
 
       {/* Step 1 — details */}
       <div hidden={step !== 0} className="border-border/60 bg-card rounded-lg border p-6 sm:p-8">
@@ -458,6 +462,7 @@ export function RegistrationForm({
                 type={f.type ?? "text"}
                 placeholder={f.placeholder}
                 min={f.type === "number" ? 0 : undefined}
+                aria-required={f.required || undefined}
                 aria-invalid={errors[f.name] ? true : undefined}
                 aria-describedby={errors[f.name] ? `${f.name}-error` : undefined}
                 className={cn(inputClass, errors[f.name] && "border-alert")}
@@ -475,6 +480,7 @@ export function RegistrationForm({
               name="countryCode"
               value={countryCode}
               onChange={(e) => handleCountryChange(e.target.value)}
+              aria-required
               aria-invalid={errors.countryCode ? true : undefined}
               aria-describedby={errors.countryCode ? "countryCode-error" : undefined}
               className={cn(inputClass, errors.countryCode && "border-alert")}
@@ -647,12 +653,16 @@ export function RegistrationForm({
             name="agreeToTerms"
             checked={agreed}
             onChange={(e) => setAgreed(e.target.checked)}
+            aria-required
             aria-invalid={errors.agreeToTerms ? true : undefined}
             aria-describedby={errors.agreeToTerms ? "agreeToTerms-error" : undefined}
             className="accent-teal-deep mt-0.5 h-4 w-4 shrink-0"
           />
           <span className="flex flex-col gap-1">
-            <span className="text-foreground">{t.clinics.regAgree}</span>
+            <span className="text-foreground">
+              {t.clinics.regAgree}
+              <span className="text-alert"> *</span>
+            </span>
             <FieldError id="agreeToTerms-error" message={errors.agreeToTerms} />
           </span>
         </label>

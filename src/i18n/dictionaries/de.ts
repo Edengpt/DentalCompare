@@ -885,6 +885,7 @@ const de: typeof he = {
     regLanguages: "Sprachen Ihres Teams",
     regLogo: "Logo / Foto der Klinik",
     regOptional: " (optional)",
+    regRequiredNote: "Mit * markierte Felder sind Pflichtfelder.",
     regLogoAlt: "Logo-Vorschau",
     regDocs: "Zulassung und Dokumente",
     regDocsHint:

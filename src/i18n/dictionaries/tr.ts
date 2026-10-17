@@ -878,6 +878,7 @@ const tr: typeof he = {
     regLanguages: "Ekibinizin konuştuğu diller",
     regLogo: "Logo / klinik fotoğrafı",
     regOptional: " (isteğe bağlı)",
+    regRequiredNote: "* ile işaretli alanlar zorunludur.",
     regLogoAlt: "Logo önizlemesi",
     regDocs: "Lisans ve belgeler",
     regDocsHint:

@@ -84,14 +84,18 @@ export function UploadStep({
       {/* Separate from every other agreement on purpose: bundling consent for
           health data with anything else is what makes it not count. */}
       <section className="border-border/60 bg-muted/30 rounded-lg border p-5">
-        <h2 className="font-display text-foreground text-base font-bold">
-          {t.upload.consentTitle}
-        </h2>
+        <div className="flex items-baseline justify-between">
+          <h2 className="font-display text-foreground text-base font-bold">
+            {t.upload.consentTitle}
+          </h2>
+          <span className="text-muted-foreground text-xs">{t.upload.required}</span>
+        </div>
         <label className="mt-3 flex cursor-pointer items-start gap-3 text-sm">
           <input
             type="checkbox"
             checked={consented}
             onChange={(e) => handleConsent(e.target.checked)}
+            aria-required
             className="accent-teal-deep mt-0.5 h-4 w-4 shrink-0"
           />
           <span className="text-foreground leading-relaxed">

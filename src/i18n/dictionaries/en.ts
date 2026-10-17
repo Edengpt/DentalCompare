@@ -865,6 +865,7 @@ const en: typeof he = {
     regLanguages: "Languages your team speaks",
     regLogo: "Logo / clinic photo",
     regOptional: " (optional)",
+    regRequiredNote: "Fields marked * are required.",
     regLogoAlt: "Logo preview",
     regDocs: "Licence and documents",
     regDocsHint:
