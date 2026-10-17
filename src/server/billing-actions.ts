@@ -9,7 +9,6 @@ import { db } from "@/lib/db";
 import { createSubscriptionPaymentPage, isPayPlusConfigured } from "@/lib/payplus";
 import { createSubscriptionCheckoutSession, isStripeConfigured } from "@/lib/stripe";
 import { hasCompletedPaymentSetup } from "@/lib/subscription";
-import { createLemonSqueezyCheckout, isLemonSqueezyEnabled } from "@/lib/lemonsqueezy";
 import { asLocale } from "@/i18n/config";
 
 export async function startPayment(
@@ -33,7 +32,6 @@ export async function startPayment(
       regularPriceMinor: true,
       recurringToken: true,
       stripeSubscriptionId: true,
-      lemonSqueezySubscriptionId: true,
       dentist: { select: { clinicName: true, email: true, locale: true } },
     },
   });
@@ -67,33 +65,6 @@ export async function startPayment(
     tier: tierName(clinicT, sub.tier),
     plan: periodName(clinicT, sub.plan),
   });
-
-  if (sub.provider === "LEMONSQUEEZY") {
-    if (!isLemonSqueezyEnabled()) {
-      return { ok: false, error: e.paymentsNotConfigured };
-    }
-    try {
-      const founding = sub.isFounding && sub.regularPriceMinor !== null;
-      const { url } = await createLemonSqueezyCheckout({
-        setupToken,
-        plan: sub.plan === "YEARLY" ? "YEARLY" : "MONTHLY",
-        listPriceMinor: founding ? sub.regularPriceMinor! : sub.priceMinor,
-        founding: founding
-          ? {
-              amountOffMinor: sub.regularPriceMinor! - sub.priceMinor,
-              months: stripeCouponMonths(sub.trialDays, sub.plan),
-            }
-          : undefined,
-        email: sub.dentist.email,
-        clinicName: sub.dentist.clinicName,
-        locale: asLocale(sub.dentist.locale),
-      });
-      return { ok: true, url };
-    } catch (err) {
-      console.error("startPayment (Lemon Squeezy) failed:", err);
-      return { ok: false, error: e.paymentPageFailed };
-    }
-  }
 
   if (sub.provider === "STRIPE") {
     if (!isStripeConfigured()) {

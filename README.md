@@ -16,7 +16,7 @@ It works across borders (dental tourism): clinics in several countries, prices i
 
 ## Stack
 
-Next.js 16 (App Router) · React 19 · TypeScript · Prisma 7 · PostgreSQL (Neon) · Clerk (auth) · Vercel Blob (files: a private store for medical files and licences, a public one for logos) · Resend (email) · PayPlus (Israel) + Stripe / Lemon Squeezy (international) for clinic subscriptions · Tailwind 4 · Vitest · Vercel.
+Next.js 16 (App Router) · React 19 · TypeScript · Prisma 7 · PostgreSQL (Neon) · Clerk (auth) · Vercel Blob (files: a private store for medical files and licences, a public one for logos) · Resend (email) · PayPlus (Israel) + Stripe (international) for clinic subscriptions · Tailwind 4 · Vitest · Vercel.
 
 ## Local development
 

@@ -16,7 +16,7 @@
   אותו מהחשש המשפטי על תשלום תמורת חשיפה. Featured עדיין לא נמכר (ההרשמה
   והשדרוג דוחים אותו). עדיין כדאי שעורך הדין יאשר גם את Pro.
 - **ניסיון = 30 יום מהאישור, וזהו.** בוטלה ההמרה המוקדמת אחרי 5 בקשות
-  (`recordVerifiedRequest` רק סופר; `endStripeTrialNow`/`endLemonSqueezyTrialNow`
+  (`recordVerifiedRequest` רק סופר; `endStripeTrialNow`
   נמחקו), כי התנאים הבטיחו מספר ימים בלבד. השדה "סף בקשות לניסיון" ירד מהפאנל;
   העמודה `trialRequestCap` נשארה במסד ואינה נקראת.
 - תנאי המרפאה (7 שפות) מפרטים את שני המסלולים ואומרים שהניסיון לא מתקצר
@@ -42,26 +42,9 @@
   כ-support מ-Gmail דרך `smtp.resend.com:465`.
 
 ### תשלומים
-- **Lemon Squeezy (PR #30) — בנוי ו**כבוי**.** merchant of record למרפאות
-  מחוץ לישראל (גובה ומדווח מע"מ/מס בכל מדינה). כשהמתג
-  `LEMONSQUEEZY_ENABLED=true` דלוק, הרשמה בינלאומית חדשה מקבלת ספק
-  `LEMONSQUEEZY` במקום `STRIPE`, באותם מחירים (`getSubscriptionPricing` ממפה
-  אותו לשורות STRIPE בדולרים). קוד: `src/lib/lemonsqueezy.ts`,
-  `src/app/api/webhooks/lemonsqueezy/route.ts`,
-  `syncLemonSqueezySubscription`/`recordLemonSqueezyCharge` ב-`src/server/subscriptions.ts`.
-  - המחיר נשלח עם ה-checkout (`custom_price`); הנחת מייסדים = קוד הנחה
-    חד-פעמי לכל מרפאה, לאותו מספר חודשים כמו קופון Stripe.
-  - לווריאנט יש ניסיון קבוע של 60 יום; ה-webhook מיישר אותו ל-`trialDays`
-    של המרפאה ביצירת המנוי.
-  - **מצב החשבון:** חנות 489326 עדיין ב-test mode עד אימות הזהות של אדן.
-    מוצר 1410220, וריאנטים Monthly 2201650 / Yearly 2201672, webhook 139472.
-    המפתחות הנוכחיים בוורסל (Production) הם של test.
-  - **כדי להדליק:** אחרי אישור החנות — מפתח API ו-webhook חיים, החלפת
-    `LEMONSQUEEZY_API_KEY`/`LEMONSQUEEZY_WEBHOOK_SECRET`, הוספת
-    `LEMONSQUEEZY_ENABLED=true`, redeploy, ומעבר אחד מקצה לקצה (הרשמה →
-    checkout → webhook → מנוי TRIALING). **המעבר הזה טרם נבדק**; רק
-    ה-payloads של checkout והנחה אומתו מול ה-API (201).
-  - מרפאות שכבר נרשמו עם Stripe נשארות ב-Stripe.
+- **Lemon Squeezy הוסר לגמרי (17/10).** נבנה ב-PR #30 ולא הודלק אף פעם. הקוד,
+  ה-webhook, המשתנים והעמודות במסד נמחקו (מיגרציה `20261017120000_remove_lemonsqueezy`).
+  מרפאות מחוץ לישראל משלמות דרך Stripe. אם יחזור — לבנות מחדש מ-PR #30.
 - **50 המרפאות המייסדות (PR #21):** 33% הנחה ל-12 חודשים מהחיוב הראשון, ואז
   חזרה אוטומטית למחיר הרגיל (`src/lib/founding.ts`, `src/server/founding.ts`).
   גם: מסלול חינמי (מוסתר כשנגמרה המכסה עד החודש הבא), שדרוג מחינמי
@@ -80,7 +63,6 @@
   (סטטוס, אחריות). שלב 2 ממתין לבדיקה משפטית.
 
 ### פתוח
-- הדלקת Lemon Squeezy (למעלה).
 - לעדכן כתובת תמיכה/אתר בהגדרות העסק של Stripe ו-PayPlus (אדן).
 - GSC: "Change of address" מ-.co.il.
 - בדיקת עורך דין: תנאי המרפאות החדשים, מסלולי Pro/Featured, שלב 2 של תיק הטיפול.
