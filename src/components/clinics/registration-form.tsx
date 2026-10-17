@@ -433,10 +433,7 @@ export function RegistrationForm({
       className="scroll-mt-24 space-y-8"
     >
       <StepIndicator step={step} labels={stepLabels} onJump={goTo} />
-      <p className="text-muted-foreground text-sm">
-        <span className="text-alert">* </span>
-        {t.clinics.regRequiredNote}
-      </p>
+      <p className="text-muted-foreground text-sm">{t.clinics.regRequiredNote}</p>
 
       {/* Step 1 — details */}
       <div hidden={step !== 0} className="border-border/60 bg-card rounded-lg border p-6 sm:p-8">

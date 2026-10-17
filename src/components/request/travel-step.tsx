@@ -66,10 +66,7 @@ export function TravelStep({
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       <input type="hidden" name="requestId" value={requestId} />
-      <p className="text-muted-foreground text-sm">
-        <span className="text-alert">* </span>
-        {t.clinics.regRequiredNote}
-      </p>
+      <p className="text-muted-foreground text-sm">{t.clinics.regRequiredNote}</p>
 
       <label className="flex max-w-sm flex-col gap-1.5 text-sm">
         <span className="text-foreground font-medium">
