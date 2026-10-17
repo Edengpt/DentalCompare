@@ -642,6 +642,12 @@ const he = {
   },
 
   labels: {
+    // Machine keys for licence documents (GENERIC_DOC_KIND and the
+    // popular-countries default). Kinds an admin typed show as typed.
+    docKinds: {
+      licence: "רישיון",
+      dental_licence: "רישיון לעסוק ברפואת שיניים",
+    },
     specialties: {
       Implantology: "השתלות",
       Endodontics: "טיפולי שורש",

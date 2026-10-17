@@ -1,6 +1,7 @@
 "use server";
 
 import { getDictionary } from "@/i18n/get-dictionary";
+import { translateDocKind } from "@/lib/labels";
 import { quoteAttachmentDir } from "@/lib/quote-attachments";
 import { blobUrlsUnder } from "./blob-sweep";
 import { getRequestLocale } from "@/i18n/request-locale";
@@ -206,13 +207,15 @@ export async function requestBetterDocuments(
   ]);
 
   const kindById = new Map(docs.map((d) => [d.id, d.kind]));
+  // The email goes out in the clinic's language, so its document names do too.
+  const clinicLabels = (await getDictionary(asLocale(dentist.locale))).labels;
   await sendDocumentsRejectedEmail({
     email: dentist.email,
     clinicName: dentist.clinicName,
     locale: asLocale(dentist.locale),
     token,
     items: rejections.map((r) => ({
-      kind: kindById.get(r.documentId) ?? "",
+      kind: translateDocKind(clinicLabels, kindById.get(r.documentId) ?? ""),
       reason: r.reason.trim(),
     })),
   });

@@ -626,6 +626,12 @@ const zh: typeof he = {
   },
 
   labels: {
+    // Machine keys for licence documents (GENERIC_DOC_KIND and the
+    // popular-countries default). Kinds an admin typed show as typed.
+    docKinds: {
+      licence: "执照",
+      dental_licence: "牙医执业执照",
+    },
     specialties: {
       Implantology: "口腔种植",
       Endodontics: "根管治疗",

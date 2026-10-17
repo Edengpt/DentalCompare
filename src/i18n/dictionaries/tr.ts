@@ -672,6 +672,12 @@ const tr: typeof he = {
   },
 
   labels: {
+    // Machine keys for licence documents (GENERIC_DOC_KIND and the
+    // popular-countries default). Kinds an admin typed show as typed.
+    docKinds: {
+      licence: "Lisans",
+      dental_licence: "Diş hekimliği lisansı",
+    },
     specialties: {
       Implantology: "İmplantoloji",
       Endodontics: "Kanal tedavisi",

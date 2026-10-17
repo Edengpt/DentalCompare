@@ -1,6 +1,7 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { CheckCircle2, Clock, AlertTriangle, FileText } from "lucide-react";
 import { getDictionary } from "@/i18n/get-dictionary";
+import { translateDocKind } from "@/lib/labels";
 import { isLocale, defaultLocale } from "@/i18n/config";
 import { LocaleLink as Link } from "@/i18n/locale-link";
 import { format, plural } from "@/i18n/format";
@@ -377,7 +378,7 @@ export default async function ClinicDashboardPage({
             {documents.map((doc) => (
               <li key={doc.id} className="flex items-center gap-2.5">
                 <FileText className="text-muted-foreground h-4 w-4 shrink-0" />
-                <span className="text-foreground">{doc.kind}</span>
+                <span className="text-foreground">{translateDocKind(t.labels, doc.kind)}</span>
                 <span
                   className={
                     doc.rejectedAt

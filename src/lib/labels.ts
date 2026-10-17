@@ -42,6 +42,10 @@ export function translateTransfer(t: Labels, value: string): string {
   return t.transfers[value as keyof Labels["transfers"]] ?? value;
 }
 
+export function translateDocKind(t: Labels, value: string): string {
+  return t.docKinds[value as keyof Labels["docKinds"]] ?? value;
+}
+
 /**
  * How one quote line reads: "Crown — Zirconia", or the clinic's own wording
  * for an OTHER line. One rule for the form and the comparison table, so the

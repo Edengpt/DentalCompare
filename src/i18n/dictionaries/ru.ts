@@ -667,6 +667,12 @@ const ru: typeof he = {
   },
 
   labels: {
+    // Machine keys for licence documents (GENERIC_DOC_KIND and the
+    // popular-countries default). Kinds an admin typed show as typed.
+    docKinds: {
+      licence: "Лицензия",
+      dental_licence: "Лицензия стоматолога",
+    },
     specialties: {
       Implantology: "Имплантология",
       Endodontics: "Лечение каналов",

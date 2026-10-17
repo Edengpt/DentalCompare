@@ -5,6 +5,7 @@ import { LocaleLink as Link } from "@/i18n/locale-link";
 import { useT } from "@/i18n/provider";
 import { format } from "@/i18n/format";
 import { cn } from "@/lib/utils";
+import { translateDocKind } from "@/lib/labels";
 
 /** A document the admin sent back, with the reason the clinic was given. */
 export type ReturnedDocument = { kind: string; reason: string | null };
@@ -119,7 +120,7 @@ export function PendingReview({
                         key={doc.kind}
                         className="border-highlight bg-highlight/10 rounded-lg border px-3.5 py-2.5 text-sm"
                       >
-                        <span className="text-foreground font-semibold">{doc.kind}</span>
+                        <span className="text-foreground font-semibold">{translateDocKind(t.labels, doc.kind)}</span>
                         {doc.reason && (
                           <span className="text-muted-foreground mt-0.5 block whitespace-pre-wrap">
                             {doc.reason}

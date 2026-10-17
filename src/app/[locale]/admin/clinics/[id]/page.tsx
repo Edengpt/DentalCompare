@@ -13,6 +13,7 @@ import {
   User,
 } from "lucide-react";
 import { getDictionary } from "@/i18n/get-dictionary";
+import { translateDocKind } from "@/lib/labels";
 import { isLocale, defaultLocale } from "@/i18n/config";
 import { LocaleLink as Link } from "@/i18n/locale-link";
 import { format } from "@/i18n/format";
@@ -180,7 +181,7 @@ export default async function AdminClinicReviewPage({
               <div key={doc.id} className="space-y-1.5">
                 <MedicalFileViewer
                   src={`/api/clinics/documents/${doc.id}`}
-                  label={doc.kind}
+                  label={translateDocKind(t.labels, doc.kind)}
                   kind={doc.contentType === "application/pdf" ? "pdf" : "image"}
                   openLabel={t.clinics.reqOpenFull}
                 />

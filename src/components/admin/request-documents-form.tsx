@@ -8,6 +8,7 @@ import { useT } from "@/i18n/provider";
 import { format } from "@/i18n/format";
 import { requestBetterDocuments } from "@/server/admin-actions";
 import { cn } from "@/lib/utils";
+import { translateDocKind } from "@/lib/labels";
 
 /**
  * "This document is not good enough" — one reason field per document.
@@ -73,7 +74,7 @@ export function RequestDocumentsForm({
         {documents.map((doc) => (
           <div key={doc.id} className="flex flex-col gap-1.5">
             <label htmlFor={`reason-${doc.id}`} className="text-foreground text-sm font-medium">
-              {doc.kind}
+              {translateDocKind(t.labels, doc.kind)}
             </label>
             <input
               id={`reason-${doc.id}`}
