@@ -845,6 +845,7 @@ const he = {
     regLanguages: "שפות שהצוות דובר",
     regLogo: "לוגו / תמונת מרפאה",
     regOptional: " (אופציונלי)",
+    regRequiredNote: "שדות המסומנים ב-* הם שדות חובה.",
     regLogoAlt: "תצוגת לוגו",
     regDocs: "רישיון ומסמכים",
     regDocsHint:

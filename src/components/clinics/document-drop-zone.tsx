@@ -106,7 +106,10 @@ export function DocumentDropZone({
         busy && "pointer-events-none",
       )}
     >
-      <p className="text-foreground text-sm font-medium">{kind}</p>
+      <p className="text-foreground text-sm font-medium">
+        {kind}
+        <span className="text-alert"> *</span>
+      </p>
       {busy ? (
         <div className="w-full max-w-xs" aria-live="polite">
           <div className="text-teal-deep flex items-center justify-center gap-2 text-xs">
@@ -138,6 +141,7 @@ export function DocumentDropZone({
         type="file"
         accept={DOC_ACCEPT_ATTRIBUTE}
         disabled={busy}
+        aria-required
         onChange={(e) => {
           const file = e.target.files?.[0];
           e.target.value = "";

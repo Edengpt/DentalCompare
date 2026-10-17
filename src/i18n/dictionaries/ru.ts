@@ -871,6 +871,7 @@ const ru: typeof he = {
     regLanguages: "Языки, на которых говорит ваша команда",
     regLogo: "Логотип / фото клиники",
     regOptional: " (необязательно)",
+    regRequiredNote: "Поля, отмеченные *, обязательны для заполнения.",
     regLogoAlt: "Предпросмотр логотипа",
     regDocs: "Лицензия и документы",
     regDocsHint:
