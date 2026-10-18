@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { blobPathnameOf, readBlobHead } from "@/lib/blob-head";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { getRequestLocale } from "@/i18n/request-locale";
+import { sealUploadedFile } from "@/server/sealed-files";
 import { headMatchesType, isOwnRequestBlobPath, type UploadKind } from "@/lib/storage";
 
 export const runtime = "nodejs";
@@ -23,7 +24,8 @@ export const runtime = "nodejs";
  * request and kind, and the request must belong to the caller.
  */
 export async function POST(request: Request) {
-  const t = (await getDictionary(await getRequestLocale())).validation;
+  const dict = await getDictionary(await getRequestLocale());
+  const t = dict.validation;
 
   const { userId: clerkUserId } = await auth();
   if (!clerkUserId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -82,13 +84,24 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: t.fileSignature }, { status: 400 });
   }
 
+  // Encrypt now that the bytes have been checked; the encrypted copy's URL is
+  // the one recorded. A failure here records nothing and removes the upload.
+  let fileUrl: string;
+  try {
+    fileUrl = await sealUploadedFile(url, pathname, stored.contentType);
+  } catch (err) {
+    console.error(`encrypting ${kind} for ${requestId} failed:`, err);
+    void del(url).catch(() => {});
+    return NextResponse.json({ error: dict.dropzone.uploadFailed }, { status: 500 });
+  }
+
   const updated = await db.request.update({
     where: { id: requestId },
     // A fresh upload starts a fresh retention clock: a draft purged for
     // inactivity and then resumed must not stay marked as purged, or its new
     // files would never be picked up again.
     data: {
-      ...(kind === "treatment" ? { treatmentFileUrl: url } : { xrayFileUrl: url }),
+      ...(kind === "treatment" ? { treatmentFileUrl: fileUrl } : { xrayFileUrl: fileUrl }),
       filesPurgedAt: null,
     },
     select: { treatmentFileUrl: true, xrayFileUrl: true },
@@ -99,11 +112,11 @@ export async function POST(request: Request) {
   // file still sits in the request's folder, where deleting or purging the
   // request sweeps it up.
   const previous = kind === "treatment" ? owned.treatmentFileUrl : owned.xrayFileUrl;
-  if (previous && previous !== url) {
+  if (previous && previous !== fileUrl) {
     await del(previous).catch((err) =>
       console.error(`replaced ${kind} for ${requestId} not deleted:`, err),
     );
   }
 
-  return NextResponse.json({ url, kind, request: updated });
+  return NextResponse.json({ url: fileUrl, kind, request: updated });
 }

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { get } from "@vercel/blob";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { isAdminEmail } from "@/server/admin";
+import { readPrivateFile } from "@/server/sealed-files";
 
 export const runtime = "nodejs";
 
@@ -66,15 +66,13 @@ export async function GET(
   if (!url) return new NextResponse("Not found", { status: 404 });
 
   try {
-    const result = await get(url, { access: "private" });
-    if (!result || result.statusCode !== 200 || !result.stream) {
-      return new NextResponse("Not found", { status: 404 });
-    }
-    const contentType = result.blob.contentType || "application/octet-stream";
-    const filename = `${FILENAMES[kind]}.${extFor(result.blob.contentType)}`;
-    return new NextResponse(result.stream, {
+    // Decrypted here, on the way out: the store only ever holds ciphertext.
+    const file = await readPrivateFile(url);
+    if (!file) return new NextResponse("Not found", { status: 404 });
+    const filename = `${FILENAMES[kind]}.${extFor(file.contentType)}`;
+    return new NextResponse(new Uint8Array(file.data), {
       headers: {
-        "Content-Type": contentType,
+        "Content-Type": file.contentType,
         "Content-Disposition": `inline; filename="${filename}"`,
         "Cache-Control": "private, no-store",
       },

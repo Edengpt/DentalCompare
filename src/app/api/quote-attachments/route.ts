@@ -14,6 +14,7 @@ import {
   sanitizeAttachmentName,
 } from "@/lib/quote-attachments";
 import { loadEditableTarget } from "@/server/quote-target";
+import { sealUploadedFile } from "@/server/sealed-files";
 
 export const runtime = "nodejs";
 
@@ -89,6 +90,17 @@ export async function POST(request: Request) {
   // Count and create under a lock on the clinic's row, so two confirms racing
   // past the token route's count can't both land a sixth file — a plain
   // transaction at READ COMMITTED would let both see four.
+  // Encrypt now that the bytes have been checked; the row records the
+  // encrypted copy. A failure records nothing and removes the upload.
+  let fileUrl: string;
+  try {
+    fileUrl = await sealUploadedFile(url, pathname, stored.contentType);
+  } catch (err) {
+    console.error(`encrypting quote attachment for ${rd.id} failed:`, err);
+    void del(url).catch(() => {});
+    return NextResponse.json({ error: dict.dropzone.uploadFailed }, { status: 500 });
+  }
+
   const attachment = await db.$transaction(async (tx) => {
     await tx.$queryRaw`SELECT 1 FROM "RequestDentist" WHERE id = ${rd.id} FOR UPDATE`;
     const count = await tx.quoteAttachment.count({ where: { requestDentistId: rd.id } });
@@ -96,7 +108,7 @@ export async function POST(request: Request) {
     return tx.quoteAttachment.create({
       data: {
         requestDentistId: rd.id,
-        blobUrl: url,
+        blobUrl: fileUrl,
         contentType: stored.contentType,
         sizeBytes: stored.size,
         originalName: name,
@@ -105,7 +117,7 @@ export async function POST(request: Request) {
     });
   });
   if (!attachment) {
-    void del(url).catch(() => {});
+    void del(fileUrl).catch(() => {});
     return NextResponse.json(
       { error: format(dict.errors.attachmentLimit, { max: QUOTE_LIMITS.maxAttachments }) },
       { status: 400 },
