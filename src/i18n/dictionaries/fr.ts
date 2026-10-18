@@ -1353,6 +1353,7 @@ const fr: typeof he = {
       "Trop de tentatives d'inscription depuis cette adresse. Réessayez dans une heure environ.",
     requiredFields: "Veuillez remplir tous les champs obligatoires",
     fieldRequired: "Obligatoire",
+    fieldTooLong: "Trop long",
     invalidEmail: "Cette adresse e-mail n'est pas valide",
     invalidExperience: "Le nombre d'années d'expérience n'est pas valide",
     mustAcceptTerms: "Vous devez accepter les conditions d'abonnement pour vous inscrire",

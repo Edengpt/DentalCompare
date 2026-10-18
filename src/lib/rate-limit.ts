@@ -1,6 +1,10 @@
 import "server-only";
 import { db } from "@/lib/db";
 
+// Longer than any window in RATE_LIMITS, so a global sweep never cuts one short.
+const SWEEP_AGE_MS = 24 * 60 * 60 * 1000;
+const SWEEP_PROBABILITY = 0.01;
+
 export type RateLimitResult = { allowed: true } | { allowed: false; retryAfterMs: number };
 
 /**
@@ -21,6 +25,12 @@ export async function rateLimit(
   const windowStart = new Date(now - windowMs);
   try {
     await db.rateLimit.deleteMany({ where: { bucket, createdAt: { lt: windowStart } } });
+    // The per-bucket prune above never reaches a bucket that is hit only once —
+    // a guessed quote token, a one-off IP — so those rows would pile up forever.
+    // Now and then, clear every expired row regardless of bucket.
+    if (Math.random() < SWEEP_PROBABILITY) {
+      await db.rateLimit.deleteMany({ where: { createdAt: { lt: new Date(now - SWEEP_AGE_MS) } } });
+    }
     const count = await db.rateLimit.count({
       where: { bucket, createdAt: { gte: windowStart } },
     });

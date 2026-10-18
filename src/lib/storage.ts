@@ -137,6 +137,19 @@ export function validateLogo(file: File): FileValidationError | null {
   return null;
 }
 
+/**
+ * Magic-byte check for a logo. Separate from headMatchesType because WebP needs
+ * twelve bytes ("RIFF" … "WEBP"), more than the eight the stored-blob readers take.
+ */
+export async function logoSignatureMatches(file: File): Promise<boolean> {
+  const head = new Uint8Array(await file.slice(0, 12).arrayBuffer());
+  if (file.type === "image/webp") {
+    const ascii = (from: number, to: number) => String.fromCharCode(...head.subarray(from, to));
+    return head.length === 12 && ascii(0, 4) === "RIFF" && ascii(8, 12) === "WEBP";
+  }
+  return headMatchesType(head, file.type);
+}
+
 function logoExtension(file: File): string {
   if (file.type === "image/png") return "png";
   if (file.type === "image/webp") return "webp";

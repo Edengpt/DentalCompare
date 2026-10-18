@@ -139,7 +139,7 @@ export async function submitQuote(input: {
   }));
 
   const isNew = !rd.quote;
-  const note = input.note?.trim() || null;
+  const note = input.note?.trim().slice(0, QUOTE_LIMITS.maxNoteLength) || null;
 
   // Only canonical inclusion keys are stored, so the patient compares clinics
   // on the same axis instead of reading two differently-worded notes.
@@ -181,7 +181,8 @@ export async function submitQuote(input: {
     sessionsRequired > 1 ? clampInt(input.weeksBetweenSessions, 1, 1, 104) : null;
   const warrantyYears =
     input.warrantyYears == null ? null : clampInt(input.warrantyYears, 0, 0, 50);
-  const warrantyNote = input.warrantyNote?.trim() || null;
+  const warrantyNote =
+    input.warrantyNote?.trim().slice(0, QUOTE_LIMITS.maxWarrantyNoteLength) || null;
 
   const fields = {
     amountMinor,

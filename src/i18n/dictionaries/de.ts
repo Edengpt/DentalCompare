@@ -1358,6 +1358,7 @@ const de: typeof he = {
       "Zu viele Registrierungsversuche von dieser Adresse. Versuchen Sie es in etwa einer Stunde erneut.",
     requiredFields: "Bitte füllen Sie alle Pflichtfelder aus",
     fieldRequired: "Pflichtfeld",
+    fieldTooLong: "Zu lang",
     invalidEmail: "Diese E-Mail-Adresse ist ungültig",
     invalidExperience: "Die Angabe zur Berufserfahrung ist ungültig",
     mustAcceptTerms: "Für die Registrierung müssen Sie die Abobedingungen akzeptieren",

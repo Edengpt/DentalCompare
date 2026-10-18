@@ -149,6 +149,9 @@ export const QUOTE_LIMITS = {
   maxFlightTickets: 20,
   maxAttachments: 5,
   attachmentMaxMB: 10,
+  /** Free text shown to the patient. Ample for a real note; a ceiling for a script. */
+  maxNoteLength: 4000,
+  maxWarrantyNoteLength: 1000,
 } as const;
 
 /**

@@ -1,4 +1,5 @@
 import type { FileValidationError } from "./storage";
+import { isOwnBlobUrl } from "./blob-store";
 
 /**
  * Licence documents a clinic must hand over before it can be listed.
@@ -98,11 +99,10 @@ export function isClinicDocumentBlobPath(pathname: string): boolean {
  * another clinic's private medical file and have an admin open it.
  */
 export function isClinicDocumentBlobUrl(url: string): boolean {
-  // Built by hand rather than with a template literal: inside one, `\.` is just
-  // `.` again by the time RegExp sees it, and the dots would match any
-  // character — `xblobyvercel-storagezcom` would pass.
-  const host = String.raw`[a-z0-9.-]*\.blob\.vercel-storage\.com`;
-  return new RegExp(`^https://${host}/${DOC_PREFIX}`, "i").test(url);
+  // Our own PRIVATE store, not any Vercel Blob host: a document on a store an
+  // attacker owns would be streamed to an admin from our domain (blob-store.ts).
+  if (!isOwnBlobUrl(url, "private")) return false;
+  return new URL(url).pathname.startsWith(`/${DOC_PREFIX}`);
 }
 
 /**

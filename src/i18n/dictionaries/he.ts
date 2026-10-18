@@ -1292,6 +1292,7 @@ const he = {
     tooManyRegistrations: "יותר מדי ניסיונות הרשמה מכתובת זו. נסו שוב בעוד כשעה.",
     requiredFields: "יש למלא את כל שדות החובה",
     fieldRequired: "שדה חובה",
+    fieldTooLong: "ארוך מדי",
     invalidEmail: "כתובת אימייל לא תקינה",
     invalidExperience: "שנות ניסיון לא תקינות",
     mustAcceptTerms: "יש לאשר את תנאי המנוי כדי להירשם",

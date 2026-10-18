@@ -5,3 +5,9 @@ import { config } from "dotenv";
 
 config({ path: ".env.local" });
 config({ path: ".env" });
+
+// Blob URLs in tests are fixtures (`x.blob.vercel-storage.com`), and CI has no
+// store tokens. Drop the developer's real ones so a local run checks blob hosts
+// exactly the way CI does, instead of pinning them to a real store.
+delete process.env.BLOB_READ_WRITE_TOKEN;
+delete process.env.LOGO_BLOB_READ_WRITE_TOKEN;

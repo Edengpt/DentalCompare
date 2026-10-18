@@ -1269,6 +1269,7 @@ const zh: typeof he = {
     tooManyRegistrations: "此地址的注册尝试次数过多。请约一小时后再试。",
     requiredFields: "请填写所有必填字段",
     fieldRequired: "必填",
+    fieldTooLong: "内容过长",
     invalidEmail: "电子邮件地址无效",
     invalidExperience: "从业年限无效",
     mustAcceptTerms: "注册前必须接受订阅条款",

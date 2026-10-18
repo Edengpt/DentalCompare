@@ -1343,6 +1343,7 @@ const tr: typeof he = {
       "Bu adresten çok fazla kayıt denemesi yapıldı. Yaklaşık bir saat sonra tekrar deneyin.",
     requiredFields: "Lütfen tüm zorunlu alanları doldurun",
     fieldRequired: "Zorunlu",
+    fieldTooLong: "Çok uzun",
     invalidEmail: "Bu e-posta adresi geçerli değil",
     invalidExperience: "Deneyim yılı geçerli değil",
     mustAcceptTerms: "Kayıt olmak için abonelik koşullarını kabul etmelisiniz",

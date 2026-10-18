@@ -15,6 +15,7 @@ import { z } from "zod";
  */
 export type RegistrationErrorKey =
   | "fieldRequired"
+  | "fieldTooLong"
   | "invalidEmail"
   | "invalidExperience"
   | "mustPickCountry"
@@ -23,21 +24,36 @@ export type RegistrationErrorKey =
 
 const required = z.string().trim().min(1, "fieldRequired");
 
+// The form is public, so every field gets a ceiling. Generous for any real
+// clinic; what it stops is a script posting a megabyte into the admin queue.
+const requiredText = (max: number) => required.max(max, "fieldTooLong");
+
 /** Step 1 — who the clinic is and where it operates. */
 export const clinicDetailsSchema = z.object({
-  contactName: required,
-  dentistName: required,
-  clinicName: required,
-  email: z.string().trim().toLowerCase().min(1, "fieldRequired").pipe(z.email("invalidEmail")),
-  phone: required,
-  city: required,
-  address: required,
+  contactName: requiredText(120),
+  dentistName: requiredText(120),
+  clinicName: requiredText(200),
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .min(1, "fieldRequired")
+    .max(254, "invalidEmail")
+    .pipe(z.email("invalidEmail")),
+  phone: requiredText(40),
+  city: requiredText(120),
+  address: requiredText(300),
   // Empty is "you skipped it", not "you typed nonsense" — the two get different
   // messages because they need different fixes.
   experienceYears: required.pipe(
-    z.coerce.number<string>({ error: "invalidExperience" }).min(0, "invalidExperience"),
+    // A ceiling: an unbounded number overflows the Int column and turns a typo
+    // into a 500. (Fractions are floored by the action, as before.)
+    z.coerce
+      .number<string>({ error: "invalidExperience" })
+      .min(0, "invalidExperience")
+      .max(80, "invalidExperience"),
   ),
-  countryCode: z.string().trim().min(1, "mustPickCountry"),
+  countryCode: z.string().trim().min(1, "mustPickCountry").max(8, "mustPickCountry"),
 });
 
 /** Step 3 — the plan and the contract. Step 2 (documents) depends on the country, see clinic-documents. */
