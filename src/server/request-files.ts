@@ -60,7 +60,7 @@ export async function purgeRequestFiles(requestId: string): Promise<number> {
     db.quoteAttachment.deleteMany({ where: { requestDentist: { requestId } } }),
     db.request.update({
       where: { id: requestId },
-      data: { treatmentFileUrl: "", xrayFileUrl: "" },
+      data: { treatmentFileUrl: "", xrayFileUrl: "", filesPurgedAt: new Date() },
     }),
   ]);
   return urls.length;

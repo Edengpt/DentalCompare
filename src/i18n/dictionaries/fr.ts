@@ -451,6 +451,8 @@ const fr: typeof he = {
     continueRequest: "Reprendre cette demande",
     uploadedDocuments: "Documents téléversés",
     noDocuments: "Aucun document téléversé pour l'instant.",
+    filesPurged:
+      "Pour protéger la vie privée, les fichiers médicaux ont été supprimés automatiquement le {date}. Les devis sont conservés.",
     viewFile: "Voir le fichier",
     patientNotes: "Vos remarques",
     dentistsInRequest: "Cliniques de cette demande ({count})",

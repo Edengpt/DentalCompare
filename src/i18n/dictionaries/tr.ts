@@ -450,6 +450,8 @@ const tr: typeof he = {
     continueRequest: "Bu talebe devam et",
     uploadedDocuments: "Yüklenen belgeler",
     noDocuments: "Henüz belge yüklenmedi.",
+    filesPurged:
+      "Gizliliği korumak için tıbbi dosyalar {date} tarihinde otomatik olarak silindi. Teklifler korunur.",
     viewFile: "Dosyayı görüntüle",
     patientNotes: "Notlarınız",
     dentistsInRequest: "Bu talepteki klinikler ({count})",

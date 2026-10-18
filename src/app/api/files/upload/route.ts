@@ -84,7 +84,13 @@ export async function POST(request: Request) {
 
   const updated = await db.request.update({
     where: { id: requestId },
-    data: kind === "treatment" ? { treatmentFileUrl: url } : { xrayFileUrl: url },
+    // A fresh upload starts a fresh retention clock: a draft purged for
+    // inactivity and then resumed must not stay marked as purged, or its new
+    // files would never be picked up again.
+    data: {
+      ...(kind === "treatment" ? { treatmentFileUrl: url } : { xrayFileUrl: url }),
+      filesPurgedAt: null,
+    },
     select: { treatmentFileUrl: true, xrayFileUrl: true },
   });
 

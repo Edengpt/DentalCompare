@@ -242,6 +242,11 @@ model Request {
   // Last time the owner opened this request's page. A quote that arrived after
   // it is one the patient has not seen yet — the reminder cron's only signal.
   patientViewedAt      DateTime?
+  /// When the medical files were deleted — at the end of the retention period
+  /// (FILE_RETENTION_DAYS) or with the patient's account. Both file URLs are
+  /// empty from then on; this is what tells "deleted on purpose" apart from
+  /// "never uploaded".
+  filesPurgedAt        DateTime?
   createdAt            DateTime      @default(now())
   updatedAt            DateTime      @updatedAt
 

@@ -443,6 +443,8 @@ const ru: typeof he = {
     continueRequest: "Продолжить запрос",
     uploadedDocuments: "Загруженные документы",
     noDocuments: "Документы ещё не загружены.",
+    filesPurged:
+      "В целях защиты конфиденциальности медицинские файлы были автоматически удалены {date}. Предложения сохранены.",
     viewFile: "Открыть файл",
     patientNotes: "Ваши комментарии",
     dentistsInRequest: "Клиники в этом запросе ({count})",

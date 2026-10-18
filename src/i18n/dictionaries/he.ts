@@ -442,6 +442,8 @@ const he = {
     continueRequest: "המשך הבקשה",
     uploadedDocuments: "המסמכים שהועלו",
     noDocuments: "עדיין לא הועלו מסמכים.",
+    filesPurged:
+      "כדי לשמור על הפרטיות, הקבצים הרפואיים נמחקו אוטומטית ב-{date}. הצעות המחיר נשארות.",
     viewFile: "צפייה בקובץ",
     patientNotes: "הערות המטופל",
     dentistsInRequest: "המרפאות בבקשה ({count})",
