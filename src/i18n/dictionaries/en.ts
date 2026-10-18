@@ -451,6 +451,8 @@ const en: typeof he = {
     continueRequest: "Continue this request",
     uploadedDocuments: "Uploaded documents",
     noDocuments: "No documents uploaded yet.",
+    filesPurged:
+      "To protect your privacy, the medical files were deleted automatically on {date}. The quotes stay.",
     viewFile: "View file",
     patientNotes: "Your notes",
     dentistsInRequest: "Clinics in this request ({count})",

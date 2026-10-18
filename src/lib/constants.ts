@@ -150,3 +150,14 @@ export const RATE_LIMITS = {
  * without the wording it was given to proves nothing.
  */
 export const PATIENT_CONSENT_VERSION = "2026-08-24";
+
+/**
+ * How long a patient's medical files (treatment plan, x-ray, clinics' quote
+ * documents) are kept once the request has gone out to clinics. Long enough for
+ * clinics to quote and the patient to ask questions; after that the quotes stay
+ * and the files go. Stated in the privacy policy — change both together.
+ */
+export const FILE_RETENTION_DAYS = 30;
+
+/** Files of a draft that was never sent, counted from its last change. */
+export const DRAFT_FILE_RETENTION_DAYS = 7;

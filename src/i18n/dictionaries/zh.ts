@@ -422,6 +422,7 @@ const zh: typeof he = {
     continueRequest: "继续此请求",
     uploadedDocuments: "已上传的文件",
     noDocuments: "尚未上传任何文件。",
+    filesPurged: "为保护隐私，医疗文件已于{date}自动删除。报价仍会保留。",
     viewFile: "查看文件",
     patientNotes: "您的备注",
     dentistsInRequest: "此请求中的诊所（{count}）",

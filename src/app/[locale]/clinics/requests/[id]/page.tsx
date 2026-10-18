@@ -77,6 +77,7 @@ export default async function ClinicRequestPage({
           id: true,
           treatmentFileUrl: true,
           xrayFileUrl: true,
+          filesPurgedAt: true,
           patientNotes: true,
           // The same details the delivery email already gave this clinic.
           user: { select: { fullName: true, phone: true, phoneVerifiedAt: true, email: true } },
@@ -211,6 +212,13 @@ export default async function ClinicRequestPage({
 
           <section className="space-y-4">
             <h2 className="font-display text-foreground text-lg font-bold">{t.clinics.reqFiles}</h2>
+            {files.length === 0 && rd.request.filesPurgedAt && (
+              <p className="text-muted-foreground border-border/60 bg-card rounded-lg border px-5 py-4 text-sm">
+                {format(t.requestDetail.filesPurged, {
+                  date: dateFmt.format(rd.request.filesPurgedAt),
+                })}
+              </p>
+            )}
             {files.map((f) => (
               <MedicalFileViewer
                 key={f.key}

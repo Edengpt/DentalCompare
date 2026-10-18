@@ -5,6 +5,10 @@
       "schedule": "0 4 * * *"
     },
     {
+      "path": "/api/cron/purge-medical-files",
+      "schedule": "0 5 * * *"
+    },
+    {
       "path": "/api/cron/renew-subscriptions",
       "schedule": "0 6 * * *"
     },

@@ -69,6 +69,7 @@ export default async function RequestDetailPage({
       createdAt: true,
       treatmentFileUrl: true,
       xrayFileUrl: true,
+      filesPurgedAt: true,
       patientNotes: true,
       requestDentists: {
         select: {
@@ -196,11 +197,11 @@ export default async function RequestDetailPage({
   const cheapestId = cheapestDentistId(quoteRows, comparable);
   const { responded, total } = responseCounts(quoteRows);
 
-  const date = new Intl.DateTimeFormat(intlLocale[isLocale(locale) ? locale : defaultLocale], {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(request.createdAt);
+  const dateFormatter = new Intl.DateTimeFormat(
+    intlLocale[isLocale(locale) ? locale : defaultLocale],
+    { day: "numeric", month: "long", year: "numeric" },
+  );
+  const date = dateFormatter.format(request.createdAt);
 
   const isSent = request.status === "SENT" || request.status === "SUBMITTED";
   const filesReady = !!request.treatmentFileUrl && !!request.xrayFileUrl;
@@ -337,7 +338,11 @@ export default async function RequestDetailPage({
             </h2>
             {fileLinks.length === 0 ? (
               <p className="text-muted-foreground border-border/60 bg-card rounded-lg border px-5 py-4 text-sm">
-                {t.requestDetail.noDocuments}
+                {request.filesPurgedAt
+                  ? format(t.requestDetail.filesPurged, {
+                      date: dateFormatter.format(request.filesPurgedAt),
+                    })
+                  : t.requestDetail.noDocuments}
               </p>
             ) : (
               <ul className="border-border/60 bg-card divide-border/60 divide-y rounded-lg border">

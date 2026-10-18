@@ -455,6 +455,8 @@ const de: typeof he = {
     continueRequest: "Anfrage fortsetzen",
     uploadedDocuments: "Hochgeladene Unterlagen",
     noDocuments: "Noch keine Unterlagen hochgeladen.",
+    filesPurged:
+      "Zum Schutz der Privatsphäre wurden die medizinischen Dateien am {date} automatisch gelöscht. Die Angebote bleiben erhalten.",
     viewFile: "Datei ansehen",
     patientNotes: "Ihre Anmerkungen",
     dentistsInRequest: "Kliniken in dieser Anfrage ({count})",
