@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { get, del } from "@vercel/blob";
+import { del } from "@vercel/blob";
+import { readPrivateFile } from "@/server/sealed-files";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { rateLimit } from "@/lib/rate-limit";
@@ -59,13 +60,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
   const download = new URL(req.url).searchParams.get("download") === "1";
   try {
-    const result = await get(attachment.blobUrl, { access: "private" });
-    if (!result || result.statusCode !== 200 || !result.stream) {
-      return new NextResponse("Not found", { status: 404 });
-    }
-    return new NextResponse(result.stream, {
+    const file = await readPrivateFile(attachment.blobUrl);
+    if (!file) return new NextResponse("Not found", { status: 404 });
+    return new NextResponse(new Uint8Array(file.data), {
       headers: {
-        "Content-Type": result.blob.contentType || "application/octet-stream",
+        "Content-Type": file.contentType,
         "Content-Disposition": contentDisposition(
           download ? "attachment" : "inline",
           attachment.originalName,

@@ -12,9 +12,17 @@ const CORE_OK = {
   CRON_SECRET: "s",
   RESEND_API_KEY: "re_x",
   ADMIN_EMAILS: "a@b.c",
+  FILE_ENCRYPTION_KEY: Buffer.alloc(32, 7).toString("base64"),
 };
 
 describe("checkEnv", () => {
+  it("rejects an encryption key of the wrong length", () => {
+    const env = { ...CORE_OK, FILE_ENCRYPTION_KEY: Buffer.alloc(16).toString("base64") };
+    expect(checkEnv(env, true).errors).toEqual([
+      "FILE_ENCRYPTION_KEY: must be 32 bytes, base64-encoded",
+    ]);
+  });
+
   it("passes a complete core config", () => {
     expect(checkEnv(CORE_OK, true).errors).toEqual([]);
   });

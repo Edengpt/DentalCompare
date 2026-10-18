@@ -72,7 +72,8 @@ describe("GET /api/quote-attachments/[id]", () => {
     getBlob.mockResolvedValue({
       statusCode: 200,
       blob: { contentType: "application/pdf" },
-      stream: new ReadableStream(),
+      // A finite body: the route reads the whole file to decrypt it.
+      stream: new Response("%PDF-1.7").body,
     });
   });
   afterEach(() => vi.clearAllMocks());
