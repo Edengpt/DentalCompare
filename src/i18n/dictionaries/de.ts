@@ -595,8 +595,11 @@ const de: typeof he = {
     greetingNoName: "Hallo,",
     patientFallback: "Der Patient",
     quoteRequestBody:
-      "{patient} bittet über DentalCompare um ein Angebot für eine Zahnbehandlung. Behandlungsplan und Röntgenbild sind dieser E-Mail angehängt.",
+      "{patient} bittet über DentalCompare um ein Angebot für eine Zahnbehandlung. Behandlungsplan und Röntgenbild liegen in Ihrem Praxisbereich bereit.",
     quoteRequestCta: "💰 Preis angeben – dauert 5 Sekunden",
+    viewFilesCta: "Behandlungsplan und Röntgenbild ansehen",
+    viewFilesNote:
+      "Zum Schutz der Privatsphäre des Patienten werden medizinische Dateien nicht per E-Mail versendet. Melden Sie sich mit dieser E-Mail-Adresse an, um sie anzusehen.",
     requestNumber: "Anfragenummer:",
     dateLabel: "Datum:",
     directContact: "Direkter Kontakt:",
@@ -798,7 +801,8 @@ const de: typeof he = {
     pageSubtitle:
       "Sehen Sie sich Behandlungsplan und Röntgenbild an und füllen Sie dann Ihr Angebot aus. Je detaillierter Ihre Angaben, desto leichter fällt dem Patienten der Vergleich – und über Ländergrenzen hinweg sagt der Preis allein nicht alles.",
     attachmentsNote:
-      "Behandlungsplan und Röntgenbild sind der E-Mail angehängt, die Sie erhalten haben – öffnen Sie die Anhänge, um sie anzusehen.",
+      "Zum Schutz der Privatsphäre des Patienten sind Behandlungsplan und Röntgenbild nur in Ihrem Praxisbereich verfügbar. Melden Sie sich mit der E-Mail-Adresse an, an die diese Anfrage gesendet wurde.",
+    viewFilesLink: "Dateien im Praxisbereich öffnen",
     fallbackPatient: "den Patienten",
     invalidPrice: "Bitte geben Sie einen gültigen Preis ein",
     sentTitle: "Ihr Angebot ist unterwegs – vielen Dank! 🎉",
@@ -1336,7 +1340,6 @@ const de: typeof he = {
     userNotSynced:
       "Ihr Konto ist noch nicht synchronisiert – laden Sie die Seite neu und versuchen Sie es erneut",
     patientNotFound: "Patient nicht gefunden",
-    attachmentsFailed: "Die anzuhängenden Dateien konnten nicht geladen werden",
     requestNotFound: "Anfrage nicht gefunden",
     requestAlreadySent: "Diese Anfrage wurde bereits gesendet",
     requestLocked: "Eine gesendete Anfrage kann nicht mehr bearbeitet werden",

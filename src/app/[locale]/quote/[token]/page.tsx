@@ -1,8 +1,9 @@
 import { getDictionary } from "@/i18n/get-dictionary";
 import { isLocale, defaultLocale } from "@/i18n/config";
 import { format } from "@/i18n/format";
+import { LocaleLink as Link } from "@/i18n/locale-link";
 import { notFound } from "next/navigation";
-import { FileText, Image as ImageIcon } from "lucide-react";
+import { ArrowRight, FileText, Image as ImageIcon } from "lucide-react";
 import { db } from "@/lib/db";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
@@ -80,6 +81,15 @@ export default async function QuotePage({
                 </li>
               ))}
             </ul>
+            {/* The token in this page's URL is not enough to reach the files:
+                they open only in the clinic area, behind sign-in. */}
+            <Link
+              href={`/clinics/requests/${rd.id}`}
+              className="text-teal-deep mt-3 inline-flex items-center gap-1.5 text-sm font-semibold hover:underline"
+            >
+              {t.quoteForm.viewFilesLink}
+              <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+            </Link>
           </div>
         )}
 

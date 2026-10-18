@@ -1,6 +1,5 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import { get } from "@vercel/blob";
 import { db } from "@/lib/db";
 import { getResend, fromAddress } from "@/lib/email";
 import { quotePath } from "@/lib/quotes";
@@ -14,20 +13,6 @@ import { getDictionary } from "@/i18n/get-dictionary";
 import { getRequestLocale } from "@/i18n/request-locale";
 import { asLocale, intlLocale } from "@/i18n/config";
 
-/**
- * Downloads a private blob and returns it as a Resend attachment (Buffer content)
- * — dentists receive the medical files as attachments rather than links to a
- * now-private blob URL.
- */
-async function toAttachment(url: string, filename: string) {
-  const result = await get(url, { access: "private" });
-  if (!result || result.statusCode !== 200 || !result.stream) {
-    throw new Error(`blob fetch failed for ${filename}`);
-  }
-  const content = Buffer.from(await new Response(result.stream).arrayBuffer());
-  return { filename, content };
-}
-
 export type FulfillResult =
   { ok: true; emailsSent: number; alreadySent: number } | { ok: false; error: string };
 
@@ -35,20 +20,14 @@ export type FulfillResult =
 // the clinic's inbox, and a Budapest clinic reading Hebrew is the failure this
 // whole change exists to prevent.
 
-function attachmentName(url: string, fallback: string): string {
-  try {
-    const path = new URL(url).pathname;
-    const ext = path.split(".").pop()?.toLowerCase();
-    if (ext && ["pdf", "jpg", "jpeg", "png"].includes(ext)) return `${fallback}.${ext}`;
-  } catch {
-    // ignore malformed URLs — fall through to a generic name
-  }
-  return `${fallback}.pdf`;
-}
-
 /**
  * Idempotently delivers a submitted request: emails every selected dentist that
- * hasn't been emailed yet, attaching the treatment plan and x-ray.
+ * hasn't been emailed yet.
+ *
+ * The treatment plan and x-ray are deliberately NOT attached. A copy in an
+ * email lives on in the mail provider and the clinic's inbox, beyond anything
+ * we can delete or protect. The email carries a link to the request in the
+ * clinic area instead, where the files sit behind sign-in and can be removed.
  *
  * Keyed on the request itself — there is no payment gate, because the patient
  * side is free (PRD 4.1) and the clinic already paid via its subscription.
@@ -65,8 +44,6 @@ export async function fulfillRequest(requestId: string): Promise<FulfillResult> 
     select: {
       id: true,
       createdAt: true,
-      treatmentFileUrl: true,
-      xrayFileUrl: true,
       user: { select: { fullName: true, email: true, phone: true, phoneVerifiedAt: true } },
       requestDentists: {
         where: { emailSent: false },
@@ -94,25 +71,6 @@ export async function fulfillRequest(requestId: string): Promise<FulfillResult> 
       month: "long",
       year: "numeric",
     }).format(request.createdAt);
-
-  // Download both private files once and attach them as content — the dentist
-  // gets real attachments, not a link to a private blob.
-  let attachments: Array<{ filename: string; content: Buffer }>;
-  try {
-    attachments = [
-      await toAttachment(
-        request.treatmentFileUrl,
-        attachmentName(request.treatmentFileUrl, "treatment-plan"),
-      ),
-      await toAttachment(request.xrayFileUrl, attachmentName(request.xrayFileUrl, "dental-xray")),
-    ];
-  } catch (err) {
-    logEvent("error", "fulfillment.attachment_download_failed", {
-      requestId: request.id,
-      error: err instanceof Error ? err.message : String(err),
-    });
-    return { ok: false, error: e.attachmentsFailed };
-  }
 
   const resend = getResend();
   const from = fromAddress();
@@ -145,6 +103,7 @@ export async function fulfillRequest(requestId: string): Promise<FulfillResult> 
       const quoteUrl = `${appUrl()}${quotePath(token)}`;
 
       const clinicLocale = asLocale(rd.dentist.locale);
+      const filesUrl = `${appUrl()}/${clinicLocale}/clinics/requests/${rd.id}`;
       const t = (await getDictionary(clinicLocale)).emails;
 
       const { error } = await resend.emails.send({
@@ -165,8 +124,8 @@ export async function fulfillRequest(requestId: string): Promise<FulfillResult> 
           requestId: request.id,
           date: formatDate(clinicLocale),
           quoteUrl,
+          filesUrl,
         }),
-        attachments,
       });
 
       if (error) throw new Error(error.message ?? "Resend error");

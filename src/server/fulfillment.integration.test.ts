@@ -5,10 +5,13 @@ import type { fulfillRequest as FulfillFn } from "@/server/fulfillment";
 
 // Record Resend sends and let specific recipients be forced to fail.
 const h = vi.hoisted(() => {
-  const state = { sends: [] as Array<{ to: string; html: string }>, failFor: new Set<string>() };
+  const state = {
+    sends: [] as Array<{ to: string; html: string; attachments?: unknown[] }>,
+    failFor: new Set<string>(),
+  };
   return {
     state,
-    send: async (msg: { to: string; html: string }) => {
+    send: async (msg: { to: string; html: string; attachments?: unknown[] }) => {
       state.sends.push(msg);
       if (state.failFor.has(msg.to)) return { data: null, error: { name: "e", message: "boom" } };
       return { data: { id: "x" }, error: null };
@@ -20,20 +23,6 @@ vi.mock("@/lib/email", () => ({
   getResend: () => ({ emails: { send: h.send } }),
   fromAddress: () => "test@dentalcompare.co.il",
 }));
-vi.mock("@vercel/blob", () => ({
-  get: async () => ({
-    statusCode: 200,
-    stream: new ReadableStream<Uint8Array>({
-      start(c) {
-        c.enqueue(new Uint8Array([1, 2, 3]));
-        c.close();
-      },
-    }),
-    headers: new Headers(),
-    blob: { contentType: "application/pdf" },
-  }),
-}));
-
 const hasDb = Boolean(process.env.DATABASE_URL);
 
 // Imported lazily (only when a DB is configured) so the suite stays safe — and
@@ -144,6 +133,9 @@ describe.skipIf(!hasDb)("fulfillRequest (integration, real DB)", () => {
         const send = h.state.sends.find((s) => s.to === r.dentist.email);
         expect(send).toBeTruthy();
         expect(send!.html).toContain(r.quoteToken!);
+        // No medical file leaves by email — only a link to the clinic area.
+        expect(send!.attachments ?? []).toHaveLength(0);
+        expect(send!.html).toContain("/clinics/requests/");
       }
     },
     DB_TIMEOUT,

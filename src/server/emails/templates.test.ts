@@ -25,6 +25,28 @@ describe("escapeHtml", () => {
   });
 });
 
+describe("quote request email", () => {
+  // Medical files never travel by email: a copy there outlives anything we can
+  // delete. The clinic gets a link to the signed-in area instead.
+  it("links to the files in the clinic area and says why they are not attached", () => {
+    const html = quoteRequestEmailHtml({
+      locale: "en",
+      t: en.emails,
+      dentistName: "Dr Cohen",
+      patientName: "Dana",
+      patientPhone: "050-1234567",
+      phoneVerified: true,
+      requestId: "abcdef12-3456",
+      date: "1 January 2026",
+      quoteUrl: "https://example.com/quote/tok",
+      filesUrl: "https://example.com/en/clinics/requests/rd1",
+    });
+    expect(html).toContain('href="https://example.com/en/clinics/requests/rd1"');
+    expect(html).toContain(en.emails.viewFilesNote);
+    expect(html).not.toMatch(/attached to this email/i);
+  });
+});
+
 describe("email templates escape user input", () => {
   it("neutralizes markup in the patient/dentist names of a quote request", () => {
     const html = quoteRequestEmailHtml({
@@ -37,6 +59,7 @@ describe("email templates escape user input", () => {
       requestId: "abcdef12-3456",
       date: "1 בינואר 2026",
       quoteUrl: "https://example.com/quote/tok",
+      filesUrl: "https://example.com/en/clinics/requests/rd1",
     });
     // Raw tags from user input must not appear; escaped entities must.
     expect(html).not.toContain("<img src=x");
@@ -56,6 +79,7 @@ describe("email templates escape user input", () => {
       requestId: "abcdef12-3456",
       date: "1 בינואר 2026",
       quoteUrl: "https://example.com/quote/tok",
+      filesUrl: "https://example.com/en/clinics/requests/rd1",
     };
     expect(quoteRequestEmailHtml({ ...base, phoneVerified: true })).toContain(
       he.emails.smsVerified,
@@ -86,6 +110,7 @@ describe("email templates follow the recipient's language", () => {
     requestId: "abcdef12-3456",
     date: "1 January 2026",
     quoteUrl: "https://example.com/quote/tok",
+    filesUrl: "https://example.com/en/clinics/requests/rd1",
   };
 
   it("renders right-to-left for Hebrew and left-to-right for English", () => {

@@ -587,8 +587,11 @@ const tr: typeof he = {
     greetingNoName: "Merhaba,",
     patientFallback: "hasta",
     quoteRequestBody:
-      "{patient} adlı hasta, DentalCompare aracılığıyla diş tedavisi için teklif talep ediyor. Tedavi planı ve röntgen bu e-postanın ekindedir.",
+      "{patient} adlı hasta, DentalCompare aracılığıyla diş tedavisi için teklif talep ediyor. Tedavi planı ve röntgen klinik panelinizde sizi bekliyor.",
     quoteRequestCta: "💰 Fiyatınızı gönderin — 5 saniye sürer",
+    viewFilesCta: "Tedavi planını ve röntgeni görüntüle",
+    viewFilesNote:
+      "Hastanın gizliliğini korumak için tıbbi dosyalar e-postalara eklenmez. Görüntülemek için bu e-posta adresiyle giriş yapın.",
     requestNumber: "Talep numarası:",
     dateLabel: "Tarih:",
     directContact: "Doğrudan iletişim:",
@@ -791,7 +794,8 @@ const tr: typeof he = {
     pageSubtitle:
       "Tedavi planını ve röntgeni inceleyin, ardından teklifinizi doldurun. Ne kadar ayrıntı verirseniz hastanın karşılaştırması o kadar kolaylaşır; hele ki sınır ötesi tedavide fiyat tek başına her şeyi anlatmaz.",
     attachmentsNote:
-      "Tedavi planı ve röntgen, aldığınız e-postanın ekindedir; görüntülemek için ekleri açın.",
+      "Hastanın gizliliğini korumak için tedavi planı ve röntgen yalnızca klinik panelinizde bulunur. Bu talebin gönderildiği e-posta adresiyle giriş yapın.",
+    viewFilesLink: "Dosyaları klinik panelinde aç",
     fallbackPatient: "hasta",
     invalidPrice: "Lütfen geçerli bir fiyat girin",
     sentTitle: "Teklifiniz yola çıktı — teşekkür ederiz! 🎉",
@@ -1323,7 +1327,6 @@ const tr: typeof he = {
     signInRequired: "Devam etmek için lütfen giriş yapın",
     userNotSynced: "Hesabınız henüz senkronize edilmedi; sayfayı yenileyip tekrar deneyin",
     patientNotFound: "Hasta bulunamadı",
-    attachmentsFailed: "Eklenecek dosyaları yükleyemedik",
     requestNotFound: "Talep bulunamadı",
     requestAlreadySent: "Bu talep zaten gönderildi",
     requestLocked: "Gönderilmiş bir talep artık düzenlenemez",

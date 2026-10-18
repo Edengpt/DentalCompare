@@ -591,8 +591,11 @@ const fr: typeof he = {
     greetingNoName: "Bonjour,",
     patientFallback: "le patient",
     quoteRequestBody:
-      "{patient} demande un devis pour des soins dentaires via DentalCompare. Son plan de traitement et sa radio sont joints à cet e-mail.",
+      "{patient} demande un devis pour des soins dentaires via DentalCompare. Son plan de traitement et sa radio vous attendent dans votre espace clinique.",
     quoteRequestCta: "💰 Indiquez votre prix — 5 secondes suffisent",
+    viewFilesCta: "Voir le plan de traitement et la radio",
+    viewFilesNote:
+      "Pour protéger la vie privée du patient, les fichiers médicaux ne sont pas joints aux e-mails. Connectez-vous avec cette adresse e-mail pour les consulter.",
     requestNumber: "Numéro de demande :",
     dateLabel: "Date :",
     directContact: "Contact direct :",
@@ -796,7 +799,8 @@ const fr: typeof he = {
     pageSubtitle:
       "Consultez le plan de traitement et la radio, puis remplissez votre devis. Plus vous êtes précis, plus la comparaison est simple pour le patient — et d'un pays à l'autre, le prix seul ne dit pas tout.",
     attachmentsNote:
-      "Le plan de traitement et la radio sont joints à l'e-mail que vous avez reçu — ouvrez les pièces jointes pour les consulter.",
+      "Pour protéger la vie privée du patient, le plan de traitement et la radio ne sont disponibles que dans votre espace clinique. Connectez-vous avec l'adresse e-mail à laquelle cette demande a été envoyée.",
+    viewFilesLink: "Ouvrir les fichiers dans votre espace clinique",
     fallbackPatient: "le patient",
     invalidPrice: "Veuillez saisir un prix valide",
     sentTitle: "Votre devis est envoyé — merci ! 🎉",
@@ -1331,7 +1335,6 @@ const fr: typeof he = {
     signInRequired: "Veuillez vous connecter pour continuer",
     userNotSynced: "Votre compte n'est pas encore synchronisé — actualisez la page et réessayez",
     patientNotFound: "Patient introuvable",
-    attachmentsFailed: "Nous n'avons pas pu charger les fichiers à joindre",
     requestNotFound: "Demande introuvable",
     requestAlreadySent: "Cette demande a déjà été envoyée",
     requestLocked: "Une demande envoyée ne peut plus être modifiée",
