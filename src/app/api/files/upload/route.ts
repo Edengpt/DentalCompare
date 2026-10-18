@@ -5,11 +5,7 @@ import { db } from "@/lib/db";
 import { blobPathnameOf, readBlobHead } from "@/lib/blob-head";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { getRequestLocale } from "@/i18n/request-locale";
-import {
-  headMatchesType,
-  isOwnRequestBlobPath,
-  type UploadKind,
-} from "@/lib/storage";
+import { headMatchesType, isOwnRequestBlobPath, type UploadKind } from "@/lib/storage";
 
 export const runtime = "nodejs";
 
@@ -66,7 +62,7 @@ export async function POST(request: Request) {
 
   const owned = await db.request.findFirst({
     where: { id: requestId, userId: user.id },
-    select: { id: true },
+    select: { id: true, treatmentFileUrl: true, xrayFileUrl: true },
   });
   if (!owned) return NextResponse.json({ error: "Request not found" }, { status: 404 });
 
@@ -91,6 +87,17 @@ export async function POST(request: Request) {
     data: kind === "treatment" ? { treatmentFileUrl: url } : { xrayFileUrl: url },
     select: { treatmentFileUrl: true, xrayFileUrl: true },
   });
+
+  // A replaced file is no longer the patient's file of record, so it must not
+  // stay in storage. Row first, then the old object: if this delete fails the
+  // file still sits in the request's folder, where deleting or purging the
+  // request sweeps it up.
+  const previous = kind === "treatment" ? owned.treatmentFileUrl : owned.xrayFileUrl;
+  if (previous && previous !== url) {
+    await del(previous).catch((err) =>
+      console.error(`replaced ${kind} for ${requestId} not deleted:`, err),
+    );
+  }
 
   return NextResponse.json({ url, kind, request: updated });
 }
