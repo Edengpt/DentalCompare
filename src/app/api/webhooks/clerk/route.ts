@@ -4,6 +4,7 @@ import type { WebhookEvent } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { normalizePhone } from "@/lib/phone";
 import { relinkByVerifiedEmail } from "@/server/users";
+import { purgeUserMedicalData } from "@/server/request-files";
 
 export const runtime = "nodejs";
 
@@ -105,12 +106,16 @@ export async function POST(req: Request) {
       case "user.deleted": {
         const id = event.data.id;
         if (!id) break;
+        // The medical files go first. If that fails we answer 500 and Clerk
+        // retries; deleting the user first would leave the files with no owner
+        // and no way back to them.
+        const removed = await purgeUserMedicalData(id);
         // Deleting the User row sets Payment.userId / Request.userId to null
         // (onDelete: SetNull) instead of cascading — financial and request
         // records are retained for accounting/audit, just detached from the
-        // now-deleted patient.
+        // now-deleted patient and emptied of medical content.
         await db.user.deleteMany({ where: { clerkUserId: id } });
-        console.log(`✓ Deleted user ${id}`);
+        console.log(`✓ Deleted user ${id} (${removed} files removed)`);
         break;
       }
     }
