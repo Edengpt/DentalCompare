@@ -6,6 +6,8 @@ import { isAdminEmail } from "@/server/admin";
 
 export const runtime = "nodejs";
 
+const VIEWABLE_TYPES = new Set(["application/pdf", "image/jpeg", "image/png"]);
+
 /**
  * Streams a clinic's licence document to an admin, and to nobody else.
  *
@@ -37,12 +39,18 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     if (!result || result.statusCode !== 200 || !result.stream) {
       return new NextResponse("Not found", { status: 404 });
     }
+    // Only the three document types a clinic can upload open in the tab. Any
+    // other type is a file we never meant to hold, and an admin's browser must
+    // not render it from our origin with the admin's session — HTML here would
+    // be script running as the admin. It downloads as opaque bytes instead.
+    const stored = result.blob.contentType || doc.contentType;
+    const viewable = VIEWABLE_TYPES.has(stored);
     return new NextResponse(result.stream, {
       headers: {
-        "Content-Type": result.blob.contentType || doc.contentType,
+        "Content-Type": viewable ? stored : "application/octet-stream",
         // inline so it opens in the tab rather than downloading, and no-store so
         // a licence document is never left behind in a shared browser cache.
-        "Content-Disposition": "inline",
+        "Content-Disposition": viewable ? "inline" : "attachment",
         "Cache-Control": "private, no-store",
       },
     });

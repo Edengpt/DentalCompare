@@ -117,7 +117,6 @@ model User {
 
   requests Request[]
 
-  @@index([clerkUserId])
   @@index([countryCode])
 }
 
@@ -189,7 +188,8 @@ model Dentist {
   @@index([city])
   @@index([isActive])
   @@index([submittedBySelf])
-  @@index([clerkUserId])
+  // Destination filter on the clinic directory and dispatch (travel scope).
+  @@index([countryCode])
 }
 
 /// עד לאן המטופל מוכן לנסוע — עבור הבקשה הזו.
@@ -303,7 +303,7 @@ model RequestDentist {
   disputeReason String?   @db.Text
 
   @@unique([requestId, dentistId])
-  @@index([dentistId])
+  // Also serves plain dentistId lookups (leftmost prefix).
   @@index([dentistId, sentAt]) // duplicate-lead lookback for the same clinic
 }
 
@@ -393,7 +393,6 @@ model Quote {
   createdAt                     DateTime    @default(now())
   updatedAt                     DateTime    @updatedAt
 
-  @@index([requestDentistId])
   @@index([status])
 }
 

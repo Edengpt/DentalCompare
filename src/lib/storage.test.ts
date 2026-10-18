@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   fileSignatureMatches,
+  logoSignatureMatches,
   headMatchesType,
   requestBlobDir,
   isOwnRequestBlobPath,
@@ -33,6 +34,22 @@ describe("fileSignatureMatches", () => {
 
   it("rejects an unsupported declared type", async () => {
     expect(await fileSignatureMatches(file(PDF, "application/zip"))).toBe(false);
+  });
+});
+
+describe("logoSignatureMatches", () => {
+  const WEBP = [0x52, 0x49, 0x46, 0x46, 0x10, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50]; // RIFF....WEBP
+
+  it("accepts real PNG, JPEG and WebP logos", async () => {
+    expect(await logoSignatureMatches(file(PNG, "image/png"))).toBe(true);
+    expect(await logoSignatureMatches(file(JPEG, "image/jpeg"))).toBe(true);
+    expect(await logoSignatureMatches(file(WEBP, "image/webp"))).toBe(true);
+  });
+
+  it("rejects HTML or an executable labelled as an image", async () => {
+    const html = [...new TextEncoder().encode("<html><script>")];
+    expect(await logoSignatureMatches(file(html, "image/webp"))).toBe(false);
+    expect(await logoSignatureMatches(file(EXE, "image/png"))).toBe(false);
   });
 });
 

@@ -1321,6 +1321,7 @@ const en: typeof he = {
       "Too many registration attempts from this address. Try again in about an hour.",
     requiredFields: "Please fill in all required fields",
     fieldRequired: "Required",
+    fieldTooLong: "Too long",
     invalidEmail: "That email address isn't valid",
     invalidExperience: "Years of experience isn't valid",
     mustAcceptTerms: "You must accept the subscription terms to register",

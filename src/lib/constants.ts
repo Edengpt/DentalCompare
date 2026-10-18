@@ -131,6 +131,10 @@ export const RATE_LIMITS = {
   quoteAttachment: { limit: 30, windowMs: HOUR_MS },
   fileUpload: { limit: 20, windowMs: HOUR_MS }, // per request
   createRequest: { limit: 10, windowMs: HOUR_MS }, // per user — caps request spam
+  // Per IP. Public and unauthenticated; a clinic trying a few logos is normal.
+  clinicLogo: { limit: 10, windowMs: HOUR_MS },
+  // Per user. Each click sends the treatment plan to Claude and is paid for.
+  explainTreatment: { limit: 5, windowMs: HOUR_MS },
 } as const;
 
 // SUBSCRIPTION_TERMS_HE lived here. The contract text is display copy, and a

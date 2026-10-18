@@ -22,6 +22,7 @@ import { foundingPriceMinor } from "@/lib/founding";
 import { providerForCountry } from "@/lib/subscription";
 import { foundingSlotsLeft } from "@/server/founding";
 import { requiredDocKinds, missingDocKinds, isClinicDocumentBlobUrl } from "@/lib/clinic-documents";
+import { isOwnBlobUrl } from "@/lib/blob-store";
 import {
   clinicRegistrationSchema,
   readRegistrationFields,
@@ -88,10 +89,7 @@ export async function registerClinic(formData: FormData): Promise<RegisterClinic
 
   // Optional logo: only accept a URL produced by our own blob upload endpoint.
   const logoRaw = String(formData.get("profileImageUrl") ?? "").trim();
-  const profileImageUrl =
-    logoRaw && /^https:\/\/[a-z0-9.-]*\.blob\.vercel-storage\.com\//i.test(logoRaw)
-      ? logoRaw
-      : null;
+  const profileImageUrl = logoRaw && isOwnBlobUrl(logoRaw, "public") ? logoRaw : null;
 
   // The country has to be one we actually operate in. Trusting the submitted
   // value would let a clinic attach itself to a draft country that has no

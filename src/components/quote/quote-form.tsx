@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { submitQuote } from "@/server/quotes";
-import { QUOTE_FORM_INCLUSIONS } from "@/lib/quote-catalog";
+import { QUOTE_FORM_INCLUSIONS, QUOTE_LIMITS } from "@/lib/quote-catalog";
 import { translateInclusion } from "@/lib/labels";
 import {
   formTotals,
@@ -325,6 +325,7 @@ export function QuoteForm({
           <span className="text-muted-foreground">{t.quoteForm.warrantyNote}</span>
           <textarea
             rows={2}
+            maxLength={QUOTE_LIMITS.maxWarrantyNoteLength}
             value={warrantyNote}
             onChange={(e) => setWarrantyNote(e.target.value)}
             className={fieldClass}
@@ -348,6 +349,7 @@ export function QuoteForm({
         <textarea
           id="note"
           rows={3}
+          maxLength={QUOTE_LIMITS.maxNoteLength}
           value={note}
           onChange={(e) => setNote(e.target.value)}
           className={fieldClass}

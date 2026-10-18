@@ -1,6 +1,7 @@
 import "server-only";
 import { get } from "@vercel/blob";
 import { SIGNATURE_BYTES } from "./storage";
+import { isOwnBlobHost } from "./blob-store";
 
 /**
  * Shared by every route that confirms a browser-direct upload: the patient's
@@ -16,7 +17,7 @@ export function blobPathnameOf(url: string): string | null {
   } catch {
     return null;
   }
-  if (parsed.protocol !== "https:" || !/\.blob\.vercel-storage\.com$/i.test(parsed.hostname)) {
+  if (parsed.protocol !== "https:" || !isOwnBlobHost(parsed.hostname, "private")) {
     return null;
   }
   return decodeURIComponent(parsed.pathname).slice(1) || null;

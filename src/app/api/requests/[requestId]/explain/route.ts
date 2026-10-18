@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { explainTreatment } from "@/server/explain-treatment";
+import { rateLimit } from "@/lib/rate-limit";
+import { RATE_LIMITS } from "@/lib/constants";
 import { getRequestLocale } from "@/i18n/request-locale";
 import { getDictionary } from "@/i18n/get-dictionary";
 
@@ -12,10 +14,7 @@ export const runtime = "nodejs";
  * ownership gate as the private-file route, so nobody can spend AI budget on a
  * request that isn't theirs.
  */
-export async function POST(
-  _req: Request,
-  { params }: { params: Promise<{ requestId: string }> },
-) {
+export async function POST(_req: Request, { params }: { params: Promise<{ requestId: string }> }) {
   const locale = await getRequestLocale();
   const t = (await getDictionary(locale)).explain;
   const { requestId } = await params;
@@ -42,9 +41,21 @@ export async function POST(
   }
 
   if (!process.env.ANTHROPIC_API_KEY) {
+    return NextResponse.json({ error: t.aiUnavailable }, { status: 503 });
+  }
+
+  // Ownership stops strangers spending the AI budget; this stops the owner
+  // doing it by clicking again and again. Checked last, so a refused or
+  // misdirected call doesn't use up the patient's allowance.
+  const rl = await rateLimit(
+    `explain:${user.id}`,
+    RATE_LIMITS.explainTreatment.limit,
+    RATE_LIMITS.explainTreatment.windowMs,
+  );
+  if (!rl.allowed) {
     return NextResponse.json(
-      { error: t.aiUnavailable },
-      { status: 503 },
+      { error: t.explainFailed },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(rl.retryAfterMs / 1000)) } },
     );
   }
 
