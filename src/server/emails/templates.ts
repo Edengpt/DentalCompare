@@ -55,6 +55,9 @@ export function quoteRequestEmailHtml(opts: {
   requestId: string;
   date: string;
   quoteUrl: string;
+  /** The request in the clinic area, behind sign-in. The medical files live
+   *  there and only there — never as attachments. */
+  filesUrl: string;
 }): string {
   const {
     locale,
@@ -66,6 +69,7 @@ export function quoteRequestEmailHtml(opts: {
     requestId,
     date,
     quoteUrl,
+    filesUrl,
   } = opts;
   const p = escapeHtml(patientName);
   const d = escapeHtml(dentistName);
@@ -86,6 +90,15 @@ export function quoteRequestEmailHtml(opts: {
                 font-size: 17px; font-weight: bold; padding: 16px 32px; border-radius: 999px;">
         ${t.quoteRequestCta}
       </a>
+    </div>
+
+    <div style="text-align: center; margin: 0 0 24px;">
+      <a href="${filesUrl}"
+         style="display: inline-block; border: 1px solid #2356c7; color: #2356c7; text-decoration: none;
+                font-size: 15px; font-weight: bold; padding: 12px 24px; border-radius: 999px;">
+        ${t.viewFilesCta}
+      </a>
+      <p style="font-size: 12px; color: #777; margin-top: 10px;">${t.viewFilesNote}</p>
     </div>
 
     <ul style="padding-inline-start: 18px; color: #555; font-size: 13px;">

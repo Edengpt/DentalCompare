@@ -583,8 +583,11 @@ const en: typeof he = {
     greetingNoName: "Hello,",
     patientFallback: "the patient",
     quoteRequestBody:
-      "{patient} is requesting a quote for dental treatment through DentalCompare. Their treatment plan and x-ray are attached to this email.",
+      "{patient} is requesting a quote for dental treatment through DentalCompare. Their treatment plan and x-ray are waiting in your clinic area.",
     quoteRequestCta: "💰 Submit your price — takes 5 seconds",
+    viewFilesCta: "View treatment plan and x-ray",
+    viewFilesNote:
+      "To protect the patient's privacy, medical files are not attached to emails. Sign in with this email address to view them.",
     requestNumber: "Request number:",
     dateLabel: "Date:",
     directContact: "Direct contact:",
@@ -778,7 +781,8 @@ const en: typeof he = {
     pageSubtitle:
       "Review the treatment plan and x-ray, then fill in your quote. The more detail you give, the easier it is for the patient to compare — and across borders, price alone doesn't tell the whole story.",
     attachmentsNote:
-      "The treatment plan and x-ray are attached to the email you received — open the attachments to view them.",
+      "To protect the patient's privacy, the treatment plan and x-ray are only available in your clinic area. Sign in with the email address this request was sent to.",
+    viewFilesLink: "Open the files in your clinic area",
     fallbackPatient: "the patient",
     invalidPrice: "Please enter a valid price",
     sentTitle: "Your quote is on its way — thank you! 🎉",
@@ -1302,7 +1306,6 @@ const en: typeof he = {
     signInRequired: "Please sign in to continue",
     userNotSynced: "Your account hasn't synced yet — refresh and try again",
     patientNotFound: "Patient not found",
-    attachmentsFailed: "We couldn't load the files to attach",
     requestNotFound: "Request not found",
     requestAlreadySent: "This request has already been sent",
     requestLocked: "A request that has been sent can no longer be edited",

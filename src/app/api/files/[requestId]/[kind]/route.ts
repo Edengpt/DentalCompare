@@ -25,9 +25,8 @@ function extFor(contentType: string | null): string {
  * URL — gets a 404. This is the only way those private blobs are reachable in
  * the browser.
  *
- * The clinic case exposes nothing new: the delivery email already carried both
- * files as attachments. It exists so the clinic can price the request from its
- * own area instead of digging for that email.
+ * For a clinic this is the only way in: the delivery email links to the clinic
+ * area instead of attaching the files, so no copy leaves our control.
  */
 export async function GET(
   _req: Request,
