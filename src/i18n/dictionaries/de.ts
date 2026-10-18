@@ -298,7 +298,7 @@ const de: typeof he = {
     required: "Pflichtfeld",
     consentTitle: "Bevor Sie fortfahren",
     consentLabel:
-      "Ich bin einverstanden, dass mein Heil- und Kostenplan und mein Röntgenbild an die von mir gewählten Kliniken gesendet und auf Servern in den USA gespeichert werden.",
+      "Ich bin einverstanden, dass mein Heil- und Kostenplan und mein Röntgenbild an die von mir gewählten Kliniken gesendet, bis zu 30 Tage nach dem Versand verschlüsselt auf Servern in den USA gespeichert und danach automatisch gelöscht werden.",
     consentReadMore: "Datenschutzerklärung",
     consentSaveFailed: "Ihre Einwilligung konnte nicht gespeichert werden – bitte erneut versuchen",
     saveForLater: "Speichern und später fortfahren",

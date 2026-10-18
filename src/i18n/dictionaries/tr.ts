@@ -299,7 +299,7 @@ const tr: typeof he = {
     required: "Zorunlu",
     consentTitle: "Devam etmeden önce",
     consentLabel:
-      "Tedavi planımın ve diş röntgenimin seçtiğim kliniklere gönderilmesini ve Amerika Birleşik Devletleri'ndeki sunucularda saklanmasını kabul ediyorum.",
+      "Tedavi planımın ve diş röntgenimin seçtiğim kliniklere gönderilmesini, gönderimden sonra en fazla 30 gün boyunca Amerika Birleşik Devletleri'ndeki sunucularda şifreli olarak saklanmasını ve ardından otomatik olarak silinmesini kabul ediyorum.",
     consentReadMore: "Gizlilik politikası",
     consentSaveFailed: "Onayınızı kaydedemedik; lütfen tekrar deneyin",
     saveForLater: "Kaydet ve daha sonra devam et",

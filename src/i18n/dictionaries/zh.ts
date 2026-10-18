@@ -281,7 +281,7 @@ const zh: typeof he = {
     required: "必填",
     consentTitle: "继续之前",
     consentLabel:
-      "我同意将我的治疗方案和牙科X光片发送给我所选择的诊所，并存储在位于美国的服务器上。",
+      "我同意将我的治疗方案和牙科X光片发送给我所选择的诊所，并在发送后最多30天内以加密形式存储在位于美国的服务器上，之后自动删除。",
     consentReadMore: "隐私政策",
     consentSaveFailed: "无法保存您的同意——请重试",
     saveForLater: "保存，稍后继续",

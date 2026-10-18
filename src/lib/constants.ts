@@ -149,7 +149,7 @@ export const RATE_LIMITS = {
  * so it is possible to show what a given patient actually agreed to — consent
  * without the wording it was given to proves nothing.
  */
-export const PATIENT_CONSENT_VERSION = "2026-08-24";
+export const PATIENT_CONSENT_VERSION = "2026-10-18";
 
 /**
  * How long a patient's medical files (treatment plan, x-ray, clinics' quote

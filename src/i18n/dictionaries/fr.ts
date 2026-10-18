@@ -299,7 +299,7 @@ const fr: typeof he = {
     required: "Obligatoire",
     consentTitle: "Avant de continuer",
     consentLabel:
-      "J'accepte que mon plan de traitement et ma radio dentaire soient envoyés aux cliniques que je choisis et stockés sur des serveurs situés aux États-Unis.",
+      "J'accepte que mon plan de traitement et ma radio dentaire soient envoyés aux cliniques que je choisis, stockés de manière chiffrée sur des serveurs situés aux États-Unis jusqu'à 30 jours après l'envoi, puis supprimés automatiquement.",
     consentReadMore: "Politique de confidentialité",
     consentSaveFailed: "Nous n'avons pas pu enregistrer votre consentement — veuillez réessayer",
     saveForLater: "Enregistrer et continuer plus tard",
