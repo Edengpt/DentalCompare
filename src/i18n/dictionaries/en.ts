@@ -306,7 +306,7 @@ const en: typeof he = {
     required: "Required",
     consentTitle: "Before you continue",
     consentLabel:
-      "I agree that my treatment plan and dental x-ray will be sent to the clinics I choose, and stored on servers in the United States.",
+      "I agree that my treatment plan and dental x-ray will be sent to the clinics I choose, and stored encrypted on servers in the United States for up to 30 days after sending, then deleted automatically.",
     consentReadMore: "Privacy policy",
     consentSaveFailed: "We couldn't save your consent — please try again",
     saveForLater: "Save and continue later",

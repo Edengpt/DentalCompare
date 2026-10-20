@@ -49,6 +49,11 @@ export default function PrivacyContentEn() {
           We do not publish this information, we do not use it for advertising, and we do not sell
           information to third parties.
         </P>
+        <P>
+          The documents are <strong>never attached to emails</strong>. A clinic receives a link and
+          views them only in the clinic area of the site, after signing in with the email address
+          the request was sent to. That way no copies are left in mailboxes beyond our control.
+        </P>
       </Section>
 
       <Section heading="4. Service providers (data processors)">
@@ -61,7 +66,8 @@ export default function PrivacyContentEn() {
             "Vercel — site hosting and file storage (Vercel Blob), with private, secured access.",
             "Neon — the database.",
             "PayPlus — payment processing.",
-            "Resend — sending email.",
+            "Resend — sending email (never with medical documents).",
+            "Anthropic — a plain-language explanation of your treatment plan, only when you press the button for it. In that case the treatment plan (not the x-ray) is sent to Anthropic for processing.",
           ]}
         />
       </Section>
@@ -78,8 +84,9 @@ export default function PrivacyContentEn() {
         </P>
         <P>
           Concretely: server functions and file storage run in Vercel&rsquo;s <code>iad1</code>{" "}
-          region (Virginia, USA), and the database is hosted with Neon. Clerk handles identity and
-          Resend sends email.
+          region (Virginia, USA), and the database is hosted with Neon. Clerk handles identity,
+          Resend sends email, and Anthropic (USA) processes the treatment plan when you ask for an
+          explanation.
         </P>
         <P>
           For patients in the European Union, the EEA and the United Kingdom, the transfer relies on{" "}
@@ -91,19 +98,27 @@ export default function PrivacyContentEn() {
 
       <Section heading="5. Retention">
         <P>
-          We keep information for as long as your account is active and as needed to provide the
-          service and meet legal obligations (tax requirements, for example). You may request
-          deletion, subject to section 7. Defined retention period:{" "}
-          <Ph>retention period — to be settled with a lawyer</Ph>.
+          <strong>Medical documents are kept only briefly.</strong> The treatment plan, the x-ray
+          and any documents clinics attached to their quotes are deleted automatically 30 days after
+          the request was sent to clinics. For a request that was never sent, they are deleted after
+          7 days without changes. The quotes themselves are kept, so you can go on comparing them.
+        </P>
+        <P>
+          Other information (account details and quotes) is kept for as long as your account is
+          active and as needed to provide the service and meet legal obligations (tax requirements,
+          for example). Deleting your account immediately deletes all medical documents and the
+          notes you wrote. You may request further deletion, subject to section 7.
         </P>
       </Section>
 
       <Section heading="6. Information security">
         <P>
-          We apply accepted security measures: encryption in transit (HTTPS) and at rest,
-          permission-based access controls (only the request&rsquo;s owner or an authorised
-          administrator can reach the files), rate limiting, and signature verification on payment
-          interfaces. No security is perfect, however, and we cannot guarantee absolute immunity.
+          We apply accepted security measures: encryption in transit (HTTPS); encryption of medical
+          documents at rest (AES-256) with a key kept separately from the files; permission-based
+          access controls (the files can be reached only by the request&rsquo;s owner, by the
+          clinics the request was sent to after they sign in, and by an authorised administrator);
+          rate limiting; and signature verification on payment interfaces. No security is perfect,
+          however, and we cannot guarantee absolute immunity.
         </P>
       </Section>
 
