@@ -9,12 +9,7 @@ import { format } from "@/i18n/format";
 import { fileValidationMessage } from "@/i18n/validation-message";
 import { cn } from "@/lib/utils";
 import { REQUEST_LIMITS } from "@/lib/constants";
-import {
-  ACCEPT_ATTRIBUTE,
-  blobPath,
-  type UploadKind,
-  validateFile,
-} from "@/lib/storage";
+import { ACCEPT_ATTRIBUTE, blobPath, type UploadKind, validateFile } from "@/lib/storage";
 
 type FileDropzoneProps = {
   kind: UploadKind;
@@ -100,7 +95,9 @@ export function FileDropzone({
 
     // Separate step: the file exists in storage but is attached to nothing
     // until the server has checked its bytes and recorded the URL. This one is
-    // a plain fetch, so its error text does reach the patient.
+    // a plain fetch, so its error text does reach the patient. The server
+    // encrypts the file there and answers with the encrypted copy's URL.
+    let storedUrl = blob.url;
     try {
       const res = await fetch("/api/files/upload", {
         method: "POST",
@@ -120,14 +117,16 @@ export function FileDropzone({
         setState({ status: "idle" });
         return;
       }
+      const confirmed = (await res.json().catch(() => null)) as { url?: string } | null;
+      if (confirmed?.url) storedUrl = confirmed.url;
     } catch {
       toast.error(t.dropzone.networkError);
       setState({ status: "idle" });
       return;
     }
 
-    setState({ status: "done", url: blob.url, fileName: file.name, fileSize: file.size });
-    onUploaded(blob.url);
+    setState({ status: "done", url: storedUrl, fileName: file.name, fileSize: file.size });
+    onUploaded(storedUrl);
     toast.success(format(t.dropzone.uploadSuccess, { label: kindLabel }));
   };
 
@@ -179,7 +178,8 @@ export function FileDropzone({
           </span>
           <div>
             <p className="text-foreground font-semibold">
-              {t.dropzone.dragHere} <span className="text-teal-deep underline">{t.dropzone.chooseFile}</span>
+              {t.dropzone.dragHere}{" "}
+              <span className="text-teal-deep underline">{t.dropzone.chooseFile}</span>
             </p>
             <p className="text-muted-foreground mt-1 text-xs">{description}</p>
             <p className="text-muted-foreground/70 mt-3 text-[11px]">
@@ -216,7 +216,9 @@ export function FileDropzone({
             <Check className="h-5 w-5" />
           </span>
           <div>
-            <p className="text-foreground font-semibold">{format(t.dropzone.uploaded, { label: kindLabel })}</p>
+            <p className="text-foreground font-semibold">
+              {format(t.dropzone.uploaded, { label: kindLabel })}
+            </p>
             {state.fileName && (
               <p className="text-muted-foreground mt-1 inline-flex items-center gap-1.5 text-xs">
                 <FileIcon name={state.fileName} />

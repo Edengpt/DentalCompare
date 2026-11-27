@@ -5,7 +5,7 @@ import { z } from "zod";
  *
  * Two tiers, because they fail differently:
  * - CORE: the site cannot serve a single page correctly without these (database,
- *   sign-in, file storage, links in emails, cron auth). Missing one in production
+ *   sign-in, file storage and its encryption, links in emails, cron auth). Missing one in production
  *   aborts startup, so a bad deploy shows up as a failed instance at once
  *   instead of as a patient's lost upload a week later.
  * - FEATURES: each switches one feature on (payments, AI explanation, error
@@ -28,6 +28,12 @@ const CORE = z.object({
   CRON_SECRET: nonEmpty,
   RESEND_API_KEY: nonEmpty,
   ADMIN_EMAILS: nonEmpty,
+  // Medical files are encrypted at rest with this key (src/lib/file-crypto.ts).
+  // Without it, uploads would be stored in the clear.
+  FILE_ENCRYPTION_KEY: nonEmpty.refine(
+    (v) => Buffer.from(v, "base64").length === 32,
+    "must be 32 bytes, base64-encoded",
+  ),
 });
 
 /** A feature is on only when every variable it needs is set. */

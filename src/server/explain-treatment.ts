@@ -1,6 +1,6 @@
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
-import { get } from "@vercel/blob";
+import { readPrivateFile } from "@/server/sealed-files";
 import type { Locale } from "@/i18n/config";
 
 /**
@@ -127,13 +127,10 @@ const EXPLAIN_TOOL: Anthropic.Tool = {
 
 /** Downloads the private treatment file and turns it into a Claude content block. */
 async function treatmentBlock(url: string): Promise<Anthropic.ContentBlockParam> {
-  const result = await get(url, { access: "private" });
-  if (!result || result.statusCode !== 200 || !result.stream) {
-    throw new Error(`treatment file fetch failed (status ${result?.statusCode})`);
-  }
-  const bytes = Buffer.from(await new Response(result.stream).arrayBuffer());
-  const data = bytes.toString("base64");
-  const contentType = result.blob.contentType ?? "";
+  const file = await readPrivateFile(url);
+  if (!file) throw new Error("treatment file fetch failed");
+  const data = file.data.toString("base64");
+  const contentType = file.contentType;
 
   if (contentType.includes("pdf")) {
     return {
