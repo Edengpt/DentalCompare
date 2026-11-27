@@ -1,6 +1,7 @@
 "use client";
 
 import { useT } from "@/i18n/provider";
+import { LocaleLink } from "@/i18n/locale-link";
 
 import { useState } from "react";
 import { Sparkles, Loader2, HelpCircle, Stethoscope, AlertCircle } from "lucide-react";
@@ -49,9 +50,7 @@ export function ExplainTreatment({ requestId }: { requestId: string }) {
 
       {state !== "done" && (
         <div className="border-border/60 bg-card rounded-lg border p-5">
-          <p className="text-muted-foreground mb-4 text-sm">
-            {t.explain.subtitle}
-          </p>
+          <p className="text-muted-foreground mb-4 text-sm">{t.explain.subtitle}</p>
           <button
             type="button"
             onClick={run}
@@ -135,7 +134,13 @@ export function ExplainTreatment({ requestId }: { requestId: string }) {
           )}
 
           <p className="text-muted-foreground border-border/60 border-t pt-3 text-xs">
-            {t.explain.disclaimer}
+            {t.explain.disclaimer}{" "}
+            <LocaleLink
+              href="/medical-disclaimer"
+              className="text-teal-deep font-semibold underline underline-offset-4"
+            >
+              {t.legal.disclaimerReadMore}
+            </LocaleLink>
           </p>
         </div>
       )}

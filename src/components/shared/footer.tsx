@@ -25,6 +25,7 @@ export function Footer() {
         // protected, so a signed-out clinic is sent through sign-in and lands
         // here — which is the whole of "a clinic has a login" from its side.
         { href: "/clinics/dashboard", label: t.footer.clinicsArea },
+        { href: "/clinic-agreement", label: t.footer.clinicAgreement },
       ],
     },
     {
@@ -32,6 +33,7 @@ export function Footer() {
       links: [
         { href: "/terms", label: t.footer.terms },
         { href: "/privacy", label: t.footer.privacy },
+        { href: "/medical-disclaimer", label: t.footer.medicalDisclaimer },
         { href: "/cookies", label: t.footer.cookies },
         { href: "/refunds", label: t.footer.refunds },
         { href: "/accessibility", label: t.footer.accessibility },

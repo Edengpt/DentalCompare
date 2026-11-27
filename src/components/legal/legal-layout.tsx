@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
 import { useT } from "@/i18n/provider";
+import { LocaleLink } from "@/i18n/locale-link";
 
 /**
  * Shared shell for the static legal/policy pages (terms, privacy, cookies,
@@ -83,5 +84,22 @@ export function Ph({ children }: { children: ReactNode }) {
     <mark className="bg-highlight/30 text-on-highlight rounded px-1.5 py-0.5 font-semibold">
       «{children}»
     </mark>
+  );
+}
+
+/**
+ * A detail from LEGAL_ENTITY: the real value once it is filled in, the
+ * highlighted placeholder until then.
+ */
+export function Fill({ value, label }: { value: string | null; label: string }) {
+  return value ? <>{value}</> : <Ph>{label}</Ph>;
+}
+
+/** A link from one legal page to another (or to any page on the site). */
+export function DocLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <LocaleLink className="text-teal-deep font-semibold underline underline-offset-4" href={href}>
+      {children}
+    </LocaleLink>
   );
 }

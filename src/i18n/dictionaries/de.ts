@@ -104,15 +104,20 @@ const de: typeof he = {
   },
   trust: {
     title: "Warum Sie uns vertrauen können",
-    subtitle: "Vier Dinge, die wir gebaut haben, damit Sie eine Klinik im Ausland ohne unnötiges Risiko wählen können.",
+    subtitle:
+      "Vier Dinge, die wir gebaut haben, damit Sie eine Klinik im Ausland ohne unnötiges Risiko wählen können.",
     checkedTitle: "Jede Klinik wird geprüft",
-    checkedBody: "Die Klinik lädt ihre Berufszulassung hoch, und ein Mitglied unseres Teams prüft sie, bevor die Klinik erscheint. Eine ungeprüfte Klinik erreicht Sie nie.",
+    checkedBody:
+      "Die Klinik lädt ihre Berufszulassung hoch, und ein Mitglied unseres Teams prüft sie, bevor die Klinik erscheint. Eine ungeprüfte Klinik erreicht Sie nie.",
     warrantyTitle: "Die Garantie vor der Wahl sehen",
-    warrantyBody: "Das Angebotsformular fragt jede Klinik nach ihrer Garantie und danach, was sie tut, wenn nach Ihrer Heimreise etwas schiefgeht – so sehen Sie es vor der Wahl.",
+    warrantyBody:
+      "Das Angebotsformular fragt jede Klinik nach ihrer Garantie und danach, was sie tut, wenn nach Ihrer Heimreise etwas schiefgeht – so sehen Sie es vor der Wahl.",
     neutralTitle: "Für Sie kostenlos, ohne Provision",
-    neutralBody: "Sie zahlen uns nichts. Wir verdienen an den Abonnements der Kliniken, nie an einer Provision auf Ihre Behandlung.",
+    neutralBody:
+      "Sie zahlen uns nichts. Wir verdienen an den Abonnements der Kliniken, nie an einer Provision auf Ihre Behandlung.",
     filesTitle: "Ihre Dateien bleiben privat",
-    filesBody: "Ihr Röntgenbild und Ihr Behandlungsplan werden privat gespeichert. Keine Klinik, die Sie nicht ausgewählt haben, bekommt sie zu sehen.",
+    filesBody:
+      "Ihr Röntgenbild und Ihr Behandlungsplan werden privat gespeichert. Keine Klinik, die Sie nicht ausgewählt haben, bekommt sie zu sehen.",
   },
 
   faq: {
@@ -298,7 +303,7 @@ const de: typeof he = {
     required: "Pflichtfeld",
     consentTitle: "Bevor Sie fortfahren",
     consentLabel:
-      "Ich bin einverstanden, dass mein Heil- und Kostenplan und mein Röntgenbild an die von mir gewählten Kliniken gesendet und auf Servern in den USA gespeichert werden.",
+      "Ich bin einverstanden, dass mein Heil- und Kostenplan und mein Röntgenbild an die von mir gewählten Kliniken gesendet, bis zu 30 Tage nach dem Versand verschlüsselt auf Servern in den USA gespeichert und danach automatisch gelöscht werden.",
     consentReadMore: "Datenschutzerklärung",
     consentSaveFailed: "Ihre Einwilligung konnte nicht gespeichert werden – bitte erneut versuchen",
     saveForLater: "Speichern und später fortfahren",
@@ -839,7 +844,8 @@ const de: typeof he = {
       COMPLETED: "Erfolgreich abgeschlossen",
     },
     treatmentsLegend: "Behandlungen im Angebot",
-    treatmentsHint: "Wählen Sie eine Kategorie, dann eine Behandlung. Jede wird eine Zeile mit Menge und Stückpreis.",
+    treatmentsHint:
+      "Wählen Sie eine Kategorie, dann eine Behandlung. Jede wird eine Zeile mit Menge und Stückpreis.",
     chooseCategory: "1. Kategorie wählen",
     chooseTreatment: "2. Behandlung wählen",
     chooseVariant: "3. Art wählen",
@@ -865,7 +871,8 @@ const de: typeof he = {
     lodgingIncluded: "Unterkunft inklusive",
     transfersLegend: "Enthaltene Transfers",
     documentsLegend: "Dokumente für den Patienten",
-    documentsHint: "Behandlungsplan, Röntgenbild oder Foto — bis zu {max} Dateien, PDF/JPG/PNG, je {mb} MB. Der Patient kann sie ansehen und herunterladen.",
+    documentsHint:
+      "Behandlungsplan, Röntgenbild oder Foto — bis zu {max} Dateien, PDF/JPG/PNG, je {mb} MB. Der Patient kann sie ansehen und herunterladen.",
     documentsAdd: "Datei hinzufügen",
     documentsUploading: "Wird hochgeladen...",
     documentsRemove: "Entfernen",
@@ -926,6 +933,7 @@ const de: typeof he = {
       "Wählen Sie einen Tarif: kostenlos oder ein bezahltes Abo. Beim bezahlten Tarif wird erst abgebucht, nachdem unser Team die Klinik freigegeben hat – wir senden Ihnen einen Zahlungslink per E-Mail.",
     regAgree:
       "Ich habe die obigen Abobedingungen gelesen und verstanden und akzeptiere sie im Namen der Klinik.",
+    regAgreeDocs: "Dies umfasst:",
     regSubmitting: "Wird gesendet…",
     regSubmit: "Klinik registrieren",
     wizStepOf: "Schritt {n} von {total}",
@@ -1022,7 +1030,8 @@ const de: typeof he = {
     dashFoundingPending:
       "Gründungsklinik: {price} statt {regular} für 12 Monate ab der ersten Abbuchung.",
     dashUpgradeTitle: "Auf einen kostenpflichtigen Tarif wechseln",
-    dashUpgradeBody: "{tier}: bis zu {cap} Anfragen pro Monat, für {monthly} pro Monat oder {yearly} pro Jahr.",
+    dashUpgradeBody:
+      "{tier}: bis zu {cap} Anfragen pro Monat, für {monthly} pro Monat oder {yearly} pro Jahr.",
     dashUpgradeFounding:
       "Gründungspreis: {monthly} im Monat für 12 Monate – noch {left} Plätze frei",
     dashUpgradeMonthly: "{tier} – monatlich",
@@ -1369,7 +1378,8 @@ const de: typeof he = {
     mustAcceptTerms: "Für die Registrierung müssen Sie die Abobedingungen akzeptieren",
     mustPickPlan: "Bitte wählen Sie einen Abotarif",
     mustPickCountry: "Bitte wählen Sie ein Land",
-    noClinicsAtHome: "In Ihrem Land gibt es noch keine Kliniken. Bitte wählen Sie ein anderes Ziel.",
+    noClinicsAtHome:
+      "In Ihrem Land gibt es noch keine Kliniken. Bitte wählen Sie ein anderes Ziel.",
     missingDocuments: "Fehlende Dokumente: {kinds}",
     invalidDocument:
       "Eines der Dokumente wurde nicht über dieses Formular hochgeladen. Bitte laden Sie es erneut hoch.",
@@ -1419,7 +1429,10 @@ const de: typeof he = {
 
   legal: {
     updatedLabel: "Zuletzt aktualisiert:",
-    lastUpdated: "Oktober 2026",
+    lastUpdated: "November 2026",
+    disclaimerShort:
+      "DentalCompare ist keine Klinik und gibt keine medizinische Beratung. Angebote und Erklärungen sind keine Diagnose; der endgültige Preis wird erst nach einer Untersuchung in der Klinik festgelegt. Für die Behandlung ist allein die Klinik verantwortlich.",
+    disclaimerReadMore: "Vollständiger medizinischer Haftungsausschluss",
   },
 
   treatments: {
@@ -1469,6 +1482,8 @@ const de: typeof he = {
     cookies: "Cookie-Richtlinie",
     refunds: "Kündigung & Erstattung",
     accessibility: "Erklärung zur Barrierefreiheit",
+    medicalDisclaimer: "Medizinischer Haftungsausschluss",
+    clinicAgreement: "Klinikvereinbarung",
     rights: "Alle Rechte vorbehalten.",
   },
 };

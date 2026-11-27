@@ -22,6 +22,7 @@ import {
   translateTreatment,
 } from "@/lib/labels";
 import { useT } from "@/i18n/provider";
+import { LocaleLink } from "@/i18n/locale-link";
 import { format } from "@/i18n/format";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
@@ -659,6 +660,27 @@ export function RegistrationForm({
             <span className="text-foreground">
               {t.clinics.regAgree}
               <span className="text-alert"> *</span>
+            </span>
+            <span className="text-muted-foreground text-xs">
+              {t.clinics.regAgreeDocs}{" "}
+              {(
+                [
+                  ["/clinic-agreement", t.footer.clinicAgreement],
+                  ["/terms", t.footer.terms],
+                  ["/privacy", t.footer.privacy],
+                ] as const
+              ).map(([href, label], i) => (
+                <span key={href}>
+                  {i > 0 && " · "}
+                  <LocaleLink
+                    href={href}
+                    target="_blank"
+                    className="text-teal-deep font-semibold underline underline-offset-4"
+                  >
+                    {label}
+                  </LocaleLink>
+                </span>
+              ))}
             </span>
             <FieldError id="agreeToTerms-error" message={errors.agreeToTerms} />
           </span>

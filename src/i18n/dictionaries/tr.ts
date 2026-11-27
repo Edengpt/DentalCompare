@@ -108,13 +108,17 @@ const tr: typeof he = {
     title: "Neden güvenebilirsiniz",
     subtitle: "Yurt dışında gereksiz risk almadan klinik seçebilmeniz için kurduğumuz dört şey.",
     checkedTitle: "Her klinik kontrol edilir",
-    checkedBody: "Klinik çalışma ruhsatını yükler ve ekibimizden biri, klinik görünmeden önce onu kontrol eder. Kontrol edilmemiş bir klinik size asla ulaşmaz.",
+    checkedBody:
+      "Klinik çalışma ruhsatını yükler ve ekibimizden biri, klinik görünmeden önce onu kontrol eder. Kontrol edilmemiş bir klinik size asla ulaşmaz.",
     warrantyTitle: "Seçmeden önce garantiyi görün",
-    warrantyBody: "Teklif formu her kliniğe garantisini ve eve döndükten sonra bir sorun çıkarsa ne yapacağını sorar; böylece seçmeden önce görürsünüz.",
+    warrantyBody:
+      "Teklif formu her kliniğe garantisini ve eve döndükten sonra bir sorun çıkarsa ne yapacağını sorar; böylece seçmeden önce görürsünüz.",
     neutralTitle: "Sizin için ücretsiz, komisyon yok",
-    neutralBody: "Bize hiçbir şey ödemezsiniz. Gelirimiz kliniklerin aboneliklerinden gelir; tedavinizden asla komisyon almayız.",
+    neutralBody:
+      "Bize hiçbir şey ödemezsiniz. Gelirimiz kliniklerin aboneliklerinden gelir; tedavinizden asla komisyon almayız.",
     filesTitle: "Dosyalarınız gizli kalır",
-    filesBody: "Röntgeniniz ve tedavi planınız özel depolamada tutulur. Seçmediğiniz hiçbir klinik onları göremez.",
+    filesBody:
+      "Röntgeniniz ve tedavi planınız özel depolamada tutulur. Seçmediğiniz hiçbir klinik onları göremez.",
   },
 
   faq: {
@@ -299,7 +303,7 @@ const tr: typeof he = {
     required: "Zorunlu",
     consentTitle: "Devam etmeden önce",
     consentLabel:
-      "Tedavi planımın ve diş röntgenimin seçtiğim kliniklere gönderilmesini ve Amerika Birleşik Devletleri'ndeki sunucularda saklanmasını kabul ediyorum.",
+      "Tedavi planımın ve diş röntgenimin seçtiğim kliniklere gönderilmesini, gönderimden sonra en fazla 30 gün boyunca Amerika Birleşik Devletleri'ndeki sunucularda şifreli olarak saklanmasını ve ardından otomatik olarak silinmesini kabul ediyorum.",
     consentReadMore: "Gizlilik politikası",
     consentSaveFailed: "Onayınızı kaydedemedik; lütfen tekrar deneyin",
     saveForLater: "Kaydet ve daha sonra devam et",
@@ -832,7 +836,8 @@ const tr: typeof he = {
       COMPLETED: "Başarıyla tamamlandı",
     },
     treatmentsLegend: "Teklifteki tedaviler",
-    treatmentsHint: "Önce kategori, sonra tedavi seçin. Her biri adet ve birim fiyatlı bir satır olur.",
+    treatmentsHint:
+      "Önce kategori, sonra tedavi seçin. Her biri adet ve birim fiyatlı bir satır olur.",
     chooseCategory: "1. Kategori seçin",
     chooseTreatment: "2. Tedavi seçin",
     chooseVariant: "3. Tür seçin",
@@ -858,7 +863,8 @@ const tr: typeof he = {
     lodgingIncluded: "Konaklama dahil",
     transfersLegend: "Dahil transferler",
     documentsLegend: "Hasta için belgeler",
-    documentsHint: "Tedavi planı, röntgen veya fotoğraf — en fazla {max} dosya, PDF/JPG/PNG, her biri {mb} MB. Hasta görüntüleyip indirebilir.",
+    documentsHint:
+      "Tedavi planı, röntgen veya fotoğraf — en fazla {max} dosya, PDF/JPG/PNG, her biri {mb} MB. Hasta görüntüleyip indirebilir.",
     documentsAdd: "Dosya ekle",
     documentsUploading: "Yükleniyor...",
     documentsRemove: "Kaldır",
@@ -919,6 +925,7 @@ const tr: typeof he = {
       "Bir plan seçin: ücretsiz ya da ücretli abonelik. Ücretli planda ödeme yalnızca ekibimiz kliniği onayladıktan sonra alınır; ödemeyi tamamlamanız için e-posta ile bir bağlantı göndeririz.",
     regAgree:
       "Yukarıdaki abonelik koşullarını okudum ve anladım; bunları klinik adına kabul ediyorum.",
+    regAgreeDocs: "Buna şunlar dahildir:",
     regSubmitting: "Gönderiliyor…",
     regSubmit: "Kliniği kaydet",
     wizStepOf: "Adım {n} / {total}",
@@ -1399,7 +1406,10 @@ const tr: typeof he = {
 
   legal: {
     updatedLabel: "Son güncelleme:",
-    lastUpdated: "Ekim 2026",
+    lastUpdated: "Kasım 2026",
+    disclaimerShort:
+      "DentalCompare bir klinik değildir ve tıbbi tavsiye vermez. Teklifler ve açıklamalar teşhis değildir; nihai fiyat yalnızca klinikte yapılan muayeneden sonra belirlenir. Tedaviden yalnızca klinik sorumludur.",
+    disclaimerReadMore: "Tıbbi sorumluluk reddinin tamamı",
   },
 
   treatments: {
@@ -1447,6 +1457,8 @@ const tr: typeof he = {
     cookies: "Çerez politikası",
     refunds: "İptal ve iadeler",
     accessibility: "Erişilebilirlik beyanı",
+    medicalDisclaimer: "Tıbbi sorumluluk reddi",
+    clinicAgreement: "Klinik sözleşmesi",
     rights: "Tüm hakları saklıdır.",
   },
 };

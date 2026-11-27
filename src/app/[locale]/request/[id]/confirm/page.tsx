@@ -10,6 +10,7 @@ import { getDictionary } from "@/i18n/get-dictionary";
 import { isLocale, defaultLocale, intlLocale } from "@/i18n/config";
 import { plural } from "@/i18n/format";
 import { SubmitButton } from "@/components/request/submit-button";
+import { MedicalDisclaimerNote } from "@/components/legal/medical-disclaimer-note";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -19,7 +20,11 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export const dynamic = "force-dynamic";
 
-export default async function ConfirmRequestPage({ params }: { params: Promise<{ id: string; locale: string }> }) {
+export default async function ConfirmRequestPage({
+  params,
+}: {
+  params: Promise<{ id: string; locale: string }>;
+}) {
   const { id, locale } = await params;
   const t = await getDictionary(isLocale(locale) ? locale : defaultLocale);
   const { userId: clerkUserId } = await auth();
@@ -68,8 +73,7 @@ export default async function ConfirmRequestPage({ params }: { params: Promise<{
   }).format(request.createdAt);
 
   // Sent requests are redirected above, so only DRAFT/FAILED reach here.
-  const statusLabel =
-    request.status === "FAILED" ? t.confirm.statusFailed : t.confirm.statusReady;
+  const statusLabel = request.status === "FAILED" ? t.confirm.statusFailed : t.confirm.statusReady;
 
   const summaryRows = [
     {
@@ -149,9 +153,7 @@ export default async function ConfirmRequestPage({ params }: { params: Promise<{
                 <p className="text-foreground text-sm font-semibold">
                   {user.phone ? t.confirm.phoneVerifyTitle : t.confirm.phoneMissingTitle}
                 </p>
-                <p className="text-muted-foreground mt-1 text-sm">
-                  {t.confirm.phoneBody}
-                </p>
+                <p className="text-muted-foreground mt-1 text-sm">{t.confirm.phoneBody}</p>
               </div>
               <Link
                 href={`/verify-phone?next=${encodeURIComponent(`/request/${id}/confirm`)}`}
@@ -164,6 +166,7 @@ export default async function ConfirmRequestPage({ params }: { params: Promise<{
 
           {/* Send */}
           <div className="border-border/60 flex flex-col gap-4 border-t pt-8">
+            <MedicalDisclaimerNote />
             <div className="bg-muted/40 text-muted-foreground rounded-lg px-5 py-4 text-sm">
               {t.confirm.freeNoticePrefix}{" "}
               <span className="text-foreground font-semibold">{t.confirm.freeNoticeStrong}</span>{" "}

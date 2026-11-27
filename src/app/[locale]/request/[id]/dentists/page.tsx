@@ -9,6 +9,7 @@ import { StepHeader } from "@/components/request/step-header";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { isLocale, defaultLocale } from "@/i18n/config";
 import { DentistDirectory } from "@/components/dentists/dentist-directory";
+import { MedicalDisclaimerNote } from "@/components/legal/medical-disclaimer-note";
 import { PUBLIC_DENTIST_SELECT, publicDentistWhere } from "@/lib/dentist-public";
 import { attachCapStatus } from "@/server/dentist-cap";
 import { destinationCountryCodes } from "@/lib/travel-scope";
@@ -115,13 +116,14 @@ export default async function RequestDentistsPage({
           title={t.requestFlow.dentistsTitle}
           subtitle={t.requestFlow.dentistsSubtitle}
         >
-            {/* The badge sits on every card, so it cannot explain itself. What
+          {/* The badge sits on every card, so it cannot explain itself. What
                 it means is a property of the whole directory, and belongs here
                 once rather than repeated on each clinic. */}
           <p className="text-teal-deep mt-3 inline-flex max-w-2xl items-start gap-2 text-sm sm:mt-4">
             <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
             {t.dentists.verifiedExplainer}
           </p>
+          <MedicalDisclaimerNote className="mt-3 max-w-2xl" />
         </StepHeader>
 
         <DentistDirectory
