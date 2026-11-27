@@ -13,6 +13,8 @@ const PUBLIC_PATHS = [
   "/clinics/join",
   "/terms",
   "/privacy",
+  "/medical-disclaimer",
+  "/clinic-agreement",
   "/cookies",
   "/refunds",
   "/accessibility",

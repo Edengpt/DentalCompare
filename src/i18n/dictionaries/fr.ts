@@ -105,15 +105,20 @@ const fr: typeof he = {
   },
   trust: {
     title: "Pourquoi vous pouvez nous faire confiance",
-    subtitle: "Quatre choses que nous avons construites pour que vous choisissiez une clinique à l'étranger sans risque inutile.",
+    subtitle:
+      "Quatre choses que nous avons construites pour que vous choisissiez une clinique à l'étranger sans risque inutile.",
     checkedTitle: "Chaque clinique est vérifiée",
-    checkedBody: "La clinique dépose son autorisation d'exercer, et une personne de notre équipe la vérifie avant que la clinique n'apparaisse. Une clinique non vérifiée ne vous parvient jamais.",
+    checkedBody:
+      "La clinique dépose son autorisation d'exercer, et une personne de notre équipe la vérifie avant que la clinique n'apparaisse. Une clinique non vérifiée ne vous parvient jamais.",
     warrantyTitle: "La garantie avant de choisir",
-    warrantyBody: "Le formulaire de devis demande à chaque clinique sa garantie et ce qu'elle fait si un problème survient après votre retour, pour que vous le voyiez avant de choisir.",
+    warrantyBody:
+      "Le formulaire de devis demande à chaque clinique sa garantie et ce qu'elle fait si un problème survient après votre retour, pour que vous le voyiez avant de choisir.",
     neutralTitle: "Gratuit pour vous, sans commission",
-    neutralBody: "Vous ne nous payez rien. Nous sommes rémunérés par l'abonnement des cliniques, jamais par une commission sur votre traitement.",
+    neutralBody:
+      "Vous ne nous payez rien. Nous sommes rémunérés par l'abonnement des cliniques, jamais par une commission sur votre traitement.",
     filesTitle: "Vos fichiers restent privés",
-    filesBody: "Votre radio et votre plan de traitement sont conservés dans un stockage privé. Aucune clinique que vous n'avez pas choisie ne les voit.",
+    filesBody:
+      "Votre radio et votre plan de traitement sont conservés dans un stockage privé. Aucune clinique que vous n'avez pas choisie ne les voit.",
   },
 
   faq: {
@@ -837,7 +842,8 @@ const fr: typeof he = {
       COMPLETED: "Terminé avec succès",
     },
     treatmentsLegend: "Soins inclus dans le devis",
-    treatmentsHint: "Choisissez une catégorie, puis un soin. Chacun devient une ligne avec une quantité et un prix unitaire.",
+    treatmentsHint:
+      "Choisissez une catégorie, puis un soin. Chacun devient une ligne avec une quantité et un prix unitaire.",
     chooseCategory: "1. Choisissez une catégorie",
     chooseTreatment: "2. Choisissez un soin",
     chooseVariant: "3. Choisissez le type",
@@ -863,7 +869,8 @@ const fr: typeof he = {
     lodgingIncluded: "Hébergement inclus",
     transfersLegend: "Transferts inclus",
     documentsLegend: "Documents pour le patient",
-    documentsHint: "Plan de traitement, radio ou photo — jusqu'à {max} fichiers, PDF/JPG/PNG, {mb} Mo chacun. Le patient pourra les consulter et les télécharger.",
+    documentsHint:
+      "Plan de traitement, radio ou photo — jusqu'à {max} fichiers, PDF/JPG/PNG, {mb} Mo chacun. Le patient pourra les consulter et les télécharger.",
     documentsAdd: "Ajouter un fichier",
     documentsUploading: "Envoi...",
     documentsRemove: "Retirer",
@@ -922,6 +929,7 @@ const fr: typeof he = {
       "Choisissez une formule : gratuite, ou un abonnement payant. Avec une formule payante, vous n'êtes débité qu'après l'approbation de la clinique par notre équipe — nous vous enverrons un lien de paiement par e-mail.",
     regAgree:
       "J'ai lu et compris les conditions d'abonnement ci-dessus, et je les accepte au nom de la clinique.",
+    regAgreeDocs: "Cela inclut :",
     regSubmitting: "Envoi…",
     regSubmit: "Inscrire la clinique",
     wizStepOf: "Étape {n} sur {total}",
@@ -978,7 +986,8 @@ const fr: typeof he = {
     planBasicTitle: "Basic",
     planBasicNote: "Sans engagement — résiliable à tout moment",
     planProTitle: "Pro",
-    planProNote: "Pour les cliniques très sollicitées : plus de demandes, la même place dans les résultats.",
+    planProNote:
+      "Pour les cliniques très sollicitées : plus de demandes, la même place dans les résultats.",
     planTrialLine: "{days} premiers jours gratuits",
     planCapUnlimited: "Demandes illimitées",
     dashSubPlan: "Formule {tier} ({plan})",
@@ -1019,7 +1028,8 @@ const fr: typeof he = {
     dashFoundingPending:
       "Clinique fondatrice : {price} au lieu de {regular} pendant 12 mois à compter du premier prélèvement.",
     dashUpgradeTitle: "Passer à une formule payante",
-    dashUpgradeBody: "{tier} : jusqu'à {cap} demandes par mois, pour {monthly} par mois ou {yearly} par an.",
+    dashUpgradeBody:
+      "{tier} : jusqu'à {cap} demandes par mois, pour {monthly} par mois ou {yearly} par an.",
     dashUpgradeFounding:
       "Prix fondateur : {monthly} par mois pendant 12 mois — il ne reste que {left} places",
     dashUpgradeMonthly: "{tier} — mensuel",
@@ -1364,7 +1374,8 @@ const fr: typeof he = {
     mustAcceptTerms: "Vous devez accepter les conditions d'abonnement pour vous inscrire",
     mustPickPlan: "Veuillez choisir une formule d'abonnement",
     mustPickCountry: "Veuillez choisir un pays",
-    noClinicsAtHome: "Il n'y a pas encore de cliniques dans votre pays. Choisissez une autre destination.",
+    noClinicsAtHome:
+      "Il n'y a pas encore de cliniques dans votre pays. Choisissez une autre destination.",
     missingDocuments: "Documents manquants : {kinds}",
     invalidDocument:
       "L'un des documents n'a pas été téléversé via ce formulaire. Veuillez le téléverser à nouveau.",
@@ -1413,7 +1424,10 @@ const fr: typeof he = {
 
   legal: {
     updatedLabel: "Dernière mise à jour :",
-    lastUpdated: "Octobre 2026",
+    lastUpdated: "Novembre 2026",
+    disclaimerShort:
+      "DentalCompare n’est pas une clinique et ne donne pas de conseil médical. Les devis et explications ne sont pas un diagnostic, et le prix final n’est fixé qu’après un examen à la clinique. Seule la clinique est responsable du traitement.",
+    disclaimerReadMore: "Avertissement médical complet",
   },
 
   treatments: {
@@ -1463,6 +1477,8 @@ const fr: typeof he = {
     cookies: "Politique relative aux cookies",
     refunds: "Résiliations et remboursements",
     accessibility: "Déclaration d'accessibilité",
+    medicalDisclaimer: "Avertissement médical",
+    clinicAgreement: "Contrat clinique",
     rights: "Tous droits réservés.",
   },
 };

@@ -102,9 +102,11 @@ const zh: typeof he = {
     title: "为什么可以信任我们",
     subtitle: "我们做了四件事，让您在国外选择诊所时不必承担不必要的风险。",
     checkedTitle: "每家诊所都经过核查",
-    checkedBody: "诊所上传执业许可证，由我们团队的工作人员核查后才会显示。未经核查的诊所不会出现在您面前。",
+    checkedBody:
+      "诊所上传执业许可证，由我们团队的工作人员核查后才会显示。未经核查的诊所不会出现在您面前。",
     warrantyTitle: "选择前先看保修",
-    warrantyBody: "报价表会询问每家诊所的保修期，以及您回国后出现问题时诊所会如何处理，让您在选择之前就能看到。",
+    warrantyBody:
+      "报价表会询问每家诊所的保修期，以及您回国后出现问题时诊所会如何处理，让您在选择之前就能看到。",
     neutralTitle: "对您免费，不收佣金",
     neutralBody: "您无需向我们支付任何费用。我们的收入来自诊所订阅，从不从您的治疗中抽取佣金。",
     filesTitle: "您的文件受到保护",
@@ -550,7 +552,8 @@ const zh: typeof he = {
     greeting: "{name}，您好：",
     greetingNoName: "您好：",
     patientFallback: "该患者",
-    quoteRequestBody: "{patient}正通过 DentalCompare 请求牙科治疗报价。其治疗方案和X光片已在您的诊所专区等待查看。",
+    quoteRequestBody:
+      "{patient}正通过 DentalCompare 请求牙科治疗报价。其治疗方案和X光片已在您的诊所专区等待查看。",
     quoteRequestCta: "💰 提交您的报价——只需5秒",
     viewFilesCta: "查看治疗方案和X光片",
     viewFilesNote: "为保护患者隐私，医疗文件不会作为邮件附件发送。请使用此邮箱地址登录查看。",
@@ -745,7 +748,8 @@ const zh: typeof he = {
     pageTitle: "为{name}报价",
     pageSubtitle:
       "请查看治疗方案和X光片，然后填写您的报价。信息越详细，患者越容易比较——尤其是跨国治疗，仅凭价格无法说明全部情况。",
-    attachmentsNote: "为保护患者隐私，治疗方案和X光片仅可在您的诊所专区查看。请使用接收此请求的邮箱地址登录。",
+    attachmentsNote:
+      "为保护患者隐私，治疗方案和X光片仅可在您的诊所专区查看。请使用接收此请求的邮箱地址登录。",
     viewFilesLink: "在诊所专区打开文件",
     fallbackPatient: "该患者",
     invalidPrice: "请输入有效的价格",
@@ -807,7 +811,8 @@ const zh: typeof he = {
     lodgingIncluded: "包含住宿",
     transfersLegend: "包含的接送",
     documentsLegend: "给患者的文件",
-    documentsHint: "治疗方案、X光片或照片——最多 {max} 个文件，PDF/JPG/PNG，每个不超过 {mb}MB。患者可以查看和下载。",
+    documentsHint:
+      "治疗方案、X光片或照片——最多 {max} 个文件，PDF/JPG/PNG，每个不超过 {mb}MB。患者可以查看和下载。",
     documentsAdd: "添加文件",
     documentsUploading: "上传中...",
     documentsRemove: "删除",
@@ -864,6 +869,7 @@ const zh: typeof he = {
     regPlanIntro:
       "请选择方案：免费方案或付费订阅。如选择付费方案，只有在我们团队批准诊所后才会扣款——付款链接将通过邮件发送给您。",
     regAgree: "我已阅读并理解上述订阅条款，并代表诊所接受这些条款。",
+    regAgreeDocs: "其中包括：",
     regSubmitting: "提交中…",
     regSubmit: "注册诊所",
     wizStepOf: "第{n}步，共{total}步",
@@ -1320,7 +1326,10 @@ const zh: typeof he = {
 
   legal: {
     updatedLabel: "最后更新：",
-    lastUpdated: "2026年10月",
+    lastUpdated: "2026年11月",
+    disclaimerShort:
+      "DentalCompare 不是诊所，也不提供医疗建议。报价和说明不构成诊断，最终价格须在诊所检查后才能确定。治疗责任完全由诊所承担。",
+    disclaimerReadMore: "完整医疗免责声明",
   },
 
   treatments: {
@@ -1365,6 +1374,8 @@ const zh: typeof he = {
     cookies: "Cookie政策",
     refunds: "取消与退款",
     accessibility: "无障碍声明",
+    medicalDisclaimer: "医疗免责声明",
+    clinicAgreement: "诊所协议",
     rights: "保留所有权利。",
   },
 };

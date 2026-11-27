@@ -115,8 +115,9 @@ export const TRIAL_WARNING_DAYS_BEFORE = [15, 2] as const;
 
 // Bumped when the clinic terms change materially — v2 added the free trial;
 // v4 (2026-10-16) adds the Pro plan and makes the trial a plain number of days,
-// never cut short by the number of requests a clinic receives.
-export const SUBSCRIPTION_CONTRACT_VERSION = "2026-10-sub-v4";
+// never cut short by the number of requests a clinic receives. v5 (2026-11-27)
+// adds the full Clinic Agreement (/clinic-agreement) to what the clinic accepts.
+export const SUBSCRIPTION_CONTRACT_VERSION = "2026-11-sub-v5";
 
 // --- Rate limits (DB-backed, fixed window) ---
 const HOUR_MS = 60 * 60 * 1000;

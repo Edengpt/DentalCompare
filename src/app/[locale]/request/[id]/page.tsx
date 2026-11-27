@@ -35,6 +35,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { isLocale, defaultLocale, intlLocale } from "@/i18n/config";
 import { format } from "@/i18n/format";
+import { MedicalDisclaimerNote } from "@/components/legal/medical-disclaimer-note";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -309,6 +310,7 @@ export default async function RequestDetailPage({
                   converted={converted}
                 />
               )}
+              {responded > 0 && <MedicalDisclaimerNote className="mt-4" />}
             </section>
           )}
 

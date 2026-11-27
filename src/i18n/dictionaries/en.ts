@@ -88,7 +88,8 @@ const en: typeof he = {
   },
   exampleComparison: {
     title: "Same plan, three quotes, side by side",
-    subtitle: "This is what a comparison looks like once the quotes arrive. The figures here are examples only.",
+    subtitle:
+      "This is what a comparison looks like once the quotes arrive. The figures here are examples only.",
     plan: "One implant with crown",
     rowPrice: "Price",
     rowIncluded: "What's included",
@@ -114,18 +115,21 @@ const en: typeof he = {
   },
   trust: {
     title: "Why you can trust this",
-    subtitle: "Four things we built so you can choose a clinic abroad without taking a needless risk.",
+    subtitle:
+      "Four things we built so you can choose a clinic abroad without taking a needless risk.",
     checkedTitle: "Every clinic is checked",
-    checkedBody: "A clinic uploads its licence to practise, and a person on our team checks it before the clinic appears. A clinic that wasn't checked never reaches you.",
+    checkedBody:
+      "A clinic uploads its licence to practise, and a person on our team checks it before the clinic appears. A clinic that wasn't checked never reaches you.",
     warrantyTitle: "See the warranty before you choose",
-    warrantyBody: "The quote form asks every clinic for its warranty and what it does if something fails after you fly home, so you see it before you choose.",
+    warrantyBody:
+      "The quote form asks every clinic for its warranty and what it does if something fails after you fly home, so you see it before you choose.",
     neutralTitle: "Free for you, no commissions",
-    neutralBody: "You never pay us. We earn from clinic subscriptions, never from a commission on your treatment.",
+    neutralBody:
+      "You never pay us. We earn from clinic subscriptions, never from a commission on your treatment.",
     filesTitle: "Your files stay private",
-    filesBody: "Your x-ray and treatment plan are kept in private storage. No clinic you didn't choose ever sees them.",
+    filesBody:
+      "Your x-ray and treatment plan are kept in private storage. No clinic you didn't choose ever sees them.",
   },
-
-
 
   faq: {
     eyebrow: "FAQ",
@@ -543,18 +547,23 @@ const en: typeof he = {
     subjectQuoteRequest: "New quote request — DentalCompare",
     subjectClinicQuoteReminder: "Reminder: a patient is waiting for your quote",
     clinicReminderHeading: "A patient is still waiting for your quote",
-    clinicReminderBody: "Yesterday we sent you the treatment plan and x-ray of a patient who chose your clinic, and we haven't received a quote from you yet. The patient is comparing the quotes as they arrive — it's worth having yours among them.",
+    clinicReminderBody:
+      "Yesterday we sent you the treatment plan and x-ray of a patient who chose your clinic, and we haven't received a quote from you yet. The patient is comparing the quotes as they arrive — it's worth having yours among them.",
     clinicReminderCta: "Submit your quote",
-    clinicReminderNote: "The treatment plan and x-ray are attached to the original request email. This is the only reminder for this request.",
+    clinicReminderNote:
+      "The treatment plan and x-ray are attached to the original request email. This is the only reminder for this request.",
     subjectPaymentSetup: "Clinic approved — activate your DentalCompare subscription",
     subjectFreeLive: "Your clinic is approved and live on DentalCompare",
     freeLiveHeading: "Your clinic is approved — and already listed",
-    freeLiveBody: "{clinic} is now listed on DentalCompare on the free plan, and patients can choose it and send it quote requests.",
-    freeLiveUpgrade: "The free plan includes up to 3 requests a month. To receive more, upgrade any time from your clinic area.",
+    freeLiveBody:
+      "{clinic} is now listed on DentalCompare on the free plan, and patients can choose it and send it quote requests.",
+    freeLiveUpgrade:
+      "The free plan includes up to 3 requests a month. To receive more, upgrade any time from your clinic area.",
     freeLiveCta: "Go to your clinic area",
     subjectFoundingEnding: "Your founding price ends in about a month",
     foundingEndingHeading: "Thank you for being one of the first",
-    foundingEndingBody: "Your founding year ends on {date}. From the next charge your {plan} subscription will be {price}.",
+    foundingEndingBody:
+      "Your founding year ends on {date}. From the next charge your {plan} subscription will be {price}.",
     foundingEndingNoAction: "There's nothing you need to do — your subscription simply continues.",
     subjectTrialEndingSoon: "Your trial is ending — first charge coming up",
     subjectTrialSetupNeeded: "Your free trial is ending — payment details still missing",
@@ -602,10 +611,15 @@ const en: typeof he = {
     newQuoteCta: "View the comparison",
     subjectQuoteReminder: "Your quotes are waiting for you",
     quoteReminderHeading: "You haven't looked at your quotes yet",
-    quoteReminderBody: { one: "One quote for your treatment plan is waiting for you. You can see it in your account and decide in your own time.", other: "{count} quotes for your treatment plan are waiting for you. You can compare them side by side in your account." },
+    quoteReminderBody: {
+      one: "One quote for your treatment plan is waiting for you. You can see it in your account and decide in your own time.",
+      other:
+        "{count} quotes for your treatment plan are waiting for you. You can compare them side by side in your account.",
+    },
     quoteReminderNote: "There's no obligation — you're free to turn every quote down.",
     quoteApprovedHeading: "The patient chose you 🎉",
-    quoteApprovedBody: "{patient} approved your quote. You can contact them and schedule the treatment.",
+    quoteApprovedBody:
+      "{patient} approved your quote. You can contact them and schedule the treatment.",
     quoteApprovedCta: "View my area",
     quoteRejectedHeading: "The patient chose another clinic",
     quoteRejectedBody: "{patient} decided to proceed with another clinic for this request.",
@@ -614,10 +628,12 @@ const en: typeof he = {
     treatmentStartedBody: "{clinic} marked that your treatment has started.",
     treatmentStartedCta: "View my request",
     completionRequestedHeading: "Confirm your treatment is complete",
-    completionRequestedBody: "{clinic} reports that your treatment is done. Please confirm to close the request.",
+    completionRequestedBody:
+      "{clinic} reports that your treatment is done. Please confirm to close the request.",
     completionRequestedCta: "Confirm treatment completion",
     treatmentCompletedHeading: "The patient confirmed treatment is complete",
-    treatmentCompletedBody: "{patient} confirmed that the treatment with {clinic} was completed successfully.",
+    treatmentCompletedBody:
+      "{patient} confirmed that the treatment with {clinic} was completed successfully.",
     treatmentCompletedCta: "View my area",
     treatmentStartedByPatientHeading: "The patient marked treatment as started",
     treatmentStartedByPatientBody:
@@ -631,7 +647,8 @@ const en: typeof he = {
     setupInstruction:
       "To appear in the directory and start receiving enquiries, complete your subscription and payment setup:",
     setupCta: "Activate subscription and payment",
-    setupAreaLine: "You also have your own area, showing your clinic's status and the requests you've received: {link}",
+    setupAreaLine:
+      "You also have your own area, showing your clinic's status and the requests you've received: {link}",
     setupAreaCta: "Go to your clinic area",
     trialToday: "today",
     trialTomorrow: "tomorrow",
@@ -819,7 +836,8 @@ const en: typeof he = {
       COMPLETED: "Completed successfully",
     },
     treatmentsLegend: "Treatments in this quote",
-    treatmentsHint: "Pick a category, then a treatment. Each one becomes a line with a quantity and a unit price.",
+    treatmentsHint:
+      "Pick a category, then a treatment. Each one becomes a line with a quantity and a unit price.",
     chooseCategory: "1. Choose a category",
     chooseTreatment: "2. Choose a treatment",
     chooseVariant: "3. Choose a type",
@@ -845,7 +863,8 @@ const en: typeof he = {
     lodgingIncluded: "Accommodation included",
     transfersLegend: "Transfers included",
     documentsLegend: "Documents for the patient",
-    documentsHint: "Treatment plan, x-ray or photo — up to {max} files, PDF/JPG/PNG, {mb}MB each. The patient can view and download them.",
+    documentsHint:
+      "Treatment plan, x-ray or photo — up to {max} files, PDF/JPG/PNG, {mb}MB each. The patient can view and download them.",
     documentsAdd: "Add a file",
     documentsUploading: "Uploading...",
     documentsRemove: "Remove",
@@ -905,6 +924,7 @@ const en: typeof he = {
       "Choose a plan: free, or a paid subscription. On a paid plan you're only charged after our team approves the clinic — we'll email you a link to complete payment.",
     regAgree:
       "I have read and understood the subscription terms above, and I accept them on behalf of the clinic.",
+    regAgreeDocs: "This includes:",
     regSubmitting: "Sending…",
     regSubmit: "Register the clinic",
     wizStepOf: "Step {n} of {total}",
@@ -993,12 +1013,16 @@ const en: typeof he = {
     dashMonthRequests: { one: "1 request received", other: "{count} requests received" },
     dashMonthOfCap: "Your plan includes up to {cap} requests a month.",
     dashMonthCostPerRequest: "This month your subscription cost {price} per request.",
-    dashMonthNoneYet: "No requests yet this month. They'll appear here as soon as a patient chooses you.",
-    dashFreeAtCap: "You've used all {cap} free-plan requests this month, so your clinic isn't shown to patients until {date}. Upgrade to keep receiving requests.",
+    dashMonthNoneYet:
+      "No requests yet this month. They'll appear here as soon as a patient chooses you.",
+    dashFreeAtCap:
+      "You've used all {cap} free-plan requests this month, so your clinic isn't shown to patients until {date}. Upgrade to keep receiving requests.",
     dashFoundingActive: "Founding clinic: you pay {price} instead of {regular} until {date}.",
-    dashFoundingPending: "Founding clinic: {price} instead of {regular} for 12 months from your first charge.",
+    dashFoundingPending:
+      "Founding clinic: {price} instead of {regular} for 12 months from your first charge.",
     dashUpgradeTitle: "Move to a paid plan",
-    dashUpgradeBody: "{tier}: up to {cap} requests a month, for {monthly} a month or {yearly} a year.",
+    dashUpgradeBody:
+      "{tier}: up to {cap} requests a month, for {monthly} a month or {yearly} a year.",
     dashUpgradeFounding: "Founding price: {monthly} a month for 12 months — {left} places left",
     dashUpgradeMonthly: "{tier} — monthly",
     dashUpgradeYearly: "{tier} — yearly",
@@ -1006,8 +1030,10 @@ const en: typeof he = {
     planFreeNote: "No card needed. Upgrade any time.",
     planCapLine: "Up to {cap} requests a month",
     planFoundingBadge: "Founding price for 12 months",
-    foundingBanner: "Founding offer: the first clinics to choose a paid plan pay a third less for their first 12 months. {left} places left.",
-    pendingStepLiveNoteFree: "On the free plan your clinic appears in the directory as soon as it's approved.",
+    foundingBanner:
+      "Founding offer: the first clinics to choose a paid plan pay a third less for their first 12 months. {left} places left.",
+    pendingStepLiveNoteFree:
+      "On the free plan your clinic appears in the directory as soon as it's approved.",
     dashNoClinicTitle: "No clinic found for this account",
     dashNoClinicBody:
       "This account ({email}) isn't linked to any clinic. Sign in with the email address you registered with, or register a clinic.",
@@ -1077,7 +1103,8 @@ const en: typeof he = {
     ctEyebrow: "The patient chose you",
     ctTitle: "Treatment with {patient}",
     ctContactTitle: "Contact details to book them in",
-    ctContactHint: "The patient accepted your quote — get in touch to schedule the first appointment.",
+    ctContactHint:
+      "The patient accepted your quote — get in touch to schedule the first appointment.",
     ctTimeline: {
       approved: "The patient chose you",
       started: "Treatment started",
@@ -1234,7 +1261,8 @@ const en: typeof he = {
     rejectConfirmBody:
       "The clinic will be emailed that its registration was not approved, then it and all its documents will be deleted. If only one document is the problem, 'request a better document' is the better choice.",
     rejectReasonLabel: "Reason (included in the email to the clinic)",
-    rejectReasonPlaceholder: "e.g. We could not find a valid licence to practise in the country the clinic operates in.",
+    rejectReasonPlaceholder:
+      "e.g. We could not find a valid licence to practise in the country the clinic operates in.",
     rejectConfirmYes: "Yes, reject and delete",
     colLocation: "Location",
     colRegistered: "Registered",
@@ -1347,7 +1375,8 @@ const en: typeof he = {
     dentistNotFound: "Dentist not found",
     clinicNotFound: "Clinic not found",
     clinicNoSubscription: "This clinic has no subscription attached — it can't be approved",
-    quoteAlreadyDecided: "The patient has already decided on this quote — it can no longer be edited",
+    quoteAlreadyDecided:
+      "The patient has already decided on this quote — it can no longer be edited",
     quoteNotFound: "We couldn't find this quote",
     invalidQuoteTransition: "This action isn't available for the quote's current status",
     onlyPendingCanBeRejected: "Only applications that haven't been approved can be rejected",
@@ -1378,13 +1407,17 @@ const en: typeof he = {
 
   legal: {
     updatedLabel: "Last updated:",
-    lastUpdated: "October 2026",
+    lastUpdated: "November 2026",
+    disclaimerShort:
+      "DentalCompare is not a clinic and does not give medical advice. Quotes and explanations are not a diagnosis, and the final price is set only after an examination at the clinic. The clinic alone is responsible for treatment.",
+    disclaimerReadMore: "Full medical disclaimer",
   },
 
   treatments: {
     patientMetaTitle: "My treatments",
     patientTitle: "My treatments",
-    patientSubtitle: "Every treatment you approved, at any clinic: what was agreed, where it stands, and how long the warranty runs.",
+    patientSubtitle:
+      "Every treatment you approved, at any clinic: what was agreed, where it stands, and how long the warranty runs.",
     patientEmpty: "No treatments yet. As soon as you approve a quote, a treatment file opens here.",
     backToDashboard: "← My account",
     dashboardLink: "Treatment files: {count} — what was agreed, where it stands, the warranty",
@@ -1402,8 +1435,10 @@ const en: typeof he = {
     documentsHeading: "Your documents",
     clinicMetaTitle: "My patients",
     clinicTitle: "My patients",
-    clinicSubtitle: "Patients who chose you, with every treatment they had with you. Treatments at other clinics aren't shown here.",
-    clinicEmpty: "No patients yet. When a patient approves one of your quotes, they'll appear here.",
+    clinicSubtitle:
+      "Patients who chose you, with every treatment they had with you. Treatments at other clinics aren't shown here.",
+    clinicEmpty:
+      "No patients yet. When a patient approves one of your quotes, they'll appear here.",
     backToClinicArea: "← Clinic area",
     clinicDashboardLink: "Every patient who chose you, with their treatment history at your clinic",
   },
@@ -1422,6 +1457,8 @@ const en: typeof he = {
     cookies: "Cookie policy",
     refunds: "Cancellations & refunds",
     accessibility: "Accessibility statement",
+    medicalDisclaimer: "Medical disclaimer",
+    clinicAgreement: "Clinic agreement",
     rights: "All rights reserved.",
   },
 };
